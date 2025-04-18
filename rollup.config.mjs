@@ -51,7 +51,7 @@ export default [
 
   // IIFE (browser)
   {
-    input: 'src/index.mjs',
+    input: 'src/v1/index.mjs',
     output: {
       file: 'dist/TinyEssentials.min.js',
       format: 'iife',
