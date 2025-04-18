@@ -1,4 +1,4 @@
-import getUser from '@tinypudding/discord-oauth2/api/getUser';
+import getUser from '../firebase/discord/api/getUser.mjs';
 
 /**
  * Handles the Discord OAuth2 authentication for a user, stores user data in an in-memory cache,

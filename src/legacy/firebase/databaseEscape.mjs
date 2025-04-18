@@ -1,4 +1,4 @@
-import firebaseEscape from './escape.mjs';
+import * as firebaseEscape from './escape.mjs';
 
 /**
  * Escapes a given string or number for use in Firebase database paths, with an option to preserve the path structure.

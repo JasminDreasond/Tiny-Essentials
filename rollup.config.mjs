@@ -1,4 +1,5 @@
 import resolve from '@rollup/plugin-node-resolve';
+import json from '@rollup/plugin-json';
 import commonjs from '@rollup/plugin-commonjs';
 import terser from '@rollup/plugin-terser';
 import preserveDirectories from 'rollup-preserve-directives';
@@ -24,6 +25,7 @@ const inputFiles = getAllInputFiles();
 // Prepare Plugins
 const plugins = [
   resolve({ preferBuiltins: true }),
+  json(),
   commonjs(),
   preserveDirectories(),
 ];
@@ -31,7 +33,10 @@ const plugins = [
 export default [
   // CJS
   {
-    external: [...Object.keys(pkg.dependencies || {})],
+    external: [
+      ...Object.keys(pkg.dependencies || {}), 
+      ...Object.keys(pkg.devDependencies || {})
+    ],
     input: inputFiles,
     output: {
       dir: 'dist',
@@ -48,9 +53,9 @@ export default [
   {
     input: 'src/index.mjs',
     output: {
-      file: 'dist/forPromise.min.js',
+      file: 'dist/TinyEssentials.min.js',
       format: 'iife',
-      name: 'forPromise',
+      name: 'TinyEssentials',
       sourcemap: false,
       globals: {
         'lodash': '_',
@@ -61,6 +66,7 @@ export default [
         browser: true,
         preferBuiltins: false
       }),
+      json(),
       commonjs(),
       terser({
         format: {

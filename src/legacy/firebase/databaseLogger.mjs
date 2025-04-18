@@ -219,7 +219,6 @@ const databaseLogger = {
     }
 
     // Complete
-    delete loggerCache;
     return loggerGenerator(where);
   },
 

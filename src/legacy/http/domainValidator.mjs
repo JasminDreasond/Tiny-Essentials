@@ -46,9 +46,6 @@ export default function domainValidator(req, cfg) {
     }
   }
 
-  // Delete Prepare
-  delete prepareUrlPath;
-
   // Is Obj
   if (objType(cfg, 'object')) {
     // Firebase Is Emulator
