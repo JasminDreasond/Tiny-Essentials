@@ -3,6 +3,10 @@ import userIp from '../../http/userIP.mjs';
 // Panel
 const floodPanel = {};
 
+/**
+ * Periodically decrements the timeout for each IP in the flood panel and removes expired entries.
+ * This is set to run every second.
+ */
 setInterval(function () {
   // IP Cache
   for (const item in floodPanel) {
@@ -11,43 +15,56 @@ setInterval(function () {
   }
 }, 1000);
 
-// Module
+/**
+ * Verifies the IP address of a user socket for flooding attempts.
+ *
+ * This function checks how many times an IP has attempted to interact with the socket.
+ * If the attempts exceed a threshold, the IP is temporarily banned and disconnected.
+ *
+ * @param {Object} socket - The socket object representing the connection.
+ * @param {Object} ioCache - The cache object that holds the blocklist and flood panel data.
+ * @param {Array} ioCache.blocklick - The list of blocked IPs.
+ * @param {Object} floodPanel - The object tracking flooding attempts and timeouts for each IP.
+ * @returns {void} This function does not return anything, it modifies the floodPanel and blocklist.
+ */
 export default function verify(socket, ioCache) {
   // Get User IP
   const ip = userIp(socket.handshake);
 
-  // Verify IP
+  /**
+   * Verifies the IP for flooding attempts and manages timeout and blocklist.
+   */
   const verifyIP = function () {
-    // Create Item
+    // Create Item if it doesn't exist
     if (!floodPanel[ip]) {
       floodPanel[ip] = {
         tries: 0,
         timeout: 2,
       };
 
-      // Remove Ban
+      // Remove Ban if any
       const indexBan = ioCache.blocklick.indexOf(ip);
       if (indexBan > -1) ioCache.blocklick.splice(indexBan, 1);
     }
 
-    // Add Try
+    // Add Try for the current IP
     floodPanel[ip].tries++;
 
-    // Gotha!
+    // If tries exceed limit, block the IP
     if (floodPanel[ip].tries > 1000) {
-      floodPanel[ip].timeout = 86400;
-      ioCache.blocklick.push(ip);
+      floodPanel[ip].timeout = 86400; // Set timeout to 24 hours
+      ioCache.blocklick.push(ip); // Add to blocklist
 
-      socket.disconnect();
+      socket.disconnect(); // Disconnect the socket
     }
   };
 
-  // Create Blacklist
+  // Create Blocklist if it doesn't exist
   if (!Array.isArray(ioCache.blocklick)) {
     ioCache.blocklick = [];
   }
 
-  // All Events
+  // Catch-all Event Listener
   var onevent = socket.onevent;
   socket.onevent = function (packet) {
     var args = packet.data || [];
@@ -56,11 +73,11 @@ export default function verify(socket, ioCache) {
     onevent.call(this, packet); // additional call to catch-all
   };
 
-  // Verify Action
+  // Verify Action on All Events
   socket.on('*', function () {
     return verifyIP();
   });
 
-  // First Verify
+  // First Verify IP
   return verifyIP();
 }

@@ -1,126 +1,130 @@
+/**
+ * Class to manage user level-up logic based on experience points.
+ */
 class LevelUp {
-  // Constructor
+  /**
+   * Constructor
+   * @param {number} giveExp - Base experience value for random experience generation.
+   * @param {number} expLevel - Base experience needed to level up (per level).
+   */
   constructor(giveExp, expLevel) {
     this.giveExp = giveExp;
     this.expLevel = expLevel;
   }
 
-  // Exp Validator
+  /**
+   * Validates and adjusts the user's level based on their current experience.
+   * @param {Object} user - The user object containing experience and level properties.
+   * @returns {Object} The updated user object.
+   */
   expValidator(user) {
-    // Prepare Extra Value
     let extraValue = 0;
-
-    // Exp Next Level
     const nextLevelExp = this.expLevel * user.level;
 
-    // Add Level
-    if (user.exp > nextLevelExp) {
-      // Add Level
+    // Level Up
+    if (user.exp >= nextLevelExp) {
       user.level++;
-
-      // Set Extra Value
-      extraValue += user.exp - nextLevelExp;
-
-      // Set the new total exp
+      extraValue = user.exp - nextLevelExp;
       user.exp = 0;
 
-      // Add More Level
       if (extraValue > 0) return this.give(user, extraValue, 'extra');
     }
 
-    // Remove Level
-    else if (user.exp < 1) {
-      // Remove Level
+    // Level Down
+    if (user.exp < 1 && user.level > 1) {
       user.level--;
-
-      // Remove more level
-      if (user.exp < 0) extraValue = Math.abs(user.exp);
-
-      // Set the new total exp
+      extraValue = Math.abs(user.exp);
       user.exp = this.expLevel * user.level;
 
-      // Remove More Level
       if (extraValue > 0) return this.remove(user, extraValue, 'extra');
     }
 
-    // Complete
     return user;
   }
 
-  // Get Total Exp
+  /**
+   * Calculates the total experience based on the user's level.
+   * @param {Object} user - The user object containing experience and level properties.
+   * @returns {number} The total experience of the user.
+   */
   getTotalExp(user) {
-    // Base
-    let totalexp = 0;
-
-    // For
-    for (let p = 0; p < user.level; p++) {
-      if (p !== 0) {
-        const numberinset = this.expLevel * p;
-        totalexp = totalexp + numberinset;
-      }
-    }
-
-    // Insert Result
-    totalexp = totalexp + user.exp;
-
-    // Complete
-    return totalexp;
+    let totalExp = 0;
+    for (let p = 1; p <= user.level; p++) totalExp += this.expLevel * p;
+    totalExp += user.exp;
+    return totalExp;
   }
 
-  // Exp Generator
+  /**
+   * Generates random experience points based on the configured multiplier.
+   * @param {number} multi - A multiplier for the generated experience.
+   * @returns {number} The generated experience points.
+   */
   expGenerator(multi = 1) {
-    return Number(Math.floor(Math.random() * (this.giveExp - 1 + 1) + 1)) * multi;
+    return Math.floor(Math.random() * this.giveExp) + 1 * multi;
   }
 
-  // Progress
+  /**
+   * Gets the experience points required to reach the next level.
+   * @param {Object} user - The user object containing the level.
+   * @returns {number} The experience required for the next level.
+   */
   progress(user) {
     return this.expLevel * user.level;
   }
 
-  // Set Exp Value
+  /**
+   * Gets the experience points required to reach the next level.
+   * @param {Object} user - The user object containing the level.
+   * @returns {number} The experience required for the next level.
+   */
+  getProgress(user) {
+    return this.expLevel * user.level;
+  }
+
+  /**
+   * Sets the experience value for the user, adjusting their level if necessary.
+   * @param {Object} user - The user object.
+   * @param {number} value - The new experience value to set.
+   * @returns {Object} The updated user object.
+   */
   set(user, value) {
-    // Set the new value
     user.exp = value;
-
-    // Validator
     this.expValidator(user);
-
-    // Get Total Exp
     user.totalExp = this.getTotalExp(user);
-
-    // Complete
     return user;
   }
 
-  // Give
+  /**
+   * Adds experience to the user, adjusting their level if necessary.
+   * @param {Object} user - The user object.
+   * @param {number} extraExp - Additional experience to be added.
+   * @param {string} type - Type of addition ('add' or 'extra').
+   * @param {number} multi - Multiplier for experience generation.
+   * @returns {Object} The updated user object.
+   */
   give(user, extraExp = 0, type = 'add', multi = 1) {
-    // Get the new user exp
     if (type === 'add') user.exp += this.expGenerator(multi) + extraExp;
-    // Extra
     else if (type === 'extra') user.exp += extraExp;
 
     this.expValidator(user);
-
-    // Get Total Exp
     user.totalExp = this.getTotalExp(user);
-
-    // Complete
     return user;
   }
 
-  // Remove
+  /**
+   * Removes experience from the user, adjusting their level if necessary.
+   * @param {Object} user - The user object.
+   * @param {number} extraExp - Experience to remove.
+   * @param {string} type - Type of removal ('add' or 'extra').
+   * @param {number} multi - Multiplier for experience generation.
+   * @returns {Object} The updated user object.
+   */
   remove(user, extraExp = 0, type = 'add', multi = 1) {
-    // Get the new user exp
     if (type === 'add') user.exp -= this.expGenerator(multi) + extraExp;
-    // Extra
     else if (type === 'extra') user.exp -= extraExp;
 
     this.expValidator(user);
-
-    // Get Total Exp
     user.totalExp = this.getTotalExp(user);
-
-    // Complete
     return user;
   }
 }

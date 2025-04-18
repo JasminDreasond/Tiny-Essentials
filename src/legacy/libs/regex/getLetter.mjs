@@ -1,21 +1,22 @@
-// https://stackoverflow.com/questions/3617797/regex-to-match-only-letters
+/**
+ * Matches exactly one letter (lowercase or uppercase).
+ * @param {string} [type='g'] - The flag for the regular expression (default is 'g').
+ * @returns {RegExp} The regular expression to match exactly one letter.
+ */
 function oneLetter(type = 'g') {
-  return new RegExp('[a-zA-Z]', type);
+  return new RegExp('^[a-zA-Z]+$', type); // Matches exactly one letter
 }
 
+/**
+ * Matches one or more letters (lowercase or uppercase).
+ * @param {string} [type='g'] - The flag for the regular expression (default is 'g').
+ * @returns {RegExp} The regular expression to match one or more letters.
+ */
 function multiLetters(type = 'g') {
-  return new RegExp('[a-zA-Z]+', type);
-}
-
-function oneLetter(type = 'g') {
-  return new RegExp('^[a-zA-Z]+$', type);
+  return new RegExp('[a-zA-Z]+', type); // Matches one or more letters
 }
 
 export {
-  // Use a character set: [a-zA-Z] matches one letter from A–Z in lowercase and uppercase.
-  oneLetter,
-  // [a-zA-Z]+ matches one or more letters
-  multiLetters,
-  // ^[a-zA-Z]+$ matches only strings that consist of one or more letters only
-  oneLetter,
+  oneLetter, // Matches exactly one letter
+  multiLetters, // Matches one or more letters
 };

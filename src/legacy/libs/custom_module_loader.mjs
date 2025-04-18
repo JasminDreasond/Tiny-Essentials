@@ -1,88 +1,80 @@
 import objType from '../get/objType.mjs';
 
-// The Module
-const custom_module_manager = {};
+/**
+ * A custom module manager to validate and run hooks on external modules dynamically.
+ * Especially useful for plugin-like systems or hooks in systems like payment handlers.
+ * @namespace custom_module_manager
+ */
+const custom_module_manager = {
+  /**
+   * Validates if the given object has valid custom or default module arrays.
+   * @param {Object} custom_modules - The object containing module definitions.
+   * @param {string} type - The specific type of module to validate.
+   * @returns {boolean} Whether the module is valid.
+   *
+   * @example
+   * custom_module_manager.validator(myModules, 'paypal'); // true or false
+   */
+  validator: function (custom_modules, type) {
+    if (
+      custom_modules &&
+      custom_modules[type] &&
+      (Array.isArray(custom_modules[type].custom) || Array.isArray(custom_modules[type].default))
+    )
+      return true;
+    else return false;
+  },
 
-// Validator
-custom_module_manager.validator = function (custom_modules, type) {
-  // Validate
-  if (
-    custom_modules &&
-    custom_modules[type] &&
-    (Array.isArray(custom_modules[type].custom) || Array.isArray(custom_modules[type].default))
-  ) {
-    return true;
-  }
+  /**
+   * Executes all functions inside the given modules.
+   * Accepts either an array of functions or an object with typed module arrays.
+   *
+   * @param {Object|Function[]} custom_modules - The modules or functions to run.
+   * @param {*} db_prepare - A value to pass to each module when called.
+   * @param {string} hookType - A string representing the hook (e.g., 'before', 'after').
+   * @param {Object} [options] - Optional. Object with keys matching types in `custom_modules`.
+   *
+   * @returns {Promise<void>}
+   *
+   * @example
+   * await custom_module_manager.run(customModules, db, 'after', { paypal: true });
+   */
+  run: async function (custom_modules, db_prepare, hookType, options) {
+    const run_custom_module = async function (type) {
+      let module_list = null;
 
-  // Nope
-  else {
-    return false;
-  }
-};
+      if (type) {
+        if (custom_modules && custom_modules[type]) module_list = custom_modules[type];
+      } else module_list = custom_modules;
 
-// Run
-custom_module_manager.run = async function (custom_modules, db_prepare, hookType, options) {
-  // Run Custom Modules
-  const run_custom_module = async function (type) {
-    // Prepare List
-    let module_list = null;
-
-    // Exist Type
-    if (type) {
-      if (custom_modules && custom_modules[type]) {
-        module_list = custom_modules[type];
-      }
-    } else {
-      module_list = custom_modules;
-    }
-
-    // Read Array
-    if (Array.isArray(module_list)) {
-      for (const item in module_list) {
-        // Is String
-        if (typeof module_list[item] === 'function') {
-          // Try to Read the Module
-          try {
-            // Run Script
-            await module_list[item](db_prepare, hookType);
-          } catch (err) {
-            // Error
+      if (Array.isArray(module_list)) {
+        for (const item in module_list) {
+          if (typeof module_list[item] === 'function') {
+            try {
+              await module_list[item](db_prepare, hookType);
+            } catch (err) {
+              console.error(err);
+              console.error(err.message);
+            }
+          } else {
+            const err = new Error(
+              `The Custom Paypal Module value needs to be a Function!\nArray: ${type}\nIndex: ${item}`,
+            );
             console.error(err);
             console.error(err.message);
           }
         }
-
-        // Nope
-        else {
-          // Prepare Error Message
-          const err = new Error(
-            `The Custom Paypal Module value needs to be a Function!\nArray: ${type}\nIndex: ${item}`,
-          );
-
-          console.error(err);
-          console.error(err.message);
-        }
       }
-    }
-  };
+    };
 
-  // Hook Type
-  if (objType(options, 'object')) {
-    for (const item in options) {
-      if (options[item] && Array.isArray(custom_modules[item])) {
-        await run_custom_module(item);
+    if (objType(options, 'object')) {
+      for (const item in options) {
+        if (options[item] && Array.isArray(custom_modules[item])) await run_custom_module(item);
       }
+    } else {
+      if (Array.isArray(custom_modules)) await run_custom_module();
     }
-  }
-
-  // Nope
-  else {
-    // Default Modules
-    if (Array.isArray(custom_modules)) {
-      await run_custom_module();
-    }
-  }
+  },
 };
 
-// Module Export
 export default custom_module_manager;
