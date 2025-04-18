@@ -1,5 +1,32 @@
 import objType from '../../../get/objType.mjs';
 
+/**
+ * Validates the provided data and returns an object with either the parsed data or an error message.
+ * The function checks if the data is an object, array, or an invalid response, and processes it accordingly.
+ * If the data contains a `401 Unauthorized` error, it is handled specifically.
+ *
+ * @function
+ * @param {Object|Array} data - The response data to validate. This can be either an object or an array.
+ *
+ * @returns {Object} The result object containing:
+ *   - `data` (Object|null): The validated data if no error occurred or null if an error was found.
+ *   - `error` (Object|null): The error object if there was an issue, or null if no error was found.
+ *
+ * @example
+ * const response = { error: 'invalid_request', error_description: 'Invalid request format' };
+ * const result = errorValidator(response);
+ * console.log(result); // { data: null, error: { code: 401, message: 'Invalid request format' } }
+ *
+ * @example
+ * const response = [{ id: 1, name: 'John' }];
+ * const result = errorValidator(response);
+ * console.log(result); // { data: [{ id: 1, name: 'John' }], error: null }
+ *
+ * @example
+ * const response = 'Invalid Response';
+ * const result = errorValidator(response);
+ * console.log(result); // { data: null, error: { code: 500, message: 'Invalid HTTP Result!' } }
+ */
 export default function errorValidator(data) {
   // Result
   const result = { data: null, error: null };

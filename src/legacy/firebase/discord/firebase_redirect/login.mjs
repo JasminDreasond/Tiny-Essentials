@@ -1,5 +1,39 @@
+/**
+ * Handles Firebase authentication using a custom token, CSRF protection,
+ * and final redirection logic after login.
+ *
+ * This function signs in the user with a custom Firebase token, waits for
+ * the auth state to change, retrieves the ID token, sends it to the current
+ * server endpoint along with a CSRF token, and then redirects the user to
+ * the specified URL or executes a callback.
+ *
+ * @namespace login
+ */
 const login = {
-  // Run Function
+  /**
+   * Executes the login process with Firebase Auth and handles redirection.
+   *
+   * @param {string} token - The Firebase custom token used for authentication.
+   * @param {string} redirect_url - The relative URL to redirect the user after login.
+   *                                If it starts with "/", it will be adjusted.
+   * @param {string} csrfToken - A CSRF protection token to be sent to the backend.
+   * @param {function} [callback] - Optional callback to be called after authentication.
+   *                                Signature: `(err, redirectFunction, user)`
+   *                                - If omitted, default redirection is used.
+   *
+   * @example
+   * login.run(firebaseToken, '/dashboard', csrfToken);
+   *
+   * @example
+   * login.run(firebaseToken, '/dashboard', csrfToken, (err, redirect, user) => {
+   *   if (err) {
+   *     console.error('Login failed:', err);
+   *     return;
+   *   }
+   *   console.log('Logged in as', user.displayName);
+   *   redirect(); // manually trigger the redirect
+   * });
+   */
   run: function (token, redirect_url, csrfToken, callback) {
     // Fix Redirect
     if (typeof redirect_url === 'string') {

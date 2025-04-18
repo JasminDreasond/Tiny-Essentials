@@ -2,6 +2,34 @@ import getJsonFetch from '../../../http/fetch/json.mjs';
 import config from '../config.mjs';
 import errorValidator from '../get/errorValidator.mjs';
 
+/**
+ * Exchanges an authorization code for an access token using Discord's OAuth2 API.
+ *
+ * This function is used in the OAuth2 authorization code flow.
+ * It sends a POST request to the `/oauth2/token` endpoint with the required parameters.
+ *
+ * @param {Object} dsData - The data required for the token exchange.
+ * @param {string} dsData.client_id - Your application's client ID.
+ * @param {string} dsData.client_secret - Your application's client secret.
+ * @param {string} dsData.code - The authorization code received from Discord.
+ * @param {string} dsData.redirect_uri - The redirect URI used during the authorization.
+ * @param {string} [dsData.scope] - The OAuth2 scopes being requested (optional but recommended).
+ *
+ * @returns {Promise<Object>} Resolves with the access token data (access_token, token_type, expires_in, refresh_token, scope).
+ *
+ * @throws {Object} If the request fails or Discord returns an error, rejects with an object containing a `code` and `message`.
+ *
+ * @example
+ * getToken({
+ *   client_id: '123456789012345678',
+ *   client_secret: 's3cr3t',
+ *   code: 'authcodefromdiscord',
+ *   redirect_uri: 'https://your.app/redirect',
+ *   scope: 'identify guilds'
+ * })
+ * .then(token => console.log('Access Token:', token.access_token))
+ * .catch(err => console.error('Token error:', err));
+ */
 export default function getToken(dsData) {
   return new Promise(function (resolve, reject) {
     // API URL

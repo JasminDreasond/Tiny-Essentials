@@ -2,6 +2,30 @@ import _ from 'lodash';
 
 import objType from '../../../get/objType.mjs';
 import refreshTokenApi from '../api/refreshToken.mjs';
+
+/**
+ * Refreshes the Discord token using the provided refresh token.
+ *
+ * @async
+ * @function refreshToken
+ * @param {Object} req - The request object containing query parameters and csrfToken.
+ * @param {Object} cfg - The configuration object containing auth and state configurations.
+ * @param {boolean} existSession - A flag indicating if the user session exists.
+ *
+ * @returns {Promise<Object>} Resolves to an object containing the status of the refresh and the new token data, or rejects with an error object.
+ *
+ * @throws {Object} Rejects with an error object containing the following properties:
+ *   - `code` {number} The error code (e.g., 401 for invalid CSRF token, 500 for server errors).
+ *   - `message` {string} The error message describing the issue.
+ *
+ * @example
+ * const result = await refreshToken(req, cfg, existSession);
+ * if (result.refreshed) {
+ *   console.log('Token refreshed:', result.tokenRequest);
+ * } else {
+ *   console.log('Token refresh failed');
+ * }
+ */
 export default async function refreshToken(req, cfg, existSession) {
   return new Promise(function (resolve, reject) {
     // Detect Config

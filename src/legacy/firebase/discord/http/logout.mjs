@@ -4,7 +4,27 @@ import objType from '../../../get/objType.mjs';
 import revokeToken from '../api/revokeToken.mjs';
 import getUser from '../api/getUser.mjs';
 
-objType;
+/**
+ * Handles the logout process for the user by revoking the token and redirecting.
+ *
+ * @param {Object} req - The HTTP request object.
+ * @param {string|number} access_token - The access token of the user to be revoked.
+ * @param {Object} cfg - Configuration object containing settings for the logout process.
+ * @param {boolean} existSession - A flag indicating whether a session exists.
+ *
+ * @returns {Promise<Object>} Resolves with a result object or rejects with an error.
+ *
+ * @throws {Object} Rejects with an error if configuration or token values are invalid.
+ *
+ * @example
+ * logout(req, 'userAccessToken', cfg, true)
+ *   .then(result => {
+ *     // Handle successful logout
+ *   })
+ *   .catch(err => {
+ *     // Handle error during logout
+ *   });
+ */
 export default async function logout(req, access_token, cfg, existSession) {
   return new Promise(function (resolve, reject) {
     // Detect Config

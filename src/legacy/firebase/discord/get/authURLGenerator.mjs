@@ -1,6 +1,28 @@
 import { encrypt } from '../../../crypto/encrypt.mjs';
 import config from '../config.mjs';
 
+/**
+ * Generates an authorization URL for either login or webhook requests,
+ * including scopes, state, and redirect URIs. This URL can be used in OAuth2
+ * authentication flows, such as logging in or connecting a webhook.
+ *
+ * @function
+ * @param {Object} tinyCfg - The configuration object containing the app's OAuth2 settings.
+ * @param {Object} jsonState - The state object to be encrypted and passed in the authorization URL.
+ * @param {Object} tinyCrypto - The crypto object used to encrypt the state.
+ * @param {string} type - The type of the request, which determines the URL generation process.
+ *                         Can be `'login'`, `'login_command'`, or `'webhook'`.
+ *
+ * @returns {string} The generated authorization URL for OAuth2 authorization.
+ *
+ * @example
+ * const authUrl = authURLGenerator(tinyCfg, jsonState, tinyCrypto, 'login');
+ * console.log(authUrl);
+ *
+ * @example
+ * const webhookAuthUrl = authURLGenerator(tinyCfg, jsonState, tinyCrypto, 'webhook');
+ * console.log(webhookAuthUrl);
+ */
 export default function authURLGenerator(tinyCfg, jsonState, tinyCrypto, type) {
   // Scopes
   let tinyScopeURI = '';

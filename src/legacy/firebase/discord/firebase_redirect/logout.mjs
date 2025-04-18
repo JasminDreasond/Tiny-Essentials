@@ -1,5 +1,40 @@
+/**
+ * Handles the logout process by signing out from Firebase Auth,
+ * verifying CSRF token, and redirecting the user.
+ *
+ * The `run` function signs out the user, sends a logout request to the server
+ * along with CSRF protection, and then redirects the user to the specified URL
+ * or executes a custom callback.
+ *
+ * @namespace logout
+ */
 const logout = {
-  // Run Function
+  /**
+   * Executes the logout process, verifying CSRF token, signing out
+   * the user, and handling redirection.
+   *
+   * @param {string} token - The authentication token used to identify the user.
+   * @param {string} redirect_url - The relative URL to redirect the user after logout.
+   *                                If it starts with "/", it will be adjusted.
+   * @param {string} csrfToken - The CSRF token provided in the request.
+   * @param {string} original_csrfToken - The CSRF token that was initially generated.
+   * @param {function} [callback] - Optional callback to be called after logout.
+   *                                Signature: `(err, redirectFunction)`
+   *                                - If omitted, default redirection is used.
+   *
+   * @example
+   * logout.run(userToken, '/home', csrfToken, originalCsrfToken);
+   *
+   * @example
+   * logout.run(userToken, '/home', csrfToken, originalCsrfToken, (err, redirect) => {
+   *   if (err) {
+   *     console.error('Logout failed:', err);
+   *     return;
+   *   }
+   *   console.log('Logged out successfully');
+   *   redirect(); // manually trigger the redirect
+   * });
+   */
   run: function (token, redirect_url, csrfToken, original_csrfToken, callback) {
     // Compare CSRF Token
     if (original_csrfToken.length < 1 || original_csrfToken === csrfToken) {

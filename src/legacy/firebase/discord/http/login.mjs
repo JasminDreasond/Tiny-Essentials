@@ -6,6 +6,26 @@ import http_status from '../../../http/HTTP-1.0.mjs';
 import getDomainURL from '../../../http/getDomainURL.mjs';
 import authURLGenerator from '../get/authURLGenerator.mjs';
 
+/**
+ * Handles the login process by checking the configuration, generating authentication URLs, and redirecting the user to the appropriate destination.
+ * Depending on the configuration type, it handles various authentication methods like login, login_command, and webhook.
+ *
+ * @function
+ * @param {Object} req - The request object, typically provided by the web framework (e.g., Express).
+ * @param {Object} res - The response object, typically provided by the web framework (e.g., Express).
+ * @param {Object} cfg - The configuration object that includes various settings for the login process.
+ * @param {boolean} existSession - A flag indicating whether the user already has an active session.
+ *
+ * @returns {void} This function does not return anything. It sends a redirect response to the user based on the configuration.
+ *
+ * @throws {Error} If any validation or configuration fails, an error response will be sent.
+ *
+ * @example
+ * // Example usage with Express:
+ * app.get('/login', (req, res) => {
+ *   login(req, res, config, sessionExists);
+ * });
+ */
 export default function login(req, res, cfg, existSession) {
   // Send Error
   const sendError = function (data) {
