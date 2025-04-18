@@ -231,13 +231,18 @@ firebaseObject.start = function (admin, item, data) {
       if (typeof item.appID === 'string') {
         // Key File
         let keyFile = null;
-        if (item.keysFolder) keyFile = path.join(item.keysFolder, './' + item.appID + '.json');
+        if (item.keysFolder) keyFile = path.join(item.keysFolder, item.appID + '.json');
 
         // Exist File
-        if (keyFile && fs.existsSync(keyFile) && fs.lstatSync(keyFile).isFile())
-          start_firebase(require(keyFile));
-        // Nope
-        else console.error(new Error('Firebase File Not Found.'));
+        if (keyFile && fs.existsSync(keyFile) && fs.lstatSync(keyFile).isFile()) {
+          try {
+            const jsonData = fs.readFileSync(keyFile, 'utf8');
+            const parsedKey = JSON.parse(jsonData);
+            start_firebase(parsedKey);
+          } catch (err) {
+            console.error(new Error('Failed to parse Firebase JSON file: ' + err.message));
+          }
+        } else console.error(new Error('Firebase File Not Found.'));
       }
 
       // Nope
@@ -253,4 +258,4 @@ firebaseObject.start = function (admin, item, data) {
 };
 
 // Send Module
-module.exports = firebaseObject;
+export default firebaseObject;

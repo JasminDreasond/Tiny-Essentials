@@ -57,6 +57,7 @@
     "moment-timezone": "^0.5.48",
     "mysql": "^2.18.1",
     "node-fetch": "2.7.0",
+    "object-hash": "^3.0.0",
     "prettier": "3.5.3",
     "rollup": "^4.40.0",
     "rollup-preserve-directives": "^1.1.3",

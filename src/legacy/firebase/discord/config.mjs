@@ -1,0 +1,6 @@
+const config = {
+  url: 'https://discord.com/api/',
+  oauth2: 'https://discord.com/oauth2/authorize',
+};
+
+export default config;
