@@ -1,6 +1,18 @@
-// Module Base
+/**
+ * @module http_base
+ *
+ * HTTP status utility for sending standardized HTTP responses using Express.
+ * Includes a comprehensive list of HTTP status codes and helper methods for sending responses.
+ */
+
 const http_base = {
-  // https://github.com/TinyPudding/Puddy-Lib/blob/main/docs/WEB_STATUS.md
+  /**
+   * A list of standard HTTP status codes and their default messages.
+   * Follows the format { [statusCode]: message }.
+   *
+   * @readonly
+   * @type {Object<number, string>}
+   */
   list: {
     // Informational
     100: 'Continue',
@@ -54,6 +66,20 @@ const http_base = {
     505: 'HTTP Version Not Supported',
   },
 
+  /**
+   * Sends an HTTP response with the given status code.
+   * If a callback is provided, it will be called instead of sending an empty response.
+   *
+   * @function send
+   * @param {import('express').Response} res - Express response object.
+   * @param {number} http_code - HTTP status code to send.
+   * @param {function(number): void} [callback] - Optional callback to handle response body manually.
+   *
+   * @returns {*} The result of `res.send()` or the callback function.
+   *
+   * @example
+   * http_base.send(res, 404); // Sends 404 Not Found with empty body
+   */
   send: function (res, http_code, callback) {
     // Exist Error Code?
     if (typeof http_code === 'number' && typeof http_base.list[http_code] === 'string') {
@@ -78,6 +104,22 @@ const http_base = {
     }
   },
 
+  /**
+   * Asynchronously sends an HTTP response with the given status code.
+   * Awaits the provided callback before completing.
+   *
+   * @function sendAsync
+   * @param {import('express').Response} res - Express response object.
+   * @param {number} http_code - HTTP status code to send.
+   * @param {function(number): Promise<any>} [callback] - Optional async callback to handle response.
+   *
+   * @returns {Promise<any>} The result of the async callback or the empty response.
+   *
+   * @example
+   * await http_base.sendAsync(res, 500, async (code) => {
+   *   res.send('Server error occurred.');
+   * });
+   */
   sendAsync: async function (res, http_code, callback) {
     // Exist Error Code?
     if (typeof http_code === 'number' && typeof http_base.list[http_code] === 'string') {

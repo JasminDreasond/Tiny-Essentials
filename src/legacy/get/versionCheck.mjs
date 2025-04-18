@@ -9,6 +9,19 @@ const check_version = {
   t: null,
 };
 
+/**
+ * Checks if the package version is up-to-date by comparing it with the latest version available on npm.
+ * The version check is cached and updated every hour.
+ *
+ * @param {Object} package - The package information.
+ * @param {string} package.name - The name of the package.
+ * @param {string} package.version - The current version of the package.
+ *
+ * @returns {Promise<Object>} The result object containing:
+ *   - `needUpdate`: {boolean} - `true` if the current version is outdated, `false` otherwise.
+ *   - `now`: {string} - The current version of the package.
+ *   - `new`: {string} - The latest version of the package available on npm.
+ */
 export default async function versionCheck(package) {
   // Time Now
   const now = moment();

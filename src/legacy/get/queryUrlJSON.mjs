@@ -1,3 +1,23 @@
+/**
+ * Parses the query string from a URL into a JSON object.
+ *
+ * - Supports `key=value` pairs.
+ * - Supports array syntax (`arr[]=1&arr[]=2`, or `arr[1]=x`).
+ * - Ignores fragments (`#`).
+ * - If no URL is passed, uses `window.location.href` by default.
+ *
+ * Examples:
+ * ```js
+ * queryUrlJSON('http://example.com/?name=John&colors[]=red&colors[]=blue');
+ * // => { name: 'John', colors: ['red', 'blue'] }
+ *
+ * queryUrlJSON('http://x.com/?arr[1]=a&arr[0]=b');
+ * // => { arr: ['b', 'a'] }
+ * ```
+ *
+ * @param {string} [url=location.href] - The full URL to parse.
+ * @returns {Object.<string, string|string[]>} A key-value object representing the parsed query.
+ */
 export default function queryUrlJSON(url) {
   if (!url) url = location.href;
   var question = url.indexOf('?');

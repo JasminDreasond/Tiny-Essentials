@@ -5,9 +5,9 @@ import auth from './http/auth.mjs';
 import check_domain from './http/check_domain.mjs';
 import domainValidator from './http/domainValidator.mjs';
 import errorsCallback from './http/errorsCallback.mjs';
-import http_base from './http/HTTP-1.0.mjs'
+import http_base from './http/HTTP-1.0.mjs';
 import userIp from './http/userIP.mjs';
-import convertBytes from './libs/convertBytes.mjs'
+import convertBytes from './libs/convertBytes.mjs';
 import custom_module_manager from './libs/custom_module_loader.mjs';
 import replaceAsync from './libs/replaceAsync.mjs';
 import * as momentjs from './momentjs/index.mjs';
@@ -115,7 +115,7 @@ const legacyModules = {
 
   // csrfToken Analyze
   csrfTokenAnalyze,
-}
+};
 
 // Modules
 export default legacyModules;

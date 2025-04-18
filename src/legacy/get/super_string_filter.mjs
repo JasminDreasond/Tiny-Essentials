@@ -1,5 +1,29 @@
 import objType from './objType.mjs';
 
+/**
+ * Filters a list of strings by comparing each item against a list of validators.
+ *
+ * Each validator can be either:
+ * - A **string** (for exact match)
+ * - An **object** with one or more of the following:
+ *   - `starts`: {string} - The string must start with this prefix.
+ *   - `ends`: {string} - The string must end with this suffix.
+ *   - `regexp`: {RegExp} - The string must match the regular expression.
+ *
+ * The comparison stops at the first matching validator per item.
+ *
+ * Examples:
+ * ```js
+ * super_string_filter(['apple', 'banana', 'blueberry'], ['banana']); // ['banana']
+ * super_string_filter(['apple', 'banana'], [{ starts: 'app' }]); // ['apple']
+ * super_string_filter(['test.js'], [{ ends: '.js' }]); // ['test.js']
+ * super_string_filter(['data123'], [{ regexp: /^\w+\d+$/ }]); // ['data123']
+ * ```
+ *
+ * @param {string[]} list - The list of strings to filter.
+ * @param {(string|Object)[]} validator_list - The list of validators.
+ * @returns {string[]} A filtered array of strings that passed at least one validator.
+ */
 export default function super_string_filter(list, validator_list) {
   // Result
   const result = [];

@@ -1,3 +1,21 @@
+/**
+ * Checks the internal type of an object using `Object.prototype.toString`.
+ *
+ * - If `type` is provided, returns `true` if it matches the object's internal type (case-insensitive).
+ * - If `type` is omitted, returns the object's internal type as a lowercase string.
+ *
+ * Examples:
+ * ```js
+ * objType([], 'array'); // true
+ * objType({}, 'object'); // true
+ * objType('hello'); // "string"
+ * objType(undefined); // null
+ * ```
+ *
+ * @param {*} obj - The value to check the type of.
+ * @param {string} [type] - Optional string to compare the object's type against.
+ * @returns {boolean|string|null} Returns true/false if checking, or type string/null if querying.
+ */
 export default function objType(obj, type) {
   // Is Defined
   if (typeof obj !== 'undefined') {

@@ -1,5 +1,29 @@
 import queryUrlJSON from './queryUrlJSON.mjs';
 
+/**
+ * Generates pagination metadata for a given query and current page.
+ * It builds a list of pages to display and determines whether "next" and "previous" buttons should be shown.
+ * The resulting object can be used to render a pagination UI.
+ *
+ * @param {string} query - The base query string to be appended to URLs (without `?` or `&`).
+ * @param {number} page - The current page number.
+ * @param {number} total - The total number of pages.
+ * @param {string} [url=''] - The base URL to which pagination parameters will be added.
+ * @param {string} [extraClass=''] - Additional class name for styling the pagination container.
+ * @param {string} [extraClass2=''] - Additional class name for individual page links.
+ *
+ * @returns {Object} Pagination metadata including:
+ *   - `url` {string} - The updated URL prefix to use for each page link.
+ *   - `extraClass` {string} - Additional class name passed through.
+ *   - `extraClass2` {string} - Additional class name passed through.
+ *   - `page` {number} - The current page.
+ *   - `pagination` {number[]} - An array of page numbers to be displayed.
+ *   - `previous` {boolean} - Whether there are previous pages.
+ *   - `next` {boolean} - Whether there are next pages.
+ *   - `firstPagination` {boolean} - `true` if page 1 is not in the visible pagination and should be shown separately.
+ *   - `lastPagination` {boolean} - `true` if the last page is not in the visible pagination and should be shown separately.
+ *   - `pages` {number} - Total number of pages.
+ */
 export default function pagination(
   query,
   page,

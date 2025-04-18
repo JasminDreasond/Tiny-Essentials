@@ -1,3 +1,31 @@
+/**
+ * @function errorsCallback
+ *
+ * Creates an Express error-handling middleware that filters and handles HTTP errors
+ * with a status code >= 400 using a custom callback function.
+ *
+ * If the error does not meet the criteria (e.g., status not defined or < 400), it delegates to the next middleware.
+ *
+ * @param {Function} callback - A function called when an error with valid status is detected.
+ *   Receives parameters: (req, res, next, info)
+ *   - `info.code`: HTTP status code.
+ *   - `info.path`: `req.url` value.
+ *   - `info.originalUrl`: `req.originalUrl` value.
+ *   - `info.err`: The original error object.
+ *
+ * @returns {Function} Express middleware function: (err, req, res, next)
+ *
+ * @example
+ * import errorsCallback from './errorsCallback.mjs';
+ *
+ * app.use(errorsCallback((req, res, next, info) => {
+ *   res.status(info.code).json({
+ *     error: true,
+ *     message: info.err.message || 'Unknown error',
+ *     path: info.path
+ *   });
+ * }));
+ */
 export default function errorsCallback(callback) {
   return function (err, req, res, next) {
     // Err Code

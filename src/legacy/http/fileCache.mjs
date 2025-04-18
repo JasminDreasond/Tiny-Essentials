@@ -3,6 +3,34 @@ import moment from 'moment-timezone';
 import md5 from 'md5';
 import byteLength from 'byte-length';
 
+/**
+ * @function fileCache
+ *
+ * Sends a stringified file as a response with caching, security headers, and optional metadata.
+ * If `data.file` is not a string, the request is passed to the next middleware.
+ *
+ * @param {object} res - Express response object.
+ * @param {Function} next - Express next middleware function.
+ * @param {object} data - Configuration object for the file response.
+ * @param {string} [data.file] - The content of the file to send (must be a string).
+ * @param {number} [data.fileMaxAge] - Max age in seconds for cache expiration.
+ * @param {string} [data.date] - A date string used for the `Last-Modified` header.
+ * @param {string} [data.timezone="Universal"] - Timezone for `moment.tz()`.
+ * @param {string} [data.contentType="application/javascript"] - MIME type for the response.
+ *
+ * @example
+ * import fileCache from './fileCache.mjs';
+ *
+ * app.get('/my-script.js', (req, res, next) => {
+ *   const content = fs.readFileSync('./public/my-script.js', 'utf8');
+ *   fileCache(res, next, {
+ *     file: content,
+ *     fileMaxAge: 3600,
+ *     date: fs.statSync('./public/my-script.js').mtime,
+ *     contentType: 'application/javascript'
+ *   });
+ * });
+ */
 export default function fileCache(res, next, data) {
   // Prepare Config
   const tinyCfg = _.defaultsDeep({}, data, {

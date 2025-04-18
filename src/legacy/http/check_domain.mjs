@@ -1,98 +1,82 @@
-// Module Base
+/**
+ * @module check_domain
+ *
+ * Utility module to validate or retrieve the domain from a request object.
+ * It supports multiple methods to check the domain, including:
+ * - `x-forwarded-host`
+ * - `req.hostname`
+ * - `req.headers.host`
+ *
+ * Can be used to check if the incoming request matches a specific domain or to
+ * simply retrieve the current domain of the request.
+ */
 const check_domain = {
-  // Validators
+  /**
+   * A list of domain validators using different request properties.
+   *
+   * Each validator includes a `type` and a `callback` function that checks or returns the domain.
+   * If a domain (`the_domain`) is passed, the function returns a boolean.
+   * If not, it returns the found domain string or `null`.
+   *
+   * @type {Array<{type: string, callback: function(req: Object, the_domain?: string): (boolean|string|null)}>}
+   */
   validators: [
-    // X Forwarded Host
     {
       type: 'x-forwarded-host',
       callback: function (req, the_domain) {
         const isString = typeof req.headers['x-forwarded-host'] === 'string';
-        if (the_domain) {
-          if (isString && req.headers['x-forwarded-host'] === the_domain) {
-            return true;
-          } else {
-            return false;
-          }
-        } else {
-          if (isString) {
-            return req.headers['x-forwarded-host'];
-          } else {
-            return null;
-          }
-        }
+        if (the_domain) return isString && req.headers['x-forwarded-host'] === the_domain;
+
+        return isString ? req.headers['x-forwarded-host'] : null;
       },
     },
-
-    // Hostname
     {
       type: 'hostname',
       callback: function (req, the_domain) {
         const isString = typeof req.hostname === 'string';
-        if (the_domain) {
-          if (isString && req.hostname === the_domain) {
-            return true;
-          } else {
-            return false;
-          }
-        } else {
-          if (isString) {
-            return req.hostname;
-          } else {
-            return null;
-          }
-        }
+        if (the_domain) return isString && req.hostname === the_domain;
+
+        return isString ? req.hostname : null;
       },
     },
-
-    // Hostname
     {
       type: 'hostname',
       callback: function (req, the_domain) {
         const isString = typeof req.headers.host === 'string';
-        if (the_domain) {
-          if (isString && req.headers.host === the_domain) {
-            return true;
-          } else {
-            return false;
-          }
-        } else {
-          if (isString) {
-            return req.headers.host;
-          } else {
-            return null;
-          }
-        }
+        if (the_domain) return isString && req.headers.host === the_domain;
+        return isString ? req.headers.host : null;
       },
     },
   ],
 
-  // Validator
+  /**
+   * Validates the request against a given domain using all available validators.
+   *
+   * @function
+   * @param {Object} req - The request object from Express.
+   * @param {string} the_domain - The domain to validate against.
+   * @returns {boolean} True if any validator matches the domain.
+   */
   validator: function (req, the_domain) {
-    // Check All
-    for (const item in check_domain.validators) {
-      if (check_domain.validators[item].callback(req, the_domain)) {
-        return true;
-      }
-    }
-
-    // Nope
+    for (const item in check_domain.validators)
+      if (check_domain.validators[item].callback(req, the_domain)) return true;
     return false;
   },
 
-  // Get
+  /**
+   * Returns the domain found from the first valid source in the request object.
+   *
+   * @function
+   * @param {Object} req - The request object from Express.
+   * @returns {string|null} The found domain string or `null` if none matched.
+   */
   get: function (req) {
-    // Check All
     for (const item in check_domain.validators) {
       const result = check_domain.validators[item].callback(req);
-      if (result) {
-        return result;
-      }
+      if (result) return result;
     }
-
-    // Nothing
     return null;
   },
 };
 
-// Module
 export default check_domain;
