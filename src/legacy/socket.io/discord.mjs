@@ -1,7 +1,7 @@
 import getUser from '@tinypudding/discord-oauth2/api/getUser';
 
 /**
- * Handles the Discord OAuth2 authentication for a user, stores user data in an in-memory cache, 
+ * Handles the Discord OAuth2 authentication for a user, stores user data in an in-memory cache,
  * and manages the user's socket connection and disconnection events.
  *
  * @param {Object} socket - The socket object representing the user's connection.

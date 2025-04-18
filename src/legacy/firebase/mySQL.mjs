@@ -1,4 +1,4 @@
-import mySqlConnector from '@tinypudding/mysql-connector';
+import mysqlConnector from './mysqlConnector/index.mjs';
 
 /**
  * Connects to a MySQL database using the provided configuration and credentials.
