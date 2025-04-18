@@ -64,9 +64,6 @@ custom_module_manager.run = async function (custom_modules, db_prepare, hookType
         }
       }
     }
-
-    // Complete
-    return;
   };
 
   // Hook Type
@@ -85,9 +82,6 @@ custom_module_manager.run = async function (custom_modules, db_prepare, hookType
       await run_custom_module();
     }
   }
-
-  // Complete
-  return;
 };
 
 // Module Export

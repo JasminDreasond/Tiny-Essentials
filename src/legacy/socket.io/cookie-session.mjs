@@ -8,12 +8,6 @@ export default function cookieSession(socket, sessionModule) {
     let res = { getHeader: () => {}, setHeader: () => {} };
 
     // Session
-    return sessionModule(req, res, async () => {
-      // Return Session
-      resolve(req.session);
-
-      // Complete
-      return;
-    });
+    return sessionModule(req, res, async () => resolve(req.session));
   });
 }

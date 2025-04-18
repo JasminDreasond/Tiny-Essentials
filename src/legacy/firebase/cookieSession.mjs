@@ -1,21 +1,47 @@
-// Prepare Module
+/**
+ * Class representing an authentication system for generating session cookies.
+ *
+ * The AuthSystem handles checking the authentication time and generating session cookies based on
+ * ID token verification. It supports custom time checking and cookie generation logic.
+ *
+ * @class AuthSystem
+ */
 class AuthSystem {
-  // Constructor
+  /**
+   * Creates an instance of AuthSystem.
+   * Initializes default configurations for authentication time checking and session cookie expiration.
+   *
+   * @constructor
+   */
   constructor() {
+    this.auth_time = 5;
+
     // Default Values
+    const authSystem = this;
     this.default = {
-      // Check Auth Time
+      /**
+       * Checks whether the authentication time is within the last 5 minutes.
+       *
+       * @param {Object} decodedIdToken - The decoded ID token object.
+       * @param {number} decodedIdToken.auth_time - The authentication time from the ID token.
+       * @returns {boolean} Returns `true` if the authentication time is within the last 5 minutes.
+       */
       checkAuthTime: (decodedIdToken) => {
-        // Only process if the user just signed in in the last 5 minutes.
-        if (new Date().getTime() / 1000 - decodedIdToken.auth_time < 5 * 60) return true;
+        // Only process if the user just signed in in the last {this.auth_time} minutes.
+        if (new Date().getTime() / 1000 - decodedIdToken.auth_time < authSystem.auth_time * 60)
+          return true;
         // Nope
         else return false;
       },
 
-      // Cookie Time Generator
+      /**
+       * Generates the session cookie expiration time ({this.auth_time} days by default).
+       *
+       * @returns {number} Returns the expiration time in milliseconds (5 days).
+       */
       cookieTimeGenerator: () => {
         // Set session expiration to 5 days.
-        const expiresIn = 60 * 60 * 24 * 5 * 1000;
+        const expiresIn = 60 * 60 * 24 * authSystem.auth_time * 1000;
 
         // Create the session cookie. This will also verify the ID token in the process.
         // The session cookie will have the same claims as the ID token.
@@ -32,29 +58,44 @@ class AuthSystem {
     this.cookieTimeGenerator = this.default.cookieTimeGenerator;
   }
 
-  // Check Auth Time
+  /**
+   * Sets a custom callback to check authentication time.
+   *
+   * @param {Function} callback - The callback function to validate authentication time.
+   * @returns {void}
+   */
   setCookieTimeGenerator(callback) {
     if (typeof callback === 'function') this.cookieTimeGenerator = callback;
   }
 
-  // Check Auth Time
+  /**
+   * Sets a custom callback to generate the cookie expiration time.
+   *
+   * @param {Function} callback - The callback function to generate cookie expiration time.
+   * @returns {void}
+   */
   setCheckAuthTime(callback) {
     if (typeof callback === 'function') this.checkAuthTime = callback;
   }
 
-  // Cookie Session Generator
+  /**
+   * Generates a session cookie for the user after verifying the ID token.
+   *
+   * @param {Object} auth - The authentication object used to verify the ID token and create session cookies.
+   * @param {string} token - The ID token of the authenticated user.
+   * @returns {Promise<string>} A promise that resolves with the session cookie or rejects with an error.
+   */
   genCookieSession(auth, token) {
     const tinyThis = this;
     return new Promise(function (resolve, reject) {
       auth
         .verifyIdToken(token)
         .then(async (decodedIdToken) => {
-          // Try
           try {
-            // Check Time
+            // Validate the authentication time
             const checkedTime = await tinyThis.checkAuthTime(decodedIdToken);
             if (checkedTime) {
-              // Create Session
+              // Generate session cookie
               const expiresIn = await tinyThis.cookieTimeGenerator(decodedIdToken);
               auth.createSessionCookie(token, { expiresIn }).then(resolve).catch(reject);
             }

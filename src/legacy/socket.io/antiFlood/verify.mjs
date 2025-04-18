@@ -40,9 +40,6 @@ export default function verify(socket, ioCache) {
 
       socket.disconnect();
     }
-
-    // Complete
-    return;
   };
 
   // Create Blacklist

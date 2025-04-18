@@ -12,7 +12,7 @@ let cacheLimit = 2000;
 if (!('toJSON' in Error.prototype)) {
   Object.defineProperty(Error.prototype, 'toJSON', {
     value: function () {
-      var alt = {};
+      let alt = {};
 
       Object.getOwnPropertyNames(this).forEach(function (key) {
         alt[key] = this[key];
@@ -25,6 +25,16 @@ if (!('toJSON' in Error.prototype)) {
   });
 }
 
+/**
+ * Handles various logging actions (log, error, info, warn) and stores them in the database.
+ * Logs data are stored with a timestamp and are counted by type (log, error, info, warn).
+ * When the log count exceeds the specified cache limit, the database is cleared and reset.
+ *
+ * @param {string} where - The location or context where the log is coming from.
+ * @param {string} type - The type of log (log, error, info, or warn).
+ * @param {Array} args - The arguments to log (can include strings, numbers, objects, arrays, or errors).
+ * @returns {Promise<void>} Resolves once the log is stored in the database.
+ */
 const tinyAction = async function (where, type, args) {
   // Try
   try {
@@ -68,9 +78,8 @@ const tinyAction = async function (where, type, args) {
         const type = objType(args[item]);
 
         // Insert Args
-        if (type === 'string' || type === 'number' || type === 'object' || type === 'array') {
+        if (type === 'string' || type === 'number' || type === 'object' || type === 'array')
           insertArgs.push(args[item]);
-        }
       }
 
       // Add Log
@@ -84,9 +93,7 @@ const tinyAction = async function (where, type, args) {
       // Nope
       else {
         tinyCache[where].count[type]--;
-        if (tinyCache[where].count[type] < 0) {
-          tinyCache[where].count[type] = 0;
-        }
+        if (tinyCache[where].count[type] < 0) tinyCache[where].count[type] = 0;
       }
     }
   } catch (err) {
@@ -94,27 +101,32 @@ const tinyAction = async function (where, type, args) {
     console.error(`ERROR IN ${where} (${type})!`);
     console.error(err);
   }
-
-  // Complete
-  return;
 };
 
 // Is Debug
 let isDebug = false;
 
-// Modules
+/**
+ * Updates the last update time with the provided value, if it's newer than the current one.
+ *
+ * @param {number} value - The timestamp of the update to check against the last update.
+ * @returns {void}
+ */
 const checkLastTime = function (value) {
   // Update
   if (!lastUpdate.number || value > lastUpdate.number) {
     lastUpdate.moment = moment(value);
     lastUpdate.number = lastUpdate.moment.valueOf();
   }
-
-  // Complete
-  return;
 };
 
-// Functions Generator
+/**
+ * Generates a logger object with methods for different types of logging (log, error, info, warn).
+ * Each log type is stored in the database with a timestamp and arguments.
+ *
+ * @param {string} where - The location or context where the log is coming from.
+ * @returns {Object} The logger object with methods for logging (log, error, info, warn).
+ */
 const loggerGenerator = function (where) {
   // Done
   return {
@@ -122,35 +134,43 @@ const loggerGenerator = function (where) {
     log: async function () {
       console.log.apply(console, arguments);
       tinyAction(where, 'log', arguments);
-      return;
     },
 
     // Error
     error: async function () {
       console.error.apply(console, arguments);
       tinyAction(where, 'error', arguments);
-      return;
     },
 
     // Info
     info: async function () {
       console.info.apply(console, arguments);
       tinyAction(where, 'info', arguments);
-      return;
     },
 
     // Warning
     warn: async function () {
       console.warn.apply(console, arguments);
       tinyAction(where, 'warn', arguments);
-      return;
     },
   };
 };
 
-// Module
+/**
+ * Database logger module that manages logging actions and stores logs in a database.
+ * It provides functionality to start the logger with a new database instance,
+ * retrieve the logger instance, change the cache limit, and set debug mode.
+ *
+ * @module databaseLogger
+ */
 const databaseLogger = {
-  // Start
+  /**
+   * Starts the logger with a new database instance and initializes cache values.
+   *
+   * @param {Object} newDB - The new database instance to use for storing logs.
+   * @param {string} where - The context or location where the logger will be used.
+   * @returns {Promise<Object>} The logger instance with methods for logging.
+   */
   start: async function (newDB, where) {
     // Prepare
     tinyCache[where] = { db: newDB, count: { log: 0, error: 0, info: 0, warn: 0 } };
@@ -203,23 +223,34 @@ const databaseLogger = {
     return loggerGenerator(where);
   },
 
-  // Get
+  /**
+   * Retrieves the logger instance for a given context.
+   *
+   * @param {string} where - The context or location where the logger will be used.
+   * @returns {Object} The logger instance with methods for logging.
+   */
   get: function (where) {
     return loggerGenerator(where);
   },
 
-  // Cache Limit
+  /**
+   * Changes the cache limit for the logger.
+   *
+   * @param {number} value - The new cache limit to set.
+   * @returns {void}
+   */
   changeCacheLimit: function (value) {
-    if (typeof value === 'number') {
-      cacheLimit = value;
-    }
-    return;
+    if (typeof value === 'number') cacheLimit = value;
   },
 
-  // Set Is Debug
+  /**
+   * Enables or disables debug mode.
+   *
+   * @param {boolean} value - `true` to enable debug mode, `false` to disable it.
+   * @returns {void}
+   */
   setDebugMode: function (value) {
     isDebug = value;
-    return;
   },
 };
 

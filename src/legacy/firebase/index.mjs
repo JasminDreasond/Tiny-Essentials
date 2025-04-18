@@ -13,10 +13,20 @@ import transactionDBAsync from './transactionDBAsync.mjs';
 import databaseEscape from './databaseEscape.mjs';
 import isEmulator from './isEmulator.mjs';
 
-// Prepare Module
+/**
+ * Firebase Object to handle various Firebase services and utilities.
+ * Includes database, authentication, Firestore, storage, and more.
+ *
+ * @namespace firebaseObject
+ */
 const firebaseObject = { apps: {} };
 
-// Get App
+/**
+ * Retrieves a Firebase app by its identifier.
+ *
+ * @param {string|number} value - The app identifier to retrieve.
+ * @returns {Object|null} The Firebase app or `null` if not found.
+ */
 firebaseObject.get = function (value) {
   // Check
   if ((typeof value === 'string' || typeof value === 'number') && firebaseObject.apps[value]) {
@@ -28,43 +38,98 @@ firebaseObject.get = function (value) {
   else return null;
 };
 
-// Cookie Session
+/**
+ * Manages cookie session for authentication.
+ *
+ * @type {AuthSystem}
+ */
 firebaseObject.cookieSession = AuthSystem;
 
-// Domain Redirect
+/**
+ * Manages domain redirection.
+ *
+ * @type {domainRedirect}
+ */
 firebaseObject.domainRedirect = domainRedirect;
 
-// Database
+/**
+ * Handles Firebase Database interactions.
+ *
+ * @type {database}
+ */
 firebaseObject.database = database;
 
-// Encode
+/**
+ * Handles database escaping for safe queries.
+ *
+ * @type {Object}
+ */
 firebaseObject.escape = dbEscape;
 
-// Get MySQL
+/**
+ * Manages MySQL database interactions.
+ *
+ * @type {mySQL}
+ */
 firebaseObject.mysql = mySQL;
 
-// Get Database Async
+/**
+ * Retrieves the database asynchronously.
+ *
+ * @type {getDBAsync}
+ */
 firebaseObject.getDBAsync = getDBAsync;
 
-// Get Database Data
+/**
+ * Retrieves a specific database value.
+ *
+ * @type {getDBValue}
+ */
 firebaseObject.getDBValue = getDBValue;
 
-// Get DB Data
+/**
+ * Retrieves database data asynchronously.
+ *
+ * @type {getDBData}
+ */
 firebaseObject.getDBData = getDBData;
 
-// Async Transaction
+/**
+ * Handles asynchronous database transactions.
+ *
+ * @type {transactionDBAsync}
+ */
 firebaseObject.transactionDBAsync = transactionDBAsync;
 
-// Database Escape
+/**
+ * Provides database escape functionality for safe querying.
+ *
+ * @type {databaseEscape}
+ */
 firebaseObject.databaseEscape = databaseEscape;
 
-// Logger
+/**
+ * Logger to log information using Firebase or console.
+ *
+ * @type {Object}
+ */
 firebaseObject.logger = logger;
 
-// Is Emulator
+/**
+ * Checks if the Firebase environment is running in emulator mode.
+ *
+ * @type {isEmulator}
+ */
 firebaseObject.isEmulator = isEmulator;
 
-// Start Modules App
+/**
+ * Starts Firebase modules based on the provided configuration.
+ * Initializes services such as Database, Auth, Firestore, etc.
+ *
+ * @param {string} value - The Firebase app ID.
+ * @param {Object} item - Configuration for the Firebase app and services to initialize.
+ * @returns {boolean} `true` if the modules were successfully started, `false` otherwise.
+ */
 firebaseObject.startModule = function (value, item) {
   // Check
   if ((typeof value === 'string' || typeof value === 'number') && firebaseObject.apps[value]) {
@@ -109,7 +174,14 @@ firebaseObject.startModule = function (value, item) {
   else return false;
 };
 
-// Start
+/**
+ * Starts the Firebase app and initializes required services.
+ *
+ * @param {Object} admin - The Firebase Admin SDK.
+ * @param {Object} item - Configuration containing app details and options.
+ * @param {Object} data - Additional data to initialize the app.
+ * @throws {Error} Throws an error if the Firebase file is not found or if the app ID is missing.
+ */
 firebaseObject.start = function (admin, item, data) {
   // Try
   try {

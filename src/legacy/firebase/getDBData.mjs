@@ -7,15 +7,8 @@ export default function getDBData(data, type) {
     try {
       // Get Data
       getDBAsync(data, type)
-        .then((final_data) => {
-          // Convert Data
-          resolve(getDBValue(final_data));
-          return;
-        })
-        .catch((err) => {
-          reject(err);
-          return;
-        });
+        .then((final_data) => resolve(getDBValue(final_data)))
+        .catch(reject);
     } catch (err) {
       // Error
       reject(err);

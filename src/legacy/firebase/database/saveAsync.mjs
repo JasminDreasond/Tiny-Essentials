@@ -1,6 +1,17 @@
-// Class
+/**
+ * Class representing an asynchronous save system with callback support.
+ *
+ * This class is designed to handle database operations asynchronously and supports
+ * adding multiple operations to a queue, as well as running callbacks after each action.
+ *
+ * @class SaveAsync
+ */
 class SaveAsync {
-  // Constructor
+  /**
+   * Creates an instance of SaveAsync.
+   *
+   * @param {object} db - The database reference to interact with (e.g., Firebase or other DB).
+   */
   constructor(db) {
     this.db = db;
     this.list = [];
@@ -8,12 +19,26 @@ class SaveAsync {
     this.using = false;
   }
 
+  /**
+   * Registers a callback to be run when a specific action type is executed.
+   *
+   * @param {string} where - The action type (e.g., "set", "push", etc.).
+   * @param {Function} callback - The callback function to run when the action is performed.
+   * @returns {boolean} Returns `true` if the callback is successfully registered.
+   */
   on(where, callback) {
     if (!Array.isArray(this.callbacks[where])) this.callbacks[where] = [];
     this.callbacks[where].push(callback);
     return true;
   }
 
+  /**
+   * Runs all callbacks associated with a specific action type.
+   *
+   * @param {string} type - The action type (e.g., "set", "push", etc.).
+   * @param {any} data - The data passed to the callback(s).
+   * @param {string} [where] - The location (optional) where the action was performed.
+   */
   _runCallbacks(type, data, where) {
     if (Array.isArray(this.callbacks[type]))
       for (const item in this.callbacks[type])
@@ -21,7 +46,12 @@ class SaveAsync {
           this.callbacks[type][item](data, where);
   }
 
-  // Action
+  /**
+   * Processes the queued actions and executes them one by one.
+   *
+   * Each action in the queue is processed asynchronously. Once one action completes,
+   * the next action in the queue is triggered.
+   */
   action() {
     // Insert
     if (this.list.length > 0) {
@@ -86,7 +116,15 @@ class SaveAsync {
     else this.using = false;
   }
 
-  // Insert
+  /**
+   * Inserts a new action into the queue.
+   *
+   * The action will be executed when the system is ready (i.e., when the queue is not in use).
+   *
+   * @param {object} [data={}] - The data to be saved (optional).
+   * @param {string} [type='set'] - The type of the database action (e.g., 'set', 'push', etc.).
+   * @param {string|null} [where=null] - The location where the data should be stored (optional).
+   */
   insert(data = {}, type = 'set', where = null) {
     // Insert
     if (data !== null) {
@@ -104,5 +142,5 @@ class SaveAsync {
   }
 }
 
-// Moudule
+// Module export
 export default SaveAsync;

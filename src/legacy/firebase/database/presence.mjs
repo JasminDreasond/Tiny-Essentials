@@ -1,9 +1,24 @@
 import moment from 'moment-timezone';
 import _ from 'lodash';
 
-// Module
+/**
+ * Firebase Presence System
+ *
+ * This module allows real-time tracking of user presence using Firebase Realtime Database.
+ * It handles multiple connections (tabs/devices), updates online status, and records the last time online.
+ *
+ * @module presenceSystem
+ */
 const presenceSystem = {
-  // Get Browser Version
+  /**
+   * Returns the source code of the `start` function as a string, with placeholders replaced.
+   *
+   * This function is useful to retrieve a browser-compatible version of the `start` function
+   * for client-side injection (e.g., for Firebase emulators or test UIs).
+   *
+   * @param {string} [lodash='_'] - The lodash import replacement string (usually `_`).
+   * @returns {string} JavaScript source code as a string with `lodash` and `moment` replaced or removed.
+   */
   browserVersion: function (lodash = '_') {
     // Get Browser Version
     return presenceSystem.start
@@ -17,7 +32,20 @@ const presenceSystem = {
       );
   },
 
-  // Start
+  /**
+   * Starts presence tracking for a given user in Firebase Realtime Database.
+   *
+   * It sets up handlers for `.info/connected`, manages disconnect events,
+   * and updates the last online time in UTC format.
+   *
+   * @param {object} database - Firebase database reference (usually `admin.database()` or `firebase.database()`).
+   * @param {string|object} myConnectionsRef - Path or database ref to the user's `connections` node.
+   * @param {string|object} lastOnlineRef - Path or database ref to the user's `lastOnline` node.
+   * @param {object} [data] - Optional configuration overrides.
+   * @param {boolean|object} [data.connected=true] - Data to store when device is connected.
+   * @param {Function} [data.removeError] - Callback for `onDisconnect().remove()` errors.
+   * @param {Function} [data.getDate] - Function to return a UTC-based timestamp object (uses `moment` if available).
+   */
   start: (database, myConnectionsRef, lastOnlineRef, data) => {
     // Since I can connect from multiple devices or browser tabs, we store each connection instance separately
     // any time that connectionsRef's value is null (i.e. has no children) I am offline
