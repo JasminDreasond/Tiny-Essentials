@@ -1,7 +1,7 @@
 /**
  * Class to manage user level-up logic based on experience points.
  */
-class LevelUp {
+class TinyLevelUp {
   /**
    * Constructor
    * @param {number} giveExp - Base experience value for random experience generation.
@@ -129,4 +129,4 @@ class LevelUp {
   }
 }
 
-export default LevelUp;
+export default TinyLevelUp;
