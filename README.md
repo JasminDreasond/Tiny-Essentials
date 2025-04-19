@@ -31,6 +31,12 @@ Some scripts in this repository have been preserved for backwards compatibility.
 
 These modules have been updated to work with modern environments but may not be actively developed further.
 
+## Module Versions**
+The core version of Tiny Essentials (version 1) is located in the folder [`/src/v1`](./src/v1).  
+
+A detailed README is available inside the [`v1`](./src/v1) folder, which contains a full description of all utility modules and their functionalities.  
+We recommend checking it out if you want to see all available tools in this version and how to use them individually or collectively via the `index.mjs` global module.
+
 ## Contributions
 
 Feel free to fork, contribute, and create pull requests for improvements! Whether it's a bug fix or an additional feature, contributions are always welcome.
