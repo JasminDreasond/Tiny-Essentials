@@ -16,14 +16,14 @@
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run build"
   },
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.mts",
+  "main": "./dist/v1/index.cjs",
+  "module": "./dist/v1/index.mjs",
+  "types": "./dist/v1/index.d.mts",
   "ethereum": "jasmindreasond.x",
   "exports": {
     ".": {
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.mjs"
+      "require": "./dist/v1/index.cjs",
+      "import": "./dist/v1/index.mjs"
     }
   },
   "repository": {
