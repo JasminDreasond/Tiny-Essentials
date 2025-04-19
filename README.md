@@ -31,7 +31,7 @@ Some scripts in this repository have been preserved for backwards compatibility.
 
 These modules have been updated to work with modern environments but may not be actively developed further.
 
-## Module Versions**
+## Module Versions
 The core version of Tiny Essentials (version 1) is located in the folder [`/src/v1`](./src/v1).  
 
 A detailed README is available inside the [`v1`](./src/v1) folder, which contains a full description of all utility modules and their functionalities.  
@@ -50,3 +50,6 @@ This project is licensed under the GPL-3.0 License - see the [LICENSE](LICENSE) 
 ### Credits
 
 This project was inspired by the need for lightweight, reusable code that can be used across many different kinds of applications. Contributions and suggestions are always appreciated!
+
+> **Note**: This documentation was written by [ChatGPT](https://openai.com/chatgpt), an AI assistant developed by OpenAI, based on the project structure and descriptions provided by the repository author.  
+> If you find any inaccuracies or need improvements, feel free to contribute or open an issue!
