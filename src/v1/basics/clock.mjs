@@ -6,7 +6,7 @@
  * @param {Date|null} [now=null] - The current time as a Date object. Defaults to the current date and time if not provided.
  * @returns {number|null} The calculated duration in the specified unit, or `null` if `timeData` is not provided.
  */
-export const getTimeDuration = (timeData = new Date(), durationType = 'asSeconds', now = null) => {
+export function getTimeDuration(timeData = new Date(), durationType = 'asSeconds', now = null) {
   if (timeData instanceof Date) {
     const currentTime = now instanceof Date ? now : new Date();
     const diffMs = timeData - currentTime;
@@ -28,7 +28,7 @@ export const getTimeDuration = (timeData = new Date(), durationType = 'asSeconds
   }
 
   return null;
-};
+}
 
 /**
  * Formats a custom timer string based on total seconds and a detail level.
@@ -39,7 +39,7 @@ export const getTimeDuration = (timeData = new Date(), durationType = 'asSeconds
  * @param {string} [format='{time}'] - Output template with placeholders like {years}, {months}, {days}, {hours}, {minutes}, {seconds}, {time}, {total}.
  * @returns {string} The formatted timer string.
  */
-export const formatCustomTimer = (totalSeconds, level = 'seconds', format = '{time}') => {
+export function formatCustomTimer(totalSeconds, level = 'seconds', format = '{time}') {
   totalSeconds = Math.max(0, Math.floor(totalSeconds));
 
   const levels = ['seconds', 'minutes', 'hours', 'days', 'months', 'years'];
@@ -153,7 +153,7 @@ export const formatCustomTimer = (totalSeconds, level = 'seconds', format = '{ti
     .replace(/\{time\}/g, timeString)
     .replace(/\{total\}/g, parts.total)
     .trim();
-};
+}
 
 /**
  * Formats a duration (in seconds) into a timer string showing only hours, minutes, and seconds.
@@ -163,8 +163,9 @@ export const formatCustomTimer = (totalSeconds, level = 'seconds', format = '{ti
  * @param {number} seconds - The total number of seconds to format.
  * @returns {string} The formatted timer string in "HH:MM:SS" format.
  */
-export const formatTimer = (seconds) =>
-  formatCustomTimer(seconds, 'hours', '{hours}:{minutes}:{seconds}');
+export function formatTimer(seconds) {
+  return formatCustomTimer(seconds, 'hours', '{hours}:{minutes}:{seconds}');
+}
 
 /**
  * Formats a duration (in seconds) into a timer string including days, hours, minutes, and seconds.
@@ -174,5 +175,6 @@ export const formatTimer = (seconds) =>
  * @param {number} seconds - The total number of seconds to format.
  * @returns {string} The formatted timer string in "Xd HH:MM:SS" format.
  */
-export const formatDayTimer = (seconds) =>
-  formatCustomTimer(seconds, 'days', '{days}d {hours}:{minutes}:{seconds}');
+export function formatDayTimer(seconds) {
+  return formatCustomTimer(seconds, 'days', '{days}d {hours}:{minutes}:{seconds}');
+}

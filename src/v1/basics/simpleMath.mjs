@@ -33,9 +33,9 @@
  * // Inverse proportion:
  * ruleOfThree.execute(2, 6, 3, true); // → 4
  */
-export const ruleOfThree = (val1, val2, val3, inverse) => {
+export function ruleOfThree(val1, val2, val3, inverse) {
   return inverse ? Number(val1 * val2) / val3 : Number(val3 * val2) / val1;
-};
+}
 
 /**
  * Calculates a percentage of a given base value.
@@ -46,7 +46,9 @@ export const ruleOfThree = (val1, val2, val3, inverse) => {
  * @example
  * getSimplePerc(200, 15); // 30
  */
-export const getSimplePerc = (price, percentage) => price * (percentage / 100);
+export function getSimplePerc(price, percentage) {
+  return price * (percentage / 100);
+}
 
 /**
  * Calculates the age based on the given date.
@@ -55,7 +57,7 @@ export const getSimplePerc = (price, percentage) => price * (percentage / 100);
  * @param {Date|null} [now=null] - The Date object representing the current date. Defaults to the current date and time if not provided.
  * @returns {number|null} The age in years, or null if `timeData` is not provided or invalid.
  */
-export const getAge = (timeData = 0, now = null) => {
+export function getAge(timeData = 0, now = null) {
   if (typeof timeData !== 'undefined' && timeData !== null && timeData !== 0) {
     const birthDate = new Date(timeData);
     if (isNaN(birthDate)) return null;
@@ -77,4 +79,4 @@ export const getAge = (timeData = 0, now = null) => {
   }
 
   return null;
-};
+}

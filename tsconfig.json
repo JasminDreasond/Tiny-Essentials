@@ -3,6 +3,7 @@
         "outDir": "./dist",
         "allowJs": true,
         "checkJs": false,
+        "removeComments": false,
         "declaration": true,
         "declarationMap": false,
         "declarationDir": "./dist",

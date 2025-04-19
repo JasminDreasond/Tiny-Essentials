@@ -6,23 +6,22 @@
  * This implementation ensures a uniform distribution of permutations.
  * Original algorithm source: StackOverflow (link above).
  *
- * @template T
- * @param {T[]} array - The array to shuffle.
- * @returns {T[]} The same array instance, now shuffled in place.
+ * @param {string[]} items - The array to shuffle.
+ * @returns {string[]} The same array instance, now shuffled in place.
  */
-export const shuffleArray = (array) => {
-  let currentIndex = array.length,
+export function shuffleArray(items) {
+  let currentIndex = items.length,
     randomIndex;
 
   // While there remain elements to shuffle...
-  while (currentIndex != 0) {
+  while (currentIndex !== 0) {
     // Pick a remaining element...
     randomIndex = Math.floor(Math.random() * currentIndex);
     currentIndex--;
 
     // And swap it with the current element.
-    [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    [items[currentIndex], items[randomIndex]] = [items[randomIndex], items[currentIndex]];
   }
 
-  return array;
-};
+  return items;
+}
