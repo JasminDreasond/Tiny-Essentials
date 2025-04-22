@@ -41,7 +41,8 @@
     "text",
     "lib",
     "time",
-    "shuffle-array"
+    "shuffle-array",
+    "cryptography"
   ],
   "author": "Yasmin Seidel (Jasmin Dreasond)",
   "license": "GPL-3.0-only",
