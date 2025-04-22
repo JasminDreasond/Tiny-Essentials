@@ -30,7 +30,19 @@
     "type": "git",
     "url": "git+https://github.com/JasminDreasond/Tiny-Essentials.git"
   },
-  "keywords": [],
+  "keywords": [
+    "@tinypudding/firebase-lib",
+    "@tinypudding/discord-oauth2",
+    "@tinypudding/mysql-connector",
+    "@tinypudding/puddy-lib",
+    "clock",
+    "obj-type",
+    "simple-math",
+    "text",
+    "lib",
+    "time",
+    "shuffle-array"
+  ],
   "author": "Yasmin Seidel (Jasmin Dreasond)",
   "license": "GPL-3.0-only",
   "bugs": {
