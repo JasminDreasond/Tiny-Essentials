@@ -245,7 +245,7 @@ class CryptoHelper {
   };
 
   #serialize(data) {
-    const type = objType(data);
+    const type = objType(data) || 'undefined';
     if (type === 'string') return data;
     else if (this.#valueConvertTypes[type]) return this.#valueConvertTypes[type](data);
     throw new Error(`Unsupported data type for encryption: ${type}`);
