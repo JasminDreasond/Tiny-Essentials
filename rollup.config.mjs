@@ -3,10 +3,12 @@ import json from '@rollup/plugin-json';
 import commonjs from '@rollup/plugin-commonjs';
 import terser from '@rollup/plugin-terser';
 import preserveDirectories from 'rollup-preserve-directives';
-const pkg = JSON.parse(fs.readFileSync('./package.json'))
+import nodePolyfills from 'rollup-plugin-polyfill-node';
 
 import fs from 'fs';
 import path from 'path';
+
+const pkg = JSON.parse(fs.readFileSync('./package.json'));
 
 // Function to get all .js files from src/
 function getAllInputFiles(dir = 'src') {
@@ -62,6 +64,7 @@ export default [
       }
     },
     plugins: [
+      nodePolyfills(),
       resolve({
         browser: true,
         preferBuiltins: false

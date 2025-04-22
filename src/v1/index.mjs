@@ -7,12 +7,23 @@ import {
   formatTimer,
   getTimeDuration,
 } from './basics/clock.mjs';
-import { countObj, objType } from './basics/objFilter.mjs';
+import {
+  countObj,
+  extendObjType,
+  reorderObjTypeOrder,
+  cloneObjTypeOrder,
+  objType,
+} from './basics/objFilter.mjs';
 import { getAge, getSimplePerc, ruleOfThree } from './basics/simpleMath.mjs';
 import { toTitleCase, toTitleCaseLowerFirst } from './basics/text.mjs';
+import CryptoHelper from './libs/CryptoHelper.mjs';
 
 export {
+  CryptoHelper,
   TinyLevelUp,
+  extendObjType,
+  reorderObjTypeOrder,
+  cloneObjTypeOrder,
   countObj,
   objType,
   ruleOfThree,
