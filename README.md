@@ -11,18 +11,18 @@
 </p>
 </div>
 
-# Tiny Essentials
+# 🧩 Tiny Essentials
 
 **Tiny Essentials** is a collection of small, essential scripts designed to be used across various projects. These simple utilities are crafted for speed, ease of use, and versatility. From date calculations to formatting, object manipulations, and array operations, these scripts serve as building blocks for more complex applications.
 
-## Features
+## ✨ Features
 
-- **Array Manipulations**: Functions like `shuffleArray` to randomize elements in place.
-- **Time Calculations**: Easily calculate durations, format timers, and more.
-- **Object Utilities**: Perform type checks, count object properties, and calculate percentages.
-- **Custom Utilities**: Includes various helper functions like `ruleOfThree` for proportion calculations and `getAge` to calculate the age based on a given birth date.
+- 🔀 **Array Manipulations**: Functions like `shuffleArray` to randomize elements in place.
+- ⏱️ **Time Calculations**: Easily calculate durations, format timers, and more.
+- 🧠 **Object Utilities**: Perform type checks, count object properties, and calculate percentages.
+- 🛠️ **Custom Utilities**: Includes various helper functions like `ruleOfThree` for proportion calculations and `getAge` to calculate the age based on a given birth date.
 
-## Installation
+## 📦 Installation
 
 You can install Tiny Essentials via npm:
 
@@ -32,7 +32,7 @@ npm install tiny-essentials
 
 Or download the scripts directly from this repository.
 
-## Legacy Code
+## 🗃️ Legacy Code
 
 Some scripts in this repository have been preserved for backwards compatibility. These include modules like:
 
@@ -43,25 +43,33 @@ Some scripts in this repository have been preserved for backwards compatibility.
 
 These modules have been updated to work with modern environments but may not be actively developed further.
 
-## Module Versions
+## 🧪 Module Versions
+
 The core version of Tiny Essentials (version 1) is located in the folder [`/src/v1`](./src/v1).  
 
 A detailed README is available inside the [`v1`](./src/v1) folder, which contains a full description of all utility modules and their functionalities.  
 We recommend checking it out if you want to see all available tools in this version and how to use them individually or collectively via the `index.mjs` global module.
 
-## Contributions
+## 📚 Documentation
+
+Looking for detailed module explanations and usage examples?  
+Check out the full documentation here:
+
+👉 [Go to ./docs/README.md](./docs/README.md)
+
+## 🤝 Contributions
 
 Feel free to fork, contribute, and create pull requests for improvements! Whether it's a bug fix or an additional feature, contributions are always welcome.
 
-## License
+## 📝 License
 
 This project is licensed under the GPL-3.0 License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-### Credits
+### 💡 Credits
 
 This project was inspired by the need for lightweight, reusable code that can be used across many different kinds of applications. Contributions and suggestions are always appreciated!
 
-> **Note**: This documentation was written by [ChatGPT](https://openai.com/chatgpt), an AI assistant developed by OpenAI, based on the project structure and descriptions provided by the repository author.  
+> 🧠 **Note**: This documentation was written by [ChatGPT](https://openai.com/chatgpt), an AI assistant developed by OpenAI, based on the project structure and descriptions provided by the repository author.  
 > If you find any inaccuracies or need improvements, feel free to contribute or open an issue!
