@@ -186,7 +186,7 @@ class TinyCrypto {
     decrypted += decipher.final(this.inputEncoding);
 
     const { type } = this.#deserialize(decrypted);
-    return typeof type === 'string' ? type.toLowerCase() : 'unknown';
+    return typeof type === 'string' ? type : 'unknown';
   }
 
   /**
@@ -456,29 +456,29 @@ class TinyCrypto {
     function: () => {
       throw new Error('Function cannot be serialized');
     },
-    regexp: (data) => JSON.stringify({ __type: 'RegExp', value: data.toString() }),
-    htmlElement: (data) => JSON.stringify({ __type: 'HTMLElement', value: data.outerHTML }),
-    date: (data) => JSON.stringify({ __type: 'Date', value: data.toISOString() }),
-    bigint: (data) => JSON.stringify({ __type: 'BigInt', value: data.toString() }),
-    number: (data) => JSON.stringify({ __type: 'Number', value: data }),
-    boolean: (data) => JSON.stringify({ __type: 'Boolean', value: data }),
-    string: (data) => JSON.stringify({ __type: 'String', value: data }),
-    null: (data) => JSON.stringify({ __type: 'Null' }),
-    undefined: (data) => JSON.stringify({ __type: 'Undefined' }),
+    regexp: (data) => JSON.stringify({ __type: 'regexp', value: data.toString() }),
+    htmlElement: (data) => JSON.stringify({ __type: 'htmlelement', value: data.outerHTML }),
+    date: (data) => JSON.stringify({ __type: 'date', value: data.toISOString() }),
+    bigint: (data) => JSON.stringify({ __type: 'bigint', value: data.toString() }),
+    number: (data) => JSON.stringify({ __type: 'number', value: data }),
+    boolean: (data) => JSON.stringify({ __type: 'boolean', value: data }),
+    string: (data) => JSON.stringify({ __type: 'string', value: data }),
+    null: (data) => JSON.stringify({ __type: 'null' }),
+    undefined: (data) => JSON.stringify({ __type: 'undefined' }),
     map: (data) =>
       JSON.stringify({
-        __type: 'Map',
+        __type: 'map',
         value: Array.from(data.entries()),
       }),
     set: (data) =>
       JSON.stringify({
-        __type: 'Set',
+        __type: 'set',
         value: Array.from(data.values()),
       }),
-    symbol: (data) => JSON.stringify({ __type: 'Symbol', value: data.description }),
-    array: (data) => JSON.stringify({ __type: 'Array', value: data }),
-    object: (data) => JSON.stringify({ __type: 'JSON', value: data }),
-    buffer: (data) => JSON.stringify({ __type: 'Buffer', value: data.toString('base64') }),
+    symbol: (data) => JSON.stringify({ __type: 'symbol', value: data.description }),
+    array: (data) => JSON.stringify({ __type: 'array', value: data }),
+    object: (data) => JSON.stringify({ __type: 'object', value: data }),
+    buffer: (data) => JSON.stringify({ __type: 'buffer', value: data.toString('base64') }),
   };
 
   /**
@@ -490,47 +490,47 @@ class TinyCrypto {
    * and the value is a function that deserializes the value to its original format.
    *
    * @type {Object}
-   * @property {Function} RegExp - Deserializes a regular expression from its string representation (e.g., `/pattern/flags`).
-   * @property {Function} HTMLElement - Deserializes an HTML element from its serialized outerHTML string (only works in browser environments).
-   * @property {Function} Date - Deserializes a date from its ISO string representation.
-   * @property {Function} BigInt - Deserializes a BigInt from its string representation.
-   * @property {Function} Number - Deserializes a number from its string or numeric representation.
-   * @property {Function} Boolean - Deserializes a boolean value from its string representation.
-   * @property {Function} Null - Deserializes the `null` value.
-   * @property {Function} Undefined - Deserializes the `undefined` value.
-   * @property {Function} Map - Deserializes a Map from an array of key-value pairs.
-   * @property {Function} Set - Deserializes a Set from an array of values.
-   * @property {Function} Symbol - Deserializes a Symbol from its string description.
-   * @property {Function} Array - Deserializes an array from its serialized representation.
-   * @property {Function} JSON - Deserializes a plain JSON object from its serialized representation.
-   * @property {Function} String - Deserializes a string from its serialized representation.
-   * @property {Function} Buffer - Deserializes a Buffer from its base64-encoded string representation.
+   * @property {Function} regexp - Deserializes a regular expression from its string representation (e.g., `/pattern/flags`).
+   * @property {Function} htmlelement - Deserializes an HTML element from its serialized outerHTML string (only works in browser environments).
+   * @property {Function} date - Deserializes a date from its ISO string representation.
+   * @property {Function} bigint - Deserializes a BigInt from its string representation.
+   * @property {Function} number - Deserializes a number from its string or numeric representation.
+   * @property {Function} boolean - Deserializes a boolean value from its string representation.
+   * @property {Function} null - Deserializes the `null` value.
+   * @property {Function} undefined - Deserializes the `undefined` value.
+   * @property {Function} map - Deserializes a Map from an array of key-value pairs.
+   * @property {Function} set - Deserializes a Set from an array of values.
+   * @property {Function} symbol - Deserializes a Symbol from its string description.
+   * @property {Function} array - Deserializes an array from its serialized representation.
+   * @property {Function} object - Deserializes a plain JSON object from its serialized representation.
+   * @property {Function} string - Deserializes a string from its serialized representation.
+   * @property {Function} buffer - Deserializes a Buffer from its base64-encoded string representation.
    */
   #valueTypes = {
-    RegExp: (value) => {
+    regexp: (value) => {
       const match = value.match(/^\/(.*)\/([gimsuy]*)$/);
       return match ? new RegExp(match[1], match[2]) : new RegExp(value);
     },
-    HTMLElement: (value) => {
+    htmlelement: (value) => {
       if (typeof document === 'undefined')
         throw new Error('HTMLElement deserialization is only supported in browsers');
       const div = document.createElement('div');
       div.innerHTML = value;
       return div.firstElementChild;
     },
-    Date: (value) => new Date(value),
-    BigInt: (value) => BigInt(value),
-    Number: (value) => Number(value),
-    Boolean: (value) => Boolean(value),
-    Null: (value) => null,
-    Undefined: (value) => undefined,
-    Map: (value) => new Map(value),
-    Set: (value) => new Set(value),
-    Symbol: (value) => Symbol(value),
-    Array: (value) => value,
-    JSON: (value) => value,
-    String: (value) => String(value),
-    Buffer: (value) => Buffer.from(value, 'base64'),
+    date: (value) => new Date(value),
+    bigint: (value) => BigInt(value),
+    number: (value) => Number(value),
+    boolean: (value) => Boolean(value),
+    null: (value) => null,
+    undefined: (value) => undefined,
+    map: (value) => new Map(value),
+    set: (value) => new Set(value),
+    symbol: (value) => Symbol(value),
+    array: (value) => value,
+    object: (value) => value,
+    string: (value) => String(value),
+    buffer: (value) => Buffer.from(value, 'base64'),
   };
 
   /**
@@ -562,7 +562,7 @@ class TinyCrypto {
       const parsed = JSON.parse(text);
       const type = parsed.__type;
 
-      if (typeof type !== 'string') return { value: text, type: 'String' };
+      if (typeof type !== 'string') return { value: text, type: 'string' };
       if (typeof this.#valueTypes[type] === 'function')
         return {
           value: this.#valueTypes[type](parsed.value),
@@ -584,10 +584,8 @@ class TinyCrypto {
    * @throws {Error} If the types do not match.
    */
   #validateDeserializedType(expected, actual) {
-    if (expected.toLowerCase() !== actual.toLowerCase())
-      throw new Error(
-        `Type mismatch: expected ${expected.toLowerCase()}, but got ${actual.toLowerCase()}`,
-      );
+    if (expected !== actual)
+      throw new Error(`Type mismatch: expected ${expected}, but got ${actual}`);
   }
 }
 

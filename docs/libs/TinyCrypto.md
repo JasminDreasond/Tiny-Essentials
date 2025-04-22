@@ -79,7 +79,7 @@ const result = crypto.encrypt('Hello!');
 Decrypts a previously encrypted value and returns the original data. You can optionally pass an `expectedType` to validate it.
 
 ```js
-const plain = crypto.decrypt(result, 'String');
+const plain = crypto.decrypt(result, 'string');
 ```
 
 ---
