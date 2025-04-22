@@ -136,7 +136,7 @@ Returns an object with the current settings:
   "outputEncoding": "hex",
   "inputEncoding": "utf8",
   "authTagLength": 16,
-  "key": "..." // hex string
+  "key": "..."
 }
 ```
 
