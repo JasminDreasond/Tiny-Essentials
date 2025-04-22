@@ -21,6 +21,7 @@
 - ⏱️ **Time Calculations**: Easily calculate durations, format timers, and more.
 - 🧠 **Object Utilities**: Perform type checks, count object properties, and calculate percentages.
 - 🛠️ **Custom Utilities**: Includes various helper functions like `ruleOfThree` for proportion calculations and `getAge` to calculate the age based on a given birth date.
+- 🔐 **Encryption Tools**: Use `TinyCrypto` to securely encrypt and decrypt values using AES-256-GCM, with full support for complex JavaScript data types like RegExp, Date, Buffer, and DOM elements (in browsers).
 
 ## 📦 Installation
 
