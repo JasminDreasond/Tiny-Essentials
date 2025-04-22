@@ -6,14 +6,14 @@ import { objType } from '../../v1/basics/objFilter.mjs';
 const isBrowser = typeof window !== 'undefined' && typeof window.document !== 'undefined';
 
 /**
- * CryptoHelper is a utility class that provides methods for secure key generation,
+ * TinyCrypto is a utility class that provides methods for secure key generation,
  * encryption, and decryption of data. It also allows for serialization
  * and deserialization of complex data types, and offers methods to save and load encryption
  * configurations and keys from files.
  *
  * @class
  */
-class CryptoHelper {
+class TinyCrypto {
   /**
    * Creates a new instance of the CryptoManager class with configurable options.
    *
@@ -591,4 +591,4 @@ class CryptoHelper {
   }
 }
 
-export default CryptoHelper;
+export default TinyCrypto;

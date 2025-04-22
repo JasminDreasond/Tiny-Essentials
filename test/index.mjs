@@ -1,5 +1,5 @@
 import * as TinyEssentials from '../dist/v1/index.mjs';
-import './libs/CryptoHelper.mjs';
+import './libs/TinyCrypto.mjs';
 
 console.log(TinyEssentials.objType({}));
 console.log(TinyEssentials.objType([]));

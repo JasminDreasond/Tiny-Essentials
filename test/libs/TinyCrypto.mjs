@@ -3,10 +3,10 @@
  * This includes primitives, complex types, and expected serialization failures.
  */
 
-import { CryptoHelper } from '../../dist/v1/index.mjs';
+import { TinyCrypto } from '../../dist/v1/index.mjs';
 
 // Instancia padrão
-const crypto = new CryptoHelper();
+const crypto = new TinyCrypto();
 
 /**
  * Lista de valores para testar criptografia/criptografia reversa

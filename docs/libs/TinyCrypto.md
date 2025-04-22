@@ -1,8 +1,8 @@
-# 🔐 Crypto Helper
+# 🔐 Tiny Crypto
 
-**Crypto Helper** is a flexible and browser-compatible encryption utility class built for AES-256-GCM encryption with full support for serialization and deserialization of complex JavaScript data types.
+**Tiny Crypto** is a flexible and browser-compatible encryption utility class built for AES-256-GCM encryption with full support for serialization and deserialization of complex JavaScript data types.
 
-Whether you're in Node.js or a browser, Crypto Helper helps you easily encrypt/decrypt values, save/load configurations, and keep your secrets safe — all while supporting real-world usage like RegExp, Date, Buffer, and even DOM elements (in browsers only)!
+Whether you're in Node.js or a browser, Tiny Crypto helps you easily encrypt/decrypt values, save/load configurations, and keep your secrets safe — all while supporting real-world usage like RegExp, Date, Buffer, and even DOM elements (in browsers only)!
 
 ---
 
@@ -20,7 +20,7 @@ Whether you're in Node.js or a browser, Crypto Helper helps you easily encrypt/d
 ## 🚀 Getting Started
 
 ```js
-const crypto = new CryptoHelper();
+const crypto = new TinyCrypto();
 
 // Encrypt some data
 const { encrypted, iv, authTag } = crypto.encrypt({ hello: 'world' });

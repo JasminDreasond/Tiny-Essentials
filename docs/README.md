@@ -12,7 +12,7 @@ Here, you can navigate through different sections of the project. Below are the 
 
 This folder contains external libraries and utility modules that are designed to help with various tasks and features in the project.
 
-- 🔐 **[CryptoHelper.md](./libs/CryptoHelper.md)** — A flexible and browser-compatible AES-256-GCM encryption utility with support for complex JavaScript types like `Date`, `RegExp`, `Buffer`, and even DOM elements (in the browser).
+- 🔐 **[TinyCrypto.md](./libs/TinyCrypto.md)** — A flexible and browser-compatible AES-256-GCM encryption utility with support for complex JavaScript types like `Date`, `RegExp`, `Buffer`, and even DOM elements (in the browser).
 
 ---
 
