@@ -71,7 +71,7 @@ const typeValidator = {
     buffer: (val) => typeof Buffer !== 'undefined' && Buffer.isBuffer(val),
 
     /** Checks if the value is a Html Element. */
-    htmlElement: (val) => typeof HTMLElement !== 'undefined' && val instanceof HTMLElement,
+    htmlelement: (val) => typeof HTMLElement !== 'undefined' && val instanceof HTMLElement,
 
     /** Checks if the value is a non-null plain object or instance of a class. */
     object: (val) => typeof val === 'object' && val !== null,
@@ -96,7 +96,7 @@ const typeValidator = {
     'weakmap',
     'weakset',
     'promise',
-    'htmlElement',
+    'htmlelement',
     'object',
   ],
 };
