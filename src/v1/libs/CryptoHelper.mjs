@@ -186,7 +186,7 @@ class CryptoHelper {
     decrypted += decipher.final(this.inputEncoding);
 
     const { type } = this.#deserialize(decrypted);
-    return typeof type === 'string' ? type.toLocaleLowerCase() : 'unknown';
+    return typeof type === 'string' ? type.toLowerCase() : 'unknown';
   }
 
   /**
@@ -584,8 +584,10 @@ class CryptoHelper {
    * @throws {Error} If the types do not match.
    */
   #validateDeserializedType(expected, actual) {
-    if (expected !== actual)
-      throw new Error(`Type mismatch: expected ${expected}, but got ${actual}`);
+    if (expected.toLowerCase() !== actual.toLowerCase())
+      throw new Error(
+        `Type mismatch: expected ${expected.toLowerCase()}, but got ${actual.toLowerCase()}`,
+      );
   }
 }
 
