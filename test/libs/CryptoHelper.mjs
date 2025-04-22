@@ -78,11 +78,13 @@ const colors = {
     try {
       const encrypted = crypto.encrypt(test.value);
       const decrypted = crypto.decrypt(encrypted);
+      const type = crypto.getTypeFromEncrypted(encrypted);
 
       console.log(`${colors.green}✅ ${colors.bold}${test.label}${colors.reset}`);
       console.log(
         `${colors.yellow}  Encrypted:${colors.reset}\n${colors.gray}${JSON.stringify(encrypted, null, 2)}${colors.reset}`,
       );
+      console.log(`${colors.blue}  Type:${colors.reset}`, type);
       console.log(`${colors.blue}  Decrypted:${colors.reset}`, decrypted);
     } catch (err) {
       console.log(
