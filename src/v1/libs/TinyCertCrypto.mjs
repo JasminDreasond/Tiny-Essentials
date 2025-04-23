@@ -233,17 +233,26 @@ class TinyCertCrypto {
   }
 
   #loadX509Certificate(certPem) {
-    const { pki } = this.forge;
     try {
+      const { pki } = this.forge;
       const cert = typeof certPem === 'string' ? pki.certificateFromPem(certPem) : certPem;
+      const insertData = (attributes) => {
+        const names = {};
+        const shortNames = {};
+        const raw = attributes.map((attr) => `${attr.shortName}=${attr.value}`).join(', ');
+        for (const item of attributes) {
+          names[item.name] = item.value;
+          shortNames[item.shortName] = item.value;
+        }
+        return { names, shortNames, raw };
+      };
+
       this.metadata = {
-        subject: cert.subject.attributes
-          .map((attr) => `${attr.shortName}=${attr.value}`)
-          .join(', '),
-        issuer: cert.issuer.attributes.map((attr) => `${attr.shortName}=${attr.value}`).join(', '),
+        subject: insertData(cert.subject.attributes),
+        issuer: insertData(cert.issuer.attributes),
         serialNumber: cert.serialNumber,
-        validFrom: cert.validity.notBefore.toISOString(),
-        validTo: cert.validity.notAfter.toISOString(),
+        validFrom: cert.validity.notBefore,
+        validTo: cert.validity.notAfter,
       };
     } catch (err) {
       throw new Error('Failed to parse X.509 certificate in browser: ' + err.message);
