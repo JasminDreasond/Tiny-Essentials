@@ -1,6 +1,7 @@
 # Remove original repository data
 src
 test
+temp
 .babelrc
 .prettierignore
 .prettierrc.json

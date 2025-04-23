@@ -17,9 +17,11 @@ import {
 import { getAge, getSimplePerc, ruleOfThree } from './basics/simpleMath.mjs';
 import { toTitleCase, toTitleCaseLowerFirst } from './basics/text.mjs';
 import TinyCrypto from './libs/TinyCrypto.mjs';
+import TinyCertCrypto from './libs/TinyCertCrypto.mjs';
 
 export {
   TinyCrypto,
+  TinyCertCrypto,
   TinyLevelUp,
   extendObjType,
   reorderObjTypeOrder,

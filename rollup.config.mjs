@@ -55,6 +55,7 @@ export default [
   {
     input: 'src/v1/index.mjs',
     output: {
+      inlineDynamicImports: true,
       file: 'dist/TinyEssentials.min.js',
       format: 'iife',
       name: 'TinyEssentials',
