@@ -3,7 +3,15 @@ import fs from 'fs';
 import { Buffer } from 'buffer';
 import { objType } from '../../v1/basics/objFilter.mjs';
 
-// Detecta se estamos no browser
+/**
+ * Determines if the environment is a browser.
+ *
+ * This constant checks if the code is running in a browser environment by verifying if
+ * the `window` object and the `window.document` object are available. It will return `true`
+ * if the environment is a browser, and `false` otherwise (e.g., in a Node.js environment).
+ *
+ * @constant {boolean}
+ */
 const isBrowser = typeof window !== 'undefined' && typeof window.document !== 'undefined';
 
 /**
