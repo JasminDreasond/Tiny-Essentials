@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer';
+
 /**
  * An object containing type validation functions and their evaluation order.
  *

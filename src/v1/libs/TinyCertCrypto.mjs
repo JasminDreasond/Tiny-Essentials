@@ -1,5 +1,6 @@
 import fs from 'fs';
 import crypto from 'crypto';
+import { Buffer } from 'buffer';
 
 const isBrowser = typeof window !== 'undefined' && typeof window.document !== 'undefined';
 

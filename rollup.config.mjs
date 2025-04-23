@@ -1,9 +1,7 @@
 import resolve from '@rollup/plugin-node-resolve';
 import json from '@rollup/plugin-json';
 import commonjs from '@rollup/plugin-commonjs';
-import terser from '@rollup/plugin-terser';
 import preserveDirectories from 'rollup-preserve-directives';
-import nodePolyfills from 'rollup-plugin-polyfill-node';
 
 import fs from 'fs';
 import path from 'path';
@@ -33,7 +31,6 @@ const plugins = [
 ];
 
 export default [
-  // CJS
   {
     external: [
       ...Object.keys(pkg.dependencies || {}), 
@@ -49,34 +46,5 @@ export default [
       entryFileNames: '[name].cjs'
     },
     plugins,
-  },
-
-  // IIFE (browser)
-  {
-    input: 'src/v1/index.mjs',
-    output: {
-      inlineDynamicImports: true,
-      file: 'dist/TinyEssentials.min.js',
-      format: 'iife',
-      name: 'TinyEssentials',
-      sourcemap: false,
-      globals: {
-        'lodash': '_',
-      }
-    },
-    plugins: [
-      nodePolyfills(),
-      resolve({
-        browser: true,
-        preferBuiltins: false
-      }),
-      json(),
-      commonjs(),
-      terser({
-        format: {
-          comments: false,
-        },
-      }),
-    ]
   }
 ];

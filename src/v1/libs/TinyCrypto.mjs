@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import fs from 'fs';
+import { Buffer } from 'buffer';
 import { objType } from '../../v1/basics/objFilter.mjs';
 
 // Detecta se estamos no browser
