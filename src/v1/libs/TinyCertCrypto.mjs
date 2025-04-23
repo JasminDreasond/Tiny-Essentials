@@ -79,7 +79,7 @@ class TinyCertCrypto {
       randomBytesLength,
     );
 
-    this.#loadX509Certificate(cert);
+    await this.#loadX509Certificate(cert);
     return { publicKey, privateKey, cert };
   }
 
@@ -120,7 +120,7 @@ class TinyCertCrypto {
         : fs.readFileSync(this.publicCertPath, 'utf-8');
 
       this.publicKey = crypto.createPublicKey(publicPem);
-      this.#loadX509Certificate(publicPem);
+      await this.#loadX509Certificate(publicPem);
 
       if (this.privateKeyPath || this.privateKeyBuffer) {
         const privatePem = usedPrivateBuffer
@@ -151,7 +151,7 @@ class TinyCertCrypto {
         ['encrypt'],
       );
 
-      this.#loadX509Certificate(publicPem);
+      await this.#loadX509Certificate(publicPem);
 
       if (this.privateKeyPath || this.privateKeyBuffer) {
         const privatePem = this.privateKeyBuffer
@@ -176,19 +176,36 @@ class TinyCertCrypto {
     }
   }
 
-  #loadX509Certificate(certPem) {
-    if (!isBrowser) this.publicCert = new crypto.X509Certificate(certPem);
-    else {
-      this.metadata = {};
+  async #loadX509Certificate(certPem) {
+    if (!isBrowser) {
+      this.publicCert = new crypto.X509Certificate(certPem);
+      this.metadata = {
+        subject: this.publicCert.subject,
+        issuer: this.publicCert.issuer,
+        serialNumber: this.publicCert.serialNumber,
+        validFrom: this.publicCert.validFrom,
+        validTo: this.publicCert.validTo,
+      };
+    } else {
+      const forge = await import('node-forge');
+      const { pki } = forge.default;
+      try {
+        const cert = pki.certificateFromPem(certPem);
+        this.metadata = {
+          subject: cert.subject.attributes
+            .map((attr) => `${attr.shortName}=${attr.value}`)
+            .join(', '),
+          issuer: cert.issuer.attributes
+            .map((attr) => `${attr.shortName}=${attr.value}`)
+            .join(', '),
+          serialNumber: cert.serialNumber,
+          validFrom: cert.validity.notBefore.toISOString(),
+          validTo: cert.validity.notAfter.toISOString(),
+        };
+      } catch (err) {
+        throw new Error('Failed to parse X.509 certificate in browser: ' + err.message);
+      }
     }
-
-    this.metadata = {
-      subject: this.publicCert.subject,
-      issuer: this.publicCert.issuer,
-      serialNumber: this.publicCert.serialNumber,
-      validFrom: this.publicCert.validFrom,
-      validTo: this.publicCert.validTo,
-    };
   }
 
   extractCertMetadata() {
