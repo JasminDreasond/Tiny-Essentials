@@ -5,7 +5,8 @@ import { Buffer } from 'buffer';
 const isBrowser = typeof window !== 'undefined' && typeof window.document !== 'undefined';
 
 class TinyCertCrypto {
-  #certRegex =
+  #certRegex = /-----BEGIN CERTIFICATE-----([\s\S]+?)-----END CERTIFICATE-----/;
+  #keyRegex =
     /-----BEGIN\s+(?:RSA\s+)?(PUBLIC|PRIVATE)\s+KEY-----([\s\S]+?)-----END\s+(?:RSA\s+)?\1\s+KEY-----/;
 
   constructor({
@@ -13,6 +14,7 @@ class TinyCertCrypto {
     privateKeyPath = null,
     publicCertBuffer = null,
     privateKeyBuffer = null,
+    cryptoType = 'RSA-OAEP',
   } = {}) {
     if (!publicCertPath && !publicCertBuffer && isBrowser)
       throw new Error('In browser, publicCertPath or publicCertBuffer must be provided');
@@ -32,6 +34,7 @@ class TinyCertCrypto {
       throw new TypeError('privateKeyBuffer must be a string or Buffer');
 
     this.source = null;
+    this.cryptoType = cryptoType;
     this.publicCertPath = publicCertPath;
     this.privateKeyPath = privateKeyPath;
     this.publicCertBuffer = publicCertBuffer;
@@ -40,12 +43,43 @@ class TinyCertCrypto {
     this.privateKey = null;
     this.publicCert = null;
     this.metadata = null;
+    this.forge = null;
+  }
+
+  async #fetchNodeForge() {
+    if (!this.forge) {
+      const forge = await import(/* webpackMode: "eager" */ 'node-forge');
+      this.forge = forge.default;
+    }
+    return this.#getNodeForge();
+  }
+
+  async fetchNodeForge() {
+    return this.#fetchNodeForge();
+  }
+
+  #getNodeForge() {
+    return this.forge;
+  }
+
+  getNodeForge() {
+    return this.#getNodeForge();
+  }
+
+  #detectPemType(pemString) {
+    if (this.#certRegex.test(pemString)) return 'certificate';
+    const keyMatch = this.#keyRegex.exec(pemString);
+    if (keyMatch) return keyMatch[1].toLowerCase() + '_key'; // "public_key" or "private_key"
+    return 'unknown';
   }
 
   async generateX509Cert(subjectFields, options = {}) {
+    // Errors
     if (this.publicKey || this.privateKey || this.publicCert)
       throw new Error('A certificate is already loaded into the instance.');
 
+    // Prepare cert
+    const { pki } = await this.#fetchNodeForge();
     const {
       modulusLength = 2048,
       publicKeyEncoding = { type: 'spki', format: 'pem' },
@@ -54,25 +88,22 @@ class TinyCertCrypto {
       randomBytesLength = 16,
     } = options;
 
+    // Value types
     const publicKeyType = options.publicKeyType || publicKeyEncoding.type;
     const privateKeyType = options.privateKeyType || privateKeyEncoding.type;
 
+    // Validator
     if (isBrowser) throw new Error('generateKeyPair can only be used in Node.js environments');
+
+    // Generate keys
     const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
       modulusLength,
       publicKeyEncoding: { ...publicKeyEncoding, type: publicKeyType },
       privateKeyEncoding: { ...privateKeyEncoding, type: privateKeyType },
     });
 
-    this.publicKey = crypto.createPublicKey(publicKey);
-    this.privateKey = crypto.createPrivateKey(privateKey);
-    this.publicCertPath = 'MEMORY';
-    this.privateKeyPath = 'MEMORY';
-    this.source = 'memory';
-    this.publicCertBuffer = publicKey;
-    this.privateKeyBuffer = privateKey;
-
-    const cert = await this.#generateCertificate(
+    // Get pem files
+    const { cert, publicPem, privatePem } = this.#generateCertificate(
       subjectFields,
       publicKey,
       privateKey,
@@ -80,16 +111,27 @@ class TinyCertCrypto {
       randomBytesLength,
     );
 
-    await this.#loadX509Certificate(cert);
+    // Insert data
+    this.publicKey = publicPem;
+    this.privateKey = privatePem;
+
+    this.publicCertPath = 'MEMORY';
+    this.privateKeyPath = 'MEMORY';
+    this.source = 'memory';
+    this.publicCertBuffer = publicKey;
+    this.privateKeyBuffer = privateKey;
+
+    this.#loadX509Certificate(cert);
     return { publicKey, privateKey, cert };
   }
 
-  async #generateCertificate(subject, publicKey, privateKey, validityInYears, randomBytesLength) {
-    const forge = await import('node-forge');
-    const { pki } = forge.default;
+  #generateCertificate(subject, publicKey, privateKey, validityInYears, randomBytesLength) {
+    const { pki } = this.forge;
     const cert = pki.createCertificate();
+    const publicPem = pki.publicKeyFromPem(publicKey);
+    const privatePem = pki.privateKeyFromPem(privateKey);
 
-    cert.publicKey = pki.publicKeyFromPem(publicKey);
+    cert.publicKey = publicPem;
     cert.serialNumber = Buffer.from(crypto.randomBytes(randomBytesLength)).toString('hex');
     cert.validity.notBefore = new Date();
     cert.validity.notAfter = new Date();
@@ -100,29 +142,57 @@ class TinyCertCrypto {
 
     cert.setSubject(attrs);
     cert.setIssuer(attrs);
-    cert.sign(pki.privateKeyFromPem(privateKey));
-    return pki.certificateToPem(cert);
+    cert.sign(privatePem);
+    return { cert: pki.certificateToPem(cert), publicPem, privatePem };
   }
 
   async init() {
+    // Errors
     if (this.publicKey || this.privateKey || this.publicCert)
       throw new Error('A certificate is already loaded into the instance.');
 
     if (!this.publicCertPath && !this.publicCertBuffer)
       throw new Error('Public certificate is required to initialize');
 
+    // Load public key
+    this.metadata = {};
+    const { pki } = await this.#fetchNodeForge();
+    const loadPublicKey = (publicPem) => {
+      // File type
+      const fileType = this.#detectPemType(publicPem);
+
+      // Cert
+      if (fileType === 'certificate') {
+        const cert = pki.certificateFromPem(publicPem);
+        this.publicKey = cert.publicKey;
+        this.#loadX509Certificate(cert);
+      }
+
+      // Public key
+      else if (fileType === 'public_key') this.publicKey = pki.publicKeyFromPem(publicPem);
+      else throw new Error('Public key is required to initialize');
+    };
+
+    const loadPrivateKey = (privatePem) => {
+      const fileType = this.#detectPemType(privatePem);
+      if (fileType === 'private_key') this.privateKey = pki.privateKeyFromPem(privatePem);
+      else throw new Error('Private key is required to initialize');
+    };
+
+    // Nodejs
     if (!isBrowser) {
       const usedPublicBuffer = !!this.publicCertBuffer;
       const usedPrivateBuffer = !!this.privateKeyBuffer;
+
+      // Public key
       const publicPem = usedPublicBuffer
         ? typeof this.publicCertBuffer === 'string'
           ? this.publicCertBuffer
           : this.publicCertBuffer.toString('utf-8')
         : fs.readFileSync(this.publicCertPath, 'utf-8');
+      loadPublicKey(publicPem);
 
-      this.publicKey = crypto.createPublicKey(publicPem);
-      await this.#loadX509Certificate(publicPem);
-
+      // Private Key
       if (this.privateKeyPath || this.privateKeyBuffer) {
         const privatePem = usedPrivateBuffer
           ? typeof this.privateKeyBuffer === 'string'
@@ -130,82 +200,53 @@ class TinyCertCrypto {
             : this.privateKeyBuffer.toString('utf-8')
           : fs.readFileSync(this.privateKeyPath, 'utf-8');
 
-        this.privateKey = crypto.createPrivateKey(privatePem);
+        loadPrivateKey(privatePem);
       }
 
+      // Insert source
       this.source = this.publicCertBuffer || this.privateKeyBuffer ? 'memory' : 'file';
-    } else {
+    }
+
+    // Browser
+    else {
+      // Public key
       const publicPem = this.publicCertBuffer
         ? typeof this.publicCertBuffer === 'string'
           ? this.publicCertBuffer
           : new TextDecoder().decode(this.publicCertBuffer)
         : await fetch(this.publicCertPath).then((r) => r.text());
+      loadPublicKey(publicPem);
 
-      this.publicKey = await window.crypto.subtle.importKey(
-        'spki',
-        this.#pemToArrayBuffer(publicPem),
-        {
-          name: 'RSA-OAEP',
-          hash: 'SHA-256',
-        },
-        true,
-        ['encrypt'],
-      );
-
-      await this.#loadX509Certificate(publicPem);
-
+      // Private key
       if (this.privateKeyPath || this.privateKeyBuffer) {
         const privatePem = this.privateKeyBuffer
           ? typeof this.privateKeyBuffer === 'string'
             ? this.privateKeyBuffer
             : new TextDecoder().decode(this.privateKeyBuffer)
           : await fetch(this.privateKeyPath).then((r) => r.text());
-
-        this.privateKey = await window.crypto.subtle.importKey(
-          'pkcs8',
-          this.#pemToArrayBuffer(privatePem),
-          {
-            name: 'RSA-OAEP',
-            hash: 'SHA-256',
-          },
-          true,
-          ['decrypt'],
-        );
+        loadPrivateKey(privatePem);
       }
 
+      // Insert key
       this.source = 'url';
     }
   }
 
-  async #loadX509Certificate(certPem) {
-    if (!isBrowser) {
-      this.publicCert = new crypto.X509Certificate(certPem);
+  #loadX509Certificate(certPem) {
+    const { pki } = this.forge;
+    try {
+      const cert = typeof certPem === 'string' ? pki.certificateFromPem(certPem) : certPem;
       this.metadata = {
-        subject: this.publicCert.subject,
-        issuer: this.publicCert.issuer,
-        serialNumber: this.publicCert.serialNumber,
-        validFrom: this.publicCert.validFrom,
-        validTo: this.publicCert.validTo,
+        subject: cert.subject.attributes
+          .map((attr) => `${attr.shortName}=${attr.value}`)
+          .join(', '),
+        issuer: cert.issuer.attributes.map((attr) => `${attr.shortName}=${attr.value}`).join(', '),
+        serialNumber: cert.serialNumber,
+        validFrom: cert.validity.notBefore.toISOString(),
+        validTo: cert.validity.notAfter.toISOString(),
       };
-    } else {
-      const forge = await import('node-forge');
-      const { pki } = forge.default;
-      try {
-        const cert = pki.certificateFromPem(certPem);
-        this.metadata = {
-          subject: cert.subject.attributes
-            .map((attr) => `${attr.shortName}=${attr.value}`)
-            .join(', '),
-          issuer: cert.issuer.attributes
-            .map((attr) => `${attr.shortName}=${attr.value}`)
-            .join(', '),
-          serialNumber: cert.serialNumber,
-          validFrom: cert.validity.notBefore.toISOString(),
-          validTo: cert.validity.notAfter.toISOString(),
-        };
-      } catch (err) {
-        throw new Error('Failed to parse X.509 certificate in browser: ' + err.message);
-      }
+    } catch (err) {
+      throw new Error('Failed to parse X.509 certificate in browser: ' + err.message);
     }
   }
 
@@ -213,44 +254,19 @@ class TinyCertCrypto {
     return this.metadata || {};
   }
 
-  async encryptJson(jsonObject) {
+  encryptJson(jsonObject) {
     if (!this.publicKey)
       throw new Error('Public key is not initialized. Call init() or generateKeyPair() first.');
-
     const jsonString = JSON.stringify(jsonObject);
-    const data = new TextEncoder().encode(jsonString);
-
-    if (!isBrowser) {
-      const encrypted = crypto.publicEncrypt(this.publicKey, data);
-      return encrypted.toString('base64');
-    } else {
-      const encrypted = await window.crypto.subtle.encrypt(
-        { name: 'RSA-OAEP' },
-        this.publicKey,
-        data,
-      );
-      return btoa(String.fromCharCode(...new Uint8Array(encrypted)));
-    }
+    const encrypted = this.publicKey.encrypt(jsonString, this.cryptoType);
+    return this.forge.util.encode64(encrypted);
   }
 
-  async decryptToJson(encryptedBase64) {
+  decryptToJson(encryptedBase64) {
     if (!this.privateKey) throw new Error('Private key is required for decryption');
-
-    const data = !isBrowser
-      ? Buffer.from(encryptedBase64, 'base64')
-      : Uint8Array.from(atob(encryptedBase64), (c) => c.charCodeAt(0));
-
-    if (!isBrowser) {
-      const decrypted = crypto.privateDecrypt(this.privateKey, data);
-      return JSON.parse(decrypted.toString('utf-8'));
-    } else {
-      const decrypted = await window.crypto.subtle.decrypt(
-        { name: 'RSA-OAEP' },
-        this.privateKey,
-        data,
-      );
-      return JSON.parse(new TextDecoder().decode(decrypted));
-    }
+    const data = this.forge.util.decode64(encryptedBase64);
+    const decrypted = this.privateKey.decrypt(data, this.cryptoType);
+    return JSON.parse(decrypted);
   }
 
   hasKeys() {
@@ -263,17 +279,6 @@ class TinyCertCrypto {
     this.publicCert = null;
     this.metadata = null;
     this.source = null;
-  }
-
-  #pemToArrayBuffer(pem) {
-    const match = pem.match(this.#certRegex);
-    if (!match) throw new Error('Invalid PEM format');
-
-    const b64 = match[2].replace(/\s/g, '');
-    const byteStr = atob(b64);
-    const bytes = new Uint8Array(byteStr.length);
-    for (let i = 0; i < byteStr.length; i++) bytes[i] = byteStr.charCodeAt(i);
-    return bytes.buffer;
   }
 }
 

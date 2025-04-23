@@ -23,19 +23,11 @@ function getAllInputFiles(dir = 'src') {
 const inputFiles = getAllInputFiles();
 
 // Prepare Plugins
-const plugins = [
-  resolve({ preferBuiltins: true }),
-  json(),
-  commonjs(),
-  preserveDirectories(),
-];
+const plugins = [resolve({ preferBuiltins: true }), json(), commonjs(), preserveDirectories()];
 
 export default [
   {
-    external: [
-      ...Object.keys(pkg.dependencies || {}), 
-      ...Object.keys(pkg.devDependencies || {})
-    ],
+    external: [...Object.keys(pkg.dependencies || {}), ...Object.keys(pkg.devDependencies || {})],
     input: inputFiles,
     output: {
       dir: 'dist',
@@ -43,8 +35,8 @@ export default [
       sourcemap: false,
       preserveModules: true,
       preserveModulesRoot: 'src',
-      entryFileNames: '[name].cjs'
+      entryFileNames: '[name].cjs',
     },
     plugins,
-  }
+  },
 ];
