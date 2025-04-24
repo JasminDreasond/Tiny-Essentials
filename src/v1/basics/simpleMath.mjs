@@ -60,7 +60,7 @@ export function getSimplePerc(price, percentage) {
 export function getAge(timeData = 0, now = null) {
   if (typeof timeData !== 'undefined' && timeData !== null && timeData !== 0) {
     const birthDate = new Date(timeData);
-    if (isNaN(birthDate)) return null;
+    if (Number.isNaN(birthDate.getTime())) return null;
 
     const currentDate = now instanceof Date ? now : new Date();
 

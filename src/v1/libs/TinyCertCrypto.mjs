@@ -1,5 +1,4 @@
-import fs from 'fs';
-import crypto from 'crypto';
+import * as fs from 'fs';
 import { Buffer } from 'buffer';
 
 /**
@@ -31,7 +30,6 @@ class TinyCertCrypto {
    * It supports multi-line content.
    *
    * @type {RegExp}
-   * @private
    */
   #certRegex = /-----BEGIN CERTIFICATE-----([\s\S]+?)-----END CERTIFICATE-----/;
 
@@ -44,7 +42,6 @@ class TinyCertCrypto {
    * It captures the key type (PUBLIC|PRIVATE) and the base64 content.
    *
    * @type {RegExp}
-   * @private
    */
   #keyRegex =
     /-----BEGIN\s+(?:RSA\s+)?(PUBLIC|PRIVATE)\s+KEY-----([\s\S]+?)-----END\s+(?:RSA\s+)?\1\s+KEY-----/;
@@ -112,10 +109,10 @@ class TinyCertCrypto {
    * This method is private and should not be called directly from outside.
    *
    * @returns {Promise<Object>} The loaded `node-forge` module.
-   * @private
    */
   async #fetchNodeForge() {
     if (!this.forge) {
+      // @ts-ignore
       const forge = await import(/* webpackMode: "eager" */ 'node-forge');
       this.forge = forge.default;
     }
@@ -137,7 +134,6 @@ class TinyCertCrypto {
    * Assumes the module has already been loaded.
    *
    * @returns {Object} The `node-forge` module.
-   * @private
    */
   #getNodeForge() {
     return this.forge;
@@ -160,13 +156,12 @@ class TinyCertCrypto {
    * or `'unknown'` if the format is not recognized.
    *
    * @param {string} pemString - The PEM string to inspect.
-   * @returns {'certificate' | 'public_key' | 'private_key' | 'unknown'} The detected PEM type.
-   * @private
+   * @returns {string} The detected PEM type.
    */
   #detectPemType(pemString) {
     if (this.#certRegex.test(pemString)) return 'certificate';
     const keyMatch = this.#keyRegex.exec(pemString);
-    if (keyMatch) return keyMatch[1].toLowerCase() + '_key'; // "public_key" or "private_key"
+    if (keyMatch && typeof keyMatch[1] === 'string') return keyMatch[1].toLowerCase() + '_key'; // "public_key" or "private_key"
     return 'unknown';
   }
 
@@ -176,13 +171,9 @@ class TinyCertCrypto {
    * This method can only be used in Node.js environments. It throws an error if a certificate
    * or key is already loaded into the instance.
    *
-   * @param {Object} subjectFields - An object representing the subject fields of the certificate (e.g., CN, O, C).
+   * @param {Object<string, string>} subjectFields - An object representing the subject fields of the certificate (e.g., CN, O, C).
    * @param {Object} [options={}] - Optional configuration for key and certificate generation.
    * @param {number} [options.modulusLength=2048] - Length of the RSA key in bits.
-   * @param {Object} [options.publicKeyEncoding={ type: 'spki', format: 'pem' }] - Options for public key encoding.
-   * @param {Object} [options.privateKeyEncoding={ type: 'pkcs8', format: 'pem' }] - Options for private key encoding.
-   * @param {string} [options.publicKeyType] - Overrides `publicKeyEncoding.type` if provided.
-   * @param {string} [options.privateKeyType] - Overrides `privateKeyEncoding.type` if provided.
    * @param {number} [options.validityInYears=1] - Number of years the certificate will be valid.
    * @param {number} [options.randomBytesLength=16] - Number of random bytes to use for serial number generation.
    *
@@ -195,34 +186,26 @@ class TinyCertCrypto {
       throw new Error('A certificate is already loaded into the instance.');
 
     // Prepare cert
+    /**  @type {any} */
     const { pki } = await this.#fetchNodeForge();
-    const {
-      modulusLength = 2048,
-      publicKeyEncoding = { type: 'spki', format: 'pem' },
-      privateKeyEncoding = { type: 'pkcs8', format: 'pem' },
-      validityInYears = 1,
-      randomBytesLength = 16,
-    } = options;
 
-    // Value types
-    const publicKeyType = options.publicKeyType || publicKeyEncoding.type;
-    const privateKeyType = options.privateKeyType || privateKeyEncoding.type;
-
-    // Validator
-    if (isBrowser) throw new Error('generateKeyPair can only be used in Node.js environments');
+    /**
+     * @property {number} [modulusLength=2048] - The length of the RSA modulus (in bits). Default is 2048.
+     * @property {number} [validityInYears=1] - The validity period of the key pair in years. Default is 1 year.
+     * @property {number} [randomBytesLength=16] - The length of random bytes used in key generation. Default is 16 bytes.
+     */
+    const { modulusLength = 2048, validityInYears = 1, randomBytesLength = 16 } = options;
 
     // Generate keys
-    const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
-      modulusLength,
-      publicKeyEncoding: { ...publicKeyEncoding, type: publicKeyType },
-      privateKeyEncoding: { ...privateKeyEncoding, type: privateKeyType },
-    });
+    const { publicKey, privateKey } = pki.rsa.generateKeyPair(modulusLength);
+    const encodedPublicKey = pki.publicKeyToPem(publicKey);
+    const encodedPrivateKey = pki.privateKeyToPem(privateKey);
 
     // Get pem files
     const { cert, publicPem, privatePem } = this.#generateCertificate(
       subjectFields,
-      publicKey,
-      privateKey,
+      encodedPublicKey,
+      encodedPrivateKey,
       validityInYears,
       randomBytesLength,
     );
@@ -234,12 +217,19 @@ class TinyCertCrypto {
     this.publicCertPath = 'MEMORY';
     this.privateKeyPath = 'MEMORY';
     this.source = 'memory';
-    this.publicCertBuffer = publicKey;
-    this.privateKeyBuffer = privateKey;
+    this.publicCertBuffer = Buffer.from(encodedPublicKey);
+    this.privateKeyBuffer = Buffer.from(encodedPrivateKey);
 
     this.#loadX509Certificate(cert);
-    return { publicKey, privateKey, cert };
+    return { publicKey: encodedPublicKey, privateKey: encodedPrivateKey, cert };
   }
+
+  /**
+   * @typedef {Object} CertificateDetails
+   * @property {string} cert - The certificate in PEM format.
+   * @property {string} publicPem - The public key in PEM format.
+   * @property {string} privatePem - The private key in PEM format.
+   */
 
   /**
    * Generates a self-signed X.509 certificate using the given public and private RSA keys.
@@ -247,13 +237,13 @@ class TinyCertCrypto {
    * This method creates a certificate, assigns the subject and issuer fields,
    * sets the validity period, and signs it with the private key.
    *
-   * @param {Object} subject - An object representing the subject/issuer fields (e.g., { CN: 'example.com' }).
+   * @param {Object<string, string>} subject - An object representing the subject/issuer fields (e.g., { CN: 'example.com' }).
    * @param {string} publicKey - The public key in PEM format.
    * @param {string} privateKey - The private key in PEM format.
    * @param {number} validityInYears - Number of years the certificate will remain valid.
    * @param {number} randomBytesLength - Number of random bytes used to generate the serial number.
    *
-   * @returns {Object} An object containing:
+   * @returns {CertificateDetails} An object containing:
    *   - {string} cert: The generated certificate in PEM format.
    *   - {Object} publicPem: The parsed public key object (from node-forge).
    *   - {Object} privatePem: The parsed private key object (from node-forge).
@@ -265,7 +255,9 @@ class TinyCertCrypto {
     const privatePem = pki.privateKeyFromPem(privateKey);
 
     cert.publicKey = publicPem;
-    cert.serialNumber = Buffer.from(crypto.randomBytes(randomBytesLength)).toString('hex');
+    cert.serialNumber = Buffer.from(this.forge.random.getBytesSync(randomBytesLength)).toString(
+      'hex',
+    );
     cert.validity.notBefore = new Date();
     cert.validity.notAfter = new Date();
     cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + validityInYears);
@@ -306,8 +298,21 @@ class TinyCertCrypto {
 
     // Load public key
     this.metadata = {};
+    /**  @type {any} */
     const { pki } = await this.#fetchNodeForge();
+
+    /**
+     * Loads the public key from a PEM-encoded certificate or public key.
+     *
+     * @param {string|null} publicPem - The PEM-encoded public key or certificate.
+     * @throws {Error} If the PEM string is not recognized or if the key cannot be parsed.
+     */
     const loadPublicKey = (publicPem) => {
+      if (typeof publicPem !== 'string')
+        throw new Error(
+          'Expected publicPem to be a string containing a PEM-encoded key or certificate.',
+        );
+
       // File type
       const fileType = this.#detectPemType(publicPem);
 
@@ -323,11 +328,28 @@ class TinyCertCrypto {
       else throw new Error('Public key is required to initialize');
     };
 
+    /**
+     * Loads the private key from a PEM-encoded private key.
+     *
+     * @param {string|null} privatePem - The PEM-encoded private key.
+     * @throws {Error} If the PEM string is not recognized or if the key cannot be parsed.
+     */
     const loadPrivateKey = (privatePem) => {
+      if (typeof privatePem !== 'string')
+        throw new Error('Expected privatePem to be a string containing a PEM-encoded private key.');
       const fileType = this.#detectPemType(privatePem);
       if (fileType === 'private_key') this.privateKey = pki.privateKeyFromPem(privatePem);
       else throw new Error('Private key is required to initialize');
     };
+
+    if (typeof this.publicCertPath !== 'string')
+      throw new TypeError(
+        `Expected 'publicCertPath' to be a string, but got ${typeof this.publicCertPath}`,
+      );
+    if (typeof this.privateKeyPath !== 'string')
+      throw new TypeError(
+        `Expected 'privateKeyPath' to be a string, but got ${typeof this.privateKeyPath}`,
+      );
 
     // Nodejs
     if (!isBrowser) {
@@ -338,7 +360,9 @@ class TinyCertCrypto {
       const publicPem = usedPublicBuffer
         ? typeof this.publicCertBuffer === 'string'
           ? this.publicCertBuffer
-          : this.publicCertBuffer.toString('utf-8')
+          : Buffer.isBuffer(this.publicCertBuffer)
+            ? this.publicCertBuffer.toString('utf-8')
+            : null
         : fs.readFileSync(this.publicCertPath, 'utf-8');
       loadPublicKey(publicPem);
 
@@ -347,7 +371,9 @@ class TinyCertCrypto {
         const privatePem = usedPrivateBuffer
           ? typeof this.privateKeyBuffer === 'string'
             ? this.privateKeyBuffer
-            : this.privateKeyBuffer.toString('utf-8')
+            : Buffer.isBuffer(this.privateKeyBuffer)
+              ? this.privateKeyBuffer.toString('utf-8')
+              : null
           : fs.readFileSync(this.privateKeyPath, 'utf-8');
 
         loadPrivateKey(privatePem);
@@ -389,7 +415,6 @@ class TinyCertCrypto {
    * This method supports both PEM strings and already-parsed Forge certificate objects.
    * The parsed certificate is saved to `this.publicCert` and its metadata is extracted to `this.metadata`.
    *
-   * @private
    * @param {string|object} certPem - A PEM-encoded certificate string or a `forge.pki.Certificate` object.
    * @throws {Error} If the certificate cannot be parsed or processed.
    */
@@ -399,8 +424,21 @@ class TinyCertCrypto {
       const cert = typeof certPem === 'string' ? pki.certificateFromPem(certPem) : certPem;
       this.publicCert = cert;
 
+      /**
+       * @typedef {Object} Attribute
+       * @property {string} name - The name of the attribute.
+       * @property {string} shortName - The short name of the attribute.
+       * @property {string} value - The value of the attribute.
+       */
+
+      /**
+       * @param {Array<Attribute>} attributes - The list of attributes, each containing `name`, `shortName`, and `value`.
+       * @returns {{names: { [key: string]: string }, shortNames: { [key: string]: string }, raw: string}} The processed data containing the organized attributes.
+       */
       const insertData = (attributes) => {
+        /** @type {{[key: string]: string}} */
         const names = {};
+        /** @type {{[key: string]: string}} */
         const shortNames = {};
         const raw = attributes.map((attr) => `${attr.shortName}=${attr.value}`).join(',');
         for (const item of attributes) {
@@ -418,7 +456,9 @@ class TinyCertCrypto {
         validTo: cert.validity.notAfter,
       };
     } catch (err) {
-      throw new Error('Failed to parse X.509 certificate in browser: ' + err.message);
+      throw new Error(
+        `Failed to parse X.509 certificate in browser: ${err instanceof Error && typeof err.message === 'string' ? err.message : 'Unknown error'}`,
+      );
     }
   }
 

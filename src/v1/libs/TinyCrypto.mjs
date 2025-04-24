@@ -1,5 +1,5 @@
-import crypto from 'crypto';
-import fs from 'fs';
+import { randomBytes, createDecipheriv, createCipheriv } from 'crypto';
+import * as fs from 'fs';
 import { Buffer } from 'buffer';
 import { objType } from '../../v1/basics/objFilter.mjs';
 
@@ -28,8 +28,8 @@ class TinyCrypto {
    *
    * @param {Object} [options={}] - Configuration options for encryption and decryption.
    * @param {string} [options.algorithm='aes-256-gcm'] - The encryption algorithm to use. Recommended: 'aes-256-gcm' for authenticated encryption.
-   * @param {string} [options.outputEncoding='hex'] - The encoding used when returning encrypted data (e.g., 'hex', 'base64').
-   * @param {string} [options.inputEncoding='utf8'] - The encoding used for plaintext inputs (e.g., 'utf8').
+   * @param {BufferEncoding} [options.outputEncoding='hex'] - The encoding used when returning encrypted data (e.g., 'hex', 'base64').
+   * @param {BufferEncoding} [options.inputEncoding='utf8'] - The encoding used for plaintext inputs (e.g., 'utf8').
    * @param {number} [options.authTagLength=16] - The length of the authentication tag used in GCM mode. Usually 16 for AES-256-GCM.
    * @param {Buffer} [options.key] - Optional 32-byte cryptographic key. If not provided, a random key is generated.
    *
@@ -39,15 +39,17 @@ class TinyCrypto {
    * const crypto = new CryptoManager({
    *   algorithm: 'aes-256-gcm',
    *   outputEncoding: 'base64',
-   *   key: crypto.randomBytes(32),
+   *   key: randomBytes(32),
    * });
    */
   constructor(options = {}) {
     this.algorithm = options.algorithm || 'aes-256-gcm';
-    this.outputEncoding = options.outputEncoding || 'hex';
-    this.inputEncoding = options.inputEncoding || 'utf8';
     this.authTagLength = options.authTagLength || 16;
     this.key = options.key || this.generateKey();
+    /** @type {BufferEncoding} */
+    this.outputEncoding = options.outputEncoding || 'hex';
+    /** @type {BufferEncoding} */
+    this.inputEncoding = options.inputEncoding || 'utf8';
   }
 
   /**
@@ -61,7 +63,7 @@ class TinyCrypto {
    * const customKey = cryptoManager.generateKey(16); // Generates a 16-byte key (e.g. for AES-128)
    */
   generateKey(value = 32) {
-    return crypto.randomBytes(value); // 256-bit
+    return randomBytes(value); // 256-bit
   }
 
   /**
@@ -75,7 +77,7 @@ class TinyCrypto {
    * const customIV = cryptoManager.generateIV(16); // Generates a 16-byte IV if needed for other algorithms
    */
   generateIV(value = 12) {
-    return crypto.randomBytes(value); // 96-bit padrão para GCM
+    return randomBytes(value); // 96-bit padrão para GCM
   }
 
   /**
@@ -85,10 +87,7 @@ class TinyCrypto {
    *
    * @param {*} data - The data to encrypt. Can be of any supported type (string, number, boolean, Date, JSON, etc.).
    * @param {Buffer} [iv=this.generateIV()] - Optional Initialization Vector (IV). If not provided, a secure random IV is generated.
-   * @returns {Object} An object containing:
-   * - `iv` {string} - The IV used, encoded with the output encoding.
-   * - `encrypted` {string} - The encrypted payload.
-   * - `authTag` {string} - The authentication tag used to verify the integrity of the ciphertext.
+   * @returns {EncryptedDataParams} An object containing the encrypted data.
    *
    * @example
    * const result = cryptoManager.encrypt('Hello, world!');
@@ -101,20 +100,33 @@ class TinyCrypto {
   encrypt(data, iv = this.generateIV()) {
     const plainText = this.#serialize(data);
 
-    const cipher = crypto.createCipheriv(this.algorithm, this.key, iv, {
+    const cipher = createCipheriv(this.algorithm, this.key, iv, {
+      // @ts-ignore
       authTagLength: this.authTagLength,
     });
 
+    // @ts-ignore
     let encrypted = cipher.update(plainText, this.inputEncoding);
+    // @ts-ignore
     encrypted = Buffer.concat([encrypted, cipher.final()]);
     const authTag = cipher.getAuthTag();
 
     return {
+      // @ts-ignore
       iv: iv.toString(this.outputEncoding),
+      // @ts-ignore
       encrypted: encrypted.toString(this.outputEncoding),
+      // @ts-ignore
       authTag: authTag.toString(this.outputEncoding),
     };
   }
+
+  /**
+   * @typedef {Object} EncryptedDataParams
+   * @property {string} iv - The Initialization Vector (IV) used in encryption, encoded with the output encoding.
+   * @property {string} encrypted - The encrypted data to decrypt, encoded with the output encoding.
+   * @property {string} authTag - The authentication tag used to verify the integrity of the encrypted data.
+   */
 
   /**
    * Decrypts a previously encrypted value.
@@ -122,10 +134,7 @@ class TinyCrypto {
    * The method checks the integrity of the data using the authentication tag (`authTag`) and ensures the data is properly decrypted.
    * After decryption, it automatically deserializes the data back to its original type.
    *
-   * @param {Object} params - An object containing the encrypted data:
-   *   - `iv` {string} - The Initialization Vector (IV) used in encryption, encoded with the output encoding.
-   *   - `encrypted` {string} - The encrypted data to decrypt, encoded with the output encoding.
-   *   - `authTag` {string} - The authentication tag used to verify the integrity of the encrypted data.
+   * @param {EncryptedDataParams} params - An object containing the encrypted data.
    * @param {string|null} [expectedType=null] - Optionally specify the expected type of the decrypted data. If provided, the method will validate the type of the deserialized value.
    * @returns {*} The decrypted value, which will be the original type of the data before encryption.
    * @throws {Error} Throws if the authentication tag doesn't match or the data has been tampered with.
@@ -145,13 +154,17 @@ class TinyCrypto {
     const encryptedBuffer = Buffer.from(encrypted, this.outputEncoding);
     const authTagBuffer = Buffer.from(authTag, this.outputEncoding);
 
-    const decipher = crypto.createDecipheriv(this.algorithm, this.key, ivBuffer, {
+    const decipher = createDecipheriv(this.algorithm, this.key, ivBuffer, {
+      // @ts-ignore
       authTagLength: this.authTagLength,
     });
 
     decipher.setAuthTag(authTagBuffer);
 
+    /** @type {string} */
+    // @ts-ignore
     let decrypted = decipher.update(encryptedBuffer, null, this.inputEncoding);
+    // @ts-ignore
     decrypted += decipher.final(this.inputEncoding);
     const { value, type } = this.#deserialize(decrypted);
 
@@ -165,10 +178,7 @@ class TinyCrypto {
    * This method decrypts the encrypted data and extracts its type information without fully deserializing the value.
    * It is useful when you need to verify the type of the encrypted data before fully decrypting it.
    *
-   * @param {Object} params - An object containing the encrypted data:
-   *   - `iv` {string} - The Initialization Vector (IV) used in encryption, encoded with the output encoding.
-   *   - `encrypted` {string} - The encrypted data to decrypt, encoded with the output encoding.
-   *   - `authTag` {string} - The authentication tag used to verify the integrity of the encrypted data.
+   * @param {EncryptedDataParams} params - An object containing the encrypted data.
    * @returns {string} The type of the original data (e.g., 'string', 'number', 'date', etc.).
    *
    * @example
@@ -185,13 +195,16 @@ class TinyCrypto {
     const encryptedBuffer = Buffer.from(encrypted, this.outputEncoding);
     const authTagBuffer = Buffer.from(authTag, this.outputEncoding);
 
-    const decipher = crypto.createDecipheriv(this.algorithm, this.key, ivBuffer, {
+    const decipher = createDecipheriv(this.algorithm, this.key, ivBuffer, {
+      // @ts-ignore
       authTagLength: this.authTagLength,
     });
 
     decipher.setAuthTag(authTagBuffer);
 
+    // @ts-ignore
     let decrypted = decipher.update(encryptedBuffer, null, this.inputEncoding);
+    // @ts-ignore
     decrypted += decipher.final(this.inputEncoding);
 
     const { type } = this.#deserialize(decrypted);
@@ -281,10 +294,12 @@ class TinyCrypto {
   async loadConfigFromFile(file) {
     if (isBrowser) {
       return new Promise((resolve, reject) => {
+        if (!(file instanceof File))
+          return reject(new Error('In browser, the file must be a File object'));
         const reader = new FileReader();
         reader.onload = () => {
           try {
-            const config = JSON.parse(reader.result);
+            const config = typeof reader.result === 'string' ? JSON.parse(reader.result) : {};
             resolve(this.importConfig(config));
           } catch (err) {
             reject(new Error('Invalid config JSON file'));
@@ -294,7 +309,7 @@ class TinyCrypto {
         reader.readAsText(file);
       });
     } else {
-      const raw = fs.readFileSync(file, 'utf8');
+      const raw = fs.readFileSync(/** @type {string} */ (file), 'utf8');
       const config = JSON.parse(raw);
       return this.importConfig(config);
     }
@@ -326,9 +341,11 @@ class TinyCrypto {
   async loadKeyFromFile(file) {
     if (isBrowser) {
       return new Promise((resolve, reject) => {
+        if (!(file instanceof File))
+          return reject(new Error('In browser, the file must be a File object'));
         const reader = new FileReader();
         reader.onload = () => {
-          const hexKey = reader.result.trim();
+          const hexKey = typeof reader.result === 'string' ? reader.result.trim() : '';
           const keyBuffer = Buffer.from(hexKey, 'hex');
           this.key = keyBuffer;
           resolve(keyBuffer);
@@ -337,7 +354,7 @@ class TinyCrypto {
         reader.readAsText(file);
       });
     } else {
-      const hexKey = fs.readFileSync(file, 'utf8');
+      const hexKey = fs.readFileSync(/** @type {string} */ (file), 'utf8');
       const keyBuffer = Buffer.from(hexKey, 'hex');
       this.key = keyBuffer;
       return keyBuffer;
@@ -383,8 +400,8 @@ class TinyCrypto {
    *
    * @param {Object} config - The configuration object to import.
    * @param {string} config.algorithm - The encryption algorithm (e.g., 'aes-256-gcm').
-   * @param {string} config.outputEncoding - The output encoding format (e.g., 'hex').
-   * @param {string} config.inputEncoding - The input encoding format (e.g., 'utf8').
+   * @param {BufferEncoding} config.outputEncoding - The output encoding format (e.g., 'hex').
+   * @param {BufferEncoding} config.inputEncoding - The input encoding format (e.g., 'utf8').
    * @param {number} config.authTagLength - The authentication tag length (e.g., 16).
    * @param {string} config.key - The cryptographic key in hexadecimal string format.
    *
@@ -431,7 +448,7 @@ class TinyCrypto {
    * Each key corresponds to a specific data type (e.g., 'number', 'date', 'buffer', etc.),
    * and the value is a function that serializes the data to a specific format.
    *
-   * @type {Object}
+   * @type {Record<string, (data: any) => string>}
    * @property {Function} weakmap - Throws an error as WeakMap cannot be serialized.
    * @property {Function} weakset - Throws an error as WeakSet cannot be serialized.
    * @property {Function} promise - Throws an error as Promise cannot be serialized.
@@ -472,8 +489,8 @@ class TinyCrypto {
     number: (data) => JSON.stringify({ __type: 'number', value: data }),
     boolean: (data) => JSON.stringify({ __type: 'boolean', value: data }),
     string: (data) => JSON.stringify({ __type: 'string', value: data }),
-    null: (data) => JSON.stringify({ __type: 'null' }),
-    undefined: (data) => JSON.stringify({ __type: 'undefined' }),
+    null: () => JSON.stringify({ __type: 'null' }),
+    undefined: () => JSON.stringify({ __type: 'undefined' }),
     map: (data) =>
       JSON.stringify({
         __type: 'map',
@@ -498,7 +515,7 @@ class TinyCrypto {
    * Each key corresponds to a specific data type (e.g., 'Date', 'BigInt', 'Buffer', etc.),
    * and the value is a function that deserializes the value to its original format.
    *
-   * @type {Object}
+   * @type {Record<string, (data: any) => any>}
    * @property {Function} regexp - Deserializes a regular expression from its string representation (e.g., `/pattern/flags`).
    * @property {Function} htmlelement - Deserializes an HTML element from its serialized outerHTML string (only works in browser environments).
    * @property {Function} date - Deserializes a date from its ISO string representation.
@@ -525,14 +542,14 @@ class TinyCrypto {
         throw new Error('HTMLElement deserialization is only supported in browsers');
       const div = document.createElement('div');
       div.innerHTML = value;
-      return div.firstElementChild;
+      return div;
     },
     date: (value) => new Date(value),
     bigint: (value) => BigInt(value),
     number: (value) => Number(value),
     boolean: (value) => Boolean(value),
-    null: (value) => null,
-    undefined: (value) => undefined,
+    null: () => null,
+    undefined: () => undefined,
     map: (value) => new Map(value),
     set: (value) => new Set(value),
     symbol: (value) => Symbol(value),
@@ -553,7 +570,8 @@ class TinyCrypto {
    */
   #serialize(data) {
     const type = objType(data) || 'undefined';
-    if (this.#valueConvertTypes[type]) return this.#valueConvertTypes[type](data);
+    if (typeof type === 'string' && this.#valueConvertTypes[type])
+      return this.#valueConvertTypes[type](data);
     throw new Error(`Unsupported data type for encryption: ${type}`);
   }
 

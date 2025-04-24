@@ -9,7 +9,8 @@
 export function getTimeDuration(timeData = new Date(), durationType = 'asSeconds', now = null) {
   if (timeData instanceof Date) {
     const currentTime = now instanceof Date ? now : new Date();
-    const diffMs = timeData - currentTime;
+    /** @type {number} */
+    const diffMs = timeData.getTime() - currentTime.getTime();
 
     switch (durationType) {
       case 'asMilliseconds':
@@ -54,6 +55,17 @@ export function formatCustomTimer(totalSeconds, level = 'seconds', format = '{ti
     seconds: index >= 0,
   };
 
+  /**
+   * @type {{
+   *   years: number|NaN,
+   *   months: number|NaN,
+   *   days: number|NaN,
+   *   hours: number|NaN,
+   *   minutes: number|NaN,
+   *   seconds: number|NaN,
+   *   total: number|NaN
+   * }}
+   */
   const parts = {
     years: include.years ? 0 : NaN,
     months: include.months ? 0 : NaN,
@@ -74,8 +86,11 @@ export function formatCustomTimer(totalSeconds, level = 'seconds', format = '{ti
     // Years
     if (include.years) {
       while (
-        new Date(workingDate.getFullYear() + 1, workingDate.getMonth(), workingDate.getDate()) <=
-        targetDate
+        new Date(
+          workingDate.getFullYear() + 1,
+          workingDate.getMonth(),
+          workingDate.getDate(),
+        ).getTime() <= targetDate.getTime()
       ) {
         workingDate.setFullYear(workingDate.getFullYear() + 1);
         parts.years++;
@@ -85,8 +100,11 @@ export function formatCustomTimer(totalSeconds, level = 'seconds', format = '{ti
     // Months
     if (include.months) {
       while (
-        new Date(workingDate.getFullYear(), workingDate.getMonth() + 1, workingDate.getDate()) <=
-        targetDate
+        new Date(
+          workingDate.getFullYear(),
+          workingDate.getMonth() + 1,
+          workingDate.getDate(),
+        ).getTime() <= targetDate.getTime()
       ) {
         workingDate.setMonth(workingDate.getMonth() + 1);
         parts.months++;
@@ -96,15 +114,18 @@ export function formatCustomTimer(totalSeconds, level = 'seconds', format = '{ti
     // Days
     if (include.days) {
       while (
-        new Date(workingDate.getFullYear(), workingDate.getMonth(), workingDate.getDate() + 1) <=
-        targetDate
+        new Date(
+          workingDate.getFullYear(),
+          workingDate.getMonth(),
+          workingDate.getDate() + 1,
+        ).getTime() <= targetDate.getTime()
       ) {
         workingDate.setDate(workingDate.getDate() + 1);
         parts.days++;
       }
     }
 
-    remaining = Math.floor((targetDate - workingDate) / 1000);
+    remaining = Math.floor((targetDate.getTime() - workingDate.getTime()) / 1000);
   }
 
   if (include.hours) {
@@ -133,7 +154,16 @@ export function formatCustomTimer(totalSeconds, level = 'seconds', format = '{ti
 
   parts.total = +(totalMap[level] || 0).toFixed(2).replace(/\.00$/, '');
 
-  const pad = (n) => (isNaN(n) ? 'NaN' : String(n).padStart(2, '0'));
+  /**
+   * Pads a number to ensure it is at least two digits long, using leading zeros if necessary.
+   *
+   * @param {number|string} n - The number or string to pad.
+   * @returns {string} The padded string.
+   */
+  const pad = (n) => {
+    const num = typeof n === 'string' ? parseInt(n) : n;
+    return Number.isNaN(num) ? 'NaN' : String(num).padStart(2, '0');
+  };
 
   const timeString = [
     include.hours ? pad(parts.hours) : null,
@@ -144,14 +174,14 @@ export function formatCustomTimer(totalSeconds, level = 'seconds', format = '{ti
     .join(':');
 
   return format
-    .replace(/\{years\}/g, parts.years)
-    .replace(/\{months\}/g, parts.months)
-    .replace(/\{days\}/g, parts.days)
+    .replace(/\{years\}/g, String(parts.years))
+    .replace(/\{months\}/g, String(parts.months))
+    .replace(/\{days\}/g, String(parts.days))
     .replace(/\{hours\}/g, pad(parts.hours))
     .replace(/\{minutes\}/g, pad(parts.minutes))
     .replace(/\{seconds\}/g, pad(parts.seconds))
     .replace(/\{time\}/g, timeString)
-    .replace(/\{total\}/g, parts.total)
+    .replace(/\{total\}/g, String(parts.total))
     .trim();
 }
 

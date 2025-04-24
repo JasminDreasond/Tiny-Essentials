@@ -72,6 +72,9 @@ const typeValidator = {
     /** Checks if the value is a Buffer. */
     buffer: (val) => typeof Buffer !== 'undefined' && Buffer.isBuffer(val),
 
+    /** Checks if the value is a File. */
+    file: (val) => typeof File !== 'undefined' && val instanceof File,
+
     /** Checks if the value is a Html Element. */
     htmlelement: (val) => typeof HTMLElement !== 'undefined' && val instanceof HTMLElement,
 
