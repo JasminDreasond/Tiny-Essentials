@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Generates a Base64-encoded string for HTTP Basic Authentication using the provided `client_id` and `client_secret`.
  * The string is formatted as `client_id:client_secret`, then encoded in Base64 for use in Authorization headers.

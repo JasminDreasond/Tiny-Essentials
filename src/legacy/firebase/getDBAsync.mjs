@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Fetches data from a Firebase database asynchronously using the specified event type.
  * This function wraps the Firebase database `once` method in a Promise, allowing asynchronous handling of database responses.

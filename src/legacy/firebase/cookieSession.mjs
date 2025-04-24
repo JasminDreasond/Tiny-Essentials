@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Class representing an authentication system for generating session cookies.
  *

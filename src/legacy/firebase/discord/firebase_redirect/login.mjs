@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Handles Firebase authentication using a custom token, CSRF protection,
  * and final redirection logic after login.

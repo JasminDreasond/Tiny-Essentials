@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import presenceSystem from './presence.mjs';
 import SaveAsync from './saveAsync.mjs';
 

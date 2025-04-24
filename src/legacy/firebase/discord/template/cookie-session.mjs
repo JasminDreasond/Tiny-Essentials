@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import hash from 'object-hash';
 import moment from 'moment-timezone';
 import _ from 'lodash';

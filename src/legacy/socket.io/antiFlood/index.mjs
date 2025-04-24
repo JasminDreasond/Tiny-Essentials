@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import install from './install.mjs';
 import verify from './verify.mjs';
 

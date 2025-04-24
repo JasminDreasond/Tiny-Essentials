@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Simple utility to calculate percentage values.
  * @namespace percentageBase

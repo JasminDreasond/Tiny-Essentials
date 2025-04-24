@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Creates an Express middleware for Basic HTTP Authentication.
  *

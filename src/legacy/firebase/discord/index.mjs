@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import discord_api from './api/index.mjs';
 import randomAvatar from './get/randomAvatar.mjs';
 import login from './http/login.mjs';

@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import checkDomain from './check_domain.mjs';
 
 /**

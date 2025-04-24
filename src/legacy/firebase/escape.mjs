@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 // Credits
 // https://github.com/joonhocho/firebase-encode/blob/master/src/index.js
 

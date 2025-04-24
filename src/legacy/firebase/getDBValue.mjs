@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Retrieves the value from a Firebase database snapshot.
  * This function checks if the provided data object is a valid Firebase snapshot and

@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Rule of Three utility.
  * Performs direct or inverse proportional calculation.

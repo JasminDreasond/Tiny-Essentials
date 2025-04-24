@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Executes a paginated query on the database, returning the result set along with pagination metadata.
  *

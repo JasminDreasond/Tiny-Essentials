@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import objType from '../get/objType.mjs';
 import moment from 'moment-timezone';
 import getDBData from './getDBData.mjs';

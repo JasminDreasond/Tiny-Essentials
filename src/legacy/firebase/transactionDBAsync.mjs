@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Executes a Firebase Realtime Database transaction asynchronously.
  * This function uses the `transaction` method of Firebase to apply changes to the database.

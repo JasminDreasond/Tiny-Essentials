@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import authURLGenerator from './authURLGenerator.mjs';
 import cookieSession from './cookie-session.mjs';
 import credentials from './credentials.mjs';

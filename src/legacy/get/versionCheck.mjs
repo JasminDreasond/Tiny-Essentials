@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 // Modules
 import latestVersion from 'latest-version';
 import { compare } from 'compare-versions';

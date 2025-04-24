@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import userIp from '../../http/userIP.mjs';
 
 // Panel

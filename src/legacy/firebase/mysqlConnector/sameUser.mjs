@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import clone from 'clone';
 import objType from '../../get/objType.mjs';
 

@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import tinyDice from '../../../libs/dice.mjs';
 
 /**

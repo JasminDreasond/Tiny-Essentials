@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Checks if the Firebase Functions are running in the emulator environment.
  * This function relies on the environment variable `FUNCTIONS_EMULATOR` to determine

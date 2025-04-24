@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Configuration object containing Discord API and OAuth2 URLs.
  *

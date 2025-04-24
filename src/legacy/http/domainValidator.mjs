@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import checkDomain from './check_domain.mjs';
 import objType from '../get/objType.mjs';
 import isEmulator from '../firebase/isEmulator.mjs';

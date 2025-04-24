@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Handles the logout process by signing out from Firebase Auth,
  * verifying CSRF token, and redirecting the user.

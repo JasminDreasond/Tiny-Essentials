@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * @module check_domain
  *

@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import getJsonFetch from '../../../http/fetch/json.mjs';
 import config from '../config.mjs';
 import credentials from '../get/credentials.mjs';

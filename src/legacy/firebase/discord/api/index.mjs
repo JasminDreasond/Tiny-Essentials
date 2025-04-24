@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import addGuildMember from './addGuildMember.mjs';
 import getGuildWidget from './getGuildWidget.mjs';
 import getToken from './getToken.mjs';

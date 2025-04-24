@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * A lightweight Markdown parser that can convert to HTML or BBCode.
  * @namespace markdownManager

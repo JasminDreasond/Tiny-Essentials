@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import create from './create.mjs';
 import nextPrev from './nextPrev.mjs';
 import pagination from './pagination.mjs';

@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Checks the internal type of an object using `Object.prototype.toString`.
  *

@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Class representing an asynchronous save system with callback support.
  *

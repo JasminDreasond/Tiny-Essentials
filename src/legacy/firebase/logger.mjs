@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import clone from 'clone';
 import logger from 'firebase-functions/logger';
 

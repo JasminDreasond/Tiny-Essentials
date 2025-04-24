@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Executes a directional query (next or previous) based on a position value and timestamp, returning a single row.
  *

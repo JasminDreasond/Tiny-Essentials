@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import _ from 'lodash';
 import moment from 'moment-timezone';
 import md5 from 'md5';

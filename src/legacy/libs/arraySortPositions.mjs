@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Generates a comparator function to sort an array of objects by a given key.
  *

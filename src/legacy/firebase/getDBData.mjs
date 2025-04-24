@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import getDBAsync from './getDBAsync.mjs';
 import getDBValue from './getDBValue.mjs';
 

@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Capitalizes the first letter of each word in a given string.
  *

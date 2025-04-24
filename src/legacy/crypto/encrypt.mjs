@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 // Module
 import crypto from 'crypto';
 

@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Default cryptographic configuration for encryption and decryption operations.
  *

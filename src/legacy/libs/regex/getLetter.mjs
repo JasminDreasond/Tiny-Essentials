@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Matches exactly one letter (lowercase or uppercase).
  * @param {string} [type='g'] - The flag for the regular expression (default is 'g').

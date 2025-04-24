@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { decrypt } from './decrypt.mjs';
 import defaultCrypto from './default.mjs';
 import { encrypt } from './encrypt.mjs';

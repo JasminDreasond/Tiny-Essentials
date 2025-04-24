@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import countObj from './get/countObj.mjs';
 import objType from './get/objType.mjs';
 import super_string_filter from './get/super_string_filter.mjs';

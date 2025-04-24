@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * A utility module to convert between bytes and higher order units (KB, MB, GB, etc).
  */

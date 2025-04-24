@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Initializes and caches one or more MySQL database connections using provided configuration.
  * Supports Firebase and Google Cloud SQL socket-based connections, as well as local/standard MySQL setups.

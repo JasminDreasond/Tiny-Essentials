@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Parses the query string from a URL into a JSON object.
  *

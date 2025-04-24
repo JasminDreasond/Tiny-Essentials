@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Handles the cookie session for a socket connection by simulating an Express request and response.
  * This function uses the provided session module to manage session data for the socket connection.

@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import objType from '../../../get/objType.mjs';
 
 /**

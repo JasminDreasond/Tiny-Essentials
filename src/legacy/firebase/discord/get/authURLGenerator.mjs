@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { encrypt } from '../../../crypto/encrypt.mjs';
 import config from '../config.mjs';
 
