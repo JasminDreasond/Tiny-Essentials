@@ -1,6 +1,6 @@
 {
   "name": "tiny-essentials",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "description": "Collection of small, essential scripts designed to be used across various projects. These simple utilities are crafted for speed, ease of use, and versatility.",
   "scripts": {
     "test": "npm run test:mjs && npm run test:cjs && npm run test:js",
@@ -16,7 +16,6 @@
     "build": "tsc -p tsconfig.json && rollup -c && webpack --mode production",
     "build-clean": "npm run clean && npm run build",
     "build-dist": "npm run build",
-    "build-browserify": "npx browserify build/browserify.js -p esmify > dist/TinyAiApi.web.js",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run build"
   },
@@ -45,8 +44,7 @@
     "text",
     "lib",
     "time",
-    "shuffle-array",
-    "cryptography"
+    "shuffle-array"
   ],
   "author": "Yasmin Seidel (Jasmin Dreasond)",
   "license": "GPL-3.0-only",
@@ -75,7 +73,6 @@
     "moment-timezone": "^0.5.48",
     "mysql": "^2.18.1",
     "node-fetch": "2.7.0",
-    "node-forge": "^1.3.1",
     "node-polyfill-webpack-plugin": "^4.1.0",
     "object-hash": "^3.0.0",
     "prettier": "3.5.3",

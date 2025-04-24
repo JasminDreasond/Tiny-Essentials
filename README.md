@@ -21,9 +21,9 @@
 - ⏱️ **Time Calculations**: Easily calculate durations, format timers, and more.
 - 🧠 **Object Utilities**: Perform type checks, count object properties, and calculate percentages.
 - 🛠️ **Custom Utilities**: Includes various helper functions like `ruleOfThree` for proportion calculations and `getAge` to calculate the age based on a given birth date.
-- 🔐 **Encryption Tools**:
-  - **`TinyCrypto`**: Securely encrypt and decrypt values using AES-256-GCM, with full support for complex JavaScript data types like `RegExp`, `Date`, `Buffer`, and even DOM elements in the browser.
-  - **`TinyCertCrypto`**: Generate RSA key pairs and self-signed X.509 certificates, parse PEM files, encrypt/decrypt JSON via Base64, and extract certificate metadata — all in a Node.js or hybrid environment.
+- 🔐 **Encryption Tools**:  
+  This feature has been migrated.  
+  👉 For the latest version and full functionality, please visit the new [Tiny Crypto Suite repository](https://github.com/JasminDreasond/Tiny-Crypto-Suite).
 
 ## 📦 Installation
 

@@ -8,17 +8,7 @@ Here, you can navigate through different sections of the project. Below are the 
 
 ## 📚 Main Directories
 
-### 1. **`libs/`** 
-
-This folder contains external libraries and utility modules that are designed to help with various tasks and features in the project.
-
-- 🔐 **[TinyCrypto.md](./libs/TinyCrypto.md)** — A flexible and browser-compatible AES-256-GCM encryption utility with support for complex JavaScript types like `Date`, `RegExp`, `Buffer`, and even DOM elements (in the browser).
-
-- 📄 **[TinyCertCrypto.md](./libs/TinyCertCrypto.md)** — A lightweight tool for managing RSA key pairs and X.509 certificates with support for generation, PEM parsing, encryption/decryption of JSON, and certificate metadata extraction. Works in both Node.js and browser environments (with limitations in browser).
-
----
-
-### 2. **`basics/`** 
+### 1. **`basics/`** 
 
 This folder contains the core scripts we have worked on so far. Each file is a module focused on specific functionality.
 
