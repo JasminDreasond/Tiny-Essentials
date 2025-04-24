@@ -14,6 +14,8 @@ This folder contains external libraries and utility modules that are designed to
 
 - 🔐 **[TinyCrypto.md](./libs/TinyCrypto.md)** — A flexible and browser-compatible AES-256-GCM encryption utility with support for complex JavaScript types like `Date`, `RegExp`, `Buffer`, and even DOM elements (in the browser).
 
+- 📄 **[TinyCertCrypto.md](./libs/TinyCertCrypto.md)** — A lightweight tool for managing RSA key pairs and X.509 certificates with support for generation, PEM parsing, encryption/decryption of JSON, and certificate metadata extraction. Works in both Node.js and browser environments (with limitations in browser).
+
 ---
 
 ### 2. **`basics/`** 
