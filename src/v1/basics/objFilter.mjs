@@ -94,6 +94,7 @@ const typeValidator = {
     'function',
     'array',
     'buffer',
+    'file',
     'date',
     'regexp',
     'map',
