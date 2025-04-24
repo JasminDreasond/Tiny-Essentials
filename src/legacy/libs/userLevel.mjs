@@ -14,7 +14,7 @@ class TinyLevelUp {
 
   /**
    * Validates and adjusts the user's level based on their current experience.
-   * @param {Object} user - The user object containing experience and level properties.
+   * @param {{ exp: number, level: number, totalExp: any }} user - The user object containing experience and level properties.
    * @returns {Object} The updated user object.
    */
   expValidator(user) {
@@ -44,7 +44,7 @@ class TinyLevelUp {
 
   /**
    * Calculates the total experience based on the user's level.
-   * @param {Object} user - The user object containing experience and level properties.
+   * @param {{ exp: number, level: number }} user - The user object containing experience and level properties.
    * @returns {number} The total experience of the user.
    */
   getTotalExp(user) {
@@ -65,7 +65,7 @@ class TinyLevelUp {
 
   /**
    * Gets the experience points required to reach the next level.
-   * @param {Object} user - The user object containing the level.
+   * @param {{ level: number }} user - The user object containing the level.
    * @returns {number} The experience required for the next level.
    */
   progress(user) {
@@ -74,7 +74,7 @@ class TinyLevelUp {
 
   /**
    * Gets the experience points required to reach the next level.
-   * @param {Object} user - The user object containing the level.
+   * @param {{ level: number }} user - The user object containing the level.
    * @returns {number} The experience required for the next level.
    */
   getProgress(user) {
@@ -83,7 +83,7 @@ class TinyLevelUp {
 
   /**
    * Sets the experience value for the user, adjusting their level if necessary.
-   * @param {Object} user - The user object.
+   * @param {{ exp: number, level: number, totalExp: any }} user - The user object.
    * @param {number} value - The new experience value to set.
    * @returns {Object} The updated user object.
    */
@@ -96,9 +96,9 @@ class TinyLevelUp {
 
   /**
    * Adds experience to the user, adjusting their level if necessary.
-   * @param {Object} user - The user object.
+   * @param {{ exp: number, level: number, totalExp: any }} user - The user object.
    * @param {number} extraExp - Additional experience to be added.
-   * @param {string} type - Type of addition ('add' or 'extra').
+   * @param {'add' | 'extra'} type - Type of addition ('add' or 'extra').
    * @param {number} multi - Multiplier for experience generation.
    * @returns {Object} The updated user object.
    */
@@ -113,9 +113,9 @@ class TinyLevelUp {
 
   /**
    * Removes experience from the user, adjusting their level if necessary.
-   * @param {Object} user - The user object.
+   * @param {{ exp: number, level: number, totalExp: any }} user - The user object.
    * @param {number} extraExp - Experience to remove.
-   * @param {string} type - Type of removal ('add' or 'extra').
+   * @param {'add' | 'extra'} type - Type of removal ('add' or 'extra').
    * @param {number} multi - Multiplier for experience generation.
    * @returns {Object} The updated user object.
    */

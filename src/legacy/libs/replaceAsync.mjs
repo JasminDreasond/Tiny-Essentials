@@ -13,6 +13,9 @@
  * });
  */
 export default async function asyncReplace(str, regex, asyncFn) {
+  /**
+   * @type {any[]}
+   */
   const promises = [];
 
   // Collect promises
