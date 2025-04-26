@@ -13,9 +13,9 @@ import authURLGenerator from '../get/authURLGenerator.mjs';
  * Depending on the configuration type, it handles various authentication methods like login, login_command, and webhook.
  *
  * @function
- * @param {Object} req - The request object, typically provided by the web framework (e.g., Express).
- * @param {Object} res - The response object, typically provided by the web framework (e.g., Express).
- * @param {Object} cfg - The configuration object that includes various settings for the login process.
+ * @param {Record<string, any>} req - The request object, typically provided by the web framework (e.g., Express).
+ * @param {Record<string, any>} res - The response object, typically provided by the web framework (e.g., Express).
+ * @param {Record<string, any>} cfg - The configuration object that includes various settings for the login process.
  * @param {boolean} existSession - A flag indicating whether the user already has an active session.
  *
  * @returns {void} This function does not return anything. It sends a redirect response to the user based on the configuration.

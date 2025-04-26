@@ -7,7 +7,7 @@ import _ from 'lodash';
  * supporting detection for Firebase/Cloud Functions, proxies, and direct connections.
  *
  * @param {import('express').Request} req - The Express request object.
- * @param {Object} [options] - Optional configuration.
+ * @param {Record<string, any>} [options] - Optional configuration.
  * @param {boolean} [options.isFirebase=false] - Enable detection for Firebase environments (e.g., Fastly).
  *
  * @returns {{ value: string[] | null, type: string | null }} An object containing the list of IP addresses and the detection source type.

@@ -18,7 +18,7 @@ import errorValidator from '../get/errorValidator.mjs';
  * @param {string} dsData.redirect_uri - The redirect URI used in the original OAuth2 flow.
  * @param {string} dsData.scope - The scope(s) to request (e.g., 'identify guilds').
  *
- * @returns {Promise<Object>} Resolves with a new token object from the Discord API:
+ * @returns {Promise<Record<string, any>>} Resolves with a new token object from the Discord API:
  * {
  *   access_token: string,
  *   token_type: string,
@@ -27,7 +27,7 @@ import errorValidator from '../get/errorValidator.mjs';
  *   scope: string
  * }
  *
- * @throws {Object} If the request fails, rejects with an error object containing `code` and `message`.
+ * @throws {Record<string, any>} If the request fails, rejects with an error object containing `code` and `message`.
  *
  * @example
  * refreshToken({

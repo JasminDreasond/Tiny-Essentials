@@ -15,9 +15,9 @@ import errorValidator from '../get/errorValidator.mjs';
  * @param {string} [user='@me'] - The user ID to fetch. Use '@me' to get the authenticated user's profile.
  * @param {string} [version=''] - Optional API version prefix (e.g., 'v10/') if needed by your API setup.
  *
- * @returns {Promise<Object>} Resolves with the user's profile data returned by Discord.
+ * @returns {Promise<Record<string, any>>} Resolves with the user's profile data returned by Discord.
  *
- * @throws {Object} If the request fails, rejects with an error object containing `code` and `message`.
+ * @throws {Record<string, any>} If the request fails, rejects with an error object containing `code` and `message`.
  *
  * @example
  * getUser('access_token_here')

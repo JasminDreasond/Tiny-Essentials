@@ -17,9 +17,9 @@ import errorValidator from '../get/errorValidator.mjs';
  * @param {string} dsData.redirect_uri - The redirect URI used during the authorization.
  * @param {string} [dsData.scope] - The OAuth2 scopes being requested (optional but recommended).
  *
- * @returns {Promise<Object>} Resolves with the access token data (access_token, token_type, expires_in, refresh_token, scope).
+ * @returns {Promise<Record<string, any>>} Resolves with the access token data (access_token, token_type, expires_in, refresh_token, scope).
  *
- * @throws {Object} If the request fails or Discord returns an error, rejects with an object containing a `code` and `message`.
+ * @throws {Record<string, any>} If the request fails or Discord returns an error, rejects with an object containing a `code` and `message`.
  *
  * @example
  * getToken({

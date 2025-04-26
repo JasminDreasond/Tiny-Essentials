@@ -127,7 +127,7 @@ const checkLastTime = function (value) {
  * Each log type is stored in the database with a timestamp and arguments.
  *
  * @param {string} where - The location or context where the log is coming from.
- * @returns {Object} The logger object with methods for logging (log, error, info, warn).
+ * @returns {Record<string, any>} The logger object with methods for logging (log, error, info, warn).
  */
 const loggerGenerator = function (where) {
   // Done
@@ -169,9 +169,9 @@ const databaseLogger = {
   /**
    * Starts the logger with a new database instance and initializes cache values.
    *
-   * @param {Object} newDB - The new database instance to use for storing logs.
+   * @param {Record<string, any>} newDB - The new database instance to use for storing logs.
    * @param {string} where - The context or location where the logger will be used.
-   * @returns {Promise<Object>} The logger instance with methods for logging.
+   * @returns {Promise<Record<string, any>>} The logger instance with methods for logging.
    */
   start: async function (newDB, where) {
     // Prepare
@@ -228,7 +228,7 @@ const databaseLogger = {
    * Retrieves the logger instance for a given context.
    *
    * @param {string} where - The context or location where the logger will be used.
-   * @returns {Object} The logger instance with methods for logging.
+   * @returns {Record<string, any>} The logger instance with methods for logging.
    */
   get: function (where) {
     return loggerGenerator(where);

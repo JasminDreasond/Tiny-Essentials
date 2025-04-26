@@ -10,7 +10,7 @@ import objType from '../get/objType.mjs';
 const custom_module_manager = {
   /**
    * Validates if the given object has valid custom or default module arrays.
-   * @param {Object} custom_modules - The object containing module definitions.
+   * @param {Record<string, any>} custom_modules - The object containing module definitions.
    * @param {string} type - The specific type of module to validate.
    * @returns {boolean} Whether the module is valid.
    *
@@ -34,7 +34,7 @@ const custom_module_manager = {
    * @param {Object|Function[]} custom_modules - The modules or functions to run.
    * @param {*} db_prepare - A value to pass to each module when called.
    * @param {string} hookType - A string representing the hook (e.g., 'before', 'after').
-   * @param {Object} [options] - Optional. Object with keys matching types in `custom_modules`.
+   * @param {Record<string, any>} [options] - Optional. Object with keys matching types in `custom_modules`.
    *
    * @returns {Promise<void>}
    *

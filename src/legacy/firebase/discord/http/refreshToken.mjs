@@ -10,13 +10,13 @@ import refreshTokenApi from '../api/refreshToken.mjs';
  *
  * @async
  * @function refreshToken
- * @param {Object} req - The request object containing query parameters and csrfToken.
- * @param {Object} cfg - The configuration object containing auth and state configurations.
+ * @param {Record<string, any>} req - The request object containing query parameters and csrfToken.
+ * @param {Record<string, any>} cfg - The configuration object containing auth and state configurations.
  * @param {boolean} existSession - A flag indicating if the user session exists.
  *
- * @returns {Promise<Object>} Resolves to an object containing the status of the refresh and the new token data, or rejects with an error object.
+ * @returns {Promise<Record<string, any>>} Resolves to an object containing the status of the refresh and the new token data, or rejects with an error object.
  *
- * @throws {Object} Rejects with an error object containing the following properties:
+ * @throws {Record<string, any>} Rejects with an error object containing the following properties:
  *   - `code` {number} The error code (e.g., 401 for invalid CSRF token, 500 for server errors).
  *   - `message` {string} The error message describing the issue.
  *

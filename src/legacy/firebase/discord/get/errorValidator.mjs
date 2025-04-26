@@ -10,7 +10,7 @@ import objType from '../../../get/objType.mjs';
  * @function
  * @param {Object|Array} data - The response data to validate. This can be either an object or an array.
  *
- * @returns {Object} The result object containing:
+ * @returns {Record<string, any>} The result object containing:
  *   - `data` (Object|null): The validated data if no error occurred or null if an error was found.
  *   - `error` (Object|null): The error object if there was an issue, or null if no error was found.
  *

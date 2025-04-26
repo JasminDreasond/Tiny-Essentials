@@ -19,7 +19,7 @@ const check_version = {
  * @param {string} pkg.name - The name of the package.
  * @param {string} pkg.version - The current version of the package.
  *
- * @returns {Promise<Object>} The result object containing:
+ * @returns {Promise<Record<string, any>>} The result object containing:
  *   - `needUpdate`: {boolean} - `true` if the current version is outdated, `false` otherwise.
  *   - `now`: {string} - The current version of the package.
  *   - `new`: {string} - The latest version of the package available on npm.

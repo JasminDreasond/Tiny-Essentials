@@ -6,10 +6,10 @@ import getUser from '../firebase/discord/api/getUser.mjs';
  * Handles the Discord OAuth2 authentication for a user, stores user data in an in-memory cache,
  * and manages the user's socket connection and disconnection events.
  *
- * @param {Object} socket - The socket object representing the user's connection.
- * @param {Object} ioCache - The shared cache that stores user data and connections.
+ * @param {Record<string, any>} socket - The socket object representing the user's connection.
+ * @param {Record<string, any>} ioCache - The shared cache that stores user data and connections.
  * @param {string} token - The OAuth2 token used to fetch user data from Discord.
- * @returns {Promise<Object>} A promise that resolves with the user data and updates the cache.
+ * @returns {Promise<Record<string, any>>} A promise that resolves with the user data and updates the cache.
  */
 export default function discord(socket, ioCache, token) {
   return new Promise((resolve, reject) => {

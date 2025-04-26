@@ -64,7 +64,7 @@ firebaseObject.database = database;
 /**
  * Handles database escaping for safe queries.
  *
- * @type {Object}
+ * @type {Record<string, any>}
  */
 firebaseObject.escape = dbEscape;
 
@@ -113,7 +113,7 @@ firebaseObject.databaseEscape = databaseEscape;
 /**
  * Logger to log information using Firebase or console.
  *
- * @type {Object}
+ * @type {Record<string, any>}
  */
 firebaseObject.logger = logger;
 
@@ -129,7 +129,7 @@ firebaseObject.isEmulator = isEmulator;
  * Initializes services such as Database, Auth, Firestore, etc.
  *
  * @param {string} value - The Firebase app ID.
- * @param {Object} item - Configuration for the Firebase app and services to initialize.
+ * @param {Record<string, any>} item - Configuration for the Firebase app and services to initialize.
  * @returns {boolean} `true` if the modules were successfully started, `false` otherwise.
  */
 firebaseObject.startModule = function (value, item) {
@@ -179,9 +179,9 @@ firebaseObject.startModule = function (value, item) {
 /**
  * Starts the Firebase app and initializes required services.
  *
- * @param {Object} admin - The Firebase Admin SDK.
- * @param {Object} item - Configuration containing app details and options.
- * @param {Object} data - Additional data to initialize the app.
+ * @param {Record<string, any>} admin - The Firebase Admin SDK.
+ * @param {Record<string, any>} item - Configuration containing app details and options.
+ * @param {Record<string, any>} data - Additional data to initialize the app.
  * @throws {Error} Throws an error if the Firebase file is not found or if the app ID is missing.
  */
 firebaseObject.start = function (admin, item, data) {

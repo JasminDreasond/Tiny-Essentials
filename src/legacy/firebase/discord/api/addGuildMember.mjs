@@ -18,9 +18,9 @@ import errorValidator from '../get/errorValidator.mjs';
  * @param {boolean} [data.mute=false] - Whether the user should be server-muted.
  * @param {boolean} [data.deaf=false] - Whether the user should be server-deafened.
  *
- * @returns {Promise<Object>} Resolves with the user object if successful, or rejects with an error object.
+ * @returns {Promise<Record<string, any>>} Resolves with the user object if successful, or rejects with an error object.
  *
- * @throws {Object} If the request fails or Discord returns an error, rejects with an object containing a `code` and `message`.
+ * @throws {Record<string, any>} If the request fails or Discord returns an error, rejects with an object containing a `code` and `message`.
  *
  * @example
  * const result = await addGuildMember('your_bot_token', {

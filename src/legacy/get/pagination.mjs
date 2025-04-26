@@ -14,7 +14,7 @@ import queryUrlJSON from './queryUrlJSON.mjs';
  * @param {string} [extraClass=''] - Additional class name for styling the pagination container.
  * @param {string} [extraClass2=''] - Additional class name for individual page links.
  *
- * @returns {Object} Pagination metadata including:
+ * @returns {Record<string, any>} Pagination metadata including:
  *   - `url` {string} - The updated URL prefix to use for each page link.
  *   - `extraClass` {string} - Additional class name passed through.
  *   - `extraClass2` {string} - Additional class name passed through.

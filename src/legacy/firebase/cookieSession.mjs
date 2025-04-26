@@ -83,7 +83,7 @@ class AuthSystem {
   /**
    * Generates a session cookie for the user after verifying the ID token.
    *
-   * @param {Object} auth - The authentication object used to verify the ID token and create session cookies.
+   * @param {Record<string, any>} auth - The authentication object used to verify the ID token and create session cookies.
    * @param {string} token - The ID token of the authenticated user.
    * @returns {Promise<string>} A promise that resolves with the session cookie or rejects with an error.
    */

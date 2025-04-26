@@ -9,14 +9,14 @@ import getUser from '../api/getUser.mjs';
 /**
  * Handles the logout process for the user by revoking the token and redirecting.
  *
- * @param {Object} req - The HTTP request object.
+ * @param {Record<string, any>} req - The HTTP request object.
  * @param {string|number} access_token - The access token of the user to be revoked.
- * @param {Object} cfg - Configuration object containing settings for the logout process.
+ * @param {Record<string, any>} cfg - Configuration object containing settings for the logout process.
  * @param {boolean} existSession - A flag indicating whether a session exists.
  *
- * @returns {Promise<Object>} Resolves with a result object or rejects with an error.
+ * @returns {Promise<Record<string, any>>} Resolves with a result object or rejects with an error.
  *
- * @throws {Object} Rejects with an error if configuration or token values are invalid.
+ * @throws {Record<string, any>} Rejects with an error if configuration or token values are invalid.
  *
  * @example
  * logout(req, 'userAccessToken', cfg, true)

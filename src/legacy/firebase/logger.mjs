@@ -48,7 +48,7 @@ const loopInteraction = function (data) {
  *
  * @param {string} type - The type of log message (e.g., `log`, `info`, `warn`, `error`).
  * @param {Arguments} args - The arguments to be logged.
- * @returns {Promise<Object>} A promise resolving with the result of the logging operation,
+ * @returns {Promise<Record<string, any>>} A promise resolving with the result of the logging operation,
  * or the result of logging to the native console if Firebase logger is not available.
  */
 const logBase = async function (type, args) {
@@ -101,7 +101,7 @@ const fbLogger = {
    * Logs a message with the `log` level. If not in emulator mode, it uses Firebase's logger.
    *
    * @param {...*} args - The arguments to log.
-   * @returns {Promise<Object>} A promise resolving with the logging result.
+   * @returns {Promise<Record<string, any>>} A promise resolving with the logging result.
    */
   log: function () {
     return logBase('log', arguments);
@@ -111,7 +111,7 @@ const fbLogger = {
    * Logs a message with the `info` level. If not in emulator mode, it uses Firebase's logger.
    *
    * @param {...*} args - The arguments to log.
-   * @returns {Promise<Object>} A promise resolving with the logging result.
+   * @returns {Promise<Record<string, any>>} A promise resolving with the logging result.
    */
   info: function () {
     return logBase('info', arguments);
@@ -121,7 +121,7 @@ const fbLogger = {
    * Logs a message with the `warn` level. If not in emulator mode, it uses Firebase's logger.
    *
    * @param {...*} args - The arguments to log.
-   * @returns {Promise<Object>} A promise resolving with the logging result.
+   * @returns {Promise<Record<string, any>>} A promise resolving with the logging result.
    */
   warn: function () {
     return logBase('warn', arguments);
@@ -131,7 +131,7 @@ const fbLogger = {
    * Logs a message with the `error` level. If not in emulator mode, it uses Firebase's logger.
    *
    * @param {...*} args - The arguments to log.
-   * @returns {Promise<Object>} A promise resolving with the logging result.
+   * @returns {Promise<Record<string, any>>} A promise resolving with the logging result.
    */
   error: function () {
     return logBase('error', arguments);

@@ -23,10 +23,10 @@ setInterval(function () {
  * This function checks how many times an IP has attempted to interact with the socket.
  * If the attempts exceed a threshold, the IP is temporarily banned and disconnected.
  *
- * @param {Object} socket - The socket object representing the connection.
- * @param {Object} ioCache - The cache object that holds the blocklist and flood panel data.
+ * @param {Record<string, any>} socket - The socket object representing the connection.
+ * @param {Record<string, any>} ioCache - The cache object that holds the blocklist and flood panel data.
  * @param {Array<*>} ioCache.blocklick - The list of blocked IPs.
- * @param {Object} floodPanel - The object tracking flooding attempts and timeouts for each IP.
+ * @param {Record<string, any>} floodPanel - The object tracking flooding attempts and timeouts for each IP.
  * @returns {void} This function does not return anything, it modifies the floodPanel and blocklist.
  */
 export default function verify(socket, ioCache) {

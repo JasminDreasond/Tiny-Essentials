@@ -12,14 +12,14 @@ import getUser from '../api/getUser.mjs';
  * Handles the redirection logic for the OAuth flow, including state validation, token retrieval, and user session management.
  * This function is used for handling Discord OAuth redirects and session creation or restoration.
  *
- * @param {Object} req - The request object from the client, which contains query parameters such as `state`, `code`, and `csrfToken`.
- * @param {Object} cfg - The configuration object containing settings like `crypto`, `auth`, and `discordScope`.
+ * @param {Record<string, any>} req - The request object from the client, which contains query parameters such as `state`, `code`, and `csrfToken`.
+ * @param {Record<string, any>} cfg - The configuration object containing settings like `crypto`, `auth`, and `discordScope`.
  * @param {boolean} existSession - Indicates if the user already has an active session.
  *
- * @returns {Promise<Object>} - A promise that resolves with an object containing the redirection URL and session information.
+ * @returns {Promise<Record<string, any>>} - A promise that resolves with an object containing the redirection URL and session information.
  * If a new session is created, it also includes user data and the token request.
  *
- * @throws {Object} - Throws an error with a `code` and `message` if any validation fails (e.g., missing token, invalid state).
+ * @throws {Record<string, any>} - Throws an error with a `code` and `message` if any validation fails (e.g., missing token, invalid state).
  *
  * @example
  * // Example usage of redirect function

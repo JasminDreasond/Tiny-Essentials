@@ -6,10 +6,10 @@
  * Checks if the CSRF token in the request body matches the expected token from the session.
  * If invalid, returns a 401 response and optionally executes a custom callback.
  *
- * @param {Object} req - The Express request object. Should contain:
+ * @param {Record<string, any>} req - The Express request object. Should contain:
  *   - `req.csrfToken.now`: The expected CSRF token.
  *   - `req.body.csrfToken`: The token provided by the client.
- * @param {Object} res - The Express response object.
+ * @param {Record<string, any>} res - The Express response object.
  * @param {Function} [callback] - Optional custom callback to execute when CSRF validation fails.
  *
  * @returns {boolean} Returns `true` if the token is invalid and a response was sent, otherwise `false`.

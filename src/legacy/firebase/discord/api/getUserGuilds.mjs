@@ -15,9 +15,9 @@ import errorValidator from '../get/errorValidator.mjs';
  *
  * @param {string} access_token - The OAuth2 access token used to authenticate the user.
  *
- * @returns {Promise<Array<Object>>} Resolves with an array of guild objects the user is in.
+ * @returns {Promise<Array<Record<string, any>>>} Resolves with an array of guild objects the user is in.
  *
- * @throws {Object} If the request fails, rejects with an error object containing `code` and `message`.
+ * @throws {Record<string, any>} If the request fails, rejects with an error object containing `code` and `message`.
  *
  * @example
  * getUserGuilds('your_access_token')

@@ -28,8 +28,8 @@ import revokeToken from '../api/revokeToken.mjs';
  * Middleware function to handle Discord and Firebase sessions, including login, logout,
  * and redirection functionalities.
  *
- * @param {Object} app - The Express.js app object.
- * @param {Object} cfg - The configuration object for the middleware, including Firebase settings.
+ * @param {Record<string, any>} app - The Express.js app object.
+ * @param {Record<string, any>} cfg - The configuration object for the middleware, including Firebase settings.
  * @throws {Error} Throws an error if the configuration object is invalid.
  */
 export default function cookieSession(app, cfg) {

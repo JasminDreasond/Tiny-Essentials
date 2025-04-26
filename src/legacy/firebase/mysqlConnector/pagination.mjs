@@ -4,7 +4,7 @@
  * Executes a paginated query on the database, returning the result set along with pagination metadata.
  *
  * @async
- * @param {Object} db - Database instance with a `.query(sql, params)` method.
+ * @param {Record<string, any>} db - Database instance with a `.query(sql, params)` method.
  * @param {Object} data - Query configuration options.
  * @param {string} data.from - The table or view name to query from.
  * @param {string} [data.where] - Optional WHERE clause without the keyword (e.g., `"status = 'active'"`).
@@ -15,7 +15,7 @@
  * @param {number|string} [data.page] - Current page number or `'last'` to get the last page.
  * @param {number} [data.count] - Optional total count override (skip count query if provided).
  * @param {boolean} [data.count_rows=false] - Whether to include a row number for each result.
- * @returns {Promise<Object>} Resolves with pagination metadata and result set.
+ * @returns {Promise<Record<string, any>>} Resolves with pagination metadata and result set.
  * @returns {number} return.count - Total number of matched rows.
  * @returns {Array<*>} return.data - The paginated data from the query.
  * @returns {number} return.pages - Total number of pages.

@@ -9,9 +9,9 @@ import config from '../config.mjs';
  * authentication flows, such as logging in or connecting a webhook.
  *
  * @function
- * @param {Object} tinyCfg - The configuration object containing the app's OAuth2 settings.
- * @param {Object} jsonState - The state object to be encrypted and passed in the authorization URL.
- * @param {Object} tinyCrypto - The crypto object used to encrypt the state.
+ * @param {Record<string, any>} tinyCfg - The configuration object containing the app's OAuth2 settings.
+ * @param {Record<string, any>} jsonState - The state object to be encrypted and passed in the authorization URL.
+ * @param {Record<string, any>} tinyCrypto - The crypto object used to encrypt the state.
  * @param {string} type - The type of the request, which determines the URL generation process.
  *                         Can be `'login'`, `'login_command'`, or `'webhook'`.
  *

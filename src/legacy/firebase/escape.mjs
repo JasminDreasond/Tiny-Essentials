@@ -21,7 +21,7 @@ const escapeRegExp = (str) => str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g,
  * and decoding components (without the `/` character).
  *
  * @param {Array<string>} chars - The list of characters to encode/decode.
- * @returns {Object} An object containing:
+ * @returns {Record<string, any>} An object containing:
  * - `encode`: Function that encodes characters to hexadecimal format.
  * - `decode`: Function that decodes hexadecimal values back to characters.
  */

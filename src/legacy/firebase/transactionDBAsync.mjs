@@ -6,7 +6,7 @@
  * The provided callback is executed with the current value in the database, and the transaction
  * is committed based on the result returned from the callback.
  *
- * @param {Object} data - The Firebase database reference object on which the transaction will be performed.
+ * @param {Record<string, any>} data - The Firebase database reference object on which the transaction will be performed.
  * @param {Function} callback - A function that accepts the current value of the data and returns the updated value.
  * @returns {Promise} Resolves with the result of the transaction or rejects with an error if the transaction fails.
  */

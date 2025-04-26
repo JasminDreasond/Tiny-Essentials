@@ -55,7 +55,7 @@ const check_domain = {
    * Validates the request against a given domain using all available validators.
    *
    * @function
-   * @param {Object} req - The request object from Express.
+   * @param {Record<string, any>} req - The request object from Express.
    * @param {string} the_domain - The domain to validate against.
    * @returns {boolean} True if any validator matches the domain.
    */
@@ -69,7 +69,7 @@ const check_domain = {
    * Returns the domain found from the first valid source in the request object.
    *
    * @function
-   * @param {Object} req - The request object from Express.
+   * @param {Record<string, any>} req - The request object from Express.
    * @returns {string|null} The found domain string or `null` if none matched.
    */
   get: function (req) {

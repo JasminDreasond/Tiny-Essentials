@@ -8,7 +8,7 @@ import objType from '../../../get/objType.mjs';
  * the value is returned. Otherwise, `null` is returned.
  *
  * @function
- * @param {Object} req - The request object, which contains the session data.
+ * @param {Record<string, any>} req - The request object, which contains the session data.
  * @param {string} where - The key for which the session value is being retrieved.
  *
  * @returns {string|null} The session value associated with the provided key, or `null` if it doesn't exist or isn't valid.

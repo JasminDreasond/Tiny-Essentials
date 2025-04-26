@@ -14,9 +14,9 @@ import errorValidator from '../get/errorValidator.mjs';
  *
  * @param {string} access_token - The OAuth2 access token used to authenticate the user.
  *
- * @returns {Promise<Array<Object>>} Resolves with an array of connection objects.
+ * @returns {Promise<Array<Record<string, any>>>} Resolves with an array of connection objects.
  *
- * @throws {Object} If the request fails, rejects with an error object containing `code` and `message`.
+ * @throws {Record<string, any>} If the request fails, rejects with an error object containing `code` and `message`.
  *
  * @see {@link https://discord.com/developers/docs/resources/user#get-user-connections} Discord API Reference
  *

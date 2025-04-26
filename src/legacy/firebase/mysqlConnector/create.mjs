@@ -5,12 +5,12 @@
  * Supports Firebase and Google Cloud SQL socket-based connections, as well as local/standard MySQL setups.
  *
  * @async
- * @param {Object} mysql - The `mysql2` module or similar instance, with a `.createPool()` method.
+ * @param {Record<string, any>} mysql - The `mysql2` module or similar instance, with a `.createPool()` method.
  * @param {string} proxyType - The type of proxy connection. Can be `"default"`, `"firebase"`, or `"google_cloud"`.
- * @param {Object|Object[]} databases - A single database config object or an array of config objects.
- * @param {Object} cfg - Global fallback configuration, e.g., `{ charset: 'utf8mb4' }`.
+ * @param {Record<string, any>|Record<string, any>[]} databases - A single database config object or an array of config objects.
+ * @param {Record<string, any>} cfg - Global fallback configuration, e.g., `{ charset: 'utf8mb4' }`.
  *
- * @returns {Promise<Object>} Resolves with a single connection object if one database is provided,
+ * @returns {Promise<Record<string, any>>} Resolves with a single connection object if one database is provided,
  *                            or a map of database names to connections if multiple databases are configured.
  *
  * @throws {Error} Will reject if any database config is invalid or if the proxyType is unsupported.

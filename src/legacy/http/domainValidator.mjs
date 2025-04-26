@@ -11,14 +11,14 @@ import isEmulator from '../firebase/isEmulator.mjs';
  * This is useful for filtering requests by origin or allowing access from specific domains only.
  * Also detects if Firebase is running in emulator mode, which bypasses domain validation.
  *
- * @param {Object} req - The Express request object.
+ * @param {Record<string, any>} req - The Express request object.
  *   - `req.url`: Full URL path.
  *   - `req.headers`: Expected to contain 'host', 'x-forwarded-host', etc.
- * @param {Object} cfg - Configuration object.
+ * @param {Record<string, any>} cfg - Configuration object.
  *   @property {string|string[]} cfg.domain - The allowed domain(s) to validate against.
  *   @property {string[]} [cfg.staticPath] - Optional list of static paths to validate.
  *
- * @returns {Object} Returns an object with the following structure:
+ * @returns {Record<string, any>} Returns an object with the following structure:
  *   @property {boolean} verified - Whether the domain is verified.
  *   @property {string|null} domain - The detected domain from the request.
  *   @property {boolean} isStaticPath - Whether the request matches a static path.

@@ -11,9 +11,9 @@ import errorValidator from '../get/errorValidator.mjs';
  *
  * @param {string} guildID - The ID of the guild whose widget is to be fetched.
  *
- * @returns {Promise<Object>} Resolves with the guild widget data if successful.
+ * @returns {Promise<Record<string, any>>} Resolves with the guild widget data if successful.
  *
- * @throws {Object} If the request fails or the widget is disabled, rejects with an object containing a `code` and `message`.
+ * @throws {Record<string, any>} If the request fails or the widget is disabled, rejects with an object containing a `code` and `message`.
  *
  * @example
  * getGuildWidget('123456789012345678')

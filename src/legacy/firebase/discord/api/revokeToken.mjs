@@ -17,10 +17,10 @@ import errorValidator from '../get/errorValidator.mjs';
  * @param {string} tinyAuth.client_id - The Discord application client ID.
  * @param {string} tinyAuth.client_secret - The Discord application client secret.
  *
- * @returns {Promise<Object>} Resolves when the token is successfully revoked.
+ * @returns {Promise<Record<string, any>>} Resolves when the token is successfully revoked.
  * The response may not contain any body if successful, so `result.data` may be empty.
  *
- * @throws {Object} If the request fails, rejects with an error object containing `code` and `message`.
+ * @throws {Record<string, any>} If the request fails, rejects with an error object containing `code` and `message`.
  *
  * @example
  * revokeToken('user-access-token', {
