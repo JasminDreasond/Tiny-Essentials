@@ -4,7 +4,7 @@
  * Executes a directional query (next or previous) based on a position value and timestamp, returning a single row.
  *
  * @async
- * @param {Object} db - The database instance with a `.query(sql, params)` method.
+ * @param {Record<string, any>} db - The database instance with a `.query(sql, params)` method.
  * @param {Object} tiny_search - Configuration object for the query.
  * @param {string} tiny_search.select - SQL SELECT fields.
  * @param {string} tiny_search.from - SQL FROM clause.
