@@ -13,9 +13,17 @@ class TinyLevelUp {
   }
 
   /**
+   * @typedef {{ exp: number, level: number, totalExp: number }} UserResult
+   */
+
+  /**
+   * @typedef {{ exp: number, level: number, totalExp: any }} UserEditor
+   */
+
+  /**
    * Validates and adjusts the user's level based on their current experience.
-   * @param {{ exp: number, level: number, totalExp: any }} user - The user object containing experience and level properties.
-   * @returns {Object} The updated user object.
+   * @param {UserEditor} user - The user object containing experience and level properties.
+   * @returns {UserResult} The updated user object.
    */
   expValidator(user) {
     let extraValue = 0;
@@ -83,9 +91,9 @@ class TinyLevelUp {
 
   /**
    * Sets the experience value for the user, adjusting their level if necessary.
-   * @param {{ exp: number, level: number, totalExp: any }} user - The user object.
+   * @param {UserEditor} user - The user object.
    * @param {number} value - The new experience value to set.
-   * @returns {Object} The updated user object.
+   * @returns {UserResult} The updated user object.
    */
   set(user, value) {
     user.exp = value;
@@ -96,11 +104,11 @@ class TinyLevelUp {
 
   /**
    * Adds experience to the user, adjusting their level if necessary.
-   * @param {{ exp: number, level: number, totalExp: any }} user - The user object.
+   * @param {UserEditor} user - The user object.
    * @param {number} extraExp - Additional experience to be added.
    * @param {'add' | 'extra'} type - Type of addition ('add' or 'extra').
    * @param {number} multi - Multiplier for experience generation.
-   * @returns {Object} The updated user object.
+   * @returns {UserResult} The updated user object.
    */
   give(user, extraExp = 0, type = 'add', multi = 1) {
     if (type === 'add') user.exp += this.expGenerator(multi) + extraExp;
@@ -113,11 +121,11 @@ class TinyLevelUp {
 
   /**
    * Removes experience from the user, adjusting their level if necessary.
-   * @param {{ exp: number, level: number, totalExp: any }} user - The user object.
+   * @param {UserEditor} user - The user object.
    * @param {number} extraExp - Experience to remove.
    * @param {'add' | 'extra'} type - Type of removal ('add' or 'extra').
    * @param {number} multi - Multiplier for experience generation.
-   * @returns {Object} The updated user object.
+   * @returns {UserResult} The updated user object.
    */
   remove(user, extraExp = 0, type = 'add', multi = 1) {
     if (type === 'add') user.exp -= this.expGenerator(multi) + extraExp;
