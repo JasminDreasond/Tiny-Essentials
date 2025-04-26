@@ -8,7 +8,7 @@
  * @param {Object} data - Query configuration options.
  * @param {string} data.from - The table or view name to query from.
  * @param {string} [data.where] - Optional WHERE clause without the keyword (e.g., `"status = 'active'"`).
- * @param {Array} [data.params] - Optional parameters for the SQL query placeholders.
+ * @param {Array<*>} [data.params] - Optional parameters for the SQL query placeholders.
  * @param {string} [data.select="*"] - Fields to select in the query.
  * @param {string} data.order - SQL ORDER BY clause (e.g., `"created_at DESC"`).
  * @param {number} [data.limit] - Number of rows per page.
@@ -17,7 +17,7 @@
  * @param {boolean} [data.count_rows=false] - Whether to include a row number for each result.
  * @returns {Promise<Object>} Resolves with pagination metadata and result set.
  * @returns {number} return.count - Total number of matched rows.
- * @returns {Array} return.data - The paginated data from the query.
+ * @returns {Array<*>} return.data - The paginated data from the query.
  * @returns {number} return.pages - Total number of pages.
  * @returns {number} return.page - Current page number after validation.
  * @returns {number} return.start - Row offset used in the query.

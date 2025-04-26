@@ -25,7 +25,7 @@ setInterval(function () {
  *
  * @param {Object} socket - The socket object representing the connection.
  * @param {Object} ioCache - The cache object that holds the blocklist and flood panel data.
- * @param {Array} ioCache.blocklick - The list of blocked IPs.
+ * @param {Array<*>} ioCache.blocklick - The list of blocked IPs.
  * @param {Object} floodPanel - The object tracking flooding attempts and timeouts for each IP.
  * @returns {void} This function does not return anything, it modifies the floodPanel and blocklist.
  */

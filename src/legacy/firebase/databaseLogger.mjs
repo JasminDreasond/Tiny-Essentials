@@ -34,7 +34,7 @@ if (!('toJSON' in Error.prototype)) {
  *
  * @param {string} where - The location or context where the log is coming from.
  * @param {string} type - The type of log (log, error, info, or warn).
- * @param {Array} args - The arguments to log (can include strings, numbers, objects, arrays, or errors).
+ * @param {Array<*>} args - The arguments to log (can include strings, numbers, objects, arrays, or errors).
  * @returns {Promise<void>} Resolves once the log is stored in the database.
  */
 const tinyAction = async function (where, type, args) {

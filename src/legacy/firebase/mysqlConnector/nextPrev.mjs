@@ -9,7 +9,7 @@
  * @param {string} tiny_search.select - SQL SELECT fields.
  * @param {string} tiny_search.from - SQL FROM clause.
  * @param {string} [tiny_search.where] - Optional WHERE clause (without 'WHERE') to filter results.
- * @param {Array} tiny_search.params - Parameters for the query placeholders.
+ * @param {Array<*>} tiny_search.params - Parameters for the query placeholders.
  * @param {*} tiny_search.position - Value to compare in the directional filter (typically an ID or timestamp).
  * @param {boolean} [tiny_search.direction_r=false] - If `true`, selects previous record (uses `<`), otherwise selects next (`>`).
  * @param {Object} tiny_search.database - Object with database structure details.
