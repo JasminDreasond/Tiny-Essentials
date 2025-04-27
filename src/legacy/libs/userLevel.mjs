@@ -64,7 +64,7 @@ class TinyLevelUp {
 
   /**
    * Generates random experience points based on the configured multiplier.
-   * @param {number} multi - A multiplier for the generated experience.
+   * @param {number} [multi] - A multiplier for the generated experience.
    * @returns {number} The generated experience points.
    */
   expGenerator(multi = 1) {
@@ -105,9 +105,9 @@ class TinyLevelUp {
   /**
    * Adds experience to the user, adjusting their level if necessary.
    * @param {UserEditor} user - The user object.
-   * @param {number} extraExp - Additional experience to be added.
-   * @param {'add' | 'extra'} type - Type of addition ('add' or 'extra').
-   * @param {number} multi - Multiplier for experience generation.
+   * @param {number} [extraExp] - Additional experience to be added.
+   * @param {'add' | 'extra'} [type] - Type of addition ('add' or 'extra').
+   * @param {number} [multi] - Multiplier for experience generation.
    * @returns {UserResult} The updated user object.
    */
   give(user, extraExp = 0, type = 'add', multi = 1) {
@@ -122,9 +122,9 @@ class TinyLevelUp {
   /**
    * Removes experience from the user, adjusting their level if necessary.
    * @param {UserEditor} user - The user object.
-   * @param {number} extraExp - Experience to remove.
-   * @param {'add' | 'extra'} type - Type of removal ('add' or 'extra').
-   * @param {number} multi - Multiplier for experience generation.
+   * @param {number} [extraExp] - Additional experience to remove.
+   * @param {'add' | 'extra'} [type] - Type of removal ('add' or 'extra').
+   * @param {number} [multi] - Multiplier for experience generation.
    * @returns {UserResult} The updated user object.
    */
   remove(user, extraExp = 0, type = 'add', multi = 1) {

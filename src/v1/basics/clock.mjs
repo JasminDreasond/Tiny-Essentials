@@ -36,7 +36,7 @@ export function getTimeDuration(timeData = new Date(), durationType = 'asSeconds
  * Includes proper reallocation of lower units into higher ones, ensuring consistent hierarchy.
  *
  * @param {number} totalSeconds - The total amount of seconds to convert.
- * @param {'seconds'|'minutes'|'hours'|'days'|'months'|'years'} level - The highest level to calculate and display.
+ * @param {'seconds'|'minutes'|'hours'|'days'|'months'|'years'} [level] - The highest level to calculate and display.
  * @param {string} [format='{time}'] - Output template with placeholders like {years}, {months}, {days}, {hours}, {minutes}, {seconds}, {time}, {total}.
  * @returns {string} The formatted timer string.
  */
