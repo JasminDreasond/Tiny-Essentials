@@ -13,6 +13,7 @@ import {
   reorderObjTypeOrder,
   cloneObjTypeOrder,
   objType,
+  checkObj,
 } from './basics/objFilter.mjs';
 import { getAge, getSimplePerc, ruleOfThree } from './basics/simpleMath.mjs';
 import { toTitleCase, toTitleCaseLowerFirst } from './basics/text.mjs';
@@ -23,6 +24,7 @@ export {
   reorderObjTypeOrder,
   cloneObjTypeOrder,
   countObj,
+  checkObj,
   objType,
   ruleOfThree,
   getSimplePerc,

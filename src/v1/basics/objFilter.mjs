@@ -21,64 +21,64 @@ import { Buffer } from 'buffer';
  */
 const typeValidator = {
   items: {
-    /** Checks if the value is undefined. */
+    /** @param {*} val @returns {val is undefined} */
     undefined: (val) => typeof val === 'undefined',
 
-    /** Checks if the value is null. */
+    /** @param {*} val @returns {val is null} */
     null: (val) => val === null,
 
-    /** Checks if the value is a boolean. */
+    /** @param {*} val @returns {val is boolean} */
     boolean: (val) => typeof val === 'boolean',
 
-    /** Checks if the value is a number. */
+    /** @param {*} val @returns {val is number} */
     number: (val) => typeof val === 'number' && !isNaN(val),
 
-    /** Checks if the value is a bigint. */
+    /** @param {*} val @returns {val is bigint} */
     bigint: (val) => typeof val === 'bigint',
 
-    /** Checks if the value is a string. */
+    /** @param {*} val @returns {val is string} */
     string: (val) => typeof val === 'string',
 
-    /** Checks if the value is a symbol. */
+    /** @param {*} val @returns {val is symbol} */
     symbol: (val) => typeof val === 'symbol',
 
-    /** Checks if the value is a function. */
+    /** @param {*} val @returns {val is Function} */
     function: (val) => typeof val === 'function',
 
-    /** Checks if the value is an array. */
+    /** @param {*} val @returns {val is Array<any>} */
     array: (val) => Array.isArray(val),
 
-    /** Checks if the value is a Date object. */
+    /** @param {*} val @returns {val is Date} */
     date: (val) => val instanceof Date,
 
-    /** Checks if the value is a regular expression. */
+    /** @param {*} val @returns {val is RegExp} */
     regexp: (val) => val instanceof RegExp,
 
-    /** Checks if the value is a Map. */
+    /** @param {*} val @returns {val is Map<any, any>} */
     map: (val) => val instanceof Map,
 
-    /** Checks if the value is a Set. */
+    /** @param {*} val @returns {val is Set<any>} */
     set: (val) => val instanceof Set,
 
-    /** Checks if the value is a WeakMap. */
+    /** @param {*} val @returns {val is WeakMap<object, any>} */
     weakmap: (val) => val instanceof WeakMap,
 
-    /** Checks if the value is a WeakSet. */
+    /** @param {*} val @returns {val is WeakSet<object>} */
     weakset: (val) => val instanceof WeakSet,
 
-    /** Checks if the value is a Promise. */
+    /** @param {*} val @returns {val is Promise<any>} */
     promise: (val) => val instanceof Promise,
 
-    /** Checks if the value is a Buffer. */
+    /** @param {*} val @returns {val is Buffer} */
     buffer: (val) => typeof Buffer !== 'undefined' && Buffer.isBuffer(val),
 
-    /** Checks if the value is a File. */
+    /** @param {*} val @returns {val is File} */
     file: (val) => typeof File !== 'undefined' && val instanceof File,
 
-    /** Checks if the value is a Html Element. */
+    /** @param {*} val @returns {val is HTMLElement} */
     htmlelement: (val) => typeof HTMLElement !== 'undefined' && val instanceof HTMLElement,
 
-    /** Checks if the value is a non-null plain object or instance of a class. */
+    /** @param {*} val @returns {val is object} */
     object: (val) => typeof val === 'object' && val !== null,
   },
 
@@ -205,7 +205,8 @@ export function cloneObjTypeOrder() {
 const getType = (val) => {
   if (val === null) return 'null';
   for (const name of typeValidator.order)
-    if (!typeValidator.items[name] || typeValidator.items[name](val)) return name;
+    if (typeof typeValidator.items[name] !== 'function' || typeValidator.items[name](val))
+      return name;
   return 'unknown';
 };
 
@@ -231,9 +232,31 @@ export function objType(obj, type) {
 }
 
 /**
+ * Checks the type of a given object and returns the validation value if a known type is detected.
+ *
+ * @param {*} obj - The object to check or identify.
+ * @returns {{ valid:*; type: string | null }} - Returns the type result.
+ */
+export function checkObj(obj) {
+  /** @type {{ valid:*; type: string | null }} */
+  const data = { valid: null, type: null };
+  for (const name of typeValidator.order) {
+    if (typeof typeValidator.items[name] === 'function') {
+      const result = typeValidator.items[name](obj);
+      if (result) {
+        data.valid = result;
+        data.type = name;
+        break;
+      }
+    }
+  }
+  return data;
+}
+
+/**
  * Counts the number of elements in an array or the number of properties in an object.
  *
- * @param {*} obj - The array or object to count.
+ * @param {Array<*>|Record<string|number, any>} obj - The array or object to count.
  * @returns {number} - The count of items (array elements or object keys), or `0` if the input is neither an array nor an object.
  *
  * @example
