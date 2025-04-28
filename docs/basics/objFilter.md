@@ -40,6 +40,39 @@ Returns:
 
 ---
 
+### 🔍 `checkObj(obj)`
+
+Checks the type of a given object and returns the validation result if a known type is detected.
+
+```js
+checkObj('hello');
+// { valid: true, type: "string" }
+
+checkObj(123);
+// { valid: true, type: "number" }
+
+checkObj(undefined);
+// { valid: true, type: "undefined" }
+
+checkObj(Symbol('sym'));
+// { valid: true, type: "symbol" }
+
+checkObj(() => {});
+// { valid: true, type: "function" }
+
+checkObj(null);
+// { valid: true, type: "null" }
+
+checkObj(Object.create(null));
+// { valid: true, type: "object" }
+```
+
+Returns:
+- `{ valid: true, type: "<type>" }` if the type is recognized
+- `{ valid: null, type: null }` if no matching type is found
+
+---
+
 ### ➕ `extendObjType(newTypes, [index])`
 
 Add your own custom types. You can optionally define where in the check order they go.
