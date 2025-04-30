@@ -1,3 +1,11 @@
+/**
+ * A queue system for managing and executing asynchronous tasks sequentially, one at a time.
+ *
+ * Tasks can be delayed, reordered, canceled, and processed in strict order. The queue ensures that each task
+ * is executed after the previous one finishes, and any task can be skipped or canceled if needed.
+ *
+ * @class
+ */
 class TinyPromiseQueue {
   /**
    * @typedef {Object} QueuedTask
@@ -117,6 +125,9 @@ class TinyPromiseQueue {
   /**
    * Adds a new async task to the queue and ensures it runs in order after previous tasks.
    * Optionally, a delay can be added before the task is executed.
+   *
+   * If the task is canceled before execution, it will be rejected with the message:
+   * "The function was canceled on TinyPromiseQueue."
    *
    * @param {(...args: any[]) => Promise<any>} task A function that returns a Promise to be executed sequentially.
    * @param {number|null} [delay] Optional delay (in ms) before the task is executed.

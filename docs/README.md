@@ -17,6 +17,10 @@ This folder contains the core scripts we have worked on so far. Each file is a m
 - 🧠 **[objFilter.md](./basics/objFilter.md)** — Type detection, extension, and analysis made easy with simple and extensible type validation.
 - 🔢 **[simpleMath.md](./basics/simpleMath.md)** — A collection of simple math utilities for calculations like the Rule of Three and percentages.
 - ✍️ **[text.md](./basics/text.md)** — A utility for transforming text into title case formats, with multiple options for capitalization.
+- 🔄 **[asyncReplace.md](./basics/asyncReplace.md)** — Asynchronously replaces matches in a string using a regex and an async function.
+
+### 2. **`libs/`**
+- 🗂️ **[TinyPromiseQueue.md](./libs/TinyPromiseQueue.md)** — A class that allows sequential execution of asynchronous tasks, supporting task delays, cancellation, and queue management.
 
 ---
 
