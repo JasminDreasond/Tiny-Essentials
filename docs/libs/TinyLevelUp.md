@@ -1,13 +1,9 @@
 
-### `TinyLevelUp.js` 🎮
+### TinyLevelUp 🎮
 
 This class manages user level-up logic based on experience points. It provides methods to handle experience points (exp) adjustments, level progression, and random experience generation.
 
-#### Class: `TinyLevelUp` 🎮
-
-A class to manage user level-up logic based on experience points.
-
-##### Constructor 🛠️
+#### Constructor 🛠️
 
 - **`constructor(giveExp: number, expLevel: number)`**  
   Initializes the class with the base experience value for random experience generation and the base experience required to level up.
@@ -15,7 +11,7 @@ A class to manage user level-up logic based on experience points.
   - `giveExp` (`number`): The base experience value used for random experience generation. 🎲
   - `expLevel` (`number`): The base experience required to level up for each level. 📈
 
-##### Methods 🔧
+#### Methods 🔧
 
 - **`expValidator(user: UserEditor)`**  
   Validates and adjusts the user's level based on their current experience. If the user's experience is above or below the required threshold, their level is adjusted accordingly. ⚖️
@@ -80,7 +76,7 @@ A class to manage user level-up logic based on experience points.
 
   - **Returns**: `UserResult` - The updated user object. 🔄
 
-#### Type Definitions 📚
+### Type Definitions 📚
 
 - **`UserResult`**  
   Represents the structure of a user object after level validation. 🧑‍💻
@@ -96,7 +92,7 @@ A class to manage user level-up logic based on experience points.
   - `level` (`number`): The user's current level. 🏆
   - `totalExp` (`any`): The user's total experience (can be calculated using `getTotalExp`). 📊
 
-#### Example Usage 💡
+### Example Usage 💡
 
 ```javascript
 const user = { exp: 50, level: 1, totalExp: 50 };
