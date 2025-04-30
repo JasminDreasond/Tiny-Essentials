@@ -9,7 +9,7 @@
 class TinyPromiseQueue {
   /**
    * @typedef {Object} QueuedTask
-   * @property {() => Promise<any>} task - The async task to execute.
+   * @property {(...args: any[]) => Promise<any>|Promise<any>} task - The async task to execute.
    * @property {(value: any) => any} resolve - The resolve function from the Promise.
    * @property {(reason?: any) => any} reject - The reject function from the Promise.
    * @property {string|undefined} [id] - Optional identifier for the task.
@@ -129,7 +129,7 @@ class TinyPromiseQueue {
    * If the task is canceled before execution, it will be rejected with the message:
    * "The function was canceled on TinyPromiseQueue."
    *
-   * @param {(...args: any[]) => Promise<any>} task A function that returns a Promise to be executed sequentially.
+   * @param {(...args: any[]) => Promise<any>|Promise<any>} task A function that returns a Promise to be executed sequentially.
    * @param {number|null} [delay] Optional delay (in ms) before the task is executed.
    * @param {string} [id] Optional ID to identify the task in the queue.
    * @returns {Promise<any>} A Promise that resolves or rejects with the result of the task once it's processed.
