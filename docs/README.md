@@ -21,6 +21,7 @@ This folder contains the core scripts we have worked on so far. Each file is a m
 
 ### 2. **`libs/`**
 - 🗂️ **[TinyPromiseQueue.md](./libs/TinyPromiseQueue.md)** — A class that allows sequential execution of asynchronous tasks, supporting task delays, cancellation, and queue management.
+- 🏅 **[TinyLevelUp.md](./libs/TinyLevelUp.md)** — A class to manage user level-up logic based on experience points, providing methods for experience validation, addition, removal, and calculation.
 
 ---
 
