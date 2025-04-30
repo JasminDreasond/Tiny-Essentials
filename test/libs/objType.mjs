@@ -9,7 +9,7 @@ const executeObjType = async () => {
     console.log(objType(new Date()));
     console.log(objType(null));
     console.log(objType(undefined));
-  
+
     console.log(checkObj({}));
     console.log(checkObj([]));
     console.log(checkObj(new Map()));

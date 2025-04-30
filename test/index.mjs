@@ -1,7 +1,9 @@
 import * as TinyEssentials from '../dist/v1/index.mjs';
 import executeTinyPromiseQueue from './libs/TinyPromiseQueue.mjs';
+import executeObjType from './libs/objType.mjs';
 
 const actions = {
+  objType: executeObjType,
   promiseQueue: executeTinyPromiseQueue,
 };
 
