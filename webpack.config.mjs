@@ -62,5 +62,6 @@ const addModule = (entry, library, isClass = false) => {
 addModule('./src/v1/index.mjs', 'TinyEssentials');
 addModule('./src/v1/basics/index.mjs', 'TinyBasicsEs');
 addModule('./src/v1/build/TinyLevelUp.mjs', 'TinyLevelUp', true);
+addModule('./src/v1/build/TinyPromiseQueue.mjs', 'TinyPromiseQueue', true);
 
 export default modules;

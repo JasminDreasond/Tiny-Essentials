@@ -1,19 +1,20 @@
 import * as TinyEssentials from '../dist/v1/index.mjs';
+import executeTinyPromiseQueue from './libs/TinyPromiseQueue.mjs';
 
-console.log(TinyEssentials.objType({}));
-console.log(TinyEssentials.objType([]));
-console.log(TinyEssentials.objType(new Map()));
-console.log(TinyEssentials.objType(new Set()));
-console.log(TinyEssentials.objType(new Date()));
-console.log(TinyEssentials.objType(null));
-console.log(TinyEssentials.objType(undefined));
+const actions = {
+  promiseQueue: executeTinyPromiseQueue,
+};
 
-console.log(TinyEssentials.checkObj({}));
-console.log(TinyEssentials.checkObj([]));
-console.log(TinyEssentials.checkObj(new Map()));
-console.log(TinyEssentials.checkObj(new Set()));
-console.log(TinyEssentials.checkObj(new Date()));
-console.log(TinyEssentials.checkObj(null));
-console.log(TinyEssentials.checkObj(undefined));
-
-console.log(TinyEssentials);
+(async () => {
+  const arg = process.argv[2];
+  // No arg? Run all
+  if (!arg) for (const action of Object.values(actions)) await action();
+  // Execute args
+  else if (actions[arg]) await actions[arg]();
+  // Fail
+  else {
+    console.error(`Unknown argument: ${arg}`);
+    console.error(`Valid arguments are: ${Object.keys(actions).join(', ')}`);
+    process.exit(1);
+  }
+})();
