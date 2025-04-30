@@ -113,6 +113,73 @@ setTimeout(() => {
 }, 60);
 ```
 
+```js
+import { TinyPromiseQueue } from './TinyPromiseQueue';
+
+const queue = new TinyPromiseQueue();
+await new Promise((resolve) => {
+
+    // Task generator with color-coded logs
+    function createTask(name, duration = 500) {
+      return () =>
+        new Promise((resolve) => {
+          console.log(`\x1b[34m[STARTED]\x1b[0m \x1b[36m${name}\x1b[0m`);
+          setTimeout(() => {
+            console.log(`\x1b[32m[FINISHED]\x1b[0m \x1b[36m${name}\x1b[0m`);
+            resolve(name);
+          }, duration);
+        });
+    }
+
+    // Function to simulate a parallel group of enqueues
+    const parallelEnqueueGroup = (groupName, delayStart = 0) => {
+        const count = Math.floor(Math.random() * (15 - 1 + 1) + 1);
+        for (let i = 1; i <= count; i++) {
+          const taskName = `${groupName}-${i}`;
+          queue.enqueue(createTask(taskName, 300 + i * 50), delayStart, taskName);
+        }
+    };
+
+    // Main enqueue block
+    queue.enqueue(createTask('Init-1', 400), 50, 'init-1');
+    queue.enqueue(createTask('Init-2', 400), 0, 'init-2');
+
+    // Simulate enqueues from other contexts "in parallel"
+    parallelEnqueueGroup('Alpha',     80);  // Starts after 80ms
+    parallelEnqueueGroup('Beta',     120);  // Starts after 120ms
+    parallelEnqueueGroup('Gamma',    250);  // Starts after 250ms
+    parallelEnqueueGroup('Delta',    180);  // Starts after 180ms
+    parallelEnqueueGroup('Epsilon',  300);  // Starts after 300ms
+    parallelEnqueueGroup('Zeta',     160);  // Starts after 160ms
+    parallelEnqueueGroup('Eta',       90);  // Starts after 90ms
+    parallelEnqueueGroup('Theta',    220);  // Starts after 220ms
+    parallelEnqueueGroup('Iota',     140);  // Starts after 140ms
+    parallelEnqueueGroup('Kappa',    400);  // Starts after 400ms
+    parallelEnqueueGroup('Lambda',   190);  // Starts after 190ms
+    parallelEnqueueGroup('Mu',       260);  // Starts after 260ms
+    parallelEnqueueGroup('Nu',       110);  // Starts after 110ms
+    parallelEnqueueGroup('Xi',       330);  // Starts after 330ms
+    parallelEnqueueGroup('Omicron',  170);  // Starts after 170ms
+    parallelEnqueueGroup('Pi',       280);  // Starts after 280ms
+    parallelEnqueueGroup('Rho',       70);  // Starts after 70ms
+    parallelEnqueueGroup('Sigma',    360);  // Starts after 360ms
+    parallelEnqueueGroup('Tau',      130);  // Starts after 130ms
+    parallelEnqueueGroup('Upsilon',  240);  // Starts after 240ms
+    parallelEnqueueGroup('Phi',      310);  // Starts after 310ms
+    parallelEnqueueGroup('Chi',      100);  // Starts after 100ms
+    parallelEnqueueGroup('Psi',      200);  // Starts after 200ms
+    parallelEnqueueGroup('Omega',     50);  // Starts after 50ms
+
+    // Final task to confirm everything executed
+    setTimeout(() => {
+      queue.enqueue(createTask('Finalizer', 500), 0, 'finalizer').then(() => {
+        console.log('\x1b[35m[QUEUE COMPLETE]\x1b[0m All tasks have been processed.');
+        resolve();
+      });
+    }, 250);
+});
+```
+
 ### Explanation 🧩:
 1. **Task Creation**: Tasks are created with a name and an optional duration (in ms). The task logs its start and finish times 🕰️.
 2. **Task Execution**: Tasks are enqueued one at a time, ensuring they run in the order they were added 🔁.
