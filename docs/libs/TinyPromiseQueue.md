@@ -2,18 +2,6 @@
 
 `TinyPromiseQueue` is a queue system designed to manage and execute asynchronous tasks in a sequential, one-at-a-time order. Tasks are executed in the order they are added to the queue, with support for optional delays ⏳, task cancellation ❌, and task reordering 🔄.
 
-## Table of Contents 📑
-
-1. [Properties](#properties)
-2. [Methods](#methods)
-   - [isRunning](#isrunning)
-   - [getIndexById](#getindexbyid)
-   - [getQueuedIds](#getqueuedids)
-   - [reorderQueue](#reorderqueue)
-   - [enqueue](#enqueue)
-   - [cancelTask](#canceltask)
-3. [Usage Example](#usage-example)
-
 ---
 
 ## Properties 🏠
