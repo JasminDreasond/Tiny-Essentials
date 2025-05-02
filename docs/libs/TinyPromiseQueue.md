@@ -22,6 +22,8 @@ Returns whether the queue is currently processing a task.
 #### Returns:
 - `boolean`: `true` if the queue is processing a task, otherwise `false`.
 
+---
+
 ### `getIndexById(id)` 🔍
 
 Returns the index of a task in the queue by its ID.
@@ -32,12 +34,16 @@ Returns the index of a task in the queue by its ID.
 #### Returns:
 - `number`: The index of the task in the queue, or `-1` if not found.
 
+---
+
 ### `getQueuedIds()` 📋
 
 Returns a list of IDs for all tasks currently in the queue.
 
 #### Returns:
 - `Array<{ index: number, id: string }>`: An array of task IDs and their corresponding indices.
+
+---
 
 ### `reorderQueue(fromIndex, toIndex)` 🔄
 
@@ -49,6 +55,8 @@ Reorders a task in the queue from one index to another.
 
 #### Returns:
 - `void`: This method does not return anything.
+
+---
 
 ### `enqueue(task, delay, id)` ⏳
 
@@ -65,6 +73,8 @@ If the task is canceled before execution, it will be rejected with the message:
 #### Returns:
 - `Promise<any>`: A promise that resolves or rejects with the result of the task once it's processed.
 
+---
+
 ### `enqueuePoint(task, id)` 🪢
 
 Adds an async task to a parallel group in the queue. All tasks added with `enqueuePoint` before the next `enqueue` will be executed **simultaneously**, but only after all previous tasks in the queue have completed.
@@ -80,6 +90,8 @@ If a task is canceled before execution, it will be rejected with the message:
 
 #### Returns:
 - `Promise<any>`: A promise that resolves or rejects with the result of the task once it's processed.
+
+---
 
 ### `cancelTask(id)` ❌
 
