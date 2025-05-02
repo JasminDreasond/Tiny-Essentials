@@ -13,6 +13,7 @@ class TinyPromiseQueue {
    * @property {(value: any) => any} resolve - The resolve function from the Promise.
    * @property {(reason?: any) => any} reject - The reject function from the Promise.
    * @property {string|undefined} [id] - Optional identifier for the task.
+   * @property {string|null|undefined} [marker] - Optional marker for the task.
    * @property {number|null|undefined} [delay] - Optional delay (in ms) before the task is executed.
    */
 
@@ -34,15 +35,13 @@ class TinyPromiseQueue {
   }
 
   /**
-   * Processes the next task in the queue if not already running.
-   * Ensures tasks are executed in order, one at a time.
+   * Processes the a normal task.
+   *
+   * @param {QueuedTask} data
    *
    * @returns {Promise<void>}
    */
-  async #processQueue() {
-    if (this.#running || this.#queue.length === 0) return;
-    this.#running = true;
-    const data = this.#queue.shift();
+  async #normalProcessQueue(data) {
     if (
       data &&
       typeof data.task === 'function' &&
@@ -51,6 +50,14 @@ class TinyPromiseQueue {
     ) {
       const { task, resolve, reject, delay, id } = data;
       try {
+        if (id && this.#blacklist.has(id)) {
+          reject(new Error('The function was canceled on TinyPromiseQueue.'));
+          this.#blacklist.delete(id);
+          this.#running = false;
+          this.#processQueue();
+          return;
+        }
+
         if (delay && id) {
           await new Promise((resolveDelay) => {
             const timeoutId = setTimeout(() => {
@@ -59,14 +66,6 @@ class TinyPromiseQueue {
             }, delay);
             this.#timeouts[id] = timeoutId;
           });
-        }
-
-        if (id && this.#blacklist.has(id)) {
-          reject(new Error('The function was canceled on TinyPromiseQueue.'));
-          this.#blacklist.delete(id);
-          this.#running = false;
-          this.#processQueue();
-          return;
         }
 
         const result = await task();
@@ -78,6 +77,61 @@ class TinyPromiseQueue {
         this.#processQueue();
       }
     }
+  }
+
+  /**
+   * Processes a group task.
+   *
+   * @returns {Promise<void>}
+   */
+  async #groupProcessQueue() {
+    /** @type {Array<QueuedTask>} */
+    const grouped = [];
+    while (this.#queue.length && this.#queue[0]?.marker === 'POINT_MARKER') {
+      // @ts-ignore
+      grouped.push(this.#queue.shift());
+    }
+
+    if (grouped.length === 0) {
+      this.#running = false;
+      this.#processQueue();
+      return;
+    }
+
+    await Promise.all(
+      grouped.map(
+        ({ task, resolve, reject, id }) =>
+          new Promise(async (pResolve) => {
+            if (id && this.#blacklist.has(id)) {
+              this.#blacklist.delete(id);
+              reject(new Error('The function was canceled on TinyPromiseQueue.'));
+              pResolve(true);
+              return;
+            }
+            await task().then(resolve).catch(reject);
+            pResolve(true);
+          }),
+      ),
+    );
+
+    this.#running = false;
+    this.#processQueue();
+  }
+
+  /**
+   * Processes the next task in the queue if not already running.
+   * Ensures tasks are executed in order, one at a time.
+   *
+   * @returns {Promise<void>}
+   */
+  async #processQueue() {
+    if (this.#running || this.#queue.length === 0) return;
+    this.#running = true;
+    if (typeof this.#queue[0]?.marker !== 'string' || this.#queue[0]?.marker !== 'POINT_MARKER') {
+      const data = this.#queue.shift();
+      // @ts-ignore
+      this.#normalProcessQueue(data);
+    } else this.#groupProcessQueue();
   }
 
   /**
@@ -123,6 +177,22 @@ class TinyPromiseQueue {
   }
 
   /**
+   * Inserts a point in the queue where subsequent tasks will be grouped and executed together in a Promise.all.
+   * If the queue is currently empty, behaves like a regular promise.
+   *
+   * @param {(...args: any[]) => Promise<any>|Promise<any>} task A function that returns a Promise.
+   * @param {string} [id] Optional ID for the task.
+   * @returns {Promise<any>}
+   */
+  async enqueuePoint(task, id) {
+    if (!this.#running) return task();
+    return new Promise((resolve, reject) => {
+      this.#queue.push({ marker: 'POINT_MARKER', task, resolve, reject, id });
+      this.#processQueue();
+    });
+  }
+
+  /**
    * Adds a new async task to the queue and ensures it runs in order after previous tasks.
    * Optionally, a delay can be added before the task is executed.
    *
@@ -160,7 +230,8 @@ class TinyPromiseQueue {
 
     const index = this.getIndexById(id);
     if (index !== -1) {
-      this.#queue.splice(index, 1);
+      const [removed] = this.#queue.splice(index, 1);
+      removed?.reject?.(new Error('The function was canceled on TinyPromiseQueue.'));
       cancelled = true;
     }
 

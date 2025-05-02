@@ -65,6 +65,22 @@ If the task is canceled before execution, it will be rejected with the message:
 #### Returns:
 - `Promise<any>`: A promise that resolves or rejects with the result of the task once it's processed.
 
+### `enqueuePoint(task, id)` 🪢
+
+Adds an async task to a parallel group in the queue. All tasks added with `enqueuePoint` before the next `enqueue` will be executed **simultaneously**, but only after all previous tasks in the queue have completed.
+
+These grouped tasks share a "concurrent checkpoint" and will run using `Promise.all`. Each task resolves or rejects independently.
+
+If a task is canceled before execution, it will be rejected with the message:  
+**"The function was canceled on TinyPromiseQueue."**
+
+#### Parameters:
+- `task` (`Function`): A function that returns a `Promise` to be executed sequentially.
+- `id` (`string`): Optional ID to identify the task in the queue.
+
+#### Returns:
+- `Promise<any>`: A promise that resolves or rejects with the result of the task once it's processed.
+
 ### `cancelTask(id)` ❌
 
 Cancels a scheduled delay and removes the task from the queue. Adds the ID to a blacklist so the task is skipped if already being processed.
