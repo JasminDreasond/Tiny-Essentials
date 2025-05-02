@@ -181,8 +181,8 @@ class TinyPromiseQueue {
    * If the queue is currently empty, behaves like a regular promise.
    *
    * @param {(...args: any[]) => Promise<any>|Promise<any>} task A function that returns a Promise.
-   * @param {string} [id] Optional ID for the task.
-   * @returns {Promise<any>}
+   * @param {string} [id] Optional ID to identify the task in the queue.
+   * @returns {Promise<any>} A Promise that resolves or rejects with the result of the task once it's processed.
    */
   async enqueuePoint(task, id) {
     if (!this.#running) return task();
