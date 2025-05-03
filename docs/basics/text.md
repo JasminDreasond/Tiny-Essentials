@@ -39,7 +39,7 @@ toTitleCaseLowerFirst('hello world'); // → "hello World"
 
 ---
 
-## 🎯 `enableAiMarker(key = 'a')`
+## 🎯 `addAiMarkerShortcut(key = 'a')`
 
 Enables a keyboard shortcut (`Ctrl + Alt + [key]`) that toggles a CSS class on the `<body>` element. Useful for marking or highlighting AI-generated content dynamically.
 
@@ -48,7 +48,7 @@ Enables a keyboard shortcut (`Ctrl + Alt + [key]`) that toggles a CSS class on t
 ### 🔤 Syntax
 
 ```js
-enableAiMarker(key)
+addAiMarkerShortcut(key)
 ```
 
 ---
@@ -76,13 +76,13 @@ Two types of errors are handled:
 1. 🧱 **Non-browser environment (e.g., Node.js):**
 
    ```
-   [enableAiMarker] Environment does not support the DOM. This function must be run in a browser.
+   [AiMarkerShortcut] Environment does not support the DOM. This function must be run in a browser.
    ```
 
 2. 🕓 **DOM not fully loaded at the time of shortcut:**
 
    ```
-   [enableAiMarker] <body> element not found. Cannot toggle class. Ensure the DOM is fully loaded when using the shortcut.
+   [AiMarkerShortcut] <body> element not found. Cannot toggle class. Ensure the DOM is fully loaded when using the shortcut.
    ```
 
 ---
@@ -90,7 +90,7 @@ Two types of errors are handled:
 ### 🧪 Example
 
 ```js
-enableAiMarker(); // Uses default key 'a'
+addAiMarkerShortcut(); // Uses default key 'a'
 // Pressing Ctrl + Alt + A toggles the class "detect-made-by-ai" on <body>
 ```
 
@@ -115,7 +115,7 @@ To avoid the `<body>` warning, make sure you only call the function after the DO
 
 ```js
 document.addEventListener('DOMContentLoaded', () => {
-  enableAiMarker();
+  addAiMarkerShortcut();
 });
 ```
 

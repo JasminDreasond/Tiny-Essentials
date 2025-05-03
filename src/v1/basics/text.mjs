@@ -41,10 +41,10 @@ export function toTitleCaseLowerFirst(str) {
  *
  * @param {string} [key='a'] - The lowercase character key to be used in combination with Ctrl and Alt.
  */
-export function enableAiMarker(key = 'a') {
+export function addAiMarkerShortcut(key = 'a') {
   if (typeof HTMLElement === 'undefined') {
     console.error(
-      '[enableAiMarker] Environment does not support the DOM. This function must be run in a browser.',
+      '[AiMarkerShortcut] Environment does not support the DOM. This function must be run in a browser.',
     );
     return;
   }
@@ -53,7 +53,7 @@ export function enableAiMarker(key = 'a') {
       event.preventDefault(); // Prevent any default behavior
       if (!document.body) {
         console.warn(
-          '[enableAiMarker] <body> element not found. Cannot toggle class. Ensure the DOM is fully loaded when using the shortcut.',
+          '[AiMarkerShortcut] <body> element not found. Cannot toggle class. Ensure the DOM is fully loaded when using the shortcut.',
         );
         return;
       }
