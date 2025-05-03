@@ -16,12 +16,13 @@ import {
   checkObj,
 } from './basics/objFilter.mjs';
 import { getAge, getSimplePerc, ruleOfThree } from './basics/simpleMath.mjs';
-import { toTitleCase, toTitleCaseLowerFirst } from './basics/text.mjs';
+import { enableAiMarker, toTitleCase, toTitleCaseLowerFirst } from './basics/text.mjs';
 import TinyPromiseQueue from './libs/TinyPromiseQueue.mjs';
 
 export {
   TinyPromiseQueue,
   TinyLevelUp,
+  enableAiMarker,
   extendObjType,
   reorderObjTypeOrder,
   cloneObjTypeOrder,

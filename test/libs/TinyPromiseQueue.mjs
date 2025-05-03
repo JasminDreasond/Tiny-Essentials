@@ -7,7 +7,7 @@ const executeTinyPromiseQueue = async () => {
 
     // Helper function to create tasks with log output
     const createTask =
-      (name, duration = Math.floor(Math.random() * (1000) + 1)) =>
+      (name, duration = Math.floor(Math.random() * 1000 + 1)) =>
       () =>
         new Promise((resolveTask) => {
           console.log(`\x1b[34mStarted task:\x1b[0m \x1b[32m${name}\x1b[0m`);
