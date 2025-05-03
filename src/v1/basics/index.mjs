@@ -9,9 +9,10 @@ import {
   objType,
 } from './objFilter.mjs';
 import { getAge, getSimplePerc, ruleOfThree } from './simpleMath.mjs';
-import { toTitleCase, toTitleCaseLowerFirst } from './text.mjs';
+import { addAiMarkerShortcut, toTitleCase, toTitleCaseLowerFirst } from './text.mjs';
 
 export {
+  addAiMarkerShortcut,
   extendObjType,
   reorderObjTypeOrder,
   cloneObjTypeOrder,
