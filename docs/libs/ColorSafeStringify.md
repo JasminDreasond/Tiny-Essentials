@@ -84,7 +84,6 @@ colorizer.saveColorPreset('candy', {
   string_url: '\x1b[35m',
   string_bool: '\x1b[95m',
   string_number: '\x1b[91m',
-  string_unicode: '\x1b[95m',
   number: '\x1b[91m',
   boolean: '\x1b[95m',
   null: '\x1b[90m',
