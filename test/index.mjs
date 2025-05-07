@@ -1,10 +1,12 @@
 import * as TinyEssentials from '../dist/v1/index.mjs';
+import testColorSafeStringify from './libs/ColorSafeStringify.mjs';
 import executeTinyPromiseQueue from './libs/TinyPromiseQueue.mjs';
 import executeObjType from './libs/objType.mjs';
 
 const actions = {
   objType: executeObjType,
   promiseQueue: executeTinyPromiseQueue,
+  colorStringify: testColorSafeStringify,
 };
 
 (async () => {

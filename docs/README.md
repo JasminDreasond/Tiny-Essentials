@@ -12,16 +12,17 @@ Here, you can navigate through different sections of the project. Below are the 
 
 This folder contains the core scripts we have worked on so far. Each file is a module focused on specific functionality.
 
-- 📦 **[array.md](./basics/array.md)** — A tiny utility for shuffling arrays using the Fisher–Yates algorithm.
-- ⏰ **[clock.md](./basics/clock.md)** — A versatile time utility module for calculating and formatting time durations.
-- 🧠 **[objFilter.md](./basics/objFilter.md)** — Type detection, extension, and analysis made easy with simple and extensible type validation.
-- 🔢 **[simpleMath.md](./basics/simpleMath.md)** — A collection of simple math utilities for calculations like the Rule of Three and percentages.
-- ✍️ **[text.md](./basics/text.md)** — A utility for transforming text into title case formats, with multiple options for capitalization.
-- 🔄 **[asyncReplace.md](./basics/asyncReplace.md)** — Asynchronously replaces matches in a string using a regex and an async function.
+- 📦 **[array](./basics/array.md)** — A tiny utility for shuffling arrays using the Fisher–Yates algorithm.
+- ⏰ **[clock](./basics/clock.md)** — A versatile time utility module for calculating and formatting time durations.
+- 🧠 **[objFilter](./basics/objFilter.md)** — Type detection, extension, and analysis made easy with simple and extensible type validation.
+- 🔢 **[simpleMath](./basics/simpleMath.md)** — A collection of simple math utilities for calculations like the Rule of Three and percentages.
+- ✍️ **[text](./basics/text.md)** — A utility for transforming text into title case formats, with multiple options for capitalization.
+- 🔄 **[asyncReplace](./basics/asyncReplace.md)** — Asynchronously replaces matches in a string using a regex and an async function.
 
 ### 2. **`libs/`**
-- 🗂️ **[TinyPromiseQueue.md](./libs/TinyPromiseQueue.md)** — A class that allows sequential execution of asynchronous tasks, supporting task delays, cancellation, and queue management.
-- 🏅 **[TinyLevelUp.md](./libs/TinyLevelUp.md)** — A class to manage user level-up logic based on experience points, providing methods for experience validation, addition, removal, and calculation.
+- 🗂️ **[TinyPromiseQueue](./libs/TinyPromiseQueue.md)** — A class that allows sequential execution of asynchronous tasks, supporting task delays, cancellation, and queue management.
+- 🏅 **[TinyLevelUp](./libs/TinyLevelUp.md)** — A class to manage user level-up logic based on experience points, providing methods for experience validation, addition, removal, and calculation.
+- 🎨 **[ColorSafeStringify](./libs/ColorSafeStringify.md)** — A utility for applying customizable ANSI colors to JSON strings in terminal outputs, supporting presets and fine-grained type-based highlighting.
 
 ---
 
