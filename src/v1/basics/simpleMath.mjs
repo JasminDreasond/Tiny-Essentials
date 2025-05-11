@@ -80,3 +80,40 @@ export function getAge(timeData = 0, now = null) {
 
   return null;
 }
+
+/**
+ * Converts a byte value into a human-readable format with unit and value separated.
+ *
+ * @param {number} bytes - The number of bytes to format. Must be a non-negative number.
+ * @param {number|null} [decimals=null] - The number of decimal places to include in the result. Defaults to null. If negative, it will be treated as 0. If null, no rounding is applied.
+ * @param {string|null} [maxUnit=null] - Optional unit limit. If provided, restricts conversion to this unit at most (e.g., 'MB' prevents conversion to 'GB' or higher). Must be one of: 'Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'.
+ * @returns {{ unit: string|null, value: number|null }} An object with the converted value and its corresponding unit. Returns nulls if input is invalid.
+ *
+ * @example
+ * formatBytes(123456789);
+ * // → { unit: 'MB', value: 117.74 }
+ *
+ * @example
+ * formatBytes(1073741824, 2, 'MB');
+ * // → { unit: 'MB', value: 1024 }
+ */
+export function formatBytes(bytes, decimals = null, maxUnit = null) {
+  if (typeof bytes !== 'number' || bytes < 0) return { unit: null, value: null };
+  if (bytes === 0) return { unit: 'Bytes', value: 0 };
+
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+  const maxIndex = maxUnit && sizes.includes(maxUnit) ? sizes.indexOf(maxUnit) : sizes.length - 1;
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(k)), maxIndex);
+
+  let value = bytes / Math.pow(k, i);
+
+  if (decimals !== null) {
+    const dm = decimals < 0 ? 0 : decimals;
+    value = parseFloat(value.toFixed(dm));
+  }
+
+  const unit = sizes[i];
+  return { unit, value };
+}

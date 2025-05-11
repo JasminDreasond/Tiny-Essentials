@@ -63,3 +63,59 @@ If the `timeData` is not provided or is invalid, the function returns `null`.
 ```js
 getAge('1990-01-01'); // → 35 (assuming the current year is 2025)
 ```
+
+---
+
+### 📦 `formatBytes(bytes, decimals, maxUnit)`
+
+Converts a byte value into a human-readable format with the unit and value separated. It allows you to set the number of decimal places and restricts the conversion to a specified maximum unit (optional). 🌐
+
+### Parameters:
+
+- `bytes` (number) ➡️ **The number of bytes to format.**  
+  Must be a non-negative number.  
+- `decimals` (number|null) ➡️ **The number of decimal places to include in the result.**  
+  Defaults to `2`. If negative, it will be treated as `0`. If `null`, no rounding is applied and the full precision is used.  
+- `maxUnit` (string|null) ➡️ **Optional unit limit.**  
+  If provided, restricts conversion to this unit at most (e.g., `'MB'` prevents conversion to `'GB'` or higher).  
+  Must be one of:  
+  `'Bytes'`, `'KB'`, `'MB'`, `'GB'`, `'TB'`, `'PB'`, `'EB'`, `'ZB'`, `'YB'`.  
+  Defaults to `null`, meaning no restriction.
+
+### Returns:
+
+- **Object** with two properties:
+  - `unit`: (string|null) ➡️ **The unit of the value** (e.g., 'MB', 'GB', etc.).
+  - `value`: (number|null) ➡️ **The formatted byte value.**  
+    If the input is invalid, returns `null` for both.
+
+### Example Usage:
+
+```js
+formatBytes(123456789);
+// Returns: { unit: 'MB', value: 117.74 }
+```
+
+```js
+formatBytes(1073741824, 2, 'MB');
+// Returns: { unit: 'MB', value: 1024 }
+```
+
+```js
+formatBytes(10485760); 
+// Returns: { unit: 'MB', value: 10 }
+
+formatBytes(1073741824); 
+// Returns: { unit: 'GB', value: 1 }
+
+formatBytes(1073741824, 2, 'MB'); 
+// Returns: { unit: 'MB', value: 1024 }
+```
+
+---
+
+### Notes:
+
+* **Formatting:** Converts bytes to the most appropriate unit (from 'Bytes' to 'YB') based on the byte value.
+* **Max Unit:** The `maxUnit` parameter allows you to limit the highest unit for conversion. If not provided, it will convert all the way up to 'YB'.
+* **Decimals:** The result can be customized with a specified number of decimal places for precision. If `decimals` is `null`, no rounding is applied, and the full precision value is returned.
