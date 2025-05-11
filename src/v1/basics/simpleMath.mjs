@@ -82,12 +82,18 @@ export function getAge(timeData = 0, now = null) {
 }
 
 /**
+ * @typedef {Object} FormattedByteResult
+ * @property {string|null} unit - The resulting unit (e.g., 'MB', 'GB') or null if input is invalid.
+ * @property {number|null} value - The numerical value in the chosen unit, or null if input is invalid.
+ */
+
+/**
  * Converts a byte value into a human-readable format with unit and value separated.
  *
  * @param {number} bytes - The number of bytes to format. Must be a non-negative number.
  * @param {number|null} [decimals=null] - The number of decimal places to include in the result. Defaults to null. If negative, it will be treated as 0. If null, no rounding is applied.
  * @param {string|null} [maxUnit=null] - Optional unit limit. If provided, restricts conversion to this unit at most (e.g., 'MB' prevents conversion to 'GB' or higher). Must be one of: 'Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'.
- * @returns {{ unit: string|null, value: number|null }} An object with the converted value and its corresponding unit. Returns nulls if input is invalid.
+ * @returns {FormattedByteResult} An object with the converted value and its corresponding unit. Returns nulls if input is invalid.
  *
  * @example
  * formatBytes(123456789);

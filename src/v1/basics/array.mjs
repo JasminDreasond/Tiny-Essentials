@@ -6,8 +6,8 @@
  * This implementation ensures a uniform distribution of permutations.
  * Original algorithm source: StackOverflow (link above).
  *
- * @param {string[]} items - The array to shuffle.
- * @returns {string[]} The same array instance, now shuffled in place.
+ * @param {any[]} items - The array to shuffle.
+ * @returns {any[]} The same array instance, now shuffled in place.
  */
 export function shuffleArray(items) {
   let currentIndex = items.length,
