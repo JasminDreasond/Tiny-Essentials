@@ -151,3 +151,9 @@ Here’s a full list of supported type names (in their default order):
 - `object`
 
 You can change this order or insert your own types with `extendObjType`.
+
+---
+
+### 🛠️ `getCheckObj()`
+
+This function creates a clone of the functions from the `typeValidator` object. It returns a new object where the keys are the same and the values are the cloned functions.

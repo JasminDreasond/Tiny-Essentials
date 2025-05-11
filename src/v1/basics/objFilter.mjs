@@ -45,7 +45,7 @@ const typeValidator = {
     /** @param {*} val @returns {val is Function} */
     function: (val) => typeof val === 'function',
 
-    /** @param {*} val @returns {val is Array<any>} */
+    /** @param {*} val @returns {val is Array} */
     array: (val) => Array.isArray(val),
 
     /** @param {*} val @returns {val is Date} */
@@ -54,19 +54,19 @@ const typeValidator = {
     /** @param {*} val @returns {val is RegExp} */
     regexp: (val) => val instanceof RegExp,
 
-    /** @param {*} val @returns {val is Map<any, any>} */
+    /** @param {*} val @returns {val is Map} */
     map: (val) => val instanceof Map,
 
-    /** @param {*} val @returns {val is Set<any>} */
+    /** @param {*} val @returns {val is Set} */
     set: (val) => val instanceof Set,
 
-    /** @param {*} val @returns {val is WeakMap<object, any>} */
+    /** @param {*} val @returns {val is WeakMap} */
     weakmap: (val) => val instanceof WeakMap,
 
-    /** @param {*} val @returns {val is WeakSet<object>} */
+    /** @param {*} val @returns {val is WeakSet} */
     weakset: (val) => val instanceof WeakSet,
 
-    /** @param {*} val @returns {val is Promise<any>} */
+    /** @param {*} val @returns {val is Promise} */
     promise: (val) => val instanceof Promise,
 
     /** @param {*} val @returns {val is Buffer} */
@@ -79,7 +79,7 @@ const typeValidator = {
     htmlelement: (val) => typeof HTMLElement !== 'undefined' && val instanceof HTMLElement,
 
     /** @param {*} val @returns {val is object} */
-    object: (val) => typeof val === 'object' && val !== null,
+    object: (val) => typeof val === 'object' && val !== null && !Array.isArray(val),
   },
 
   /** Evaluation order of the type checkers. */
@@ -251,6 +251,14 @@ export function checkObj(obj) {
     }
   }
   return data;
+}
+
+/**
+ * Creates a clone of the functions from the `typeValidator` object.
+ * It returns a new object where the keys are the same and the values are the cloned functions.
+ */
+export function getCheckObj() {
+  return Object.fromEntries(Object.entries(typeValidator.items).map(([key, fn]) => [key, fn]));
 }
 
 /**
