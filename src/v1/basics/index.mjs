@@ -8,10 +8,11 @@ import {
   cloneObjTypeOrder,
   objType,
 } from './objFilter.mjs';
-import { getAge, getSimplePerc, ruleOfThree } from './simpleMath.mjs';
+import { formatBytes, getAge, getSimplePerc, ruleOfThree } from './simpleMath.mjs';
 import { addAiMarkerShortcut, toTitleCase, toTitleCaseLowerFirst } from './text.mjs';
 
 export {
+  formatBytes,
   addAiMarkerShortcut,
   extendObjType,
   reorderObjTypeOrder,
