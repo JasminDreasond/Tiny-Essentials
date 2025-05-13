@@ -1,6 +1,5 @@
-// @ts-nocheck
 // Module
-import crypto from 'crypto';
+import { createDecipheriv } from 'crypto';
 
 /**
  * Decrypts a given encrypted string using the specified algorithm, key, and string format.
@@ -15,9 +14,10 @@ import crypto from 'crypto';
  */
 const cryptoAction = function (tinyCrypto, key, text) {
   let textParts = text.split(':');
+  // @ts-ignore
   let iv = Buffer.from(textParts.shift(), tinyCrypto.stringType);
   let encryptedText = Buffer.from(textParts.join(':'), tinyCrypto.stringType);
-  let decipher = crypto.createDecipheriv(tinyCrypto.algorithm, Buffer.from(key), iv);
+  let decipher = createDecipheriv(tinyCrypto.algorithm, Buffer.from(key), iv);
   let decrypted = decipher.update(encryptedText);
 
   decrypted = Buffer.concat([decrypted, decipher.final()]);

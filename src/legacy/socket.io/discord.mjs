@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import getUser from '../firebase/discord/api/getUser.mjs';
 
 /**

@@ -1,8 +1,13 @@
-// @ts-nocheck
-
 import userIp from '../../http/userIP.mjs';
 
-// Panel
+/** @typedef {Record<string, { timeout: number, tries: number }>} FloodTimeout */
+
+/**
+ * Panel
+ *
+ * @type {FloodTimeout}
+ */
+
 const floodPanel = {};
 
 /**
@@ -24,14 +29,14 @@ setInterval(function () {
  * If the attempts exceed a threshold, the IP is temporarily banned and disconnected.
  *
  * @param {Record<string, any>} socket - The socket object representing the connection.
- * @param {Record<string, any>} ioCache - The cache object that holds the blocklist and flood panel data.
+ * @param {Object} ioCache - The cache object that holds the blocklist and flood panel data.
  * @param {Array<*>} ioCache.blocklick - The list of blocked IPs.
- * @param {Record<string, any>} floodPanel - The object tracking flooding attempts and timeouts for each IP.
  * @returns {void} This function does not return anything, it modifies the floodPanel and blocklist.
  */
 export default function verify(socket, ioCache) {
   // Get User IP
-  const ip = userIp(socket.handshake);
+  const ipData = userIp(socket.handshake);
+  const ip = ipData.value ? ipData.value[0] : '';
 
   /**
    * Verifies the IP for flooding attempts and manages timeout and blocklist.
@@ -68,7 +73,7 @@ export default function verify(socket, ioCache) {
 
   // Catch-all Event Listener
   var onevent = socket.onevent;
-  socket.onevent = function (packet) {
+  socket.onevent = function (/** @type {{ data: string[]; }} */ packet) {
     var args = packet.data || [];
     onevent.call(this, packet); // original call
     packet.data = ['*'].concat(args);

@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import moment from 'moment';
 
 /**
@@ -16,6 +14,7 @@ export default function timeDuration(timeData = 0, durationType = 'asSeconds', n
     if (!now) now = moment();
 
     var duration = moment.duration(now.clone().add(timeData, 'milliseconds').diff(now.clone()));
+    // @ts-ignore
     const result = duration[durationType]();
 
     // Complete

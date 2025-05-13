@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Handles the cookie session for a socket connection by simulating an Express request and response.
  * This function uses the provided session module to manage session data for the socket connection.
@@ -11,6 +9,7 @@
 export default function cookieSession(socket, sessionModule) {
   return new Promise((resolve) => {
     // Express Simulator
+    /** @type {Record<*,*>} */
     let req = {
       connection: { encrypted: false },
       headers: { cookie: socket.request.headers.cookie },

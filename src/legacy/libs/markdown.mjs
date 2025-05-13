@@ -1,13 +1,22 @@
-// @ts-nocheck
-
 /**
  * A lightweight Markdown parser that can convert to HTML or BBCode.
  * @namespace markdownManager
  */
 const markdownManager = {
   /**
-   * Conversion rules for Markdown elements.
-   * Each rule includes a regex pattern, an HTML output, and a BBCode equivalent.
+   * A dictionary of Markdown element conversion rules.
+   *
+   * Each key represents a Markdown syntax identifier (like `h1`, `strong`, `image`, etc.),
+   * and its value contains the regular expression used to match the Markdown element,
+   * along with its HTML and BBCode equivalents.
+   *
+   * @type {{
+   *   [key: string]: {
+   *     regex: RegExp,              // The regex pattern used to identify the Markdown syntax.
+   *     result: string,             // The HTML output replacement string, using capture groups.
+   *     bbcode: string              // The BBCode equivalent of the Markdown syntax.
+   *   }
+   * }}
    */
   values: {
     h3: {

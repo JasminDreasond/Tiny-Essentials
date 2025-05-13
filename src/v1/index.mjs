@@ -1,5 +1,6 @@
 import asyncReplace from '../legacy/libs/replaceAsync.mjs';
 import TinyLevelUp from '../legacy/libs/userLevel.mjs';
+import arraySortPositions from '../legacy/libs/arraySortPositions.mjs';
 import { shuffleArray } from './basics/array.mjs';
 import {
   formatCustomTimer,
@@ -24,6 +25,7 @@ export {
   ColorSafeStringify,
   TinyPromiseQueue,
   TinyLevelUp,
+  arraySortPositions,
   formatBytes,
   addAiMarkerShortcut,
   extendObjType,

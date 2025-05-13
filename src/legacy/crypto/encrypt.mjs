@@ -1,7 +1,5 @@
-// @ts-nocheck
-
 // Module
-import crypto from 'crypto';
+import { createCipheriv, randomBytes } from 'crypto';
 
 /**
  * Encrypts a given string using the specified algorithm, key, and string encoding.
@@ -16,8 +14,8 @@ import crypto from 'crypto';
  * @returns {string} The encrypted string in the format `iv:encryptedData`.
  */
 const cryptoAction = function (tinyCrypto, key, text) {
-  let iv = crypto.randomBytes(tinyCrypto.IV_LENGTH);
-  let cipher = crypto.createCipheriv(tinyCrypto.algorithm, Buffer.from(key), iv);
+  let iv = randomBytes(tinyCrypto.IV_LENGTH);
+  let cipher = createCipheriv(tinyCrypto.algorithm, Buffer.from(key), iv);
   let encrypted = cipher.update(text);
   encrypted = Buffer.concat([encrypted, cipher.final()]);
   return iv.toString(tinyCrypto.stringType) + ':' + encrypted.toString(tinyCrypto.stringType);

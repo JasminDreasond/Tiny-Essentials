@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * A simple random number generator (dice roller) utility.
  * Supports a vanilla dice roll from 1 to N.

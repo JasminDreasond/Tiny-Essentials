@@ -1,3 +1,4 @@
+import arraySortPositions from '../../legacy/libs/arraySortPositions.mjs';
 import asyncReplace from '../../legacy/libs/replaceAsync.mjs';
 import { shuffleArray } from './array.mjs';
 import { formatCustomTimer, formatDayTimer, formatTimer, getTimeDuration } from './clock.mjs';
@@ -12,6 +13,7 @@ import { formatBytes, getAge, getSimplePerc, ruleOfThree } from './simpleMath.mj
 import { addAiMarkerShortcut, toTitleCase, toTitleCaseLowerFirst } from './text.mjs';
 
 export {
+  arraySortPositions,
   formatBytes,
   addAiMarkerShortcut,
   extendObjType,

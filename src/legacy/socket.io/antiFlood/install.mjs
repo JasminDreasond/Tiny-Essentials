@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import userIp from '../../http/userIP.mjs';
 
 /**
@@ -8,12 +6,13 @@ import userIp from '../../http/userIP.mjs';
  * This middleware checks the user's IP address and allows or denies the socket connection based on whether
  * the IP is in the block list or not.
  *
- * @param {Record<string, any>} io - The Socket.IO server instance.
- * @param {Record<string, any>} ioCache - The cache object containing blocked IPs.
+ * @param {*} io - The Socket.IO server instance.
+ * @param {Object} ioCache - The cache object containing blocked IPs.
  * @param {Array<*>} ioCache.blocklick - The list of blocked IP addresses.
  * @returns {void} This function does not return a value, it just sets the authorization logic for socket connections.
  */
 export default function install(io, ioCache) {
+  // @ts-ignore
   io.set('authorization', function (socket, callback) {
     // Get User IP
     const ip = userIp(socket.handshake);

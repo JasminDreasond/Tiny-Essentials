@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import objType from '../get/objType.mjs';
 
 /**
@@ -31,7 +29,7 @@ const custom_module_manager = {
    * Executes all functions inside the given modules.
    * Accepts either an array of functions or an object with typed module arrays.
    *
-   * @param {Object|Function[]} custom_modules - The modules or functions to run.
+   * @param {Record<string, function>|function[]} custom_modules - The modules or functions to run.
    * @param {*} db_prepare - A value to pass to each module when called.
    * @param {string} hookType - A string representing the hook (e.g., 'before', 'after').
    * @param {Record<string, any>} [options] - Optional. Object with keys matching types in `custom_modules`.
@@ -42,11 +40,18 @@ const custom_module_manager = {
    * await custom_module_manager.run(customModules, db, 'after', { paypal: true });
    */
   run: async function (custom_modules, db_prepare, hookType, options) {
+    /**
+     * @async
+     * @param {string} [type]
+     */
     const run_custom_module = async function (type) {
       let module_list = null;
 
-      if (type) {
-        if (custom_modules && custom_modules[type]) module_list = custom_modules[type];
+      if (typeof type === 'string') {
+        // @ts-ignore
+        if (custom_modules && typeof custom_modules[type] === 'function')
+          // @ts-ignore
+          module_list = custom_modules[type];
       } else module_list = custom_modules;
 
       if (Array.isArray(module_list)) {
@@ -56,7 +61,6 @@ const custom_module_manager = {
               await module_list[item](db_prepare, hookType);
             } catch (err) {
               console.error(err);
-              console.error(err.message);
             }
           } else {
             const err = new Error(
@@ -71,6 +75,7 @@ const custom_module_manager = {
 
     if (objType(options, 'object')) {
       for (const item in options) {
+        // @ts-ignore
         if (options[item] && Array.isArray(custom_modules[item])) await run_custom_module(item);
       }
     } else {
