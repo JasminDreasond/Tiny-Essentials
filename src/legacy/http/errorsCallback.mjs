@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * @function errorsCallback
  *
@@ -8,14 +6,19 @@
  *
  * If the error does not meet the criteria (e.g., status not defined or < 400), it delegates to the next middleware.
  *
- * @param {Function} callback - A function called when an error with valid status is detected.
+ * @param {function(import('express').Request, import('express').Response, import('express').NextFunction, {
+ *  code: number,
+ *  path: string,
+ *  originalUrl: string,
+ *  err: Error
+ * }): void} callback - A function called when an error with valid status is detected.
  *   Receives parameters: (req, res, next, info)
  *   - `info.code`: HTTP status code.
  *   - `info.path`: `req.url` value.
  *   - `info.originalUrl`: `req.originalUrl` value.
  *   - `info.err`: The original error object.
  *
- * @returns {Function} Express middleware function: (err, req, res, next)
+ * @returns {function(Error, import('express').Request, import('express').Response, import('express').NextFunction): void} Express middleware function: (err, req, res, next)
  *
  * @example
  * import errorsCallback from './errorsCallback.mjs';
@@ -31,10 +34,12 @@
 export default function errorsCallback(callback) {
   return function (err, req, res, next) {
     // Err Code
+    // @ts-ignore
     const errCode = Number(err.status);
 
     // Error
     if (
+      // @ts-ignore
       (typeof err.status !== 'number' && typeof err.status !== 'string') ||
       isNaN(errCode) ||
       !isFinite(errCode) ||
@@ -44,6 +49,7 @@ export default function errorsCallback(callback) {
     // Nope
     else
       callback(req, res, next, {
+        // @ts-ignore
         code: err.status,
         path: req.url,
         originalUrl: req.originalUrl,

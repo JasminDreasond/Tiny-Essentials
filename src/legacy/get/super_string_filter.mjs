@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import objType from './objType.mjs';
 
 /**
@@ -50,30 +48,41 @@ export default function super_string_filter(list, validator_list) {
 
         // Starts With
         tiny_validator.starts = {};
+        // @ts-ignore
         tiny_validator.starts.enabled = typeof validator_list[item2].starts === 'string';
+        // @ts-ignore
         if (tiny_validator.starts.enabled) {
+          // @ts-ignore
           tiny_validator.starts.result = list[item].startsWith(validator_list[item2].starts);
         }
 
         // Ends With
         tiny_validator.ends = {};
+        // @ts-ignore
         tiny_validator.ends.enabled = typeof validator_list[item2].ends === 'string';
+        // @ts-ignore
         if (tiny_validator.ends.enabled) {
+          // @ts-ignore
           tiny_validator.ends.result = list[item].endsWith(validator_list[item2].ends);
         }
 
         // RegExp
         tiny_validator.regexp = {};
+        // @ts-ignore
         tiny_validator.regexp.enabled = objType(validator_list[item2].regexp, 'regexp');
+        // @ts-ignore
         if (tiny_validator.regexp.enabled) {
+          // @ts-ignore
           tiny_validator.regexp.result = list[item].match(validator_list[item2].regexp);
         }
 
         // Check Validator
         let allowed_timezone = true;
         for (const item3 in tiny_validator) {
+          // @ts-ignore
           if (tiny_validator[item3].enabled) {
             // Invalid Result
+            // @ts-ignore
             if (!tiny_validator[item3].result) {
               allowed_timezone = false;
               break;

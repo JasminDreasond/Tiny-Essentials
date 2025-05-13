@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Parses the query string from a URL into a JSON object.
  *
@@ -30,6 +28,8 @@ export default function queryUrlJSON(url) {
     question === -1 || hash === question + 1
       ? url.substring(hash)
       : url.substring(question + 1, hash);
+
+  /** @type {Record<string, *>} */
   var result = {};
   query.split('&').forEach((part) => {
     if (!part) return;

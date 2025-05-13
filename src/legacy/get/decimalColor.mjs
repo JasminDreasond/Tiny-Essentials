@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import tinycolor from 'tinycolor2';
 
 /**
@@ -27,32 +25,34 @@ function combineRGB(r, g, b) {
  * @returns {number} The decimal representation of the color, or 0 if invalid.
  */
 export default function decimalColor(color, errCallback) {
+  let newColor;
   // Is String
   if (typeof color === 'string') {
     // Prepare Color
     try {
       // Get Color Manager
-      color = tinycolor(color);
+      newColor = tinycolor(color);
 
       // Validate
-      if (color.isValid()) {
+      if (newColor.isValid()) {
         // Convert
-        color = color.toRgb();
-        color = combineRGB(color.r, color.g, color.b);
+        newColor = newColor.toRgb();
+        newColor = combineRGB(newColor.r, newColor.g, newColor.b);
       }
 
       // Nope
-      else color = 0;
+      else newColor = 0;
     } catch (err) {
       // Error
       if (typeof errCallback === 'function') errCallback(err);
-      color = 0;
+      newColor = 0;
     }
   }
 
   // Fix Color Number
-  if (typeof color !== 'number' || isNaN(color) || !isFinite(color) || color < 0) color = 0;
+  if (typeof newColor !== 'number' || isNaN(newColor) || !isFinite(newColor) || newColor < 0)
+    newColor = 0;
 
   // Return the Color Value
-  return color;
+  return newColor;
 }

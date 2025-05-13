@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Extracts the value of a specific query parameter from a URL.
  *

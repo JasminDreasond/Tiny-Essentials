@@ -1,16 +1,18 @@
-// @ts-nocheck
-
 import _ from 'lodash';
+
+/**
+ * @typedef {{ value: string[] | string, type: string | null }} IpResult
+ */
 
 /**
  * Retrieves the client's IP address from the Express request object,
  * supporting detection for Firebase/Cloud Functions, proxies, and direct connections.
  *
  * @param {import('express').Request} req - The Express request object.
- * @param {Record<string, any>} [options] - Optional configuration.
+ * @param {Object} [options] - Optional configuration.
  * @param {boolean} [options.isFirebase=false] - Enable detection for Firebase environments (e.g., Fastly).
  *
- * @returns {{ value: string[] | null, type: string | null }} An object containing the list of IP addresses and the detection source type.
+ * @returns {IpResult} An object containing the list of IP addresses and the detection source type.
  *
  * @example
  * const ipInfo = userIp(req);
@@ -18,7 +20,8 @@ import _ from 'lodash';
  * console.log(ipInfo.type);  // 'x-forwarded-for'
  */
 export default function userIp(req, options) {
-  let ip = { value: null, type: null };
+  /** @type {IpResult} */
+  const ip = {};
 
   const tinyCfg = _.defaultsDeep({}, options, {
     isFirebase: false,

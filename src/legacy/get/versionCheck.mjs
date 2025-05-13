@@ -1,15 +1,15 @@
-// @ts-nocheck
-
 // Modules
 import latestVersion from 'latest-version';
 import { compare } from 'compare-versions';
 import moment from 'moment';
 
-// Check Version
-const check_version = {
-  v: null,
-  t: null,
-};
+/**
+ * @typedef {{
+ *  needUpdate: boolean; // `true` if the current version is outdated, `false` otherwise.
+ *   now: string; // The current version of the package.
+ *   new: string; // The latest version of the package available on npm.
+ * }} VersionCheck
+ */
 
 /**
  * Checks if the package version is up-to-date by comparing it with the latest version available on npm.
@@ -19,12 +19,13 @@ const check_version = {
  * @param {string} pkg.name - The name of the package.
  * @param {string} pkg.version - The current version of the package.
  *
- * @returns {Promise<Record<string, any>>} The result object containing:
- *   - `needUpdate`: {boolean} - `true` if the current version is outdated, `false` otherwise.
- *   - `now`: {string} - The current version of the package.
- *   - `new`: {string} - The latest version of the package available on npm.
+ * @returns {Promise<VersionCheck>} The result object
+
  */
 export default async function versionCheck(pkg) {
+  /** @type {{ t: import('moment').Moment, v: string }} */
+  const check_version = {};
+
   // Time Now
   const now = moment();
 
@@ -34,13 +35,10 @@ export default async function versionCheck(pkg) {
     check_version.v = await latestVersion(pkg.name);
   }
 
-  // Insert Version
-  const result = { needUpdate: compare(pkg.version, check_version.v, '<') };
-
   // Allowed Show Version
-  result.now = pkg.version;
-  result.new = check_version.v;
-
-  // Return
-  return result;
+  return {
+    now: pkg.version,
+    new: check_version.v,
+    needUpdate: compare(pkg.version, check_version.v, '<'),
+  };
 }

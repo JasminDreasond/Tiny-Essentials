@@ -1,8 +1,14 @@
-// @ts-nocheck
-
 import checkDomain from './check_domain.mjs';
 import objType from '../get/objType.mjs';
 import isEmulator from '../firebase/isEmulator.mjs';
+
+/**
+ * @typedef {{
+ *  verified: boolean; // Whether the domain is verified.
+ *  domain: string|null|true|string[]; // The detected domain from the request.
+ *  isStaticPath: boolean // Whether the request matches a static path.
+ * }} DomainResult
+ */
 
 /**
  * @function domainValidator
@@ -11,17 +17,14 @@ import isEmulator from '../firebase/isEmulator.mjs';
  * This is useful for filtering requests by origin or allowing access from specific domains only.
  * Also detects if Firebase is running in emulator mode, which bypasses domain validation.
  *
- * @param {Record<string, any>} req - The Express request object.
+ * @param {import('express').Request} req - The Express request object.
  *   - `req.url`: Full URL path.
  *   - `req.headers`: Expected to contain 'host', 'x-forwarded-host', etc.
  * @param {Record<string, any>} cfg - Configuration object.
  *   @property {string|string[]} cfg.domain - The allowed domain(s) to validate against.
  *   @property {string[]} [cfg.staticPath] - Optional list of static paths to validate.
  *
- * @returns {Record<string, any>} Returns an object with the following structure:
- *   @property {boolean} verified - Whether the domain is verified.
- *   @property {string|null} domain - The detected domain from the request.
- *   @property {boolean} isStaticPath - Whether the request matches a static path.
+ * @returns {DomainResult}
  *
  * @example
  * const result = domainValidator(req, {
@@ -40,10 +43,12 @@ export default function domainValidator(req, cfg) {
 
   // Path
   var prepareUrlPath = req.url.split('/');
+  // @ts-ignore
   req.url_path = [];
   for (const item in prepareUrlPath) {
     if (Number(item) > 0) {
       // Insert URL Path
+      // @ts-ignore
       req.url_path.push(prepareUrlPath[item].split(/[?#]/)[0]);
     }
   }

@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * @module http_base
  *
@@ -75,9 +73,9 @@ const http_base = {
    * @function send
    * @param {import('express').Response} res - Express response object.
    * @param {number} http_code - HTTP status code to send.
-   * @param {function(number): void} [callback] - Optional callback to handle response body manually.
+   * @param {function(number): import('express').Response} [callback] - Optional callback to handle response body manually.
    *
-   * @returns {*} The result of `res.send()` or the callback function.
+   * @returns {import('express').Response} The result of `res.send()` or the callback function.
    *
    * @example
    * http_base.send(res, 404); // Sends 404 Not Found with empty body

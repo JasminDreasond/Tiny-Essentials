@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import checkDomain from './check_domain.mjs';
 
 /**
@@ -8,7 +6,7 @@ import checkDomain from './check_domain.mjs';
  * Constructs a full URL string from a domain and optional port, determining the proper protocol.
  * It also supports extracting the domain from an Express `req` object via `checkDomain.get(req)`.
  *
- * @param {string|object} domain - A domain string (e.g. "example.com") or Express `req` object.
+ * @param {string|import('express').Request} domain - A domain string (e.g. "example.com") or Express `req` object.
  * @param {number} [port] - Optional port to include in the URL (not added for ports 80 or 443).
  * @param {string} [httpResult='https'] - The protocol to use (usually "http" or "https").
  *
@@ -31,16 +29,16 @@ export default function getDomainURL(domain, port, httpResult = 'https') {
   // Domain
   if (typeof domainSelected === 'string') {
     // Port
-    let finalPort = port;
+    let finalPort = '';
     let finalURL = '';
-    if (typeof finalPort === 'number' && finalPort !== 80 && finalPort !== 443) {
+    if (typeof port === 'number' && port !== 80 && port !== 443) {
       finalPort = ':' + finalPort;
     } else {
       finalPort = '';
     }
 
     // Normal Domain
-    if (!domainSelected.startsWith('localhost:') && !domainSelected === 'localhost')
+    if (!domainSelected.startsWith('localhost:') && domainSelected !== 'localhost')
       finalURL = `${httpResult}://${domainSelected}`;
     // Localhost
     else finalURL = `http://${domainSelected}`;

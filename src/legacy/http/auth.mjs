@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Creates an Express middleware for Basic HTTP Authentication.
  *
@@ -13,10 +11,10 @@
  * @param {Object} data - Configuration object.
  * @param {string} data.login - The expected username.
  * @param {string} data.password - The expected password.
- * @param {Function} [data.customError] - Optional function `(req, res) => {}` called on auth failure.
+ * @param {function(import('express').Request, import('express').Response): import('express').Response} [data.customError] - Optional function `(req, res) => {}` called on auth failure.
  * @param {Function} [callback] - Optional fallback function `(req, res, next) => {}` executed after customError.
  *
- * @returns {Function} Express middleware function.
+ * @returns {function(import('express').Request, import('express').Response, import('express').NextFunction): void} Express middleware function.
  *
  * @example
  * import express from 'express';

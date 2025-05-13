@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import fetch from 'node-fetch';
 
 /**
@@ -27,6 +25,7 @@ export default function getJsonFetch() {
   const tinyArgs = arguments;
   return new Promise((resolve, reject) =>
     fetch
+      // @ts-ignore
       .apply(fetch, tinyArgs)
       .then((response) => {
         // Get Response

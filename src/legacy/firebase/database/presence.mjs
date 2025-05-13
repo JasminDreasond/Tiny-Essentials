@@ -1,7 +1,10 @@
 // @ts-nocheck
-
 import moment from 'moment-timezone';
 import _ from 'lodash';
+
+/** @typedef {import("firebase/database")} FbDatabase */
+/** @typedef {import("firebase/database").DataSnapshot} DataSnapshot */
+/** @typedef {import("firebase/database").DatabaseReference} DatabaseReference */
 
 /**
  * Firebase Presence System
@@ -108,7 +111,7 @@ const presenceSystem = {
 
     // Prepare Connection
     const connectedRef = database.ref('.info/connected');
-    connectedRef.on('value', (snap) => {
+    connectedRef.on('value', (/** @type {DataSnapshot} */ snap) => {
       if (snap.val() === true) {
         // We're connected (or reconnected)! Do anything here that should happen only if online (or on reconnect)
         const con = myConnectionsRef.push();

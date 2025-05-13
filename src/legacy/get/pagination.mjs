@@ -1,6 +1,19 @@
-// @ts-nocheck
-
 import queryUrlJSON from './queryUrlJSON.mjs';
+
+/**
+ *  @typedef {{
+ *  url: string; // The updated URL prefix to use for each page link.
+ *   extraClass: string; // Additional class name passed through.
+ *   extraClass2: string; // Additional class name passed through.
+ *   page: number; // The current page.
+ *   pagination: number[]; // An array of page numbers to be displayed.
+ *   previous: boolean; // Whether there are previous pages.
+ *   next: boolean; // Whether there are next pages.
+ *   firstPagination: boolean; // `true` if page 1 is not in the visible pagination and should be shown separately.
+ *   lastPagination: boolean; // `true` if the last page is not in the visible pagination and should be shown separately.
+ *   pages: number; // Total number of pages.
+ * }} PaginationData
+ */
 
 /**
  * Generates pagination metadata for a given query and current page.
@@ -14,17 +27,8 @@ import queryUrlJSON from './queryUrlJSON.mjs';
  * @param {string} [extraClass=''] - Additional class name for styling the pagination container.
  * @param {string} [extraClass2=''] - Additional class name for individual page links.
  *
- * @returns {Record<string, any>} Pagination metadata including:
- *   - `url` {string} - The updated URL prefix to use for each page link.
- *   - `extraClass` {string} - Additional class name passed through.
- *   - `extraClass2` {string} - Additional class name passed through.
- *   - `page` {number} - The current page.
- *   - `pagination` {number[]} - An array of page numbers to be displayed.
- *   - `previous` {boolean} - Whether there are previous pages.
- *   - `next` {boolean} - Whether there are next pages.
- *   - `firstPagination` {boolean} - `true` if page 1 is not in the visible pagination and should be shown separately.
- *   - `lastPagination` {boolean} - `true` if the last page is not in the visible pagination and should be shown separately.
- *   - `pages` {number} - Total number of pages.
+ * @returns {PaginationData} Pagination metadata
+
  */
 export default function pagination(
   query,
@@ -57,39 +61,41 @@ export default function pagination(
     } else url += finalURLResult('?');
   }
 
-  // Pagination
-
-  const pagination = [];
+  /** @type {PaginationData} */
   const data = {
     url: url,
     extraClass: extraClass,
     extraClass2: extraClass2,
+    next: false,
+    previous: false,
+    page: -1,
+    pages: -1,
+    pagination: [],
+    firstPagination: true,
+    lastPagination: true,
   };
 
-  data.next = false;
-  data.previous = false;
   for (let i = page - 1; i > page - 5; i--) {
     if (i > 0) {
-      pagination.push(i);
+      data.pagination.push(i);
       data.previous = true;
     }
   }
-  pagination.reverse();
-  pagination.push(page);
+  data.pagination.reverse();
+  data.pagination.push(page);
   for (let i = page + 1; i < page + 5; i++) {
     if (i <= total) {
-      pagination.push(i);
+      data.pagination.push(i);
       data.next = true;
     }
   }
 
   // Build Data and send it
   data.page = page;
-  data.pagination = pagination;
 
-  if (pagination.indexOf(1) < 0) data.firstPagination = true;
+  if (data.pagination.indexOf(1) < 0) data.firstPagination = true;
   else data.firstPagination = false;
-  if (pagination.indexOf(total) < 0) data.lastPagination = true;
+  if (data.pagination.indexOf(total) < 0) data.lastPagination = true;
   else data.lastPagination = false;
 
   data.pages = total;

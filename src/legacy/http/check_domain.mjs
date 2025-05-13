@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * @module check_domain
  *
@@ -20,12 +18,14 @@ const check_domain = {
    * If a domain (`the_domain`) is passed, the function returns a boolean.
    * If not, it returns the found domain string or `null`.
    *
-   * @type {Array<{type: string, callback: function(req: Object, the_domain?: string): (boolean|string|null)}>}
    */
   validators: [
     {
       type: 'x-forwarded-host',
-      callback: function (req, the_domain) {
+      callback: function (
+        /** @type {import('express').Request} */ req,
+        /** @type {string} */ the_domain,
+      ) {
         const isString = typeof req.headers['x-forwarded-host'] === 'string';
         if (the_domain) return isString && req.headers['x-forwarded-host'] === the_domain;
 
@@ -34,7 +34,10 @@ const check_domain = {
     },
     {
       type: 'hostname',
-      callback: function (req, the_domain) {
+      callback: function (
+        /** @type {import('express').Request} */ req,
+        /** @type {string} */ the_domain,
+      ) {
         const isString = typeof req.hostname === 'string';
         if (the_domain) return isString && req.hostname === the_domain;
 
@@ -43,7 +46,10 @@ const check_domain = {
     },
     {
       type: 'hostname',
-      callback: function (req, the_domain) {
+      callback: function (
+        /** @type {import('express').Request} */ req,
+        /** @type {string} */ the_domain,
+      ) {
         const isString = typeof req.headers.host === 'string';
         if (the_domain) return isString && req.headers.host === the_domain;
         return isString ? req.headers.host : null;
@@ -55,7 +61,7 @@ const check_domain = {
    * Validates the request against a given domain using all available validators.
    *
    * @function
-   * @param {Record<string, any>} req - The request object from Express.
+   * @param {import('express').Request} req - The request object from Express.
    * @param {string} the_domain - The domain to validate against.
    * @returns {boolean} True if any validator matches the domain.
    */
@@ -69,8 +75,8 @@ const check_domain = {
    * Returns the domain found from the first valid source in the request object.
    *
    * @function
-   * @param {Record<string, any>} req - The request object from Express.
-   * @returns {string|null} The found domain string or `null` if none matched.
+   * @param {import('express').Request} req - The request object from Express.
+   * @returns {string|true|string[]|null} The found domain string or `null` if none matched.
    */
   get: function (req) {
     for (const item in check_domain.validators) {

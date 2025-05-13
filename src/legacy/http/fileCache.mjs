@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import _ from 'lodash';
 import moment from 'moment-timezone';
 import md5 from 'md5';
@@ -11,8 +9,8 @@ import byteLength from 'byte-length';
  * Sends a stringified file as a response with caching, security headers, and optional metadata.
  * If `data.file` is not a string, the request is passed to the next middleware.
  *
- * @param {object} res - Express response object.
- * @param {Function} next - Express next middleware function.
+ * @param {import('express').Response} res - Express response object.
+ * @param {import('express').NextFunction} next - Express next middleware function.
  * @param {object} data - Configuration object for the file response.
  * @param {string} [data.file] - The content of the file to send (must be a string).
  * @param {number} [data.fileMaxAge] - Max age in seconds for cache expiration.
