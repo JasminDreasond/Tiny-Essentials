@@ -20,8 +20,10 @@ import { formatBytes, getAge, getSimplePerc, ruleOfThree } from './basics/simple
 import { addAiMarkerShortcut, toTitleCase, toTitleCaseLowerFirst } from './basics/text.mjs';
 import ColorSafeStringify from './libs/ColorSafeStringify.mjs';
 import TinyPromiseQueue from './libs/TinyPromiseQueue.mjs';
+import TinyRateLimiter from './libs/TinyRateLimiter.mjs';
 
 export {
+  TinyRateLimiter,
   ColorSafeStringify,
   TinyPromiseQueue,
   TinyLevelUp,

@@ -1,6 +1,6 @@
 {
   "name": "tiny-essentials",
-  "version": "1.8.5",
+  "version": "1.9.0",
   "description": "Collection of small, essential scripts designed to be used across various projects. These simple utilities are crafted for speed, ease of use, and versatility.",
   "scripts": {
     "test": "npm run test:mjs && npm run test:cjs && npm run test:js",
@@ -10,6 +10,7 @@
     "test:mjs:promisequeue": "node test/index.mjs promiseQueue",
     "test:mjs:objtype": "node test/index.mjs objType",
     "test:mjs:jsoncolor": "node test/index.mjs colorStringify",
+    "test:mjs:ratelimit": "node test/index.mjs rateLimit",
     "fix:prettier": "npm run fix:prettier:src && npm run fix:prettier:test && npm run fix:prettier:rollup.config && npm run fix:prettier:webpack.config",
     "fix:prettier:src": "prettier --write ./src/*",
     "fix:prettier:test": "prettier --write ./test/*",
