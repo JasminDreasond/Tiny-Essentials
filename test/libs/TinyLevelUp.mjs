@@ -134,6 +134,21 @@ const testLevelUp = async () => {
   console.assert(typeof xp === 'number' && xp > 0, 'expGenerator failed');
   logSuccess(`Generated random XP: ${xp}`);
 
+  logSection('Missing experience calculation', '📉');
+  const missingUser = leveler.createUser();
+  missingUser.level = 3;
+  missingUser.exp = 120;
+  const expectedProgress = leveler.getProgress(missingUser); // 100 + 200 + 300 = 600
+  const expectedMissing = expectedProgress - missingUser.exp; // 600 - 120 = 480
+  const missing = leveler.getMissingExp(missingUser);
+  logUser(missingUser, 'User with partial EXP');
+  console.assert(
+    missing === expectedMissing,
+    `Expected missing EXP to be ${expectedMissing}, got ${missing}`,
+  );
+  logInfo(`Missing EXP: ${missing}`);
+  logSuccess('getMissingExp returned correct value');
+
   logSection('All tests completed!', '🥳');
   logSuccess('Everything passed without errors!');
 };
