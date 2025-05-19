@@ -39,7 +39,7 @@ new TinyLevelUp(giveExp: number, expLevel: number)
 
 ### ➕ `createUser()`
 
-Creates a fresh user at level 0 with no XP.
+Creates a fresh user at level 1 with no XP.
 
 ```ts
 createUser(): UserEditor
@@ -187,6 +187,40 @@ remove(
 
 * `type = 'add'`: Removes generated XP + extra
 * `type = 'extra'`: Removes only extra
+
+---
+
+### 🔍 `getMissingExp(user)`
+
+**Description:**
+Calculates how much experience is missing for the user to reach the next level.
+
+---
+
+**Parameters:**
+
+* `user` (UserEditor) — The user object containing experience and level properties.
+
+---
+
+**Returns:**
+
+* `number` — The amount of experience points still needed to level up.
+
+---
+
+**Throws:**
+
+* `Error` — If any property (`exp`, `level`, or `totalExp`) in the `user` object is not a valid number. ⚠️
+
+---
+
+**Example usage:**
+
+```js
+const missing = tinyLevelUp.getMissingExp(user);
+console.log(`You need ${missing} more XP to level up! 🚀`);
+```
 
 ---
 

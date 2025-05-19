@@ -32,7 +32,7 @@ class TinyLevelUp {
   createUser() {
     return {
       exp: 0,
-      level: 0,
+      level: 1,
       totalExp: 0,
     };
   }
@@ -49,6 +49,7 @@ class TinyLevelUp {
       throw new Error('exp must be a valid number');
     if (typeof user.level !== 'number' || Number.isNaN(user.level))
       throw new Error('level must be a valid number');
+    if (user.level < 1) throw new Error('level must be at least 1');
     if (typeof user.totalExp !== 'number' || Number.isNaN(user.totalExp))
       throw new Error('totalExp must be a valid number');
   }
@@ -62,6 +63,7 @@ class TinyLevelUp {
   isValidUser(user) {
     if (typeof user.exp !== 'number' || Number.isNaN(user.exp)) return false;
     if (typeof user.level !== 'number' || Number.isNaN(user.level)) return false;
+    if (user.level < 1) return false;
     if (typeof user.totalExp !== 'number' || Number.isNaN(user.totalExp)) return false;
     return true;
   }
@@ -96,13 +98,11 @@ class TinyLevelUp {
    * Validates and adjusts the user's level based on their current experience.
    * @param {UserEditor} user - The user object containing experience and level properties.
    * @returns {UserEditor} The updated user object.
+   * @throws {Error} If any property (exp, level, totalExp) is not a valid number.
    */
   expValidator(user) {
     const expLevel = this.getExpLevelBase();
-    if (typeof user.exp !== 'number' || Number.isNaN(user.exp))
-      throw new Error('user.exp must be a valid number');
-    if (typeof user.level !== 'number' || Number.isNaN(user.level))
-      throw new Error('user.level must be a valid number');
+    this.validateUser(user);
 
     let extraValue = 0;
     const nextLevelExp = expLevel * user.level;
@@ -132,12 +132,10 @@ class TinyLevelUp {
    * Calculates the total experience based on the user's level.
    * @param {UserEditor} user - The user object containing experience and level properties.
    * @returns {number} The total experience of the user.
+   * @throws {Error} If any property (exp, level, totalExp) is not a valid number.
    */
   getTotalExp(user) {
-    if (typeof user.exp !== 'number' || Number.isNaN(user.exp))
-      throw new Error('user.exp must be a valid number');
-    if (typeof user.level !== 'number' || Number.isNaN(user.level))
-      throw new Error('user.level must be a valid number');
+    this.validateUser(user);
     let totalExp = 0;
     for (let p = 1; p <= user.level; p++) totalExp += this.getExpLevelBase() * p;
     totalExp += user.exp;
@@ -152,28 +150,37 @@ class TinyLevelUp {
   expGenerator(multi = 1) {
     if (typeof multi !== 'number' || Number.isNaN(multi))
       throw new Error('multi must be a valid number');
-    return Math.floor(Math.random() * this.getGiveExpBase()) + 1 * multi;
+    return Math.floor(Math.random() * this.getGiveExpBase()) * multi;
+  }
+
+  /**
+   * Calculates how much experience is missing to next level.
+   * @param {UserEditor} user
+   * @returns {number}
+   * @throws {Error} If any property (exp, level, totalExp) is not a valid number.
+   */
+  getMissingExp(user) {
+    return this.getProgress(user) - user.exp;
   }
 
   /**
    * Gets the experience points required to reach the next level.
    * @param {UserEditor} user - The user object containing the level.
    * @returns {number} The experience required for the next level.
+   * @throws {Error} If any property (exp, level, totalExp) is not a valid number.
    */
   progress(user) {
-    if (typeof user.level !== 'number' || Number.isNaN(user.level))
-      throw new Error('user.level must be a valid number');
-    return this.getExpLevelBase() * user.level;
+    return this.getProgress(user);
   }
 
   /**
    * Gets the experience points required to reach the next level.
    * @param {UserEditor} user - The user object containing the level.
    * @returns {number} The experience required for the next level.
+   * @throws {Error} If any property (exp, level, totalExp) is not a valid number.
    */
   getProgress(user) {
-    if (typeof user.level !== 'number' || Number.isNaN(user.level))
-      throw new Error('user.level must be a valid number');
+    this.validateUser(user);
     return this.getExpLevelBase() * user.level;
   }
 

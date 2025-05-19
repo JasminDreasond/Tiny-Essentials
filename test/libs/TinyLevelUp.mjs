@@ -44,8 +44,8 @@ const testLevelUp = async () => {
 
   logSection('Creating user', '👤');
   const user = leveler.createUser();
-  console.assert(user.exp === 0 && user.level === 0 && user.totalExp === 0, 'createUser failed');
-  logSuccess('User created with level 0 and 0 EXP');
+  console.assert(user.exp === 0 && user.level === 1 && user.totalExp === 0, 'createUser failed');
+  logSuccess('User created with level 1 and 0 EXP');
   logUser(user);
 
   logSection('Validation methods', '🔍');
@@ -56,6 +56,7 @@ const testLevelUp = async () => {
   logSection('Invalid user objects', '🚫');
   const invalids = [
     { exp: NaN, level: 1, totalExp: 0 },
+    { exp: 0, level: 0, totalExp: 0 },
     { exp: 0, level: '1', totalExp: 0 },
     { exp: 0, level: 1, totalExp: null },
   ];
