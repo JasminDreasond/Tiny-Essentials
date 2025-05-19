@@ -16,7 +16,7 @@ new TinyRateLimiter(options)
 | ----------------- | -------- | ----------- | ---------------------------------------------- |
 | `maxHits`         | `number` | `undefined` | Max number of hits per user before blocking 🚧 |
 | `interval`        | `number` | `undefined` | Time window in milliseconds ⏱️                 |
-| `cleanupInterval` | `number` | `60000`     | Interval to auto-clean inactive users 🧹       |
+| `cleanupInterval` | `number` | `undefined` | Interval to auto-clean inactive users 🧹       |
 | `maxIdle`         | `number` | `300000`    | Max idle time per user before cleanup 💤       |
 
 > ⚠️ At least one of `maxHits` or `interval` must be defined.

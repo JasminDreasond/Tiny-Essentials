@@ -12,10 +12,10 @@ class TinyRateLimiter {
    * @param {Object} options
    * @param {number} [options.maxHits] - Max interactions allowed
    * @param {number} [options.interval] - Time window in milliseconds
-   * @param {number} [options.cleanupInterval=60000] - Interval for automatic cleanup (ms)
+   * @param {number} [options.cleanupInterval] - Interval for automatic cleanup (ms)
    * @param {number} [options.maxIdle=300000] - Max idle time for a user before being cleaned (ms)
    */
-  constructor({ maxHits, interval, cleanupInterval = 60000, maxIdle = 300000 }) {
+  constructor({ maxHits, interval, cleanupInterval, maxIdle = 300000 }) {
     /** @param {number|undefined} val */
     const isPositiveInteger = (val) =>
       typeof val === 'number' && Number.isFinite(val) && val >= 1 && Number.isInteger(val);
@@ -31,13 +31,13 @@ class TinyRateLimiter {
       throw new Error("'maxHits' must be a positive integer if defined.");
     if (interval !== undefined && !isIntervalValid)
       throw new Error("'interval' must be a positive integer in milliseconds if defined.");
-    if (!isCleanupValid)
-      throw new Error("'cleanupInterval' must be a positive integer in milliseconds.");
+    if (cleanupInterval !== undefined && !isCleanupValid)
+      throw new Error("'cleanupInterval' must be a positive integer in milliseconds if defined.");
     if (!isMaxIdleValid) throw new Error("'maxIdle' must be a positive integer in milliseconds.");
 
     this.maxHits = isMaxHitsValid ? maxHits : null;
     this.interval = isIntervalValid ? interval : null;
-    this.cleanupInterval = cleanupInterval;
+    this.cleanupInterval = isCleanupValid ? cleanupInterval : null;
     this.maxIdle = maxIdle;
 
     /** @type {Map<string, number[]>} */
@@ -46,8 +46,9 @@ class TinyRateLimiter {
     /** @type {Map<string, number>} */
     this.lastSeen = new Map();
 
-    // Start automatic cleanup
-    this._cleanupTimer = setInterval(() => this._cleanup(), this.cleanupInterval);
+    // Start automatic cleanup only if cleanupInterval is valid
+    if (this.cleanupInterval !== null)
+      this._cleanupTimer = setInterval(() => this._cleanup(), this.cleanupInterval);
   }
 
   /**
@@ -185,7 +186,7 @@ class TinyRateLimiter {
    * Destroy the rate limiter, stopping all intervals
    */
   destroy() {
-    clearInterval(this._cleanupTimer);
+    if (this._cleanupTimer) clearInterval(this._cleanupTimer);
     this.userData.clear();
     this.lastSeen.clear();
   }
