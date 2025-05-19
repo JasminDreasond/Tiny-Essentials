@@ -1,4 +1,14 @@
 /**
+ * @typedef {Object} QueuedTask
+ * @property {(...args: any[]) => Promise<any>|Promise<any>} task - The async task to execute.
+ * @property {(value: any) => any} resolve - The resolve function from the Promise.
+ * @property {(reason?: any) => any} reject - The reject function from the Promise.
+ * @property {string|undefined} [id] - Optional identifier for the task.
+ * @property {string|null|undefined} [marker] - Optional marker for the task.
+ * @property {number|null|undefined} [delay] - Optional delay (in ms) before the task is executed.
+ */
+
+/**
  * A queue system for managing and executing asynchronous tasks sequentially, one at a time.
  *
  * Tasks can be delayed, reordered, canceled, and processed in strict order. The queue ensures that each task
@@ -7,20 +17,10 @@
  * @class
  */
 class TinyPromiseQueue {
-  /**
-   * @typedef {Object} QueuedTask
-   * @property {(...args: any[]) => Promise<any>|Promise<any>} task - The async task to execute.
-   * @property {(value: any) => any} resolve - The resolve function from the Promise.
-   * @property {(reason?: any) => any} reject - The reject function from the Promise.
-   * @property {string|undefined} [id] - Optional identifier for the task.
-   * @property {string|null|undefined} [marker] - Optional marker for the task.
-   * @property {number|null|undefined} [delay] - Optional delay (in ms) before the task is executed.
-   */
-
-  /** @type {Array<QueuedTask>} */
+  /** @type {QueuedTask[]} */
   #queue = [];
   #running = false;
-  /** @type {Record<string, *>} */
+  /** @type {Record<string, ReturnType<typeof setTimeout>>} */
   #timeouts = {};
   /** @type {Set<string>} */
   #blacklist = new Set();
@@ -183,8 +183,13 @@ class TinyPromiseQueue {
    * @param {(...args: any[]) => Promise<any>|Promise<any>} task A function that returns a Promise.
    * @param {string} [id] Optional ID to identify the task in the queue.
    * @returns {Promise<any>} A Promise that resolves or rejects with the result of the task once it's processed.
+   * @throws {Error} Throws if param is invalid.
    */
   async enqueuePoint(task, id) {
+    if (typeof task !== 'function')
+      return Promise.reject(new Error('Task must be a function returning a Promise.'));
+    if (typeof id !== 'undefined' && typeof id !== 'string')
+      throw new Error('The "id" parameter must be a string.');
     if (!this.#running) return task();
     return new Promise((resolve, reject) => {
       this.#queue.push({ marker: 'POINT_MARKER', task, resolve, reject, id });
@@ -203,8 +208,16 @@ class TinyPromiseQueue {
    * @param {number|null} [delay] Optional delay (in ms) before the task is executed.
    * @param {string} [id] Optional ID to identify the task in the queue.
    * @returns {Promise<any>} A Promise that resolves or rejects with the result of the task once it's processed.
+   * @throws {Error} Throws if param is invalid.
    */
   enqueue(task, delay, id) {
+    if (typeof task !== 'function')
+      return Promise.reject(new Error('Task must be a function returning a Promise.'));
+    if (typeof delay !== 'undefined' && (typeof delay !== 'number' || delay < 0))
+      return Promise.reject(new Error('Delay must be a positive number or undefined.'));
+    if (typeof id !== 'undefined' && typeof id !== 'string')
+      throw new Error('The "id" parameter must be a string.');
+
     return new Promise((resolve, reject) => {
       this.#queue.push({ task, resolve, reject, id, delay });
       this.#processQueue();
@@ -217,9 +230,10 @@ class TinyPromiseQueue {
    *
    * @param {string} id The ID of the task to cancel.
    * @returns {boolean} True if a delay was cancelled and the task was removed.
+   * @throws {Error} Throws if `id` is not a string.
    */
   cancelTask(id) {
-    if (!id) return false;
+    if (typeof id !== 'string') throw new Error('The "id" parameter must be a string.');
     let cancelled = false;
 
     if (id in this.#timeouts) {
