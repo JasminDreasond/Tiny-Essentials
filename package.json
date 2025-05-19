@@ -11,6 +11,7 @@
     "test:mjs:objtype": "node test/index.mjs objType",
     "test:mjs:jsoncolor": "node test/index.mjs colorStringify",
     "test:mjs:ratelimit": "node test/index.mjs rateLimit",
+    "test:mjs:levelup": "node test/index.mjs levelUp",
     "fix:prettier": "npm run fix:prettier:src && npm run fix:prettier:test && npm run fix:prettier:rollup.config && npm run fix:prettier:webpack.config",
     "fix:prettier:src": "prettier --write ./src/*",
     "fix:prettier:test": "prettier --write ./test/*",

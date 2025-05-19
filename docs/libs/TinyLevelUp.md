@@ -1,108 +1,214 @@
+# 📚 TinyLevelUp Documentation
 
-### TinyLevelUp 🎮
+A lightweight XP-based leveling system for managing user experience and levels. Great for games, communities, or reward-based applications! 🎮✨
 
-This class manages user level-up logic based on experience points. It provides methods to handle experience points (exp) adjustments, level progression, and random experience generation.
+---
 
-#### Constructor 🛠️
+## 📐 Type Definitions
 
-- **`constructor(giveExp: number, expLevel: number)`**  
-  Initializes the class with the base experience value for random experience generation and the base experience required to level up.
+### `UserEditor` ✍️
 
-  - `giveExp` (`number`): The base experience value used for random experience generation. 🎲
-  - `expLevel` (`number`): The base experience required to level up for each level. 📈
+Represents the structure of a user object used in the leveling system.
 
-#### Methods 🔧
-
-- **`expValidator(user: UserEditor)`**  
-  Validates and adjusts the user's level based on their current experience. If the user's experience is above or below the required threshold, their level is adjusted accordingly. ⚖️
-
-  - `user` (`UserEditor`): The user object containing `exp` (experience), `level` (current level), and `totalExp` (total experience). 👤
-  
-  - **Returns**: `UserResult` - The updated user object. 🔄
-
-- **`getTotalExp(user: { exp: number, level: number })`**  
-  Calculates the total experience based on the user's level and experience. 📊
-
-  - `user` (`Object`): The user object containing `exp` (experience) and `level` (level). 👤
-  
-  - **Returns**: `number` - The total experience of the user. 🔢
-
-- **`expGenerator(multi: number = 1)`**  
-  Generates random experience points based on a configured multiplier. 🎲
-
-  - `multi` (`number`): A multiplier for experience generation. Default is `1`. 💯
-
-  - **Returns**: `number` - The generated experience points. 💥
-
-- **`progress(user: { level: number })`**  
-  Gets the experience points required to reach the next level. ⏩
-
-  - `user` (`Object`): The user object containing the `level`. 👤
-
-  - **Returns**: `number` - The experience required for the next level. 📈
-
-- **`getProgress(user: { level: number })`**  
-  An alias for `progress`. Returns the experience points required to reach the next level. ⏩
-
-  - `user` (`Object`): The user object containing the `level`. 👤
-
-  - **Returns**: `number` - The experience required for the next level. 📈
-
-- **`set(user: UserEditor, value: number)`**  
-  Sets the user's experience value and adjusts their level if necessary. 📝
-
-  - `user` (`UserEditor`): The user object containing `exp`, `level`, and `totalExp`. 👤
-  - `value` (`number`): The new experience value to set for the user. 💡
-
-  - **Returns**: `UserResult` - The updated user object. 🔄
-
-- **`give(user: UserEditor, extraExp: number = 0, type: 'add' | 'extra' = 'add', multi: number = 1)`**  
-  Adds experience to the user and adjusts their level if necessary. Experience can be added with or without a multiplier. ➕
-
-  - `user` (`UserEditor`): The user object containing `exp`, `level`, and `totalExp`. 👤
-  - `extraExp` (`number`): Additional experience to be added. 💯
-  - `type` (`'add' | 'extra'`): Type of experience addition. `'add'` adds random experience, while `'extra'` adds specified experience. 🔧
-  - `multi` (`number`): Multiplier for experience generation. Default is `1`. 💥
-
-  - **Returns**: `UserResult` - The updated user object. 🔄
-
-- **`remove(user: UserEditor, extraExp: number = 0, type: 'add' | 'extra' = 'add', multi: number = 1)`**  
-  Removes experience from the user and adjusts their level if necessary. Experience can be removed with or without a multiplier. ➖
-
-  - `user` (`UserEditor`): The user object containing `exp`, `level`, and `totalExp`. 👤
-  - `extraExp` (`number`): Additional experience to be removed. 💣
-  - `type` (`'add' | 'extra'`): Type of experience removal. `'add'` removes random experience, while `'extra'` removes specified experience. 🔧
-  - `multi` (`number`): Multiplier for experience generation. Default is `1`. 💥
-
-  - **Returns**: `UserResult` - The updated user object. 🔄
-
-### Type Definitions 📚
-
-- **`UserResult`**  
-  Represents the structure of a user object after level validation. 🧑‍💻
-
-  - `exp` (`number`): The user's experience. 🎯
-  - `level` (`number`): The user's current level. 🏆
-  - `totalExp` (`number`): The user's total experience. 📊
-
-- **`UserEditor`**  
-  Represents the user object before level validation. 🔧
-
-  - `exp` (`number`): The user's experience. 🎯
-  - `level` (`number`): The user's current level. 🏆
-  - `totalExp` (`any`): The user's total experience (can be calculated using `getTotalExp`). 📊
-
-### Example Usage 💡
-
-```javascript
-const user = { exp: 50, level: 1, totalExp: 50 };
-const levelUpSystem = new TinyLevelUp(100, 1000);
-
-// Add experience and check updated user stats
-levelUpSystem.give(user);
-console.log(user); // { exp: 112, level: 1, totalExp: 112 }
+```ts
+{
+  exp: number;       // Current experience points of the user
+  level: number;     // Current level of the user
+  totalExp: number;  // Total accumulated experience
+}
 ```
 
 ---
 
-This class can be used to manage user experience points and level-ups in any system requiring user progression logic. 🚀
+## 🏗️ Class: `TinyLevelUp`
+
+Handles experience logic, leveling up/down, validation, and XP generation.
+
+### 🆕 Constructor
+
+```ts
+new TinyLevelUp(giveExp: number, expLevel: number)
+```
+
+* `giveExp`: Base XP value for random XP generation 🎲
+* `expLevel`: Base XP required per level up 🔺
+
+---
+
+## 🧰 Methods
+
+### ➕ `createUser()`
+
+Creates a fresh user at level 0 with no XP.
+
+```ts
+createUser(): UserEditor
+```
+
+---
+
+### 🔎 `validateUser(user)`
+
+Throws an error if the user object is malformed or contains invalid values.
+
+```ts
+validateUser(user: UserEditor): void
+```
+
+🚨 Throws if:
+
+* `exp`, `level`, or `totalExp` are not valid numbers.
+
+---
+
+### ✅ `isValidUser(user)`
+
+Checks if the given user object is valid (without throwing errors).
+
+```ts
+isValidUser(user: UserEditor): boolean
+```
+
+---
+
+### 🎁 `getGiveExpBase()`
+
+Returns the base XP value used for generating XP.
+
+```ts
+getGiveExpBase(): number
+```
+
+---
+
+### 🧮 `getExpLevelBase()`
+
+Returns the base XP required per level.
+
+```ts
+getExpLevelBase(): number
+```
+
+---
+
+### ⚖️ `expValidator(user)`
+
+Validates and adjusts user level based on current XP.
+
+```ts
+expValidator(user: UserEditor): UserEditor
+```
+
+* Levels up/down the user if needed.
+* Applies "extra" XP appropriately.
+
+---
+
+### 📊 `getTotalExp(user)`
+
+Calculates total accumulated XP (including current level and progress).
+
+```ts
+getTotalExp(user: UserEditor): number
+```
+
+---
+
+### 🎲 `expGenerator(multi = 1)`
+
+Generates a random XP value based on the multiplier.
+
+```ts
+expGenerator(multi?: number): number
+```
+
+---
+
+### ⏩ `progress(user)`
+
+Returns XP required to reach the next level.
+
+```ts
+progress(user: UserEditor): number
+```
+
+---
+
+### 📈 `getProgress(user)`
+
+Alias for `progress()`. Returns XP needed to reach the next level.
+
+```ts
+getProgress(user: UserEditor): number
+```
+
+---
+
+### ✍️ `set(user, value)`
+
+Sets the current XP for the user and updates their level if necessary.
+
+```ts
+set(user: UserEditor, value: number): UserEditor
+```
+
+---
+
+### ⬆️ `give(user, extraExp?, type?, multi?)`
+
+Adds experience to the user and auto-levels if needed.
+
+```ts
+give(
+  user: UserEditor,
+  extraExp?: number,
+  type?: 'add' | 'extra',
+  multi?: number
+): UserEditor
+```
+
+* `type = 'add'`: Adds generated XP + extra
+* `type = 'extra'`: Adds only extra
+
+---
+
+### ⬇️ `remove(user, extraExp?, type?, multi?)`
+
+Removes experience from the user and updates their level if necessary.
+
+```ts
+remove(
+  user: UserEditor,
+  extraExp?: number,
+  type?: 'add' | 'extra',
+  multi?: number
+): UserEditor
+```
+
+* `type = 'add'`: Removes generated XP + extra
+* `type = 'extra'`: Removes only extra
+
+---
+
+## 🌟 Example Usage
+
+```js
+import TinyLevelUp from './TinyLevelUp.js';
+
+const levelSystem = new TinyLevelUp(15, 10);
+const user = levelSystem.createUser();
+
+levelSystem.give(user); // Adds random XP
+console.log(user);
+
+levelSystem.set(user, 50); // Manually set XP
+console.log(user.level);
+```
+
+---
+
+## 💬 Notes
+
+* All methods throw if invalid values are passed ❗
+* You can use `isValidUser()` for safe checks without exceptions 🛡️
+* This system is deterministic and extendable!

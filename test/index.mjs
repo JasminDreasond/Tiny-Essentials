@@ -1,5 +1,6 @@
 import * as TinyEssentials from '../dist/v1/index.mjs';
 import testColorSafeStringify from './libs/ColorSafeStringify.mjs';
+import testLevelUp from './libs/TinyLevelUp.mjs';
 import executeTinyPromiseQueue from './libs/TinyPromiseQueue.mjs';
 import testRateLimit from './libs/TinyRateLimiter.mjs';
 import executeObjType from './libs/objType.mjs';
@@ -9,6 +10,7 @@ const actions = {
   promiseQueue: executeTinyPromiseQueue,
   colorStringify: testColorSafeStringify,
   rateLimit: testRateLimit,
+  levelUp: testLevelUp,
 };
 
 (async () => {
