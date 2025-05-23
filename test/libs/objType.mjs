@@ -1,24 +1,78 @@
-import { objType, checkObj, cloneObjTypeOrder } from '../../dist/v1/index.mjs';
+import { objType, checkObj, cloneObjTypeOrder, ColorSafeStringify } from '../../dist/v1/index.mjs';
+
+const colorizer = new ColorSafeStringify();
+const color = {
+  reset: '\x1b[0m',
+  gray: '\x1b[90m',
+  red: '\x1b[91m',
+  green: '\x1b[92m',
+  yellow: '\x1b[93m',
+  blue: '\x1b[94m',
+  magenta: '\x1b[95m',
+  cyan: '\x1b[96m',
+  white: '\x1b[97m',
+};
+
+const stringifyJson = (json) => colorizer.colorize(JSON.stringify(json));
+
+const typeTests = [
+  ['undefined', undefined, '🌀'],
+  ['null', null, '🕳️'],
+  ['boolean', true, '✅'],
+  ['number', 123, '🔢'],
+  ['bigint', 123n, '🏛️'],
+  ['string', 'hello', '📝'],
+  ['symbol', Symbol('sym'), '⚙️'],
+  ['function', () => {}, '🛠️'],
+  ['array', [], '📦'],
+  ['buffer', Buffer.from('hello'), '📄'],
+  ['date', new Date(), '📅'],
+  ['regexp', /abc/, '🔍'],
+  ['map', new Map(), '🗺️'],
+  ['set', new Set(), '🧺'],
+  ['weakmap', new WeakMap(), '💼'],
+  ['weakset', new WeakSet(), '📚'],
+  ['promise', Promise.resolve(), '⏳'],
+  ['object', {}, '🧱'],
+];
+
+const mark = (condition) =>
+  condition ? `${color.green}✅${color.reset}` : `${color.red}❌${color.reset}`;
 
 const executeObjType = async () => {
   await new Promise((resolve) => {
+    console.log(`${color.cyan}📘 Type Order (cloneObjTypeOrder):${color.reset}`);
     console.log(cloneObjTypeOrder());
+    console.log('');
 
-    console.log(objType({}));
-    console.log(objType([]));
-    console.log(objType(new Map()));
-    console.log(objType(new Set()));
-    console.log(objType(new Date()));
-    console.log(objType(null));
-    console.log(objType(undefined));
+    console.log(`${color.magenta}🔎 Testing objType()${color.reset}`);
+    for (const [label, value, emoji] of typeTests) {
+      const result = objType(value);
+      const expected = label;
+      const isValid = result === expected;
+      console.log(
+        `${emoji} ${color.yellow}${label.padEnd(10)}${color.reset} => ${color.green}${result}${color.reset} ${mark(isValid)}`,
+      );
+    }
 
-    console.log(checkObj({}));
-    console.log(checkObj([]));
-    console.log(checkObj(new Map()));
-    console.log(checkObj(new Set()));
-    console.log(checkObj(new Date()));
-    console.log(checkObj(null));
-    console.log(checkObj(undefined));
+    console.log('');
+    console.log(`${color.blue}🧪 Testing checkObj()${color.reset}`);
+    for (const [label, value, emoji] of typeTests) {
+      const result = checkObj(value);
+      const isValid =
+        typeof result === 'object' &&
+        result !== null &&
+        result.valid === true &&
+        result.type === label;
+
+      const formattedResult = stringifyJson(result);
+      console.log(
+        `${emoji} ${color.yellow}${label.padEnd(10)}${color.reset} => ${formattedResult} ${mark(isValid)}`,
+      );
+    }
+
+    console.log('');
+    console.log(`${color.gray}✔️ Test completed.${color.reset}`);
     resolve();
   });
 };
