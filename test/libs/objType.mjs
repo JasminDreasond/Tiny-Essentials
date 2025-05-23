@@ -13,7 +13,7 @@ const color = {
   white: '\x1b[97m',
 };
 
-const stringifyJson = (json) => colorizer.colorize(JSON.stringify(json));
+const stringifyJson = (json, space = 0) => colorizer.colorize(JSON.stringify(json, null, space));
 
 const typeTests = [
   ['undefined', undefined, '🌀'],
@@ -42,7 +42,7 @@ const mark = (condition) =>
 const executeObjType = async () => {
   await new Promise((resolve) => {
     console.log(`${color.cyan}📘 Type Order (cloneObjTypeOrder):${color.reset}`);
-    console.log(cloneObjTypeOrder());
+    console.log(stringifyJson(cloneObjTypeOrder(), 1));
     console.log('');
 
     console.log(`${color.magenta}🔎 Testing objType()${color.reset}`);
