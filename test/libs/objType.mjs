@@ -1,7 +1,9 @@
-import { objType, checkObj } from '../../dist/v1/index.mjs';
+import { objType, checkObj, cloneObjTypeOrder } from '../../dist/v1/index.mjs';
 
 const executeObjType = async () => {
   await new Promise((resolve) => {
+    console.log(cloneObjTypeOrder());
+
     console.log(objType({}));
     console.log(objType([]));
     console.log(objType(new Map()));
