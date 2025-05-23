@@ -1,5 +1,7 @@
 import { Buffer } from 'buffer';
 
+const isBrowser = typeof window !== 'undefined' && typeof window.document !== 'undefined';
+
 /**
  * An object containing type validation functions and their evaluation order.
  *
@@ -9,111 +11,27 @@ import { Buffer } from 'buffer';
  * The `order` array defines the priority in which types should be checked,
  * which can be useful for functions that infer types in a consistent manner.
  *
- * @typedef {Object} TypeValidator
- * @property {Object.<string, (val: any) => boolean>} items - A dictionary of type validation functions.
- * @property {string[]} order - The order in which types should be evaluated.
- */
-
-/**
- * Validates values against specific types using predefined functions.
- *
- * @type {TypeValidator}
  */
 const typeValidator = {
-  items: {
-    /** @param {*} val @returns {val is undefined} */
-    undefined: (val) => typeof val === 'undefined',
-
-    /** @param {*} val @returns {val is null} */
-    null: (val) => val === null,
-
-    /** @param {*} val @returns {val is boolean} */
-    boolean: (val) => typeof val === 'boolean',
-
-    /** @param {*} val @returns {val is number} */
-    number: (val) => typeof val === 'number' && !isNaN(val),
-
-    /** @param {*} val @returns {val is bigint} */
-    bigint: (val) => typeof val === 'bigint',
-
-    /** @param {*} val @returns {val is string} */
-    string: (val) => typeof val === 'string',
-
-    /** @param {*} val @returns {val is symbol} */
-    symbol: (val) => typeof val === 'symbol',
-
-    /** @param {*} val @returns {val is Function} */
-    function: (val) => typeof val === 'function',
-
-    /** @param {*} val @returns {val is Array} */
-    array: (val) => Array.isArray(val),
-
-    /** @param {*} val @returns {val is Date} */
-    date: (val) => val instanceof Date,
-
-    /** @param {*} val @returns {val is RegExp} */
-    regexp: (val) => val instanceof RegExp,
-
-    /** @param {*} val @returns {val is Map} */
-    map: (val) => val instanceof Map,
-
-    /** @param {*} val @returns {val is Set} */
-    set: (val) => val instanceof Set,
-
-    /** @param {*} val @returns {val is WeakMap} */
-    weakmap: (val) => val instanceof WeakMap,
-
-    /** @param {*} val @returns {val is WeakSet} */
-    weakset: (val) => val instanceof WeakSet,
-
-    /** @param {*} val @returns {val is Promise} */
-    promise: (val) => val instanceof Promise,
-
-    /** @param {*} val @returns {val is Buffer} */
-    buffer: (val) => typeof Buffer !== 'undefined' && Buffer.isBuffer(val),
-
-    /** @param {*} val @returns {val is File} */
-    file: (val) => typeof File !== 'undefined' && val instanceof File,
-
-    /** @param {*} val @returns {val is HTMLElement} */
-    htmlelement: (val) => typeof HTMLElement !== 'undefined' && val instanceof HTMLElement,
-
-    /** @param {*} val @returns {val is object} */
-    object: (val) => typeof val === 'object' && val !== null && !Array.isArray(val),
-  },
-
-  /** Evaluation order of the type checkers. */
-  order: [
-    'undefined',
-    'null',
-    'boolean',
-    'number',
-    'bigint',
-    'string',
-    'symbol',
-    'function',
-    'array',
-    'buffer',
-    'file',
-    'date',
-    'regexp',
-    'map',
-    'set',
-    'weakmap',
-    'weakset',
-    'promise',
-    'htmlelement',
-    'object',
-  ],
+  items: {},
+  /**
+   * Evaluation order of the type checkers.
+   * @type {string[]}
+   * */
+  order: [],
 };
+
+/** @typedef {Object.<string, (val: any) => *>} ExtendObjType */
+/** @typedef {Array<[string, (val: any) => *]>} ExtendObjTypeArray */
 
 /**
  * Adds new type checkers to the typeValidator without overwriting existing ones.
  *
- * Optionally, you can specify the index at which the new type should be inserted in the order.
+ * Accepts either an object with named functions or an array of [key, fn] arrays.
  * If no index is provided, the type is inserted just before 'object' (if it exists), or at the end.
  *
- * @param {Object.<string, (val: any) => boolean>} newItems - New type validators to be added.
+ * @param {ExtendObjType|ExtendObjTypeArray} newItems
+ *        - New type validators to be added.
  * @param {number} [index] - Optional. Position at which to insert each new type. Ignored if the type already exists.
  * @returns {string[]} - A list of successfully added type names.
  *
@@ -121,12 +39,20 @@ const typeValidator = {
  * extendObjType({
  *   htmlElement2: val => typeof HTMLElement !== 'undefined' && val instanceof HTMLElement
  * });
+ *
+ * @example
+ * extendObjType([
+ *   ['alpha', val => typeof val === 'string'],
+ *   ['beta', val => Array.isArray(val)]
+ * ]);
  */
 export function extendObjType(newItems, index) {
   const added = [];
 
-  for (const [key, fn] of Object.entries(newItems)) {
+  const entries = Array.isArray(newItems) ? newItems : Object.entries(newItems);
+  for (const [key, fn] of entries) {
     if (!typeValidator.items.hasOwnProperty(key)) {
+      // @ts-ignore
       typeValidator.items[key] = fn;
 
       let insertAt = typeof index === 'number' ? index : -1; // Default to -1 if index isn't provided
@@ -204,9 +130,12 @@ export function cloneObjTypeOrder() {
  */
 const getType = (val) => {
   if (val === null) return 'null';
-  for (const name of typeValidator.order)
+  // @ts-ignore
+  for (const name of typeValidator.order) {
+    // @ts-ignore
     if (typeof typeValidator.items[name] !== 'function' || typeValidator.items[name](val))
       return name;
+  }
   return 'unknown';
 };
 
@@ -241,7 +170,9 @@ export function checkObj(obj) {
   /** @type {{ valid:*; type: string | null }} */
   const data = { valid: null, type: null };
   for (const name of typeValidator.order) {
+    // @ts-ignore
     if (typeof typeValidator.items[name] === 'function') {
+      // @ts-ignore
       const result = typeValidator.items[name](obj);
       if (result) {
         data.valid = result;
@@ -280,3 +211,129 @@ export function countObj(obj) {
   // Nothing
   return 0;
 }
+
+// Insert obj types
+
+extendObjType([
+  [
+    'undefined',
+    /** @param {*} val @returns {val is undefined} */
+    (val) => typeof val === 'undefined',
+  ],
+  [
+    'null',
+    /** @param {*} val @returns {val is null} */
+    (val) => val === null,
+  ],
+  [
+    'boolean',
+    /** @param {*} val @returns {val is boolean} */
+    (val) => typeof val === 'boolean',
+  ],
+  [
+    'number',
+    /** @param {*} val @returns {val is number} */
+    (val) => typeof val === 'number' && !Number.isNaN(val),
+  ],
+  [
+    'bigint',
+    /** @param {*} val @returns {val is bigint} */
+    (val) => typeof val === 'bigint',
+  ],
+  [
+    'string',
+    /** @param {*} val @returns {val is string} */
+    (val) => typeof val === 'string',
+  ],
+  [
+    'symbol',
+    /** @param {*} val @returns {val is symbol} */
+    (val) => typeof val === 'symbol',
+  ],
+  [
+    'function',
+    /** @param {*} val @returns {val is Function} */
+    (val) => typeof val === 'function',
+  ],
+  [
+    'array',
+    /** @param {*} val @returns {val is any[]} */
+    (val) => Array.isArray(val),
+  ],
+]);
+
+if (!isBrowser) {
+  extendObjType([
+    [
+      'buffer',
+      /** @param {*} val @returns {val is Buffer} */
+      (val) => typeof Buffer !== 'undefined' && Buffer.isBuffer(val),
+    ],
+  ]);
+}
+
+if (isBrowser) {
+  extendObjType([
+    [
+      'file',
+      /** @param {*} val @returns {val is File} */
+      (val) => typeof File !== 'undefined' && val instanceof File,
+    ],
+  ]);
+}
+
+extendObjType([
+  [
+    'date',
+    /** @param {*} val @returns {val is Date} */
+    (val) => val instanceof Date,
+  ],
+  [
+    'regexp',
+    /** @param {*} val @returns {val is RegExp} */
+    (val) => val instanceof RegExp,
+  ],
+  [
+    'map',
+    /** @param {*} val @returns {val is Map<any, any>} */
+    (val) => val instanceof Map,
+  ],
+  [
+    'set',
+    /** @param {*} val @returns {val is Set<any>} */
+    (val) => val instanceof Set,
+  ],
+  [
+    'weakmap',
+    /** @param {*} val @returns {val is WeakMap<any, any>} */
+    (val) => val instanceof WeakMap,
+  ],
+  [
+    'weakset',
+    /** @param {*} val @returns {val is WeakSet<any>} */
+    (val) => val instanceof WeakSet,
+  ],
+  [
+    'promise',
+    /** @param {*} val @returns {val is Promise<any>} */
+    (val) => val instanceof Promise,
+  ],
+]);
+
+if (isBrowser) {
+  extendObjType([
+    [
+      'htmlelement',
+      /** @param {*} val @returns {val is HTMLElement} */
+      (val) => typeof HTMLElement !== 'undefined' && val instanceof HTMLElement,
+    ],
+  ]);
+}
+
+extendObjType([
+  [
+    'object',
+    /** @param {*} val @returns {val is object} */
+    (val) => typeof val === 'object' && val !== null && !Array.isArray(val),
+  ],
+]);
