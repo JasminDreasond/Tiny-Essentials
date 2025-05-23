@@ -83,6 +83,13 @@ extendObjType({
 });
 ```
 
+```js
+extendObjType([
+  [ 'alpha', val => typeof val === 'string' ],
+  [ 'beta', val => Array.isArray(val) ]
+]);
+```
+
 This will insert `customElement` before the built-in `object` type unless a position is specified.
 
 ---
