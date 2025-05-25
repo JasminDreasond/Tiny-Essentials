@@ -1,3 +1,5 @@
+/** @typedef {(groupId: string) => void} OnMemoryExceeded */
+
 /**
  * Class representing a flexible rate limiter per user or group.
  *
@@ -6,14 +8,39 @@
  * rate limits.
  */
 class TinyRateLimiter {
+  /** @type {number|null} */
+  #maxMemory = null;
+
+  /**
+   * @type {null|OnMemoryExceeded}
+   */
+  #onMemoryExceeded = null;
+
+  /**
+   * Set the callback to be triggered when a group exceeds its limit
+   * @param {OnMemoryExceeded} callback
+   */
+  setOnMemoryExceeded(callback) {
+    if (typeof callback !== 'function') throw new Error('onMemoryExceeded must be a function');
+    this.#onMemoryExceeded = callback;
+  }
+
+  /**
+   * Clear the onMemoryExceeded callback
+   */
+  clearOnMemoryExceeded() {
+    this.#onMemoryExceeded = null;
+  }
+
   /**
    * @param {Object} options
+   * @param {number|null} [options.maxMemory] - Max memory allowed
    * @param {number} [options.maxHits] - Max interactions allowed
    * @param {number} [options.interval] - Time window in milliseconds
    * @param {number} [options.cleanupInterval] - Interval for automatic cleanup (ms)
    * @param {number} [options.maxIdle=300000] - Max idle time for a user before being cleaned (ms)
    */
-  constructor({ maxHits, interval, cleanupInterval, maxIdle = 300000 }) {
+  constructor({ maxHits, interval, cleanupInterval, maxIdle = 300000, maxMemory = 100000 }) {
     /** @param {number|undefined} val */
     const isPositiveInteger = (val) =>
       typeof val === 'number' && Number.isFinite(val) && val >= 1 && Number.isInteger(val);
@@ -33,6 +60,14 @@ class TinyRateLimiter {
       throw new Error("'cleanupInterval' must be a positive integer in milliseconds if defined.");
     if (!isMaxIdleValid) throw new Error("'maxIdle' must be a positive integer in milliseconds.");
 
+    if (typeof maxMemory === 'number' && Number.isFinite(maxMemory) && maxMemory > 0) {
+      this.#maxMemory = Math.floor(maxMemory);
+    } else if (maxMemory === null || maxMemory === undefined) {
+      this.#maxMemory = null;
+    } else {
+      throw new Error('maxMemory must be a positive number or null');
+    }
+
     this.maxHits = isMaxHitsValid ? maxHits : null;
     this.interval = isIntervalValid ? interval : null;
     this.cleanupInterval = isCleanupValid ? cleanupInterval : null;
@@ -50,6 +85,40 @@ class TinyRateLimiter {
     // Start automatic cleanup only if cleanupInterval is valid
     if (this.cleanupInterval !== null)
       this._cleanupTimer = setInterval(() => this._cleanup(), this.cleanupInterval);
+  }
+
+  /**
+   * @type {Map<string, number>}
+   * Stores TTL (in ms) for each groupId individually
+   */
+  groupTTL = new Map();
+
+  /**
+   * Set TTL (in milliseconds) for a specific group
+   * @param {string} groupId
+   * @param {number} ttl
+   */
+  setGroupTTL(groupId, ttl) {
+    if (typeof ttl !== 'number' || !Number.isFinite(ttl) || ttl <= 0)
+      throw new Error('TTL must be a positive number in milliseconds');
+    this.groupTTL.set(groupId, ttl);
+  }
+
+  /**
+   * Get TTL (in ms) for a specific group.
+   * @param {string} groupId
+   * @returns {number|null}
+   */
+  getGroupTTL(groupId) {
+    return this.groupTTL.get(groupId) ?? null;
+  }
+
+  /**
+   * Delete the TTL setting for a specific group
+   * @param {string} groupId
+   */
+  deleteGroupTTL(groupId) {
+    this.groupTTL.delete(groupId);
   }
 
   /**
@@ -98,10 +167,10 @@ class TinyRateLimiter {
     }
 
     // Optional: keep only the last N entries for memory optimization
-    if (this.maxHits !== null) {
-      const maxHits = this.getMaxHits() + 1;
-      if (history.length > maxHits) {
-        history.splice(0, history.length - maxHits);
+    if (this.#maxMemory !== null && typeof this.#maxMemory === 'number') {
+      if (history.length > this.#maxMemory) {
+        history.splice(0, history.length - this.#maxMemory);
+        if (typeof this.#onMemoryExceeded === 'function') this.#onMemoryExceeded(groupId);
       }
     }
   }
@@ -152,6 +221,8 @@ class TinyRateLimiter {
    * @returns {void}
    */
   reset(userId) {
+    if (process?.env?.NODE_ENV !== 'production')
+      console.warn(`[TinyRateLimiter] 'reset()' is deprecated. Use 'resetUser()' instead.`);
     return this.resetUser(userId);
   }
 
@@ -174,6 +245,12 @@ class TinyRateLimiter {
    * @param {number[]} timestamps
    */
   setData(groupId, timestamps) {
+    if (!Array.isArray(timestamps)) throw new Error('timestamps must be an array of numbers.');
+    for (const t of timestamps) {
+      if (typeof t !== 'number' || !Number.isFinite(t)) {
+        throw new Error('All timestamps must be finite numbers.');
+      }
+    }
     this.groupData.set(groupId, timestamps);
     this.lastSeen.set(groupId, Date.now());
   }
@@ -197,15 +274,17 @@ class TinyRateLimiter {
   }
 
   /**
-   * Cleanup old/inactive groups
+   * Cleanup old/inactive groups with individual TTLs
    * @private
    */
   _cleanup() {
     const now = Date.now();
     for (const [groupId, last] of this.lastSeen.entries()) {
-      if (now - last > this.maxIdle) {
+      const ttl = this.getGroupTTL(groupId) ?? this.maxIdle;
+      if (now - last > ttl) {
         this.groupData.delete(groupId);
         this.lastSeen.delete(groupId);
+        this.groupTTL.delete(groupId);
       }
     }
   }
@@ -233,6 +312,105 @@ class TinyRateLimiter {
   }
 
   /**
+   * Get the total number of hits recorded for a group.
+   * @param {string} groupId
+   * @returns {number}
+   */
+  getTotalHits(groupId) {
+    const history = this.groupData.get(groupId);
+    return Array.isArray(history) ? history.length : 0;
+  }
+
+  /**
+   * Get total hits recorded for a user (via their group).
+   * @param {string} userId
+   * @returns {number}
+   */
+  getUserHits(userId) {
+    const groupId = this.getGroupId(userId);
+    return this.getTotalHits(groupId);
+  }
+
+  /**
+   * Get the timestamp of the last hit for a group.
+   * @param {string} groupId
+   * @returns {number|null}
+   */
+  getLastHit(groupId) {
+    const history = this.groupData.get(groupId);
+    return history?.length ? history[history.length - 1] : null;
+  }
+
+  /**
+   * Get milliseconds since the last hit for a group.
+   * @param {string} groupId
+   * @returns {number|null}
+   */
+  getTimeSinceLastHit(groupId) {
+    const last = this.getLastHit(groupId);
+    return last !== null ? Date.now() - last : null;
+  }
+
+  /**
+   * Internal utility to compute average spacing
+   * @private
+   * @param {number[]|undefined} history
+   * @returns {number|null}
+   */
+  _calculateAverageSpacing(history) {
+    if (!Array.isArray(history) || history.length < 2) return null;
+    let total = 0;
+    for (let i = 1; i < history.length; i++) {
+      total += history[i] - history[i - 1];
+    }
+    return total / (history.length - 1);
+  }
+
+  /**
+   * Get average time between hits for a group (ms).
+   * @param {string} groupId
+   * @returns {number|null}
+   */
+  getAverageHitSpacing(groupId) {
+    return this._calculateAverageSpacing(this.groupData.get(groupId));
+  }
+
+  /**
+   * Get metrics about a group's activity.
+   * @param {string} groupId
+   * @returns {{
+   *   totalHits: number,
+   *   lastHit: number|null,
+   *   timeSinceLastHit: number|null,
+   *   averageHitSpacing: number|null
+   * }}
+   */
+  getMetrics(groupId) {
+    const history = this.groupData.get(groupId);
+
+    if (!Array.isArray(history) || history.length === 0) {
+      return {
+        totalHits: 0,
+        lastHit: null,
+        timeSinceLastHit: null,
+        averageHitSpacing: null,
+      };
+    }
+
+    const totalHits = history.length;
+    const lastHit = history[totalHits - 1];
+    const timeSinceLastHit = Date.now() - lastHit;
+    const averageHitSpacing = this._calculateAverageSpacing(history);
+
+    return {
+      totalHits,
+      lastHit,
+      timeSinceLastHit,
+      averageHitSpacing,
+    };
+  }
+
+  /**
    * Destroy the rate limiter, stopping cleanup and clearing data
    */
   destroy() {
@@ -240,6 +418,7 @@ class TinyRateLimiter {
     this.groupData.clear();
     this.lastSeen.clear();
     this.userToGroup.clear();
+    this.groupTTL.clear();
   }
 }
 

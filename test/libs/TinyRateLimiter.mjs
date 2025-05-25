@@ -56,6 +56,16 @@ const testRateLimit = async () => {
       (isLimited4 ? colorText('red', 'YES') : colorText('green', 'NO')),
   );
 
+  // 📊 Show metrics
+  const metrics = rateLimiter.getMetrics(userId);
+  console.log(colorText('gray', '📊 User metrics:'));
+  console.log(`${colorText('dim', '- Total hits:')} ${metrics.totalHits}`);
+  console.log(`${colorText('dim', '- Last hit:')} ${metrics.lastHit}`);
+  console.log(`${colorText('dim', '- Time since last hit:')} ${metrics.timeSinceLastHit}ms`);
+  console.log(
+    `${colorText('dim', '- Avg. hit spacing:')} ${metrics.averageHitSpacing?.toFixed(2)}ms`,
+  );
+
   // ⏳ Wait for hits to expire
   console.log(colorText('blue', '⏲️ Waiting 1.5s for hits to expire...'));
   await sleep(1500);
