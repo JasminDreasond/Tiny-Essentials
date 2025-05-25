@@ -285,6 +285,13 @@ class TinyRateLimiter {
         this.groupData.delete(groupId);
         this.lastSeen.delete(groupId);
         this.groupTTL.delete(groupId);
+
+        // Remove all userIds mapped to this groupId
+        for (const [userId, mappedGroupId] of this.userToGroup.entries()) {
+          if (mappedGroupId === groupId) {
+            this.userToGroup.delete(userId);
+          }
+        }
       }
     }
   }
