@@ -1,11 +1,9 @@
 /**
- * Class representing a flexible rate limiter per user.
+ * Class representing a flexible rate limiter per user or group.
  *
- * This rate limiter can be configured by maximum number of hits,
- * time interval, or a combination of both. It supports automatic
- * cleanup of inactive users to optimize memory usage.
- *
- * @class
+ * This rate limiter supports limiting per user or per group by mapping
+ * userIds to a common groupId. All users within the same group share
+ * rate limits.
  */
 class TinyRateLimiter {
   /**
@@ -41,10 +39,13 @@ class TinyRateLimiter {
     this.maxIdle = maxIdle;
 
     /** @type {Map<string, number[]>} */
-    this.userData = new Map();
+    this.groupData = new Map(); // groupId -> timestamps[]
 
     /** @type {Map<string, number>} */
-    this.lastSeen = new Map();
+    this.lastSeen = new Map(); // groupId -> timestamp
+
+    /** @type {Map<string, string>} */
+    this.userToGroup = new Map(); // userId -> groupId
 
     // Start automatic cleanup only if cleanupInterval is valid
     if (this.cleanupInterval !== null)
@@ -52,28 +53,21 @@ class TinyRateLimiter {
   }
 
   /**
-   * Get the interval window in milliseconds.
-   *
-   * @returns {number} The interval value.
-   * @throws {Error} If interval is not a valid finite number.
+   * Assign a userId to a groupId
+   * @param {string} userId
+   * @param {string} groupId
    */
-  getInterval() {
-    if (typeof this.interval !== 'number' || !Number.isFinite(this.interval))
-      throw new Error("'interval' is not a valid finite number.");
-    return this.interval;
+  assignToGroup(userId, groupId) {
+    this.userToGroup.set(userId, groupId);
   }
 
   /**
-   * Get the maximum number of allowed hits.
-   *
-   * @returns {number} The maxHits value.
-   * @throws {Error} If maxHits is not a valid finite number.
+   * Get the groupId for a given userId
+   * @param {string} userId
+   * @returns {string}
    */
-  getMaxHits() {
-    if (typeof this.maxHits !== 'number' || !Number.isFinite(this.maxHits)) {
-      throw new Error("'maxHits' is not a valid finite number.");
-    }
-    return this.maxHits;
+  getGroupId(userId) {
+    return this.userToGroup.get(userId) || userId; // fallback: use userId as own group
   }
 
   /**
@@ -81,17 +75,18 @@ class TinyRateLimiter {
    * @param {string} userId
    */
   hit(userId) {
+    const groupId = this.getGroupId(userId);
     const now = Date.now();
 
-    if (!this.userData.has(userId)) {
-      this.userData.set(userId, []);
+    if (!this.groupData.has(groupId)) {
+      this.groupData.set(groupId, []);
     }
 
-    const history = this.userData.get(userId);
-    if (!history) throw new Error(`No data found for userId: ${userId}`);
+    const history = this.groupData.get(groupId);
+    if (!history) throw new Error(`No data found for groupId: ${groupId}`);
 
     history.push(now);
-    this.lastSeen.set(userId, now);
+    this.lastSeen.set(groupId, now);
 
     // Clean up old entries
     if (this.interval !== null) {
@@ -104,7 +99,7 @@ class TinyRateLimiter {
 
     // Optional: keep only the last N entries for memory optimization
     if (this.maxHits !== null) {
-      const maxHits = this.getMaxHits();
+      const maxHits = this.getMaxHits() + 1;
       if (history.length > maxHits) {
         history.splice(0, history.length - maxHits);
       }
@@ -112,83 +107,139 @@ class TinyRateLimiter {
   }
 
   /**
-   * Check if the user is currently rate limited
+   * Check if the user (via their group) is currently rate limited
    * @param {string} userId
    * @returns {boolean}
    */
   isRateLimited(userId) {
+    const groupId = this.getGroupId(userId);
     const now = Date.now();
 
-    if (!this.userData.has(userId)) return false;
+    if (!this.groupData.has(groupId)) return false;
 
-    const history = this.userData.get(userId);
-    if (!history) throw new Error(`No data found for userId: ${userId}`);
+    const history = this.groupData.get(groupId);
+    if (!history) throw new Error(`No data found for groupId: ${groupId}`);
 
     if (this.interval !== null) {
-      const interval = this.getInterval();
-      const recent = history.filter((t) => t > now - interval);
+      const recent = history.filter((t) => t > now - this.getInterval());
       if (this.maxHits !== null) {
-        return recent.length >= this.getMaxHits();
+        return recent.length > this.getMaxHits();
       }
       return recent.length > 0;
     }
 
     if (this.maxHits !== null) {
-      return history.length >= this.getMaxHits();
+      return history.length > this.getMaxHits();
     }
 
     return false;
   }
 
   /**
-   * Manually reset user data
+   * Manually reset group data
+   * @param {string} groupId
+   */
+  resetGroup(groupId) {
+    this.groupData.delete(groupId);
+    this.lastSeen.delete(groupId);
+  }
+
+  /**
+   * Manually reset user data.
+   *
+   * @deprecated Use `resetUser(userId)` instead. This method will be removed in future versions.
    * @param {string} userId
+   * @returns {void}
    */
   reset(userId) {
-    this.userData.delete(userId);
-    this.lastSeen.delete(userId);
+    return this.resetUser(userId);
   }
 
   /**
-   * Set hit timestamps for a user
+   * Manually reset a user mapping (and optionally clear their group data)
    * @param {string} userId
+   * @param {boolean} [clearGroup=false]
+   */
+  resetUser(userId, clearGroup = false) {
+    const groupId = this.userToGroup.get(userId);
+    this.userToGroup.delete(userId);
+    if (clearGroup && groupId) {
+      this.resetGroup(groupId);
+    }
+  }
+
+  /**
+   * Set custom timestamps to a group
+   * @param {string} groupId
    * @param {number[]} timestamps
    */
-  setData(userId, timestamps) {
-    this.userData.set(userId, timestamps);
-    this.lastSeen.set(userId, Date.now());
+  setData(groupId, timestamps) {
+    this.groupData.set(groupId, timestamps);
+    this.lastSeen.set(groupId, Date.now());
   }
 
   /**
-   * Get timestamps from user
-   * @param {string} userId
+   * Check if a group has data
+   * @param {string} groupId
+   * @returns {boolean}
+   */
+  hasData(groupId) {
+    return this.groupData.has(groupId);
+  }
+
+  /**
+   * Get timestamps from a group
+   * @param {string} groupId
    * @returns {number[]}
    */
-  getData(userId) {
-    return this.userData.get(userId) || [];
+  getData(groupId) {
+    return this.groupData.get(groupId) || [];
   }
 
   /**
-   * Cleanup old/inactive users
+   * Cleanup old/inactive groups
    * @private
    */
   _cleanup() {
     const now = Date.now();
-    for (const [userId, last] of this.lastSeen.entries()) {
+    for (const [groupId, last] of this.lastSeen.entries()) {
       if (now - last > this.maxIdle) {
-        this.userData.delete(userId);
-        this.lastSeen.delete(userId);
+        this.groupData.delete(groupId);
+        this.lastSeen.delete(groupId);
       }
     }
   }
 
   /**
-   * Destroy the rate limiter, stopping all intervals
+   * Get the interval window in milliseconds.
+   * @returns {number}
+   */
+  getInterval() {
+    if (typeof this.interval !== 'number' || !Number.isFinite(this.interval)) {
+      throw new Error("'interval' is not a valid finite number.");
+    }
+    return this.interval;
+  }
+
+  /**
+   * Get the maximum number of allowed hits.
+   * @returns {number}
+   */
+  getMaxHits() {
+    if (typeof this.maxHits !== 'number' || !Number.isFinite(this.maxHits)) {
+      throw new Error("'maxHits' is not a valid finite number.");
+    }
+    return this.maxHits;
+  }
+
+  /**
+   * Destroy the rate limiter, stopping cleanup and clearing data
    */
   destroy() {
     if (this._cleanupTimer) clearInterval(this._cleanupTimer);
-    this.userData.clear();
+    this.groupData.clear();
     this.lastSeen.clear();
+    this.userToGroup.clear();
   }
 }
 

@@ -70,7 +70,7 @@ const testRateLimit = async () => {
   console.log(colorText('magenta', '🧼 Waiting 2s for auto-cleanup (inactivity)...'));
   await sleep(2000);
 
-  const userExists = rateLimiter.userData.has(userId);
+  const userExists = rateLimiter.hasData(userId);
   console.log(
     `🧾 User still exists in cache? ` +
       (userExists ? colorText('green', '✅ YES') : colorText('red', '❌ NO')),
