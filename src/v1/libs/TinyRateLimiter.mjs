@@ -493,6 +493,7 @@ class TinyRateLimiter {
    */
   destroy() {
     if (this.#cleanupTimer) clearInterval(this.#cleanupTimer);
+    this._cleanup();
     this.groupData.clear();
     this.lastSeen.clear();
     this.userToGroup.clear();

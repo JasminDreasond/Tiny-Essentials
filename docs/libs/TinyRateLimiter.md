@@ -33,7 +33,7 @@ Registers a hit for the given `userId`.
 rateLimiter.hit("user123");
 ```
 
-It tracks timestamps internally and automatically cleans old entries based on `interval` and `maxHits`.
+Tracks timestamps internally and automatically removes old entries based on `interval` and `maxHits`.
 
 ---
 
@@ -45,16 +45,6 @@ Checks if the given `userId` is currently rate limited.
 if (rateLimiter.isRateLimited("user123")) {
   console.log("Too many actions! Please slow down.");
 }
-```
-
----
-
-### 🔁 `reset(userId: string): void`
-
-Resets all stored data for the given user.
-
-```js
-rateLimiter.reset("user123");
 ```
 
 ---
@@ -92,19 +82,165 @@ Returns the configured `interval` value, or throws if invalid.
 
 ---
 
+### 🎯 `getUserHits(userId: string): number`
+
+Returns the current number of hits for a user.
+
+---
+
+### 👀 `getLastHit(userId: string): number|null`
+
+Returns the timestamp of the user's last hit, or `null` if none.
+
+---
+
+### ⌛ `getTimeSinceLastHit(userId: string): number|null`
+
+Returns how much time (in ms) has passed since the user's last hit.
+
+---
+
+### 📊 `getAverageHitSpacing(userId: string): number|null`
+
+Returns the average time (in ms) between a user's hits, or `null` if not enough data.
+
+---
+
+### 🔗 `getGroupId(userId: string): string`
+
+Returns the group ID that the user is assigned to (default is same as userId).
+
+---
+
+### 📦 `assignToGroup(userId: string, groupId: string): void`
+
+Manually assigns a user to a specific group for shared rate limits.
+
+---
+
+### 💡 `getGroupTTL(groupId: string): number|undefined`
+
+Returns the custom TTL (ms) for a specific group, if defined.
+
+---
+
+### 🕰️ `setGroupTTL(groupId: string, ttl: number): void`
+
+Sets the maximum idle time before a group is auto-cleaned.
+
+---
+
+### 📊 `getMetrics(groupId: string): { totalHits, lastHit, timeSinceLastHit, averageHitSpacing }`
+
+Returns a detailed summary of activity for a group:
+
+```js
+{
+  totalHits: number,
+  lastHit: number|null,
+  timeSinceLastHit: number|null,
+  averageHitSpacing: number|null
+}
+```
+
+---
+
 ### 🧼 `destroy(): void`
 
 Stops internal timers and clears all stored data. Ideal for cleanup in tests or long-running apps.
 
+---
+
+### 🧠 `setOnMemoryExceeded(callback: () => void): void`
+
+Sets a callback to be called when memory usage (based on internal data size) exceeds a threshold.
+
 ```js
-rateLimiter.destroy();
+rateLimiter.setOnMemoryExceeded(() => {
+  console.warn("Rate limiter memory usage is high!");
+});
+```
+
+---
+
+### 🧽 `clearOnMemoryExceeded(): void`
+
+Clears the memory-exceeded callback.
+
+---
+
+### 🕓 `setOnGroupExpired(callback: (groupId: string) => void): void`
+
+Sets a callback that will be called whenever a group expires due to inactivity (based on TTL or `maxIdle`).
+
+```js
+rateLimiter.setOnGroupExpired((groupId) => {
+  console.log(`Group "${groupId}" has expired.`);
+});
+```
+
+---
+
+### 🔕 `clearOnGroupExpired(): void`
+
+Removes the group expiration callback.
+
+---
+
+### ❌ `deleteGroupTTL(groupId: string): void`
+
+Removes any custom TTL (idle timeout) for a specific group.
+
+```js
+rateLimiter.deleteGroupTTL("admins");
+```
+
+---
+
+### ♻️ `resetGroup(groupId: string): void`
+
+Removes all hit history and data for a group (but keeps user–group associations unless manually removed).
+
+---
+
+### 👤 `resetUser(userId: string): void`
+
+Fully removes a user's data and group assignment, if any.
+
+---
+
+### 🔍 `hasData(userId: string): boolean`
+
+Returns `true` if the user has any stored data (hits or group association).
+
+---
+
+### 💤 `getMaxIdle(): number`
+
+Returns the current global `maxIdle` value (in ms) used for cleanup.
+
+---
+
+### 💤 `setMaxIdle(ms: number): void`
+
+Sets the global `maxIdle` value (in ms), which applies to all groups without a custom TTL.
+
+---
+
+### 📈 `getTotalHits(groupId: string): number`
+
+Returns the total number of hits recorded for a given group.
+
+```js
+const total = rateLimiter.getTotalHits("group42");
+console.log(`Group total hits: ${total}`);
 ```
 
 ---
 
 ## 🧽 Automatic Cleanup
 
-Inactive users are automatically removed every `cleanupInterval` milliseconds if they haven't had any hits for longer than `maxIdle`.
+Inactive groups are automatically removed every `cleanupInterval` milliseconds if they haven't had any hits for longer than their TTL (or `maxIdle` if not set).
 
 This helps reduce memory usage and keeps your limiter lean and clean! 🪶
 
@@ -142,14 +278,16 @@ if (limiter.isRateLimited("user42")) {
 
 ## 🌈 Summary
 
-| Feature              | Support |
-| -------------------- | ------- |
-| Per-user tracking    | ✅       |
-| Max hits             | ✅       |
-| Time window interval | ✅       |
-| Automatic cleanup    | ✅       |
-| Manual data control  | ✅       |
-| Lightweight + fast   | ✅       |
+| Feature                    | Support |
+| -------------------------- | ------- |
+| Per-user tracking          | ✅       |
+| Max hits                   | ✅       |
+| Time window interval       | ✅       |
+| Automatic cleanup          | ✅       |
+| Manual data control        | ✅       |
+| Lightweight + fast         | ✅       |
+| Group-based rate limiting  | ✅       |
+| Activity metrics per group | ✅       |
 
 ---
 
