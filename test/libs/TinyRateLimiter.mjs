@@ -34,24 +34,28 @@ const testRateLimit = async () => {
   });
 
   const userId = 'user123';
-  console.log(colorText('cyan', '🚀 Starting rate limit test...'));
+  const userId2 = 'user456';
+  console.log(
+    colorText('cyan', `\n🚀 Starting tests with multiple users: ${userId} and ${userId2}...\n`),
+  );
 
   // ✅ Basic configuration getters
   console.log(colorText('gray', '🔧 Config values:'));
   console.log(`- interval: ${colorText('blue', rateLimiter.getInterval() + ' ms')}`);
   console.log(`- maxHits: ${colorText('blue', rateLimiter.getMaxHits())}`);
 
-  // 🧠 Group ID
-  const groupId = rateLimiter.getGroupId(userId);
-  console.log(`🔍 Group ID for ${userId}: ${colorText('green', groupId)}`);
-
   // 🔁 Register 3 hits
   for (let i = 0; i < 3; i++) {
     rateLimiter.hit(userId);
-    const isLimited = rateLimiter.isRateLimited(userId);
+    rateLimiter.hit(userId2);
+
     console.log(
-      `${colorText('green', `✅ Hit ${i + 1} registered.`)} Rate limited? ❓ ` +
-        (isLimited ? colorText('red', 'YES') : colorText('green', 'NO')),
+      `${colorText('green', `✅ Hit ${i + 1} registered for ${userId}.`)} Rate limited? ` +
+        (rateLimiter.isRateLimited(userId) ? colorText('red', 'YES') : colorText('green', 'NO')),
+    );
+    console.log(
+      `${colorText('green', `✅ Hit ${i + 1} registered for ${userId2}.`)} Rate limited? ` +
+        (rateLimiter.isRateLimited(userId2) ? colorText('red', 'YES') : colorText('green', 'NO')),
     );
     await sleep(200); // ⚡ Fast 200ms between hits
   }
@@ -65,13 +69,27 @@ const testRateLimit = async () => {
       (isLimited4 ? colorText('red', 'YES') : colorText('green', 'NO')),
   );
 
+  console.log(colorText('gray', '\n📋 Metrics per user after multiple hits:'));
+  console.log(`- ${userId} total hits: ${rateLimiter.getTotalHits(userId)}`);
+  console.log(`- ${userId2} total hits: ${rateLimiter.getTotalHits(userId2)}`);
+
   // 📊 Individual metric methods
   console.log(colorText('gray', '📋 Individual metric checks:'));
-  console.log(`- Total hits (group): ${rateLimiter.getTotalHits(groupId)}`);
-  console.log(`- Total hits (user): ${rateLimiter.getUserHits(userId)}`);
-  console.log(`- Last hit: ${rateLimiter.getLastHit(groupId)}`);
-  console.log(`- Time since last hit: ${rateLimiter.getTimeSinceLastHit(groupId)} ms`);
-  console.log(`- Average spacing: ${rateLimiter.getAverageHitSpacing(groupId)?.toFixed(2)} ms`);
+  console.log(`- Total hits (userId): ${rateLimiter.getTotalHits(userId)}`);
+  console.log(`- Last hit (userId): ${rateLimiter.getLastHit(userId)}`);
+  console.log(`- Time since last hit (userId): ${rateLimiter.getTimeSinceLastHit(userId)} ms`);
+  console.log(`- Average spacing (userId): ${rateLimiter.getAverageHitSpacing(userId)?.toFixed(2)} ms`);
+
+  console.log(`- Total hits (userId2): ${rateLimiter.getTotalHits(userId2)}`);
+  console.log(`- Last hit (userId2): ${rateLimiter.getLastHit(userId2)}`);
+  console.log(`- Time since last hit (userId2): ${rateLimiter.getTimeSinceLastHit(userId2)} ms`);
+  console.log(`- Average spacing (userId2): ${rateLimiter.getAverageHitSpacing(userId2)?.toFixed(2)} ms`);
+
+  // 🧠 Group ID
+  rateLimiter.assignToGroup(userId, 'pudding');
+  rateLimiter.assignToGroup(userId2, 'pudding');
+  const groupId = rateLimiter.getGroupId(userId);
+  console.log(`🔍 Group ID for ${userId}: ${colorText('green', groupId)}`);
 
   // 📊 getMetrics()
   const metrics = rateLimiter.getMetrics(groupId);
@@ -85,7 +103,7 @@ const testRateLimit = async () => {
   console.log(colorText('blue', '⏲️ Waiting 1.5s for hits to expire...'));
   await sleep(1500);
 
-  const afterWait = rateLimiter.isRateLimited(userId);
+  const afterWait = rateLimiter.isRateLimited(groupId);
   console.log(
     `🔁 After wait, rate limited? ❓ ` +
       (afterWait ? colorText('red', 'YES') : colorText('green', 'NO')),
@@ -97,34 +115,34 @@ const testRateLimit = async () => {
 
   console.log(
     `🧾 User still exists in cache? ` +
-      (rateLimiter.hasData(userId) ? colorText('green', '✅ YES') : colorText('red', '❌ NO')),
+      (rateLimiter.hasData(groupId) ? colorText('green', '✅ YES') : colorText('red', '❌ NO')),
   );
 
-    console.log(colorText('blue', '⏲️ Adding new hits...'));
+  console.log(colorText('blue', '⏲️ Adding new hits...'));
 
-  rateLimiter.hit(userId);
-  rateLimiter.hit(userId);
-  rateLimiter.hit(userId);
+  rateLimiter.hit(groupId);
+  rateLimiter.hit(groupId);
+  rateLimiter.hit(groupId);
 
-    console.log(
+  console.log(
     `🧾 User still exists in cache? ` +
-      (rateLimiter.hasData(userId) ? colorText('green', '✅ YES') : colorText('red', '❌ NO')),
+      (rateLimiter.hasData(groupId) ? colorText('green', '✅ YES') : colorText('red', '❌ NO')),
   );
 
   // 🧽 Clear user
   console.log(colorText('magenta', '🧽 Clearing user data...'));
-  rateLimiter.resetUser(userId);
+  rateLimiter.resetUser(groupId);
   console.log(
-    `- User data exists after clear? ${rateLimiter.hasData(userId) ? colorText('red', '❌ YES') : colorText('green', '✅ NO')}`,
+    `- User data exists after clear? ${rateLimiter.hasData(groupId) ? colorText('red', '❌ YES') : colorText('green', '✅ NO')}`,
   );
 
   // 🔁 Re-hit to test clearGroup
   console.log(colorText('cyan', '🔁 Re-hitting for group clear test...'));
-  rateLimiter.hit(userId);
+  rateLimiter.hit(groupId);
   await sleep(100);
   rateLimiter.resetGroup(groupId);
   console.log(
-    `- Group data exists after clearGroup? ${rateLimiter.hasData(userId) ? colorText('red', '❌ YES') : colorText('green', '✅ NO')}`,
+    `- Group data exists after clearGroup? ${rateLimiter.hasData(groupId) ? colorText('red', '❌ YES') : colorText('green', '✅ NO')}`,
   );
 
   // 🧨 Destroy

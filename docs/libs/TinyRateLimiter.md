@@ -82,12 +82,6 @@ Returns the configured `interval` value, or throws if invalid.
 
 ---
 
-### 🎯 `getUserHits(userId: string): number`
-
-Returns the current number of hits for a user.
-
----
-
 ### 👀 `getLastHit(userId: string): number|null`
 
 Returns the timestamp of the user's last hit, or `null` if none.

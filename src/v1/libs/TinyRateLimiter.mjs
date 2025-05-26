@@ -180,12 +180,42 @@ class TinyRateLimiter {
   }
 
   /**
-   * Assign a userId to a groupId
+   * Assign a userId to a groupId, with merge if user has existing data.
    * @param {string} userId
    * @param {string} groupId
+   * @throws {Error} If userId is already assigned to a different group
    */
   assignToGroup(userId, groupId) {
+    const existingGroup = this.userToGroup.get(userId);
+    if (existingGroup && existingGroup !== groupId)
+      throw new Error(`User ${userId} is already assigned to group ${existingGroup}`);
+
+    // If the user is already in the group, nothing needs to be done
+    if (existingGroup === groupId) return;
+    const userData = this.groupData.get(userId);
+
+    // Associates the user to the group
     this.userToGroup.set(userId, groupId);
+
+    // If the user has no data, nothing needs to be done
+    if (!userData) return;
+
+    const groupData = this.groupData.get(groupId);
+    if (groupData) {
+      for (const item of userData) groupData.push(item);
+    } else {
+      const newData = [];
+      for (const item of userData) newData.push(item);
+      this.groupData.set(groupId, newData);
+    }
+
+    this.lastSeen.set(groupId, Date.now());
+
+    // Removes individual data as they are now in the group
+    this.groupData.delete(userId);
+    this.groupData.delete(userId);
+    this.lastSeen.delete(userId);
+    this.groupTTL.delete(userId);
   }
 
   /**
@@ -413,16 +443,6 @@ class TinyRateLimiter {
   getTotalHits(groupId) {
     const history = this.groupData.get(groupId);
     return Array.isArray(history) ? history.length : 0;
-  }
-
-  /**
-   * Get total hits recorded for a user (via their group).
-   * @param {string} userId
-   * @returns {number}
-   */
-  getUserHits(userId) {
-    const groupId = this.getGroupId(userId);
-    return this.getTotalHits(groupId);
   }
 
   /**
