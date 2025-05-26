@@ -215,6 +215,12 @@ Returns `true` if the user has any stored data (hits or group association).
 
 ---
 
+### 👥 `getUsersInGroup(groupId: string): string[]`
+
+Returns a list of users assigned to the given group.
+
+---
+
 ### 💤 `getMaxIdle(): number`
 
 Returns the current global `maxIdle` value (in ms) used for cleanup.

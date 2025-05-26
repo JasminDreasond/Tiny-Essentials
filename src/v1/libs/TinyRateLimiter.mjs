@@ -136,6 +136,22 @@ class TinyRateLimiter {
   }
 
   /**
+   * Get all user IDs that belong to a given group.
+   * @param {string} groupId
+   * @returns {string[]}
+   */
+  getUsersInGroup(groupId) {
+    const users = [];
+    for (const [userId, assignedGroup] of this.userToGroup.entries()) {
+      if (assignedGroup === groupId) {
+        users.push(userId);
+      }
+    }
+
+    return users;
+  }
+
+  /**
    * Set TTL (in milliseconds) for a specific group
    * @param {string} groupId
    * @param {number} ttl
