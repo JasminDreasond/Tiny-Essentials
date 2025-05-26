@@ -1,5 +1,7 @@
 /** @typedef {(groupId: string) => void} OnMemoryExceeded */
 
+/** @typedef {(groupId: string) => void} OnGroupExpired */
+
 /**
  * Class representing a flexible rate limiter per user or group.
  *
@@ -10,6 +12,36 @@
 class TinyRateLimiter {
   /** @type {number|null} */
   #maxMemory = null;
+
+  /** @type {NodeJS.Timeout|null} */
+  #cleanupTimer = null;
+
+  /** @type {number|null|undefined} */
+  #maxHits = null;
+
+  /** @type {number|null|undefined} */
+  #interval = null;
+
+  /** @type {number|null|undefined} */
+  #cleanupInterval = null;
+
+  /** @type {number|null|undefined} */
+  #maxIdle = null;
+
+  /** @type {Map<string, number[]>} */
+  groupData = new Map(); // groupId -> timestamps[]
+
+  /** @type {Map<string, number>} */
+  lastSeen = new Map(); // groupId -> timestamp
+
+  /** @type {Map<string, string>} */
+  userToGroup = new Map(); // userId -> groupId
+
+  /**
+   * @type {Map<string, number>}
+   * Stores TTL (in ms) for each groupId individually
+   */
+  groupTTL = new Map();
 
   /**
    * @type {null|OnMemoryExceeded}
@@ -30,6 +62,31 @@ class TinyRateLimiter {
    */
   clearOnMemoryExceeded() {
     this.#onMemoryExceeded = null;
+  }
+
+  /**
+   * @type {null|OnGroupExpired}
+   */
+  #onGroupExpired = null;
+
+  /**
+   * Set the callback to be triggered when a group expires and is removed.
+   *
+   * This callback is called automatically during cleanup when a group
+   * becomes inactive for longer than its TTL.
+   *
+   * @param {OnGroupExpired} callback - A function that receives the expired groupId.
+   */
+  setOnGroupExpired(callback) {
+    if (typeof callback !== 'function') throw new Error('onGroupExpired must be a function');
+    this.#onGroupExpired = callback;
+  }
+
+  /**
+   * Clear the onGroupExpired callback
+   */
+  clearOnGroupExpired() {
+    this.#onGroupExpired = null;
   }
 
   /**
@@ -68,30 +125,15 @@ class TinyRateLimiter {
       throw new Error('maxMemory must be a positive number or null');
     }
 
-    this.maxHits = isMaxHitsValid ? maxHits : null;
-    this.interval = isIntervalValid ? interval : null;
-    this.cleanupInterval = isCleanupValid ? cleanupInterval : null;
-    this.maxIdle = maxIdle;
-
-    /** @type {Map<string, number[]>} */
-    this.groupData = new Map(); // groupId -> timestamps[]
-
-    /** @type {Map<string, number>} */
-    this.lastSeen = new Map(); // groupId -> timestamp
-
-    /** @type {Map<string, string>} */
-    this.userToGroup = new Map(); // userId -> groupId
+    this.#maxHits = isMaxHitsValid ? maxHits : null;
+    this.#interval = isIntervalValid ? interval : null;
+    this.#cleanupInterval = isCleanupValid ? cleanupInterval : null;
+    this.#maxIdle = maxIdle;
 
     // Start automatic cleanup only if cleanupInterval is valid
-    if (this.cleanupInterval !== null)
-      this._cleanupTimer = setInterval(() => this._cleanup(), this.cleanupInterval);
+    if (this.#cleanupInterval !== null)
+      this.#cleanupTimer = setInterval(() => this._cleanup(), this.#cleanupInterval);
   }
-
-  /**
-   * @type {Map<string, number>}
-   * Stores TTL (in ms) for each groupId individually
-   */
-  groupTTL = new Map();
 
   /**
    * Set TTL (in milliseconds) for a specific group
@@ -158,7 +200,7 @@ class TinyRateLimiter {
     this.lastSeen.set(groupId, now);
 
     // Clean up old entries
-    if (this.interval !== null) {
+    if (this.#interval !== null) {
       const interval = this.getInterval();
       const cutoff = now - interval;
       while (history.length && history[0] < cutoff) {
@@ -189,15 +231,15 @@ class TinyRateLimiter {
     const history = this.groupData.get(groupId);
     if (!history) throw new Error(`No data found for groupId: ${groupId}`);
 
-    if (this.interval !== null) {
+    if (this.#interval !== null) {
       const recent = history.filter((t) => t > now - this.getInterval());
-      if (this.maxHits !== null) {
+      if (this.#maxHits !== null) {
         return recent.length > this.getMaxHits();
       }
       return recent.length > 0;
     }
 
-    if (this.maxHits !== null) {
+    if (this.#maxHits !== null) {
       return history.length > this.getMaxHits();
     }
 
@@ -274,23 +316,52 @@ class TinyRateLimiter {
   }
 
   /**
+   * Get the maximum idle time (in milliseconds) before a group is considered expired.
+   * @returns {number}
+   */
+  getMaxIdle() {
+    if (typeof this.#maxIdle !== 'number' || !Number.isFinite(this.#maxIdle) || this.#maxIdle < 0) {
+      throw new Error("'maxIdle' must be a non-negative finite number.");
+    }
+    return this.#maxIdle;
+  }
+
+  /**
+   * Set the maximum idle time (in milliseconds) before a group is considered expired.
+   * @param {number} ms
+   */
+  setMaxIdle(ms) {
+    if (typeof ms !== 'number' || !Number.isFinite(ms) || ms < 0) {
+      throw new Error("'maxIdle' must be a non-negative finite number.");
+    }
+    this.#maxIdle = ms;
+  }
+
+  /**
    * Cleanup old/inactive groups with individual TTLs
    * @private
    */
   _cleanup() {
     const now = Date.now();
     for (const [groupId, last] of this.lastSeen.entries()) {
-      const ttl = this.getGroupTTL(groupId) ?? this.maxIdle;
+      const ttl = this.getGroupTTL(groupId) ?? this.getMaxIdle();
       if (now - last > ttl) {
         this.groupData.delete(groupId);
         this.lastSeen.delete(groupId);
         this.groupTTL.delete(groupId);
 
         // Remove all userIds mapped to this groupId
-        for (const [userId, mappedGroupId] of this.userToGroup.entries()) {
-          if (mappedGroupId === groupId) {
-            this.userToGroup.delete(userId);
-          }
+        const usersToRemove = [];
+        for (const [userId, mappedGroupId] of this.userToGroup) {
+          if (mappedGroupId === groupId) usersToRemove.push(userId);
+        }
+        for (const userId of usersToRemove) {
+          this.userToGroup.delete(userId);
+        }
+
+        // Notify subclass or external binding
+        if (typeof this.#onGroupExpired === 'function') {
+          this.#onGroupExpired(groupId);
         }
       }
     }
@@ -301,10 +372,10 @@ class TinyRateLimiter {
    * @returns {number}
    */
   getInterval() {
-    if (typeof this.interval !== 'number' || !Number.isFinite(this.interval)) {
+    if (typeof this.#interval !== 'number' || !Number.isFinite(this.#interval)) {
       throw new Error("'interval' is not a valid finite number.");
     }
-    return this.interval;
+    return this.#interval;
   }
 
   /**
@@ -312,10 +383,10 @@ class TinyRateLimiter {
    * @returns {number}
    */
   getMaxHits() {
-    if (typeof this.maxHits !== 'number' || !Number.isFinite(this.maxHits)) {
+    if (typeof this.#maxHits !== 'number' || !Number.isFinite(this.#maxHits)) {
       throw new Error("'maxHits' is not a valid finite number.");
     }
-    return this.maxHits;
+    return this.#maxHits;
   }
 
   /**
@@ -421,7 +492,7 @@ class TinyRateLimiter {
    * Destroy the rate limiter, stopping cleanup and clearing data
    */
   destroy() {
-    if (this._cleanupTimer) clearInterval(this._cleanupTimer);
+    if (this.#cleanupTimer) clearInterval(this.#cleanupTimer);
     this.groupData.clear();
     this.lastSeen.clear();
     this.userToGroup.clear();
