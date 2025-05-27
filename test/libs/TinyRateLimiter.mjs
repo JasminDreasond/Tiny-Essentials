@@ -174,7 +174,7 @@ const testRateLimit = async () => {
 
   console.log(
     `🧾 User still exists in cache? ` +
-      (rateLimiter.hasData(groupId) ? colorText('green', '✅ YES') : colorText('red', '❌ NO')),
+      (rateLimiter.hasData(groupId) ? colorText('red', '✅ YES') : colorText('green', '❌ NO')),
   );
 
   console.log(colorText('blue', '⏲️ Adding new hits...'));
@@ -190,7 +190,7 @@ const testRateLimit = async () => {
 
   // 🧽 Clear user
   console.log(colorText('magenta', '🧽 Clearing user data...'));
-  rateLimiter.resetUser(groupId);
+  rateLimiter.resetGroup(groupId);
   console.log(
     `- User data exists after clear? ${rateLimiter.hasData(groupId) ? colorText('red', '❌ YES') : colorText('green', '✅ NO')}`,
   );
