@@ -225,7 +225,7 @@ export function countObj(obj) {
  * a value is a clean JSON-compatible object, free of class instances or special types.
  *
  * @param {unknown} value - The value to test.
- * @returns {value is Record<unknown, unknown>} Returns true if the value is a pure object.
+ * @returns {value is Record<string | number | symbol, unknown>} Returns true if the value is a pure object.
  */
 export function isJsonObject(value) {
   if (value === null || typeof value !== 'object') return false;
@@ -355,7 +355,7 @@ if (isBrowser) {
 extendObjType([
   [
     'object',
-    /** @param {*} val @returns {val is Record<unknown, unknown>} */
+    /** @param {*} val @returns {val is Record<string | number | symbol, unknown>} */
     (val) => isJsonObject(val),
   ],
 ]);
