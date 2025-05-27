@@ -18,6 +18,7 @@ new TinyRateLimiter(options)
 | `interval`        | `number` | `undefined` | Time window in milliseconds ⏱️                 |
 | `cleanupInterval` | `number` | `undefined` | Interval to auto-clean inactive users 🧹       |
 | `maxIdle`         | `number` | `300000`    | Max idle time per user before cleanup 💤       |
+| `maxMemory`       | `number` | `100000`    | Max memory size limit before auto cleanup 🚧   |
 
 > ⚠️ At least one of `maxHits` or `interval` must be defined.
 
@@ -274,7 +275,8 @@ const limiter = new TinyRateLimiter({
   maxHits: 5,
   interval: 10000,
   cleanupInterval: 60000,
-  maxIdle: 120000
+  maxIdle: 120000,
+  maxMemory: 100000,
 });
 
 limiter.hit("user42");
