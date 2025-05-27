@@ -320,7 +320,6 @@ class TinyRateLimiter {
     this.groupData.delete(groupId);
     this.lastSeen.delete(groupId);
     this.groupTTL.delete(groupId);
-    this.userToGroup.delete(groupId);
   }
 
   /**
