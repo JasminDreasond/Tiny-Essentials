@@ -336,16 +336,11 @@ class TinyRateLimiter {
   }
 
   /**
-   * Manually reset a user mapping (and optionally clear their group data)
+   * Manually reset a user mapping 
    * @param {string} userId
-   * @param {boolean} [clearGroup=false]
    */
-  resetUser(userId, clearGroup = false) {
-    const groupId = this.userToGroup.get(userId);
+  resetUser(userId) {
     this.userToGroup.delete(userId);
-    if (clearGroup && groupId) {
-      this.resetGroup(groupId);
-    }
   }
 
   /**
