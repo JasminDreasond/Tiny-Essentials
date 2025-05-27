@@ -53,7 +53,7 @@ const singleTestRateLimit = async () => {
   console.log(
     colorText('yellow', '⚠️ Hit 4 registered.') +
       ` Rate limited? 👉 ` +
-      (isLimited4 ? colorText('red', 'YES') : colorText('green', 'NO')),
+      (isLimited4 ? colorText('green', 'YES') : colorText('red', 'NO')),
   );
 
   // ⏳ Wait for hits to expire
@@ -72,7 +72,7 @@ const singleTestRateLimit = async () => {
 
   console.log(
     `🧾 User still exists in cache? ` +
-      (rateLimiter.hasData(userId) ? colorText('green', '✅ YES') : colorText('red', '❌ NO')),
+      (rateLimiter.hasData(userId) ? colorText('red', '✅ YES') : colorText('green', '❌ NO')),
   );
 
   // 🛑 Destroy rate limiter
@@ -121,7 +121,7 @@ const testRateLimit = async () => {
   console.log(
     colorText('yellow', '⚠️ Hit 4 registered.') +
       ` Rate limited? 👉 ` +
-      (isLimited4 ? colorText('red', 'YES') : colorText('green', 'NO')),
+      (isLimited4 ? colorText('green', 'YES') : colorText('red', 'NO')),
   );
 
   console.log(colorText('gray', '\n📋 Metrics per user after multiple hits:'));
@@ -159,13 +159,13 @@ const testRateLimit = async () => {
   console.log(`- Avg. spacing: ${metrics.averageHitSpacing?.toFixed(2)} ms`);
 
   // ⏳ Wait for hits to expire
-  console.log(colorText('blue', '⏲️ Waiting 1.5s for hits to expire...'));
-  await sleep(1500);
+  console.log(colorText('blue', '⏲️ Waiting 0.5s for hits to expire...'));
+  await sleep(500);
 
   const afterWait = rateLimiter.isRateLimited(groupId);
   console.log(
     `🔁 After wait, rate limited? ❓ ` +
-      (afterWait ? colorText('red', 'YES') : colorText('green', 'NO')),
+      (afterWait ? colorText('green', 'YES') : colorText('red', 'NO')),
   );
 
   // 🧹 Wait to trigger automatic cleanup
