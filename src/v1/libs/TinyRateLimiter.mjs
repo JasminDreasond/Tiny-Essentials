@@ -37,6 +37,9 @@ class TinyRateLimiter {
   /** @type {Map<string, string>} */
   userToGroup = new Map(); // userId -> groupId
 
+  /** @type {Map<string, boolean>} */
+  groupFlags = new Map(); // groupId -> boolean
+
   /**
    * @type {Map<string, number>}
    * Stores TTL (in ms) for each groupId individually
@@ -136,6 +139,16 @@ class TinyRateLimiter {
   }
 
   /**
+   * Check if a given ID is a groupId (not a userId)
+   * @param {string} id
+   * @returns {boolean}
+   */
+  isGroupId(id) {
+    const result = this.groupFlags.get(id);
+    return typeof result === 'boolean' ? result : false;
+  }
+
+  /**
    * Get all user IDs that belong to a given group.
    * @param {string} groupId
    * @returns {string[]}
@@ -195,7 +208,11 @@ class TinyRateLimiter {
     const userData = this.groupData.get(userId);
 
     // Associates the user to the group
-    this.userToGroup.set(userId, groupId);
+    if (this.isGroupId(userId)) {
+      for (const [uid, gId] of this.userToGroup.entries())
+        if (gId === userId) this.userToGroup.set(uid, groupId);
+      this.userToGroup.delete(userId);
+    } else this.userToGroup.set(userId, groupId);
 
     // If the user has no data, nothing needs to be done
     if (!userData) return;
@@ -212,10 +229,11 @@ class TinyRateLimiter {
     this.lastSeen.set(groupId, Date.now());
 
     // Removes individual data as they are now in the group
-    this.groupData.delete(userId);
+    this.groupFlags.delete(userId);
     this.groupData.delete(userId);
     this.lastSeen.delete(userId);
     this.groupTTL.delete(userId);
+    this.groupFlags.set(groupId, true);
   }
 
   /**
@@ -237,6 +255,7 @@ class TinyRateLimiter {
 
     if (!this.groupData.has(groupId)) {
       this.groupData.set(groupId, []);
+      this.groupFlags.set(groupId, false);
     }
 
     const history = this.groupData.get(groupId);
@@ -297,8 +316,11 @@ class TinyRateLimiter {
    * @param {string} groupId
    */
   resetGroup(groupId) {
+    this.groupFlags.delete(groupId);
     this.groupData.delete(groupId);
     this.lastSeen.delete(groupId);
+    this.groupTTL.delete(groupId);
+    this.userToGroup.delete(groupId);
   }
 
   /**
@@ -339,6 +361,7 @@ class TinyRateLimiter {
         throw new Error('All timestamps must be finite numbers.');
       }
     }
+    if (!this.groupData.has(groupId)) this.groupFlags.set(groupId, false);
     this.groupData.set(groupId, timestamps);
     this.lastSeen.set(groupId, Date.now());
   }
@@ -392,18 +415,10 @@ class TinyRateLimiter {
     for (const [groupId, last] of this.lastSeen.entries()) {
       const ttl = this.getGroupTTL(groupId) ?? this.getMaxIdle();
       if (now - last > ttl) {
+        this.groupFlags.delete(groupId);
         this.groupData.delete(groupId);
         this.lastSeen.delete(groupId);
         this.groupTTL.delete(groupId);
-
-        // Remove all userIds mapped to this groupId
-        const usersToRemove = [];
-        for (const [userId, mappedGroupId] of this.userToGroup) {
-          if (mappedGroupId === groupId) usersToRemove.push(userId);
-        }
-        for (const userId of usersToRemove) {
-          this.userToGroup.delete(userId);
-        }
 
         // Notify subclass or external binding
         if (typeof this.#onGroupExpired === 'function') {
@@ -534,6 +549,7 @@ class TinyRateLimiter {
     this.lastSeen.clear();
     this.userToGroup.clear();
     this.groupTTL.clear();
+    this.groupFlags.clear();
   }
 }
 

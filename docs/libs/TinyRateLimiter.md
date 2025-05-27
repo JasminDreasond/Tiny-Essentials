@@ -49,6 +49,18 @@ if (rateLimiter.isRateLimited("user123")) {
 
 ---
 
+### 🧾 `isGroupId(id: string): boolean`
+
+Checks whether a given `id` is marked as a **groupId** (i.e., it represents a group and not a single user).
+
+```js
+if (rateLimiter.isGroupId('group-xyz')) {
+  console.log('This is a group ID!');
+}
+```
+
+---
+
 ### 🛠️ `setData(userId: string, timestamps: number[]): void`
 
 Sets the hit timestamps for a specific user. Useful for restoring or mocking state.

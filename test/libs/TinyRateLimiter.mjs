@@ -78,12 +78,16 @@ const testRateLimit = async () => {
   console.log(`- Total hits (userId): ${rateLimiter.getTotalHits(userId)}`);
   console.log(`- Last hit (userId): ${rateLimiter.getLastHit(userId)}`);
   console.log(`- Time since last hit (userId): ${rateLimiter.getTimeSinceLastHit(userId)} ms`);
-  console.log(`- Average spacing (userId): ${rateLimiter.getAverageHitSpacing(userId)?.toFixed(2)} ms`);
+  console.log(
+    `- Average spacing (userId): ${rateLimiter.getAverageHitSpacing(userId)?.toFixed(2)} ms`,
+  );
 
   console.log(`- Total hits (userId2): ${rateLimiter.getTotalHits(userId2)}`);
   console.log(`- Last hit (userId2): ${rateLimiter.getLastHit(userId2)}`);
   console.log(`- Time since last hit (userId2): ${rateLimiter.getTimeSinceLastHit(userId2)} ms`);
-  console.log(`- Average spacing (userId2): ${rateLimiter.getAverageHitSpacing(userId2)?.toFixed(2)} ms`);
+  console.log(
+    `- Average spacing (userId2): ${rateLimiter.getAverageHitSpacing(userId2)?.toFixed(2)} ms`,
+  );
 
   // 🧠 Group ID
   rateLimiter.assignToGroup(userId, 'pudding');
@@ -144,6 +148,31 @@ const testRateLimit = async () => {
   console.log(
     `- Group data exists after clearGroup? ${rateLimiter.hasData(groupId) ? colorText('red', '❌ YES') : colorText('green', '✅ NO')}`,
   );
+
+  console.log(colorText('cyan', '🔁 Group migration test (3 new hits to pudding 1 --> moving to pudding 2)...'));
+  const groupId2 = 'pudding2';
+
+  rateLimiter.hit(userId);
+  rateLimiter.hit(userId);
+  rateLimiter.hit(userId);
+  rateLimiter.assignToGroup(groupId, groupId2);
+  console.log(colorText('blue', '⏲️ Adding new hit to pudding 1...'));
+  rateLimiter.hit(userId);
+
+  // 📊 getMetrics()
+  const metrics2 = rateLimiter.getMetrics(groupId2);
+  console.log(colorText('gray', '📊 Full pudding 2 group metrics:'));
+  console.log(`- Total hits: ${metrics2.totalHits}`);
+  console.log(`- Last hit: ${metrics2.lastHit}`);
+  console.log(`- Time since last hit: ${metrics2.timeSinceLastHit} ms`);
+  console.log(`- Avg. spacing: ${metrics2.averageHitSpacing?.toFixed(2)} ms`);
+
+  const metrics3 = rateLimiter.getMetrics(groupId);
+  console.log(colorText('gray', '📊 Full pudding group metrics:'));
+  console.log(`- Total hits: ${metrics3.totalHits}`);
+  console.log(`- Last hit: ${metrics3.lastHit}`);
+  console.log(`- Time since last hit: ${metrics3.timeSinceLastHit} ms`);
+  console.log(`- Avg. spacing: ${metrics3.averageHitSpacing?.toFixed(2)} ms`);
 
   // 🧨 Destroy
   rateLimiter.destroy();
