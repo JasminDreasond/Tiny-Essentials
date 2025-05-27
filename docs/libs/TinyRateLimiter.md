@@ -210,7 +210,7 @@ Removes all hit history and data for a group (but keeps user–group association
 
 ---
 
-### 👤 `resetUser(userId: string): void`
+### 👤 `resetUserGroup(userId: string): void`
 
 Fully removes a user's data about group assignment.
 

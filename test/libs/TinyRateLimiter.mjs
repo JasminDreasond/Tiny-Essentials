@@ -204,7 +204,12 @@ const testRateLimit = async () => {
     `- Group data exists after clearGroup? ${rateLimiter.hasData(groupId) ? colorText('red', '❌ YES') : colorText('green', '✅ NO')}`,
   );
 
-  console.log(colorText('cyan', '🔁 Group migration test (3 new hits to pudding 1 --> moving to pudding 2)...'));
+  console.log(
+    colorText(
+      'cyan',
+      '🔁 Group migration test (3 new hits to pudding 1 --> moving to pudding 2)...',
+    ),
+  );
   const groupId2 = 'pudding2';
 
   rateLimiter.hit(userId);
@@ -213,6 +218,20 @@ const testRateLimit = async () => {
   rateLimiter.assignToGroup(groupId, groupId2);
   console.log(colorText('blue', '⏲️ Adding new hit to pudding 1...'));
   rateLimiter.hit(userId);
+
+  console.log(colorText('blue', `⏲️ Adding 2 hits to ${userId}...`));
+  rateLimiter.resetUserGroup(userId);
+  rateLimiter.hit(userId);
+  rateLimiter.hit(userId);
+
+  // 📊 Individual metric methods
+  console.log(colorText('gray', '📋 Individual metric checks:'));
+  console.log(`- Total hits (userId): ${rateLimiter.getTotalHits(userId)}`);
+  console.log(`- Last hit (userId): ${rateLimiter.getLastHit(userId)}`);
+  console.log(`- Time since last hit (userId): ${rateLimiter.getTimeSinceLastHit(userId)} ms`);
+  console.log(
+    `- Average spacing (userId): ${rateLimiter.getAverageHitSpacing(userId)?.toFixed(2)} ms`,
+  );
 
   // 📊 getMetrics()
   const metrics2 = rateLimiter.getMetrics(groupId2);
