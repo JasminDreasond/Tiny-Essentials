@@ -8,11 +8,13 @@ import {
   reorderObjTypeOrder,
   cloneObjTypeOrder,
   objType,
+  isJsonObject,
 } from './objFilter.mjs';
 import { formatBytes, getAge, getSimplePerc, ruleOfThree } from './simpleMath.mjs';
 import { addAiMarkerShortcut, toTitleCase, toTitleCaseLowerFirst } from './text.mjs';
 
 export {
+  isJsonObject,
   arraySortPositions,
   formatBytes,
   addAiMarkerShortcut,

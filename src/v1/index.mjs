@@ -15,6 +15,7 @@ import {
   cloneObjTypeOrder,
   objType,
   checkObj,
+  isJsonObject,
 } from './basics/objFilter.mjs';
 import { formatBytes, getAge, getSimplePerc, ruleOfThree } from './basics/simpleMath.mjs';
 import { addAiMarkerShortcut, toTitleCase, toTitleCaseLowerFirst } from './basics/text.mjs';
@@ -27,6 +28,7 @@ export {
   ColorSafeStringify,
   TinyPromiseQueue,
   TinyLevelUp,
+  isJsonObject,
   arraySortPositions,
   formatBytes,
   addAiMarkerShortcut,

@@ -212,6 +212,28 @@ export function countObj(obj) {
   return 0;
 }
 
+/**
+ * Determines whether a given value is a pure JSON object (plain object).
+ *
+ * A pure object satisfies the following:
+ * - It is not null.
+ * - Its type is "object".
+ * - Its internal [[Class]] is "[object Object]".
+ * - It is not an instance of built-in types like Array, Date, Map, Set, etc.
+ *
+ * This function is useful for strict data validation when you want to ensure
+ * a value is a clean JSON-compatible object, free of class instances or special types.
+ *
+ * @param {unknown} value - The value to test.
+ * @returns {value is Record<unknown, unknown>} Returns true if the value is a pure object.
+ */
+export function isJsonObject(value) {
+  if (value === null || typeof value !== 'object') return false;
+  if (Array.isArray(value)) return false;
+  if (Object.prototype.toString.call(value) !== '[object Object]') return false;
+  return true;
+}
+
 // Insert obj types
 
 extendObjType([
@@ -295,27 +317,27 @@ extendObjType([
   ],
   [
     'map',
-    /** @param {*} val @returns {val is Map<any, any>} */
+    /** @param {*} val @returns {val is Map<unknown, unknown>} */
     (val) => val instanceof Map,
   ],
   [
     'set',
-    /** @param {*} val @returns {val is Set<any>} */
+    /** @param {*} val @returns {val is Set<unknown>} */
     (val) => val instanceof Set,
   ],
   [
     'weakmap',
-    /** @param {*} val @returns {val is WeakMap<any, any>} */
+    /** @param {*} val @returns {val is WeakMap<unknown, unknown>} */
     (val) => val instanceof WeakMap,
   ],
   [
     'weakset',
-    /** @param {*} val @returns {val is WeakSet<any>} */
+    /** @param {*} val @returns {val is WeakSet<unknown>} */
     (val) => val instanceof WeakSet,
   ],
   [
     'promise',
-    /** @param {*} val @returns {val is Promise<any>} */
+    /** @param {*} val @returns {val is Promise<unknown>} */
     (val) => val instanceof Promise,
   ],
 ]);
@@ -333,7 +355,7 @@ if (isBrowser) {
 extendObjType([
   [
     'object',
-    /** @param {*} val @returns {val is object} */
-    (val) => typeof val === 'object' && val !== null && !Array.isArray(val),
+    /** @param {*} val @returns {val is Record<unknown, unknown>} */
+    (val) => isJsonObject(val),
   ],
 ]);

@@ -1,4 +1,4 @@
-import { objType, checkObj, cloneObjTypeOrder, ColorSafeStringify } from '../../dist/v1/index.mjs';
+import { objType, checkObj, cloneObjTypeOrder, ColorSafeStringify, isJsonObject } from '../../dist/v1/index.mjs';
 
 const colorizer = new ColorSafeStringify();
 const color = {
@@ -34,6 +34,10 @@ const typeTests = [
   ['weakset', new WeakSet(), '📚'],
   ['promise', Promise.resolve(), '⏳'],
   ['object', {}, '🧱'],
+  ['object', new Object(), '🧱'],
+  ['object', Object.create({}), '🧱'],
+  ['object', Object.create(Object.prototype), '🧱'],
+  ['object', Object.assign({}, { a: 1 }), '🧱'],
 ];
 
 const mark = (condition) =>
@@ -71,7 +75,17 @@ const executeObjType = async () => {
       );
     }
 
-    console.log('');
+    console.log('\n');
+    console.log(`${color.white}🧼 Testing isJsonObject()${color.reset}`);
+    for (const [label, value, emoji] of typeTests) {
+      const result = isJsonObject(value);
+      const expected = label === 'object';
+      console.log(
+        `${emoji} ${color.yellow}${label.padEnd(10)}${color.reset} => ${color.cyan}${result}${color.reset} ${mark(result === expected)}`,
+      );
+    }
+
+    console.log('\n');
     console.log(`${color.gray}✔️ Test completed.${color.reset}`);
     resolve();
   });

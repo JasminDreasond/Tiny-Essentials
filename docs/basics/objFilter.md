@@ -164,3 +164,31 @@ You can change this order or insert your own types with `extendObjType`.
 ### 🛠️ `getCheckObj()`
 
 This function creates a clone of the functions from the `typeValidator` object. It returns a new object where the keys are the same and the values are the cloned functions.
+
+---
+
+### 🧼 `isJsonObject(value)`
+
+Check if a value is a **plain JSON-compatible object** — meaning it's created via `{}` or `new Object()`, with a prototype of `Object.prototype`, and **not** a special object like `Date`, `Map`, `Array`, etc.
+
+```js
+isJsonObject({}); // true
+isJsonObject(Object.create({})); // true
+isJsonObject(Object.create(Object.prototype)); // true
+isJsonObject(Object.assign({}, { a: 1 })); // true
+```
+
+```js
+isJsonObject([]); // false
+isJsonObject(new Date()); // false
+isJsonObject(new Map()); // false
+isJsonObject(Object.create(null)); // false
+```
+
+🔒 This function ensures the object:
+
+* is not `null`
+* has `typeof === 'object'`
+* is **directly** inherited from `Object.prototype`
+
+Use this when you need to strictly validate a raw JSON object (like the output of `JSON.parse()` or manual object literals).
