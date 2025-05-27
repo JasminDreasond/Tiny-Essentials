@@ -289,19 +289,22 @@ class TinyRateLimiter {
    */
   isRateLimited(userId) {
     const groupId = this.getGroupId(userId);
-    const now = Date.now();
-
     if (!this.groupData.has(groupId)) return false;
 
     const history = this.groupData.get(groupId);
     if (!history) throw new Error(`No data found for groupId: ${groupId}`);
 
     if (this.#interval !== null) {
-      const recent = history.filter((t) => t > now - this.getInterval());
-      if (this.#maxHits !== null) {
-        return recent.length > this.getMaxHits();
+      const now = Date.now();
+      const interval = this.getInterval();
+      const cutoff = now - interval;
+      let count = 0;
+      for (let i = history.length - 1; i >= 0; i--) {
+        if (history[i] > cutoff) count++;
+        else break;
       }
-      return recent.length > 0;
+      if (this.#maxHits !== null) return count > this.getMaxHits();
+      return count > 0;
     }
 
     if (this.#maxHits !== null) {
@@ -420,6 +423,22 @@ class TinyRateLimiter {
         }
       }
     }
+  }
+
+  /**
+   * Get list of active group IDs
+   * @returns {string[]}
+   */
+  getActiveGroups() {
+    return Array.from(this.groupData.keys());
+  }
+
+  /**
+   * Get a shallow copy of all user-to-group mappings as a plain object
+   * @returns {Record<string, string>}
+   */
+  getAllUserMappings() {
+    return Object.fromEntries(this.userToGroup);
   }
 
   /**

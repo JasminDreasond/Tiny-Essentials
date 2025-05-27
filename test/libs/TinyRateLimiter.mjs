@@ -1,4 +1,7 @@
-import { TinyRateLimiter } from '../../dist/v1/index.mjs';
+import { TinyRateLimiter, ColorSafeStringify } from '../../dist/v1/index.mjs';
+
+const colorizer = new ColorSafeStringify();
+const stringifyJson = (json, space = 0) => colorizer.colorize(JSON.stringify(json, null, space));
 
 /**
  * Sleep for a specified amount of time 💤
@@ -150,6 +153,12 @@ const testRateLimit = async () => {
   const groupId = rateLimiter.getGroupId(userId);
   console.log(`🔍 Group ID for ${userId}: ${colorText('green', groupId)}`);
 
+  console.log(colorText('magenta', '🧾 Active Groups:'));
+  console.log(stringifyJson(rateLimiter.getActiveGroups()));
+
+  console.log(colorText('magenta', '🧾 All User Mappings:'));
+  console.log(stringifyJson(rateLimiter.getAllUserMappings()));
+
   // 📊 getMetrics()
   const metrics = rateLimiter.getMetrics(groupId);
   console.log(colorText('gray', '📊 Full group metrics:'));
@@ -165,7 +174,7 @@ const testRateLimit = async () => {
   const afterWait = rateLimiter.isRateLimited(groupId);
   console.log(
     `🔁 After wait, rate limited? ❓ ` +
-      (afterWait ? colorText('green', 'YES') : colorText('red', 'NO')),
+      (afterWait ? colorText('red', 'YES') : colorText('green', 'NO')),
   );
 
   // 🧹 Wait to trigger automatic cleanup
