@@ -1,0 +1,195 @@
+:root {
+  --notify-width: clamp(280px, 90vw, 400px);
+  --notify-spacing: 1rem;
+  --notify-z-index: 1000;
+
+  --notify-padding: 1rem;
+  --notify-border-radius: 0.75rem;
+  --notify-font-size: 1rem;
+  --notify-font-family: sans-serif;
+
+  --notify-color-bg: #ffffff;
+  --notify-color-text: #333333;
+  --notify-color-shadow: rgba(0, 0, 0, 0.1);
+
+  --notif-center-width: clamp(300px, 90vw, 400px);
+  --notif-center-height: 100vh;
+  --notif-center-bg: rgba(255, 255, 255, 0.85);
+  --notif-center-blur: 12px;
+  --notif-center-shadow: rgba(0, 0, 0, 0.2);
+
+  --notif-center-padding: 1rem;
+  --notif-center-z-index: 1050;
+
+  --notif-item-bg: #ffffff;
+  --notif-item-text: #222;
+  --notif-item-radius: 0.75rem;
+  --notif-item-padding: 1rem;
+  --notif-item-shadow: rgba(0, 0, 0, 0.1);
+
+  --notif-close-size: 1.5rem;
+  --notif-close-color: #444;
+
+  --notif-bell-size: 3rem;
+  --notif-bell-bg: #ffffff;
+  --notif-bell-color: #333;
+  --notif-bell-shadow: rgba(0, 0, 0, 0.2);
+  --notif-bell-z-index: 1040;
+  --notif-bell-radius: 50%;
+  --notif-bell-hover-bg: #f0f0f0;
+}
+
+.notify-container {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  gap: var(--notify-spacing);
+  width: var(--notify-width);
+  z-index: var(--notify-z-index);
+  pointer-events: none; // prevents click on container
+
+  // Horizontal
+  &.left {
+    left: var(--notify-spacing);
+    align-items: flex-start;
+  }
+  &.right {
+    right: var(--notify-spacing);
+    align-items: flex-end;
+  }
+  &.center {
+    left: 50%;
+    transform: translateX(-50%);
+    align-items: center;
+  }
+
+  // Vertical
+  &.top {
+    top: var(--notify-spacing);
+  }
+  &.bottom {
+    bottom: var(--notify-spacing);
+  }
+
+  .notify {
+    background-color: var(--notify-color-bg);
+    color: var(--notify-color-text);
+    box-shadow: 0 4px 8px var(--notify-color-shadow);
+    border-radius: var(--notify-border-radius);
+    padding: var(--notify-padding);
+    font-size: var(--notify-font-size);
+    font-family: var(--notify-font-family);
+    width: 100%;
+    pointer-events: auto; // allows individual click
+    transition:
+      opacity 0.3s ease,
+      transform 0.3s ease;
+    opacity: 1;
+  }
+
+  // Input/output animations (optional)
+  .notify.enter {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  .notify.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .notify.exit {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+.notification-center {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: var(--notif-center-width);
+  height: var(--notif-center-height);
+  background-color: var(--notif-center-bg);
+  backdrop-filter: blur(var(--notif-center-blur));
+  box-shadow: -4px 0 12px var(--notif-center-shadow);
+  padding: var(--notif-center-padding);
+  display: flex;
+  flex-direction: column;
+  z-index: var(--notif-center-z-index);
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+
+  &.open {
+    transform: translateX(0%);
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+
+  .close {
+    background: none;
+    border: none;
+    font-size: var(--notif-close-size);
+    color: var(--notif-close-color);
+    cursor: pointer;
+  }
+
+  .list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: #999 transparent;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: #aaa;
+      border-radius: 3px;
+    }
+  }
+
+  .item {
+    background-color: var(--notif-item-bg);
+    color: var(--notif-item-text);
+    border-radius: var(--notif-item-radius);
+    padding: var(--notif-item-padding);
+    box-shadow: 0 2px 6px var(--notif-item-shadow);
+    font-size: 0.95rem;
+  }
+}
+
+.notification-bell {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: var(--notif-bell-size);
+  height: var(--notif-bell-size);
+  background-color: var(--notif-bell-bg);
+  color: var(--notif-bell-color);
+  border: none;
+  border-radius: var(--notif-bell-radius);
+  box-shadow: 0 4px 8px var(--notif-bell-shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: var(--notif-bell-z-index);
+  font-size: 1.4rem;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background-color: var(--notif-bell-hover-bg);
+  }
+}
