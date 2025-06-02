@@ -22,8 +22,10 @@ import { addAiMarkerShortcut, toTitleCase, toTitleCaseLowerFirst } from './basic
 import ColorSafeStringify from './libs/ColorSafeStringify.mjs';
 import TinyPromiseQueue from './libs/TinyPromiseQueue.mjs';
 import TinyRateLimiter from './libs/TinyRateLimiter.mjs';
+import TinyNotifyCenter from './libs/TinyNotifyCenter.mjs';
 
 export {
+  TinyNotifyCenter,
   TinyRateLimiter,
   ColorSafeStringify,
   TinyPromiseQueue,
