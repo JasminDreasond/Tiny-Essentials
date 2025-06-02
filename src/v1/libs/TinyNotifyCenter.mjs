@@ -1,4 +1,81 @@
 class TinyNotifyCenter {
+  /**
+   * Returns the full HTML structure for the notification system as a string.
+   *
+   * This includes:
+   * - A hidden `.notify-overlay` containing the central notification panel (`#notifCenter`),
+   *   which has a header with a "Notifications" label, a "clear all" button, and a close button.
+   * - A `.list` container for dynamically added notifications.
+   * - A bell button (`.notify-bell`) to toggle the notification center, with an embedded badge.
+   *
+   * This template can be inserted into the DOM using `insertAdjacentHTML()` or parsed dynamically
+   * into elements using JavaScript or jQuery, depending on the needs of the system.
+   *
+   * @returns {string} The complete HTML structure for the notification center.
+   */
+  static getTemplate() {
+    return `
+<div class="notify-overlay hidden">
+  <div class="notify-center" id="notifCenter">
+    <div class="header">
+      <div>Notifications</div>
+      <div class="options">
+        <button class="clear-all" type="button">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="24"
+            height="24"
+            fill="currentColor"
+          >
+            <path
+              d="M21.6 2.4a1 1 0 0 0-1.4 0L13 9.6l-1.3-1.3a1 1 0 0 0-1.4 0L3 15.6a1 1 0 0 0 0 1.4l4 4a1 1 0 0 0 1.4 0l7.3-7.3a1 1 0 0 0 0-1.4l-1.3-1.3 7.2-7.2a1 1 0 0 0 0-1.4zM6 17l3.5-3.5 1.5 1.5L7.5 18.5 6 17z"
+            />
+          </svg>
+        </button>
+        <button class="close">×</button>
+      </div>
+    </div>
+    <div class="list"></div>
+  </div>
+</div>
+
+<button class="notify-bell" aria-label="Open notifications">
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
+    fill="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      d="M12 2C10.3 2 9 3.3 9 5v1.1C6.7 7.2 5 9.4 5 12v5l-1 1v1h16v-1l-1-1v-5c0-2.6-1.7-4.8-4-5.9V5c0-1.7-1.3-3-3-3zm0 20c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2z"
+    />
+  </svg>
+  <span class="badge" id="notifBadge">0</span>
+</button>
+    `;
+  }
+
+  /**
+   * Inserts the full notification center template into the document body.
+   *
+   * The structure is injected directly into the DOM using
+   * `insertAdjacentHTML`.
+   *
+   * The `where` parameter allows control over where inside the `document.body`
+   * the HTML is inserted:
+   * - `'afterbegin'` (default): Inserts right after the opening <body> tag.
+   * - `'beforeend'`: Inserts right before the closing </body> tag.
+   * - Any valid position accepted by `insertAdjacentHTML`.
+   *
+   * @param {'beforebegin'|'afterbegin'|'beforeend'|'afterend'} [where='afterbegin']
+   * The position relative to `document.body` where the HTML should be inserted.
+   */
+  static insertTemplate(where = 'afterbegin') {
+    document.body.insertAdjacentHTML(where, TinyNotifyCenter.getTemplate());
+  }
+
   /** @type {HTMLElement} */
   #center;
   /** @type {HTMLElement} */
