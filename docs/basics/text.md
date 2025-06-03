@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 You can use a pre-built CSS template for the `detect-made-by-ai` class, available in the following files:
 
-* `/dist/aiMarker.min.css` – A minified version of the CSS for production use.
-* `/dist/aiMarker.css` – The non-minified version for easier readability and customization.
+* `/dist/v1/css/aiMarker.min.css` – A minified version of the CSS for production use.
+* `/dist/v1/css/aiMarker.css` – The non-minified version for easier readability and customization.
 
 Simply include the appropriate file in your project to style the elements marked with the `detect-made-by-ai` class.

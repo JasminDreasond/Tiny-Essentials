@@ -8,11 +8,11 @@ const __dirname = path.dirname(__filename);
 
 // Add modules
 const modules = [];
-const addModule = (entry, library, isClass = false) => {
+const addModule = (version, entry, library, isClass = false) => {
   const baseConfig = {
     entry,
     output: {
-      path: path.resolve(__dirname, 'dist'),
+      path: path.resolve(__dirname, `dist/v${version}`),
       library,
       libraryTarget: 'window',
       libraryExport: isClass ? library : undefined,
@@ -59,13 +59,13 @@ const addModule = (entry, library, isClass = false) => {
 };
 
 // Main
-addModule('./src/v1/index.mjs', 'TinyEssentials');
-addModule('./src/v1/basics/index.mjs', 'TinyBasicsEs');
-addModule('./src/v1/build/TinyLevelUp.mjs', 'TinyLevelUp', true);
-addModule('./src/v1/build/TinyPromiseQueue.mjs', 'TinyPromiseQueue', true);
-addModule('./src/v1/build/ColorSafeStringify.mjs', 'ColorSafeStringify', true);
-addModule('./src/v1/build/TinyRateLimiter.mjs', 'TinyRateLimiter', true);
-addModule('./src/v1/build/TinyNotifyCenter.mjs', 'TinyNotifyCenter', true);
-addModule('./src/v1/build/TinyToastNotify.mjs', 'TinyToastNotify', true);
+addModule(1, './src/v1/index.mjs', 'TinyEssentials');
+addModule(1, './src/v1/basics/index.mjs', 'TinyBasicsEs');
+addModule(1, './src/v1/build/TinyLevelUp.mjs', 'TinyLevelUp', true);
+addModule(1, './src/v1/build/TinyPromiseQueue.mjs', 'TinyPromiseQueue', true);
+addModule(1, './src/v1/build/ColorSafeStringify.mjs', 'ColorSafeStringify', true);
+addModule(1, './src/v1/build/TinyRateLimiter.mjs', 'TinyRateLimiter', true);
+addModule(1, './src/v1/build/TinyNotifyCenter.mjs', 'TinyNotifyCenter', true);
+addModule(1, './src/v1/build/TinyToastNotify.mjs', 'TinyToastNotify', true);
 
 export default modules;

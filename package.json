@@ -23,8 +23,8 @@
     "build-clean": "npm run clean && npm run build",
     "build-dist": "npm run build",
     "build:css": "npm run build:css:aimaker && npm run build:css:tinynotify",
-    "build:css:aimaker": "sass src/v1/scss/aiMarker.scss dist/aiMarker.css --no-source-map && sass src/v1/scss/aiMarker.scss dist/aiMarker.min.css --no-source-map --style=compressed",
-    "build:css:tinynotify": "sass src/v1/scss/TinyNotify.scss dist/TinyNotify.css --no-source-map && sass src/v1/scss/TinyNotify.scss dist/TinyNotify.min.css --no-source-map --style=compressed",
+    "build:css:aimaker": "sass src/v1/scss/aiMarker.scss dist/v1/css/aiMarker.css --no-source-map && sass src/v1/scss/aiMarker.scss dist/v1/css/aiMarker.min.css --no-source-map --style=compressed",
+    "build:css:tinynotify": "sass src/v1/scss/TinyNotify.scss dist/v1/css/TinyNotify.css --no-source-map && sass src/v1/scss/TinyNotify.scss dist/v1/css/TinyNotify.min.css --no-source-map --style=compressed",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run build"
   },
