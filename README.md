@@ -58,7 +58,7 @@ We recommend checking it out if you want to see all available tools in this vers
 Looking for detailed module explanations and usage examples?  
 Check out the full documentation here:
 
-👉 [Go to docs page](./docs/README.md)
+👉 [Go to docs page](./docs/v1/README.md)
 
 ## 🤝 Contributions
 
