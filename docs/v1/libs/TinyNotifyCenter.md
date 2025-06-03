@@ -271,3 +271,21 @@ Adds a new notification to the notification center. 🎉
 
 **In short:**
 You create a rich notification element dynamically, with optional avatar, title, content (text or HTML), clickable actions, and a close button — all neatly wired up! 🚀
+
+---
+
+## 🎨 CSS Files Location
+
+The CSS files for the TinyNotify project build can be found in the following folder:
+
+```
+dist/v1/css
+```
+
+Inside this folder, you'll find the main stylesheets:
+
+- `TinyNotify.css` — the full, unminified CSS file
+- `TinyNotify.min.css` — the minified, optimized CSS file for production 🚀
+
+Use these files to style your notifications!  
+Happy coding! ✨

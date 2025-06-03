@@ -270,3 +270,21 @@ Displays a notification with customizable content and duration based on message 
 
 * Throws an error if `data` is neither a string nor a valid object with a string `message` property.
 * Throws an error if `onClick` is defined but is not a function.
+
+---
+
+## 🎨 CSS Files Location
+
+The CSS files for the TinyNotify project build can be found in the following folder:
+
+```
+dist/v1/css
+```
+
+Inside this folder, you'll find the main stylesheets:
+
+- `TinyNotify.css` — the full, unminified CSS file
+- `TinyNotify.min.css` — the minified, optimized CSS file for production 🚀
+
+Use these files to style your notifications!  
+Happy coding! ✨
