@@ -1,3 +1,34 @@
+/**
+ * Represents a single notification entry.
+ *
+ * A notification can be provided as a simple string (treated as a plain message),
+ * or as an object with additional data such as a title, an avatar image, and a click handler.
+ *
+ * @typedef {string | {
+ *   title?: string,              // Optional title displayed above the message
+ *   message: string,             // Required message content
+ *   avatar?: string,             // Optional avatar image URL (displayed on the left)
+ *   onClick?: (e: MouseEvent) => void // Optional click handler for the entire notification
+ * }} NotifyData
+ */
+
+/**
+ * A notification center component for displaying interactive alerts in the UI.
+ *
+ * This class renders a notification overlay on the page and allows dynamically
+ * adding, clearing, or interacting with notification items. Notifications can
+ * contain plain text or HTML, and optionally support click events, titles, and avatars.
+ *
+ * Features:
+ * - Dynamic rendering of notification UI with `insertTemplate()`
+ * - Supports text and HTML content modes
+ * - Optional avatars for each notification
+ * - Callback support on notification click
+ * - Per-notification close buttons
+ * - Notification count badge
+ *
+ * @class
+ */
 class TinyNotifyCenter {
   /**
    * Returns the full HTML structure for the notification system as a string.
@@ -118,11 +149,16 @@ class TinyNotifyCenter {
   }
 
   /**
-   * @param {Object} options
-   * @param {HTMLElement} [options.center=document.getElementById('notifCenter')]
-   * @param {HTMLElement} [options.badge=document.getElementById('notifBadge')]
-   * @param {HTMLElement} [options.button=document.querySelector('.notify-bell')]
-   * @param {HTMLElement} [options.overlay=document.querySelector('.notify-overlay')]
+   * Options for configuring the NotificationCenter instance.
+   *
+   * Allows manual specification of the main elements used by the notification center.
+   * If not provided, default elements will be selected from the DOM automatically.
+   *
+   * @param {Object} options - Configuration object.
+   * @param {HTMLElement} [options.center=document.getElementById('notifCenter')] - The container element that holds the list of notifications.
+   * @param {HTMLElement} [options.badge=document.getElementById('notifBadge')] - The badge element used to display the current notification count.
+   * @param {HTMLElement} [options.button=document.querySelector('.notify-bell')] - The button element that toggles the notification center.
+   * @param {HTMLElement} [options.overlay=document.querySelector('.notify-overlay')] - The overlay element that covers the screen when the center is visible.
    */
   constructor(options = {}) {
     const {
@@ -227,12 +263,7 @@ class TinyNotifyCenter {
   /**
    * Add a new notify to the center.
    *
-   * @param {string|{
-   *   title?: string,
-   *   message: string,
-   *   avatar?: string, // Optional avatar image URL
-   *   onClick?: (e: MouseEvent) => void
-   * }} message - Notification content or a full object with title, avatar, and callback.
+   * @param {NotifyData} message - Notification content or a full object with title, avatar, and callback.
    * @param {'text'|'html'} [mode='text'] - How to treat the message content.
    */
   add(message, mode = 'text') {

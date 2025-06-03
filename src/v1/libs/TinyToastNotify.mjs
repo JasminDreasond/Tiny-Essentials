@@ -1,5 +1,43 @@
-/** @typedef {() => void} CloseToastFunc */
+/**
+ * A callback function used to manually close a notification.
+ * Passed as a second argument to `onClick` handlers, allowing programmatic dismissal of the toast.
+ *
+ * @typedef {() => void} CloseToastFunc
+ */
 
+/**
+ * Represents the data used to display a notification.
+ * Can be a plain string (used as the message), or an object with more customization options.
+ *
+ * @typedef {string | {
+ *   message: string, // The main message to display
+ *   title?: string,  // Optional title to appear above the message
+ *   onClick?: function(MouseEvent, CloseToastFunc): void, // Optional click handler for the notification
+ *   html?: boolean,  // Whether the message should be interpreted as raw HTML
+ *   avatar?: string  // Optional URL to an avatar image shown on the left
+ * }} NotifyData
+ */
+
+/**
+ * A lightweight notification system designed to display timed messages inside a container.
+ * Supports positioning, timing customization, click actions, HTML content, and optional avatars.
+ *
+ * ## Features:
+ * - Positioning via `x` (`left`, `center`, `right`) and `y` (`top`, `bottom`).
+ * - Dynamic display time based on message length.
+ * - Optional `title`, `avatar`, `onClick`, and `html` message rendering.
+ * - Fade-out animation with customizable duration.
+ * - Rigid validation of inputs and internal state.
+ *
+ * ## Customization via setters:
+ * - `setX(position)` — horizontal alignment.
+ * - `setY(position)` — vertical alignment.
+ * - `setBaseDuration(ms)` — base visible time in milliseconds.
+ * - `setExtraPerChar(ms)` — extra time added per character.
+ * - `setFadeOutDuration(ms)` — fade-out animation duration in milliseconds.
+ *
+ * @class
+ */
 class TinyToastNotify {
   #y;
   #x;
@@ -222,13 +260,7 @@ class TinyToastNotify {
    *   avatar?: string // Optional avatar image URL
    * }
    *
-   * @param {string|{
-   *   message: string,
-   *   title?: string,
-   *   onClick?: function(MouseEvent, CloseToastFunc): void,
-   *   html?: boolean,
-   *   avatar?: string
-   * }} data
+   * @param {NotifyData} data
    */
   show(data) {
     let message = '';
