@@ -66,5 +66,6 @@ addModule('./src/v1/build/TinyPromiseQueue.mjs', 'TinyPromiseQueue', true);
 addModule('./src/v1/build/ColorSafeStringify.mjs', 'ColorSafeStringify', true);
 addModule('./src/v1/build/TinyRateLimiter.mjs', 'TinyRateLimiter', true);
 addModule('./src/v1/build/TinyNotifyCenter.mjs', 'TinyNotifyCenter', true);
+addModule('./src/v1/build/TinyToastNotify.mjs', 'TinyToastNotify', true);
 
 export default modules;

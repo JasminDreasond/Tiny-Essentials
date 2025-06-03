@@ -66,33 +66,57 @@
 .notify-container {
   position: fixed;
   display: flex;
-  flex-direction: column;
   gap: var(--notify-spacing);
   width: var(--notify-width);
   z-index: var(--notify-z-index);
   pointer-events: none; // prevents click on container
 
-  // Horizontal
+  // Horizontal position
   &.left {
     left: var(--notify-spacing);
     align-items: flex-start;
   }
+
   &.right {
     right: var(--notify-spacing);
     align-items: flex-end;
   }
+
   &.center {
     left: 50%;
     transform: translateX(-50%);
     align-items: center;
   }
 
-  // Vertical
+  // Vertical position
   &.top {
+    flex-direction: column;
     top: var(--notify-spacing);
+
+    .notify {
+      &.enter {
+        transform: translateY(-10px); // vem de cima
+      }
+
+      &.exit {
+        transform: translateY(-10px); // sai para cima
+      }
+    }
   }
+
   &.bottom {
+    flex-direction: column-reverse;
     bottom: var(--notify-spacing);
+
+    .notify {
+      &.enter {
+        transform: translateY(10px); // vem de baixo
+      }
+
+      &.exit {
+        transform: translateY(10px); // sai para baixo
+      }
+    }
   }
 
   .notify {
@@ -107,22 +131,20 @@
     pointer-events: auto; // allows individual click
     transition: var(--notify-transition);
     opacity: 1;
-  }
 
-  // Input/output animations (optional)
-  .notify.enter {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
+    // Input/output animations (optional)
+    &.enter {
+      opacity: 0;
+    }
 
-  .notify.show {
-    opacity: 1;
-    transform: translateY(0);
-  }
+    &.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
 
-  .notify.exit {
-    opacity: 0;
-    transform: translateY(10px);
+    &.exit {
+      opacity: 0;
+    }
   }
 }
 
