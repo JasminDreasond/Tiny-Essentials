@@ -260,6 +260,7 @@ class TinyNotifyCenter {
       this.#updateCount(this.#count - 1);
     }
   }
+
   /**
    * Add a new notify to the center.
    *

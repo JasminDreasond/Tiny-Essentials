@@ -24,6 +24,8 @@ This folder contains the core scripts we have worked on so far. Each file is a m
 - 🏅 **[TinyLevelUp](./libs/TinyLevelUp.md)** — A class to manage user level-up logic based on experience points, providing methods for experience validation, addition, removal, and calculation.
 - 🎨 **[ColorSafeStringify](./libs/ColorSafeStringify.md)** — A utility for applying customizable ANSI colors to JSON strings in terminal outputs, supporting presets and fine-grained type-based highlighting.
 - 🚦 **[TinyRateLimiter](./libs/TinyRateLimiter.md)** — A flexible per-user rate limiter supporting time windows, hit caps, and automatic cleanup of inactive users.
+* 🔔 **[TinyNotifyCenter](./libs/TinyNotifyCenter.md)** — A dynamic notification center class to display, manage, and interact with notifications, supporting avatars, clickable items, HTML/text modes, and clean UI controls.
+* 🍞 **[TinyToastNotify](./libs/TinyToastNotify.md)** — A lightweight toast notification system supporting positioning, timing customization, avatars, click actions, and fade-out animations.
 
 ---
 
