@@ -218,15 +218,24 @@ class TinyToastNotify {
    *   message: string,
    *   title?: string,
    *   onClick?: function(MouseEvent, CloseToastFunc): void,
-   *   html?: boolean
+   *   html?: boolean,
+   *   avatar?: string // Optional avatar image URL
    * }
-   * @param {string|{ message: string, title?: string, onClick?: function(MouseEvent, CloseToastFunc): void, html?: boolean }} data
+   *
+   * @param {string|{
+   *   message: string,
+   *   title?: string,
+   *   onClick?: function(MouseEvent, CloseToastFunc): void,
+   *   html?: boolean,
+   *   avatar?: string
+   * }} data
    */
   show(data) {
     let message = '';
     let title = '';
     let onClick = null;
     let useHTML = false;
+    let avatarUrl = null;
 
     const notify = document.createElement('div');
     notify.className = 'notify enter';
@@ -237,6 +246,7 @@ class TinyToastNotify {
       message = data.message;
       title = typeof data.title === 'string' ? data.title : '';
       useHTML = data.html === true;
+      avatarUrl = typeof data.avatar === 'string' ? data.avatar : null;
 
       if (data.onClick !== undefined) {
         if (typeof data.onClick !== 'function') {
@@ -247,7 +257,7 @@ class TinyToastNotify {
       }
     } else {
       throw new Error(
-        `Invalid argument for show(): expected string or { message: string, title?: string, onClick?: function, html?: boolean }`,
+        `Invalid argument for show(): expected string or { message: string, title?: string, onClick?: function, html?: boolean, avatar?: string }`,
       );
     }
 
@@ -265,7 +275,16 @@ class TinyToastNotify {
       closeBtn.style.color = 'var(--notif-close-color)';
     });
 
-    // Append elements
+    // Avatar
+    if (avatarUrl) {
+      const avatar = document.createElement('img');
+      avatar.src = avatarUrl;
+      avatar.alt = 'avatar';
+      avatar.className = 'avatar';
+      notify.appendChild(avatar);
+    }
+
+    // Title
     if (title) {
       const titleElem = document.createElement('strong');
       titleElem.textContent = title;
@@ -273,6 +292,7 @@ class TinyToastNotify {
       notify.appendChild(titleElem);
     }
 
+    // Message
     if (useHTML) {
       const msgWrapper = document.createElement('div');
       msgWrapper.innerHTML = message;
@@ -282,7 +302,6 @@ class TinyToastNotify {
     }
 
     notify.appendChild(closeBtn);
-    notify.style.position = 'relative';
     this.getContainer().appendChild(notify);
 
     const visibleTime = this.#baseDuration + message.length * this.#extraPerChar;

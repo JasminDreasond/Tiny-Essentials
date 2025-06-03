@@ -224,31 +224,46 @@ class TinyNotifyCenter {
       this.#updateCount(this.#count - 1);
     }
   }
-
   /**
    * Add a new notify to the center.
-   * @param {string|{title?: string, message: string, onClick?: (e: MouseEvent) => void}} message
+   *
+   * @param {string|{
+   *   title?: string,
+   *   message: string,
+   *   avatar?: string, // Optional avatar image URL
+   *   onClick?: (e: MouseEvent) => void
+   * }} message - Notification content or a full object with title, avatar, and callback.
    * @param {'text'|'html'} [mode='text'] - How to treat the message content.
    */
   add(message, mode = 'text') {
     const item = document.createElement('div');
     item.className = 'item unread';
 
-    // Wrapper for content + title
-    const contentWrapper = document.createElement('div');
-    contentWrapper.className = 'content';
-
     let titleText = null;
     let messageText = null;
+    let avatarUrl = null;
     let onClick = null;
 
     if (typeof message === 'object' && message !== null) {
       titleText = message.title;
       messageText = message.message;
+      avatarUrl = message.avatar;
       onClick = message.onClick;
     } else {
       messageText = message;
     }
+
+    // Optional avatar
+    if (avatarUrl) {
+      const avatarElem = document.createElement('div');
+      avatarElem.className = 'avatar';
+      avatarElem.style.backgroundImage = `url("${avatarUrl}")`;
+      item.appendChild(avatarElem);
+    }
+
+    // Content wrapper
+    const contentWrapper = document.createElement('div');
+    contentWrapper.className = 'content';
 
     // Optional title
     if (titleText) {
@@ -258,7 +273,7 @@ class TinyNotifyCenter {
       contentWrapper.appendChild(titleElem);
     }
 
-    // Main message
+    // Message
     const messageElem = document.createElement('div');
     messageElem.className = 'message';
 
@@ -281,7 +296,7 @@ class TinyNotifyCenter {
       });
     }
 
-    // Close button aligned at the end
+    // Close button
     const closeBtn = document.createElement('button');
     closeBtn.className = 'notify-close';
     closeBtn.setAttribute('type', 'button');
