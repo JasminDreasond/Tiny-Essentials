@@ -1,12 +1,20 @@
 /** @typedef {() => void} CloseToastFunc */
 
 class TinyToastNotify {
+  #y;
+  #x;
+  #baseDuration;
+  #extraPerChar;
+  #fadeOutDuration;
+  #container;
+
   /**
    * @param {'top'|'bottom'} y - 'top' or 'bottom'
    * @param {'right'|'left'|'center'} x - 'right', 'left', or 'center'
    * @param {number} baseDuration - Base display time in ms
    * @param {number} extraPerChar - Extra ms per character
    * @param {number} fadeOutDuration - Time in ms for fade-out effect
+   * @param {string} [selector='.notify-container'] - Base selector for container
    */
   constructor(
     y = 'top',
@@ -14,38 +22,193 @@ class TinyToastNotify {
     baseDuration = 3000,
     extraPerChar = 50,
     fadeOutDuration = 300,
+    selector = '.notify-container',
   ) {
-    // Validate vertical position
-    if (!['top', 'bottom'].includes(y)) {
-      throw new Error(`Invalid vertical direction "${y}". Expected "top" or "bottom".`);
-    }
+    this.#validateY(y);
+    this.#validateX(x);
+    this.#validateTiming(baseDuration, 'baseDuration');
+    this.#validateTiming(extraPerChar, 'extraPerChar');
+    this.#validateTiming(fadeOutDuration, 'fadeOutDuration');
 
-    // Validate horizontal position
-    if (!['left', 'right', 'center'].includes(x)) {
-      throw new Error(`Invalid horizontal position "${x}". Expected "left", "right" or "center".`);
-    }
+    this.#y = y;
+    this.#x = x;
+    this.#baseDuration = baseDuration;
+    this.#extraPerChar = extraPerChar;
+    this.#fadeOutDuration = fadeOutDuration;
+    const container = document.querySelector(`${selector}.${y}.${x}`);
 
-    // Validate timing values
-    for (const [key, val] of Object.entries({ baseDuration, extraPerChar, fadeOutDuration })) {
-      if (typeof val !== 'number' || val < 0 || !Number.isFinite(val)) {
-        throw new Error(
-          `Invalid timing value for "${key}": ${val}. Must be a non-negative finite number.`,
-        );
-      }
-    }
+    if (!(container instanceof HTMLElement)) {
+      this.#container = document.createElement('div');
+      this.#container.className = `notify-container ${y} ${x}`;
+      document.body.appendChild(this.#container);
+    } else this.#container = container;
+  }
 
-    this.y = y;
-    this.x = x;
-    this.baseDuration = baseDuration;
-    this.extraPerChar = extraPerChar;
-    this.fadeOutDuration = fadeOutDuration;
-    this.container = document.querySelector(`.notify-container.${y}.${x}`);
+  /**
+   * Returns the notification container element.
+   * Ensures that the container is a valid HTMLElement.
+   *
+   * @returns {HTMLElement} The notification container.
+   * @throws {Error} If the container is not a valid HTMLElement.
+   */
+  getContainer() {
+    if (!(this.#container instanceof HTMLElement))
+      throw new Error('Container is not a valid HTMLElement.');
+    return this.#container;
+  }
 
-    if (!(this.container instanceof HTMLElement)) {
-      this.container = document.createElement('div');
-      this.container.className = `notify-container ${y} ${x}`;
-      document.body.appendChild(this.container);
+  /**
+   * Validates the vertical position value.
+   * Must be either 'top' or 'bottom'.
+   *
+   * @param {string} value - The vertical position to validate.
+   * @throws {Error} If the value is not 'top' or 'bottom'.
+   */
+  #validateY(value) {
+    if (!['top', 'bottom'].includes(value)) {
+      throw new Error(`Invalid vertical direction "${value}". Expected "top" or "bottom".`);
     }
+  }
+
+  /**
+   * Validates the horizontal position value.
+   * Must be 'left', 'right', or 'center'.
+   *
+   * @param {string} value - The horizontal position to validate.
+   * @throws {Error} If the value is not one of the accepted directions.
+   */
+  #validateX(value) {
+    if (!['left', 'right', 'center'].includes(value)) {
+      throw new Error(
+        `Invalid horizontal position "${value}". Expected "left", "right" or "center".`,
+      );
+    }
+  }
+
+  /**
+   * Validates a numeric timing value.
+   * Must be a non-negative finite number.
+   *
+   * @param {number} value - The number to validate.
+   * @param {string} name - The name of the parameter (used for error messaging).
+   * @throws {Error} If the number is invalid.
+   */
+  #validateTiming(value, name) {
+    if (typeof value !== 'number' || value < 0 || !Number.isFinite(value)) {
+      throw new Error(
+        `Invalid value for "${name}": ${value}. Must be a non-negative finite number.`,
+      );
+    }
+  }
+
+  /**
+   * Returns the current vertical position.
+   *
+   * @returns {'top'|'bottom'} The vertical direction of the notification container.
+   */
+  getY() {
+    return this.#y;
+  }
+
+  /**
+   * Sets the vertical position of the notification container.
+   * Updates the container's class to reflect the new position.
+   *
+   * @param {'top'|'bottom'} value - The vertical direction to set.
+   * @throws {Error} If the value is invalid.
+   */
+  setY(value) {
+    this.#validateY(value);
+    const container = this.getContainer();
+    container.classList.remove(this.#y);
+    container.classList.add(value);
+
+    this.#y = value;
+  }
+
+  /**
+   * Returns the current horizontal position.
+   *
+   * @returns {'left'|'right'|'center'} The horizontal direction of the notification container.
+   */
+  getX() {
+    return this.#x;
+  }
+
+  /**
+   * Sets the horizontal position of the notification container.
+   * Updates the container's class to reflect the new position.
+   *
+   * @param {'left'|'right'|'center'} value - The horizontal direction to set.
+   * @throws {Error} If the value is invalid.
+   */
+  setX(value) {
+    this.#validateX(value);
+    const container = this.getContainer();
+    container.classList.remove(this.#x);
+    container.classList.add(value);
+
+    this.#x = value;
+  }
+
+  /**
+   * Returns the base duration for displaying the notification.
+   *
+   * @returns {number} Base time (in milliseconds) that a notification stays on screen.
+   */
+  getBaseDuration() {
+    return this.#baseDuration;
+  }
+
+  /**
+   * Sets the base duration for the notification display time.
+   *
+   * @param {number} value - Base display time in milliseconds.
+   * @throws {Error} If the value is not a valid non-negative finite number.
+   */
+  setBaseDuration(value) {
+    this.#validateTiming(value, 'baseDuration');
+    this.#baseDuration = value;
+  }
+
+  /**
+   * Returns the extra display time added per character.
+   *
+   * @returns {number} Extra time (in milliseconds) per character in the notification.
+   */
+  getExtraPerChar() {
+    return this.#extraPerChar;
+  }
+
+  /**
+   * Sets the additional display time per character.
+   *
+   * @param {number} value - Extra time in milliseconds per character.
+   * @throws {Error} If the value is not a valid non-negative finite number.
+   */
+  setExtraPerChar(value) {
+    this.#validateTiming(value, 'extraPerChar');
+    this.#extraPerChar = value;
+  }
+
+  /**
+   * Returns the fade-out duration.
+   *
+   * @returns {number} Time (in milliseconds) used for fade-out transition.
+   */
+  getFadeOutDuration() {
+    return this.#fadeOutDuration;
+  }
+
+  /**
+   * Sets the fade-out transition time for notifications.
+   *
+   * @param {number} value - Fade-out duration in milliseconds.
+   * @throws {Error} If the value is not a valid non-negative finite number.
+   */
+  setFadeOutDuration(value) {
+    this.#validateTiming(value, 'fadeOutDuration');
+    this.#fadeOutDuration = value;
   }
 
   /**
@@ -120,10 +283,10 @@ class TinyToastNotify {
 
     notify.appendChild(closeBtn);
     notify.style.position = 'relative';
-    this.container.appendChild(notify);
+    this.getContainer().appendChild(notify);
 
-    const visibleTime = this.baseDuration + message.length * this.extraPerChar;
-    const totalTime = visibleTime + this.fadeOutDuration;
+    const visibleTime = this.#baseDuration + message.length * this.#extraPerChar;
+    const totalTime = visibleTime + this.#fadeOutDuration;
 
     // Close logic
     let removed = false;
@@ -132,7 +295,7 @@ class TinyToastNotify {
       removed = true;
       notify.classList.remove('enter', 'show');
       notify.classList.add('exit');
-      setTimeout(() => notify.remove(), this.fadeOutDuration);
+      setTimeout(() => notify.remove(), this.#fadeOutDuration);
     };
 
     // Click handler
