@@ -23,8 +23,10 @@ import ColorSafeStringify from './libs/ColorSafeStringify.mjs';
 import TinyPromiseQueue from './libs/TinyPromiseQueue.mjs';
 import TinyRateLimiter from './libs/TinyRateLimiter.mjs';
 import TinyNotifyCenter from './libs/TinyNotifyCenter.mjs';
+import TinyToastNotify from './libs/TinyToastNotify.mjs';
 
 export {
+  TinyToastNotify,
   TinyNotifyCenter,
   TinyRateLimiter,
   ColorSafeStringify,

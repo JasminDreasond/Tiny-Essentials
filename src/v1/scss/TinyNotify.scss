@@ -132,6 +132,32 @@
     transition: var(--notify-transition);
     opacity: 1;
 
+    .close {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.75rem;
+      background: transparent;
+      border: none;
+      font-size: 1.25rem;
+      cursor: pointer;
+      line-height: 1;
+      color: var(--notif-close-color);
+      padding: 0;
+      margin: 0;
+
+      &:hover {
+        color: var(--notif-close-color-hover);
+      }
+    }
+
+    &.clickable {
+      cursor: pointer;
+    }
+
+    &.clickable:hover {
+      background-color: var(--notify-color-bg-hover, rgba(0, 0, 0, 0.05));
+    }
+
     // Input/output animations (optional)
     &.enter {
       opacity: 0;

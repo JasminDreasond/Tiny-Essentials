@@ -19,5 +19,17 @@ yaaaay
     const toast = new TinyToastNotify('top', 'right', 3000, 60);
     toast.show('Mensagem rápida');
     toast.show('Mensagem um pouco mais longa que vai durar mais tempo...');
+    toast.show({
+      title: 'Heads up!',
+      message: 'Something important happened.',
+    });
+    toast.show({
+      title: 'Atenção',
+      message: 'Clique para abrir o painel!',
+      onClick: (e, close) => {
+        console.log('Tiny click!');
+        close();
+      },
+    });
   });
 </script>
