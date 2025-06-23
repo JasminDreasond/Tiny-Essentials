@@ -1,37 +1,45 @@
 /**
  * @typedef {Object} DragAndDropOptions
- * @property {HTMLElement} [target=document.body] - Element to attach the drag listeners.
- * @property {boolean} [fullscreen=true] - Whether to use the whole page.
- * @property {string} [hoverClass="dnd-hover"] - CSS class to apply when hovering.
- * @property {(files: FileList, event: DragEvent) => void} [onDrop] - Callback when files are dropped.
- * @property {(event: DragEvent) => void} [onEnter] - Optional callback when dragging enters.
- * @property {(event: DragEvent) => void} [onLeave] - Optional callback when dragging leaves.
+ * @property {HTMLElement} [target=document.body] - The DOM element where drag listeners will be attached. Defaults to `document.body` if `fullscreen` is true or no target is provided.
+ * @property {boolean} [fullscreen=true] - If true, listeners are attached to the entire page (`document.body`). If false, the `target` must be specified.
+ * @property {string} [hoverClass="dnd-hover"] - CSS class applied to the target element while files are being dragged over it.
+ * @property {(files: FileList, event: DragEvent) => void} [onDrop] - Callback function executed when files are dropped onto the target.
+ * @property {(event: DragEvent) => void} [onEnter] - Optional callback triggered when dragging enters the target area.
+ * @property {(event: DragEvent) => void} [onLeave] - Optional callback triggered when dragging leaves the target area.
  */
 
+/**
+ * TinyDragDropDetector
+ *
+ * A lightweight utility to detect drag-and-drop file operations on a specific DOM element or the entire page.
+ * It handles the drag lifecycle (enter, over, leave, drop) and provides hooks for developers to handle file uploads or UI changes.
+ *
+ * @class
+ */
 class TinyDragDropDetector {
   /** @type {HTMLElement} */
   #target;
 
   /** @type {boolean} */
-  fullscreen;
+  #fullscreen;
 
   /** @type {string} */
-  hoverClass;
+  #hoverClass;
 
   /** @type {(files: FileList, event: DragEvent) => void} */
-  onDropCallback;
+  #onDropCallback;
 
   /** @type {(event: DragEvent) => void} */
-  onEnterCallback;
+  #onEnterCallback;
 
   /** @type {(event: DragEvent) => void} */
-  onLeaveCallback;
+  #onLeaveCallback;
 
   /** @type {boolean} */
-  _isDragging;
+  #isDragging;
 
   /** @type {boolean} */
-  _bound;
+  #bound;
 
   /**
    * Creates a new instance of TinyDragDropDetector to handle drag-and-drop file detection.
@@ -81,15 +89,15 @@ class TinyDragDropDetector {
 
     // Store properties
     this.#target = resolvedTarget;
-    this.fullscreen = fullscreen;
-    this.hoverClass = hoverClass;
+    this.#fullscreen = fullscreen;
+    this.#hoverClass = hoverClass;
 
-    this.onDropCallback = onDrop || (() => {});
-    this.onEnterCallback = onEnter;
-    this.onLeaveCallback = onLeave;
+    this.#onDropCallback = onDrop || (() => {});
+    this.#onEnterCallback = onEnter;
+    this.#onLeaveCallback = onLeave;
 
-    this._isDragging = false;
-    this._bound = false;
+    this.#isDragging = false;
+    this.#bound = false;
 
     // Bind event handlers
     this._handleDragEnter = this._handleDragEnter.bind(this);
@@ -97,10 +105,11 @@ class TinyDragDropDetector {
     this._handleDragLeave = this._handleDragLeave.bind(this);
     this._handleDrop = this._handleDrop.bind(this);
 
-    this._bindEvents();
+    this.#bindEvents();
   }
 
   /**
+   * Returns the current target DOM element where the listeners are attached.
    * @returns {HTMLElement}
    */
   getTarget() {
@@ -108,51 +117,88 @@ class TinyDragDropDetector {
   }
 
   /**
-   * @private
+   * Returns the CSS class applied during drag hover.
+   * @returns {string}
+   */
+  getHoverClass() {
+    return this.#hoverClass;
+  }
+
+  /**
+   * Indicates whether the detector is operating in fullscreen mode.
+   * @returns {boolean}
+   */
+  isFullScreen() {
+    return this.#fullscreen;
+  }
+
+  /**
+   * Returns whether a drag operation is currently active over the target.
+   * @returns {boolean}
+   */
+  isDragging() {
+    return this.#isDragging;
+  }
+
+  /**
+   * Returns whether the event listeners are currently bound to the target.
+   * @returns {boolean}
+   */
+  bound() {
+    return this.#bound;
+  }
+
+  /**
+   * Binds the drag-and-drop event listeners to the target element.
+   * Automatically called on instantiation.
    * @returns {void}
    */
-  _bindEvents() {
-    if (this._bound) return;
+  #bindEvents() {
+    if (this.#bound) return;
     const target = this.getTarget();
     target.addEventListener('dragenter', this._handleDragEnter);
     target.addEventListener('dragover', this._handleDragOver);
     target.addEventListener('dragleave', this._handleDragLeave);
     target.addEventListener('drop', this._handleDrop);
-    this._bound = true;
+    this.#bound = true;
   }
 
   /**
-   * @private
+   * Removes all previously attached drag-and-drop event listeners from the target.
    * @returns {void}
    */
-  _unbindEvents() {
-    if (!this._bound) return;
+  #unbindEvents() {
+    if (!this.#bound) return;
     const target = this.getTarget();
     target.removeEventListener('dragenter', this._handleDragEnter);
     target.removeEventListener('dragover', this._handleDragOver);
     target.removeEventListener('dragleave', this._handleDragLeave);
     target.removeEventListener('drop', this._handleDrop);
-    this._bound = false;
+    this.#bound = false;
   }
 
   /**
+   * Handles the `dragenter` event.
+   * Adds the hover CSS class and triggers the `onEnter` callback if provided.
    * @private
-   * @param {DragEvent} event
+   * @param {DragEvent} event - The dragenter event.
    * @returns {void}
    */
   _handleDragEnter(event) {
     event.preventDefault();
-    if (!this._isDragging) {
+    if (!this.#isDragging) {
       const target = this.getTarget();
-      this._isDragging = true;
-      target.classList.add(this.hoverClass);
-      if (this.onEnterCallback) this.onEnterCallback(event);
+      this.#isDragging = true;
+      target.classList.add(this.#hoverClass);
+      this.#onEnterCallback(event);
     }
   }
 
   /**
+   * Handles the `dragover` event.
+   * Prevents default to allow drop and sets the drop effect.
    * @private
-   * @param {DragEvent} event
+   * @param {DragEvent} event - The dragover event.
    * @returns {void}
    */
   _handleDragOver(event) {
@@ -165,8 +211,10 @@ class TinyDragDropDetector {
   }
 
   /**
+   * Handles the `dragleave` event.
+   * Removes the hover class and triggers the `onLeave` callback if provided.
    * @private
-   * @param {DragEvent} event
+   * @param {DragEvent} event - The dragleave event.
    * @returns {void}
    */
   _handleDragLeave(event) {
@@ -175,15 +223,17 @@ class TinyDragDropDetector {
     // Check if you've completely left the area
     // @ts-ignore
     if (event.relatedTarget === null || !target.contains(event.relatedTarget)) {
-      this._isDragging = false;
-      target.classList.remove(this.hoverClass);
-      if (this.onLeaveCallback) this.onLeaveCallback(event);
+      this.#isDragging = false;
+      target.classList.remove(this.#hoverClass);
+      this.#onLeaveCallback(event);
     }
   }
 
   /**
+   * Handles the `drop` event.
+   * Removes the hover class, resets dragging state, and triggers the `onDrop` callback.
    * @private
-   * @param {DragEvent} event
+   * @param {DragEvent} event - The drop event.
    * @returns {void}
    */
   _handleDrop(event) {
@@ -193,22 +243,23 @@ class TinyDragDropDetector {
       return;
     }
     const target = this.getTarget();
-    this._isDragging = false;
-    target.classList.remove(this.hoverClass);
+    this.#isDragging = false;
+    target.classList.remove(this.#hoverClass);
     const files = event.dataTransfer.files;
     if (files.length > 0) {
-      this.onDropCallback(files, event);
+      this.#onDropCallback(files, event);
     }
   }
 
   /**
-   * Destroys the detector and unbinds all events.
+   * Destroys the detector instance, unbinding all event listeners and cleaning up.
+   * Should be called when the detector is no longer needed to avoid memory leaks.
    * @returns {void}
    */
   destroy() {
-    this._unbindEvents();
+    this.#unbindEvents();
     const target = this.getTarget();
-    target.classList.remove(this.hoverClass);
+    target.classList.remove(this.#hoverClass);
   }
 }
 
