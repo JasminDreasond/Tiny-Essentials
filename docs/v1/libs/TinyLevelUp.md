@@ -6,7 +6,7 @@ A lightweight XP-based leveling system for managing user experience and levels. 
 
 ## 📐 Type Definitions
 
-### `UserEditor` ✍️
+### ✍️ `UserEditor`
 
 Represents the structure of a user object used in the leveling system.
 
