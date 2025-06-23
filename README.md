@@ -21,9 +21,6 @@
 - ⏱️ **Time Calculations**: Easily calculate durations, format timers, and more.
 - 🧠 **Object Utilities**: Perform type checks, count object properties, and calculate percentages.
 - 🛠️ **Custom Utilities**: Includes various helper functions like `ruleOfThree` for proportion calculations and `getAge` to calculate the age based on a given birth date.
-- 🔐 **Encryption Tools**:  
-  This feature has been migrated.  
-  👉 For the latest version and full functionality, please visit the new [Tiny Crypto Suite repository](https://github.com/JasminDreasond/Tiny-Crypto-Suite).
 
 ## 📦 Installation
 
@@ -59,6 +56,18 @@ Looking for detailed module explanations and usage examples?
 Check out the full documentation here:
 
 👉 [Go to docs page](./docs/v1/README.md)
+
+---
+
+## 📦 More Tiny Essentials Modules
+
+- 🤖 [**tiny-ai-api**](https://github.com/JasminDreasond/Tiny-AI-API) — Minimal AI API wrapper.
+- 🎲 [**tiny-dices**](https://github.com/JasminDreasond/Tiny-Dices) — Simple dice and randomness utilities.
+- 🔐 [**tiny-crypto-suite**](https://github.com/JasminDreasond/Tiny-Crypto-Suite) — Lightweight cryptography toolkit.
+- 🖥️ [**tiny-server-essentials**](https://github.com/JasminDreasond/Tiny-Server-Essentials) — Node.js server utilities.
+- 🪟 [**tiny-electron-essentials**](https://github.com/JasminDreasond/Tiny-Electron-Essentials) — Essential tools for Electron apps.
+
+---
 
 ## 🤝 Contributions
 

@@ -17,6 +17,15 @@ import {
   checkObj,
   isJsonObject,
 } from './basics/objFilter.mjs';
+import {
+  documentIsFullScreen,
+  isScreenFilled,
+  requestFullScreen,
+  exitFullScreen,
+  isFullScreenMode,
+  onFullScreenChange,
+  offFullScreenChange,
+} from './basics/fullScreen.mjs';
 import { formatBytes, getAge, getSimplePerc, ruleOfThree } from './basics/simpleMath.mjs';
 import { addAiMarkerShortcut, toTitleCase, toTitleCaseLowerFirst } from './basics/text.mjs';
 import ColorSafeStringify from './libs/ColorSafeStringify.mjs';
@@ -24,14 +33,25 @@ import TinyPromiseQueue from './libs/TinyPromiseQueue.mjs';
 import TinyRateLimiter from './libs/TinyRateLimiter.mjs';
 import TinyNotifyCenter from './libs/TinyNotifyCenter.mjs';
 import TinyToastNotify from './libs/TinyToastNotify.mjs';
+import { areElementsColliding } from './basics/html.mjs';
+import TinyDragDropDetector from './libs/TinyDragDropDetector.mjs';
 
 export {
+  TinyDragDropDetector,
   TinyToastNotify,
   TinyNotifyCenter,
   TinyRateLimiter,
   ColorSafeStringify,
   TinyPromiseQueue,
   TinyLevelUp,
+  documentIsFullScreen,
+  isScreenFilled,
+  requestFullScreen,
+  exitFullScreen,
+  isFullScreenMode,
+  onFullScreenChange,
+  offFullScreenChange,
+  areElementsColliding,
   isJsonObject,
   arraySortPositions,
   formatBytes,

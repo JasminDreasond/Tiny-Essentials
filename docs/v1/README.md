@@ -18,6 +18,7 @@ This folder contains the core scripts we have worked on so far. Each file is a m
 - 🔢 **[simpleMath](./basics/simpleMath.md)** — A collection of simple math utilities for calculations like the Rule of Three and percentages.
 - ✍️ **[text](./basics/text.md)** — A utility for transforming text into title case formats, with multiple options for capitalization.
 - 🔄 **[asyncReplace](./basics/asyncReplace.md)** — Asynchronously replaces matches in a string using a regex and an async function.
+* 📺 **[fullScreen](./basics/fullScreen.md)** — A complete fullscreen API manager with detection, event handling, and cross-browser compatibility.
 
 ### 2. **`libs/`**
 - 🗂️ **[TinyPromiseQueue](./libs/TinyPromiseQueue.md)** — A class that allows sequential execution of asynchronous tasks, supporting task delays, cancellation, and queue management.
