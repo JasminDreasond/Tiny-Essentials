@@ -18,16 +18,17 @@ This folder contains the core scripts we have worked on so far. Each file is a m
 - 🔢 **[simpleMath](./basics/simpleMath.md)** — A collection of simple math utilities for calculations like the Rule of Three and percentages.
 - ✍️ **[text](./basics/text.md)** — A utility for transforming text into title case formats, with multiple options for capitalization.
 - 🔄 **[asyncReplace](./basics/asyncReplace.md)** — Asynchronously replaces matches in a string using a regex and an async function.
-* 📺 **[fullScreen](./basics/fullScreen.md)** — A complete fullscreen API manager with detection, event handling, and cross-browser compatibility.
+- 🖼️ **[html](./basics/html.md)** — Utilities for handling DOM element interactions like collision detection and basic element manipulation.
+- 📺 **[fullScreen](./basics/fullScreen.md)** — A complete fullscreen API manager with detection, event handling, and cross-browser compatibility.
 
 ### 2. **`libs/`**
 - 🗂️ **[TinyPromiseQueue](./libs/TinyPromiseQueue.md)** — A class that allows sequential execution of asynchronous tasks, supporting task delays, cancellation, and queue management.
 - 🏅 **[TinyLevelUp](./libs/TinyLevelUp.md)** — A class to manage user level-up logic based on experience points, providing methods for experience validation, addition, removal, and calculation.
 - 🎨 **[ColorSafeStringify](./libs/ColorSafeStringify.md)** — A utility for applying customizable ANSI colors to JSON strings in terminal outputs, supporting presets and fine-grained type-based highlighting.
 - 🚦 **[TinyRateLimiter](./libs/TinyRateLimiter.md)** — A flexible per-user rate limiter supporting time windows, hit caps, and automatic cleanup of inactive users.
-* 🔔 **[TinyNotifyCenter](./libs/TinyNotifyCenter.md)** — A dynamic notification center class to display, manage, and interact with notifications, supporting avatars, clickable items, HTML/text modes, and clean UI controls.
-* 🍞 **[TinyToastNotify](./libs/TinyToastNotify.md)** — A lightweight toast notification system supporting positioning, timing customization, avatars, click actions, and fade-out animations.
-* 📥 **[TinyDragDropDetector](./libs/TinyDragDropDetector.md)** — A lightweight drag-and-drop detector for files, handling the full drag lifecycle (`enter`, `over`, `leave`, `drop`) with CSS hover management and safe event handling on any DOM element or the full page.
+- 🔔 **[TinyNotifyCenter](./libs/TinyNotifyCenter.md)** — A dynamic notification center class to display, manage, and interact with notifications, supporting avatars, clickable items, HTML/text modes, and clean UI controls.
+- 🍞 **[TinyToastNotify](./libs/TinyToastNotify.md)** — A lightweight toast notification system supporting positioning, timing customization, avatars, click actions, and fade-out animations.
+- 📥 **[TinyDragDropDetector](./libs/TinyDragDropDetector.md)** — A lightweight drag-and-drop detector for files, handling the full drag lifecycle (`enter`, `over`, `leave`, `drop`) with CSS hover management and safe event handling on any DOM element or the full page.
 
 ---
 
