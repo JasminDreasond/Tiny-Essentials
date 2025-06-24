@@ -415,6 +415,38 @@ class TinyNotifyCenter {
   get count() {
     return this.#count;
   }
+
+  /**
+   * Destroys the notification center instance, removing all event listeners,
+   * clearing notifications, and optionally removing DOM elements.
+   *
+   * Call this when the notification center is no longer needed to prevent memory leaks.
+   *
+   * @returns {void}
+   */
+  destroy() {
+    // Remove event listeners
+    this.#button?.removeEventListener('click', this.toggle);
+    this.#center?.querySelector('.close')?.removeEventListener('click', this.close);
+    this.#center?.querySelector('.clear-all')?.removeEventListener('click', this.clear);
+    this.#overlay?.removeEventListener('click', this.close);
+
+    // Clear all notifications
+    this.clear();
+
+    this.#center?.remove();
+    this.#overlay?.remove();
+    this.#button?.remove();
+
+    // Clean internal references
+    // this.#center = null;
+    // this.#list = null;
+    // this.#badge = null;
+    // this.#button = null;
+    // this.#overlay = null;
+    this.#count = 0;
+    this.#modes = new WeakMap();
+  }
 }
 
 export default TinyNotifyCenter;

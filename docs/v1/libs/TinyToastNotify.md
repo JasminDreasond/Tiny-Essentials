@@ -273,6 +273,25 @@ Displays a notification with customizable content and duration based on message 
 
 ---
 
+## 🔥 `destroy()`
+
+Destroys the current **TinyToastNotify** instance.
+It **removes the notification container from the DOM** and **clears all pending notifications**. This method is useful when the notification system is no longer needed or when changing views in a single-page application.
+
+### Syntax
+
+```js
+tinyToastNotify.destroy();
+```
+
+### Behavior
+
+* Removes the entire container (`.notify-container`) from the DOM.
+* Automatically cancels any pending or visible toasts.
+* Cleans up internal references.
+
+---
+
 ## 🎨 CSS Files Location
 
 The CSS files for the TinyNotify project build can be found in the following folder:

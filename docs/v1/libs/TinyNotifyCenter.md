@@ -274,6 +274,26 @@ You create a rich notification element dynamically, with optional avatar, title,
 
 ---
 
+## 🔥 `destroy()`
+
+Destroys the current **TinyNotifyCenter** instance.
+It **removes all event listeners**, **clears all notifications**, and **optionally removes the entire notification center template from the DOM**.
+
+### Syntax
+
+```js
+tinyNotifyCenter.destroy();
+```
+
+### Behavior
+
+* Removes all event listeners (`click`, `close`, `clear all`, overlay clicks).
+* Clears all notifications from the list.
+* Removes the UI (`.notify-overlay`, `.notify-bell`, etc.) from the DOM.
+* Cleans internal references (`center`, `list`, `button`, `overlay`, `badge`, `modes`).
+
+---
+
 ## 🎨 CSS Files Location
 
 The CSS files for the TinyNotify project build can be found in the following folder:

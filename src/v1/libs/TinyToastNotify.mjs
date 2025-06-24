@@ -44,6 +44,8 @@ class TinyToastNotify {
   #baseDuration;
   #extraPerChar;
   #fadeOutDuration;
+
+  /** @type {HTMLElement|null} */
   #container;
 
   /**
@@ -370,6 +372,28 @@ class TinyToastNotify {
     }, 1);
 
     setTimeout(() => close(), totalTime);
+  }
+
+  /**
+   * Destroys the notification container and removes all active notifications.
+   * This should be called when the notification system is no longer needed,
+   * such as when unloading a page or switching views in a single-page app.
+   *
+   * @returns {void}
+   */
+  destroy() {
+    if (!(this.#container instanceof HTMLElement)) return;
+
+    // Remove all child notifications
+    this.#container.querySelectorAll('.notify').forEach((el) => el.remove());
+
+    // Remove the container itself from the DOM
+    if (this.#container.parentNode) {
+      this.#container.parentNode.removeChild(this.#container);
+    }
+
+    // Optional: Clean internal references (safe practice)
+    this.#container = null;
   }
 }
 

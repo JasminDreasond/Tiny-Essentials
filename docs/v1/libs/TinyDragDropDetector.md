@@ -1,4 +1,4 @@
-# TinyDragDropDetector
+# 📥 TinyDragDropDetector
 
 A lightweight JavaScript utility for detecting drag-and-drop file operations on a specific DOM element or the entire page. It manages the full drag lifecycle (`enter`, `over`, `leave`, `drop`) and provides hooks for handling UI changes or file uploads.
 
