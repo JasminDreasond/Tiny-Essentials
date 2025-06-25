@@ -1,4 +1,5 @@
 import * as TinyEssentials from '../dist/v1/index.mjs';
+import testFolderManager from './fileManager/index.mjs';
 import testColorSafeStringify from './libs/ColorSafeStringify.mjs';
 import testLevelUp from './libs/TinyLevelUp.mjs';
 import executeTinyPromiseQueue from './libs/TinyPromiseQueue.mjs';
@@ -6,6 +7,7 @@ import testRateLimit from './libs/TinyRateLimiter.mjs';
 import executeObjType from './libs/objType.mjs';
 
 const actions = {
+  fileManager: testFolderManager,
   objType: executeObjType,
   promiseQueue: executeTinyPromiseQueue,
   colorStringify: testColorSafeStringify,

@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { toTitleCase } from './text.mjs';
 
 /*========================*
  * JSON Operations
@@ -100,10 +101,11 @@ export function isDirEmpty(dirPath) {
  * Copies a file to a destination.
  * @param {string} src
  * @param {string} dest
+ * @param {number} [mode]
  */
-export function ensureCopyFile(src, dest) {
+export function ensureCopyFile(src, dest, mode) {
   ensureDirectory(path.dirname(dest));
-  fs.copyFileSync(src, dest);
+  fs.copyFileSync(src, dest, mode);
 }
 
 /**
@@ -140,14 +142,14 @@ export function writeTextFile(filePath, content, ops = 'utf-8') {
  *========================*/
 
 /**
- * Lists all files and folders in a directory (optionally recursive).
+ * Lists all files and dirs in a directory (optionally recursive).
  * @param {string} dirPath
  * @param {boolean} [recursive=false]
- * @returns {{ files: string[]; folders: string[] }}
+ * @returns {{ files: string[]; dirs: string[] }}
  */
 export function listFiles(dirPath, recursive = false) {
-  /** @type {{ files: string[]; folders: string[] }} */
-  const results = { files: [], folders: [] };
+  /** @type {{ files: string[]; dirs: string[] }} */
+  const results = { files: [], dirs: [] };
   if (!dirExists(dirPath)) return results;
 
   const entries = fs.readdirSync(dirPath);
@@ -155,11 +157,12 @@ export function listFiles(dirPath, recursive = false) {
     const fullPath = path.join(dirPath, entry);
     const stat = fs.lstatSync(fullPath);
     if (stat.isDirectory()) {
+      results.dirs.push(fullPath);
       if (recursive) {
         const results2 = listFiles(fullPath, true);
         results.files.push(...results2.files);
-        results.folders.push(...results2.folders);
-      } else results.folders.push(fullPath);
+        results.dirs.push(...results2.dirs);
+      }
     } else {
       results.files.push(fullPath);
     }
@@ -265,8 +268,22 @@ export function restoreLatestBackup(filePath, ext = 'bak') {
  * @param {string} dirPath - The target directory.
  * @param {(original: string, index: number) => string} renameFn - Function that returns new filename.
  * @param {string[]} [extensions] - Optional: Only rename files with these extensions.
+ *
+ * @throws {TypeError} If any argument has an invalid type.
+ * @throws {Error} If the directory does not exist or contains invalid files.
  */
 export function renameFileBatch(dirPath, renameFn, extensions = []) {
+  // Validate types
+  if (typeof dirPath !== 'string') throw new TypeError('dirPath must be a string');
+  if (typeof renameFn !== 'function') throw new TypeError('renameFn must be a function');
+  if (!Array.isArray(extensions)) throw new TypeError('extensions must be an array of strings');
+  if (!fs.existsSync(dirPath) || !fs.statSync(dirPath).isDirectory())
+    throw new Error(`Directory not found or invalid: ${dirPath}`);
+  for (const ext of extensions) {
+    if (typeof ext !== 'string' || !ext.startsWith('.'))
+      throw new TypeError(`Invalid extension: ${ext}`);
+  }
+
   const files = listFiles(dirPath).files;
   let index = 0;
 
@@ -295,7 +312,9 @@ export function renameFileRegex(dirPath, pattern, replacement, extensions = []) 
   renameFileBatch(
     dirPath,
     (filename) => {
-      return filename.replace(pattern, replacement);
+      const ext = path.extname(filename);
+      const name = path.basename(filename, ext).replace(pattern, replacement);
+      return `${name}${ext}`;
     },
     extensions,
   );
@@ -322,14 +341,37 @@ export function renameFileAddPrefixSuffix(dirPath, { prefix = '', suffix = '' },
 /**
  * Normalizes all filenames to lowercase (or uppercase).
  * @param {string} dirPath
- * @param {'lower' | 'upper'} mode
+ * @param {'lower' | 'upper' | 'title'} mode
  * @param {string[]} [extensions]
+ * @param {boolean} [normalizeExt=false] - Whether to apply case change to file extensions too.
+ * @throws {Error} If mode is invalid.
  */
-export function renameFileNormalizeCase(dirPath, mode = 'lower', extensions = []) {
+export function renameFileNormalizeCase(
+  dirPath,
+  mode = 'lower',
+  extensions = [],
+  normalizeExt = false,
+) {
+  if (typeof mode !== 'string' || !['lower', 'upper', 'title'].includes(mode))
+    throw new Error(`Invalid mode "${mode}". Must be 'lower', 'upper' or 'title'.`);
   renameFileBatch(
     dirPath,
     (filename) => {
-      return mode === 'lower' ? filename.toLowerCase() : filename.toUpperCase();
+      /**
+       * @param {string} text
+       * @returns {string}
+       */
+      const changeToMode = (text) => {
+        if (mode === 'lower') return text.toLowerCase();
+        else if (mode === 'upper') return text.toUpperCase();
+        else if (mode === 'title') return toTitleCase(text);
+        else return text;
+      };
+
+      const rawExt = path.extname(filename);
+      const ext = normalizeExt ? changeToMode(rawExt) : rawExt;
+      const name = changeToMode(path.basename(filename, rawExt));
+      return `${name}${ext}`;
     },
     extensions,
   );

@@ -72,7 +72,7 @@ A powerful and flexible utility toolkit for managing files and directories in No
 
 ### `listFiles(dirPath: string, recursive?: boolean): string[]`
 
-📃 Lists all files and folders in a directory. Can be recursive.
+📃 Lists all files and dirs in a directory. Can be recursive.
 
 ### `listDirs(dirPath: string, recursive?: boolean): string[]`
 
@@ -120,7 +120,7 @@ A powerful and flexible utility toolkit for managing files and directories in No
 
 🔠 Adds a prefix and/or suffix to each filename.
 
-### `renameFileNormalizeCase(dirPath, mode, extensions?)`
+### `renameFileNormalizeCase(dirPath, mode, extensions?, normalizeExt: boolean = false)`
 
 🆎 Converts filenames to lowercase or uppercase.
 
