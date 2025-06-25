@@ -44,7 +44,7 @@ const section = (title) => {
   console.log(`\n${YELLOW}${'='.repeat(50)}\n📂 ${title}\n${'='.repeat(50)}${RESET}\n`);
 };
 
-const testFolderManager = () => {
+const testFolderManager = async () => {
   const testRoot = path.join(__dirname, './temp');
   const testJsonPath = path.join(testRoot, 'data.json');
   const testTextPath = path.join(testRoot, 'notes.txt');
@@ -104,11 +104,16 @@ const testFolderManager = () => {
 
   console.log(`\n${MAGENTA}💾 Backing up original text file...${RESET}`);
   backupFile(testTextPath);
+  await new Promise((resolve) => setTimeout(() => resolve(), 1000));
+  backupFile(testTextPath);
+  await new Promise((resolve) => setTimeout(() => resolve(), 1000));
+  backupFile(testTextPath);
 
   console.log(`${RED}🧼 Deleting original...${RESET}`);
   tryDeleteFile(testTextPath);
 
   console.log(`${GREEN}♻️ Restoring from backup...${RESET}`);
+  await new Promise((resolve) => setTimeout(() => resolve(), 1000));
   restoreLatestBackup(testTextPath);
 
   // === Listing

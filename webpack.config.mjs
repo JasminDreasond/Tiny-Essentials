@@ -68,5 +68,6 @@ addModule(1, './src/v1/build/TinyRateLimiter.mjs', 'TinyRateLimiter', true);
 addModule(1, './src/v1/build/TinyNotifyCenter.mjs', 'TinyNotifyCenter', true);
 addModule(1, './src/v1/build/TinyToastNotify.mjs', 'TinyToastNotify', true);
 addModule(1, './src/v1/build/TinyDragDropDetector.mjs', 'TinyDragDropDetector', true);
+addModule(1, './src/v1/build/TinyUploadClicker.mjs', 'TinyUploadClicker', true);
 
 export default modules;
