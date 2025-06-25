@@ -57,3 +57,118 @@ if (areElementsColliding(box1, box2)) {
 
 * Only works with **axis-aligned elements** (rectangular shapes).
 * Does not handle rotated elements or complex shapes.
+
+---
+
+## 📖 `readJsonBlob(file: File): Promise<any>`
+
+Reads and parses a JSON file using the [`FileReader`](https://developer.mozilla.org/en-US/docs/Web/API/FileReader) API.
+
+### 📥 Parameters
+
+* `file` *(File)*: The file object selected by the user (e.g., from an `<input type="file">` element).
+
+### 📤 Returns
+
+* `Promise<any>`: Resolves with the parsed JSON object, or rejects with an error if the content is invalid.
+
+### ⚠️ Throws
+
+* An error if the content is not valid JSON.
+* An error if the file can't be read.
+
+### 🧪 Example
+
+```js
+const input = document.querySelector('input[type="file"]');
+input.addEventListener('change', async () => {
+  try {
+    const result = await readJsonBlob(input.files[0]);
+    console.log(result);
+  } catch (err) {
+    alert(err.message);
+  }
+});
+```
+
+---
+
+## 💾 `saveJsonFile(filename: string, data: any, spaces: number = 2): void`
+
+Converts a JavaScript object to JSON and triggers a download in the browser.
+
+### 📥 Parameters
+
+* `filename` *(string)*: The name of the file to save (e.g., `"data.json"`).
+* `data` *(any)*: The JavaScript object to convert to JSON.
+* `spaces` *(number)* *(optional)*: Indentation level for formatting the JSON string. Default is `2`.
+
+### 📤 Returns
+
+* `void`
+
+### 📂 Behavior
+
+Creates a temporary `<a>` element, downloads the file, and cleans up the URL.
+
+### 🧪 Example
+
+```js
+const data = { name: 'Yasmin', type: 'dev' };
+saveJsonFile('yasmin.json', data);
+```
+
+## 🌐 `fetchJson(url, options?): Promise<any>`
+
+Loads and parses a JSON from a remote URL using the Fetch API, with support for custom HTTP methods, retries, timeouts, headers, and even external abort controllers.
+
+### 📥 Parameters
+
+* `url` *(string)*: The full URL to fetch JSON from (must start with `http://`, `https://`, `/`, `./`, or `../`).
+* `options` *(object)* *(optional)*:
+
+  * `signal` *(`AbortSignal` | `null`)*: Custom abort signal.
+  * `method` *(string)*: The HTTP method to use (e.g., `GET`, `POST`, `PUT`, `DELETE`, etc.).
+  * `timeout` *(number)*: Request timeout in milliseconds. Default is `0` (no timeout).
+  * `retries` *(number)*: Number of retry attempts if the request fails. Default is `0`.
+  * `headers` *(object)*: Additional headers to include in the request.
+  * `body` *(object)*: Request body. If the value is a plain object, it will be automatically stringified as JSON.
+
+#### `signal` (`AbortSignal` | `null`) — *optional*
+
+Custom abort signal. If set:
+
+* The internal timeout mechanism is **disabled**
+* Retry logic is **disabled**
+* Abortion is handled externally
+
+### 📤 Returns
+
+* `Promise<any>`: Resolves with the parsed JSON data.
+
+### ⚠️ Throws
+
+* `Error` if the fetch fails or exceeds the timeout
+* `Error` if the response is not `application/json`
+* `Error` if the result is not a plain JSON object
+
+## 🧠 Tip
+
+If you pass your own `signal`, this disables both `timeout` and `retries`. Use it when you're managing cancellation manually (e.g. in UI components or async workflows).
+
+### 🧪 Example
+
+```js
+const controller = new AbortController();
+
+const data = await fetchJson('https://api.example.com/data', {
+  method: 'POST',
+  body: { name: 'Yasmin' },
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  timeout: 5000,
+  retries: 2,
+  signal: controller.signal, // optional
+});
+```

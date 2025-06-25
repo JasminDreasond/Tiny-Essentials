@@ -2,7 +2,7 @@ import arraySortPositions from '../../legacy/libs/arraySortPositions.mjs';
 import asyncReplace from '../../legacy/libs/replaceAsync.mjs';
 import { shuffleArray } from './array.mjs';
 import { formatCustomTimer, formatDayTimer, formatTimer, getTimeDuration } from './clock.mjs';
-import { areElementsColliding } from './html.mjs';
+import { areElementsColliding, readJsonBlob, saveJsonFile, fetchJson } from './html.mjs';
 import {
   countObj,
   extendObjType,
@@ -22,8 +22,55 @@ import {
 } from './fullScreen.mjs';
 import { formatBytes, getAge, getSimplePerc, ruleOfThree } from './simpleMath.mjs';
 import { addAiMarkerShortcut, toTitleCase, toTitleCaseLowerFirst } from './text.mjs';
+import {
+  readJsonFile,
+  writeJsonFile,
+  ensureDirectory,
+  clearDirectory,
+  fileExists,
+  dirExists,
+  isDirEmpty,
+  ensureCopyFile,
+  tryDeleteFile,
+  writeTextFile,
+  listFiles,
+  listDirs,
+  fileSize,
+  dirSize,
+  backupFile,
+  restoreLatestBackup,
+  renameFileBatch,
+  renameFileRegex,
+  renameFileAddPrefixSuffix,
+  renameFileNormalizeCase,
+  renameFilePadNumbers,
+} from './fileManager.mjs';
 
 export {
+  fetchJson,
+  readJsonBlob,
+  saveJsonFile,
+  readJsonFile,
+  writeJsonFile,
+  ensureDirectory,
+  clearDirectory,
+  fileExists,
+  dirExists,
+  isDirEmpty,
+  ensureCopyFile,
+  tryDeleteFile,
+  writeTextFile,
+  listFiles,
+  listDirs,
+  fileSize,
+  dirSize,
+  backupFile,
+  restoreLatestBackup,
+  renameFileBatch,
+  renameFileRegex,
+  renameFileAddPrefixSuffix,
+  renameFileNormalizeCase,
+  renameFilePadNumbers,
   documentIsFullScreen,
   isScreenFilled,
   requestFullScreen,

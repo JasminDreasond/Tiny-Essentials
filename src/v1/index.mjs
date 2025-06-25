@@ -33,8 +33,31 @@ import TinyPromiseQueue from './libs/TinyPromiseQueue.mjs';
 import TinyRateLimiter from './libs/TinyRateLimiter.mjs';
 import TinyNotifyCenter from './libs/TinyNotifyCenter.mjs';
 import TinyToastNotify from './libs/TinyToastNotify.mjs';
-import { areElementsColliding } from './basics/html.mjs';
+import { areElementsColliding, readJsonBlob, saveJsonFile, fetchJson } from './basics/html.mjs';
 import TinyDragDropDetector from './libs/TinyDragDropDetector.mjs';
+import {
+  readJsonFile,
+  writeJsonFile,
+  ensureDirectory,
+  clearDirectory,
+  fileExists,
+  dirExists,
+  isDirEmpty,
+  ensureCopyFile,
+  tryDeleteFile,
+  writeTextFile,
+  listFiles,
+  listDirs,
+  fileSize,
+  dirSize,
+  backupFile,
+  restoreLatestBackup,
+  renameFileBatch,
+  renameFileRegex,
+  renameFileAddPrefixSuffix,
+  renameFileNormalizeCase,
+  renameFilePadNumbers,
+} from './basics/fileManager.mjs';
 
 export {
   TinyDragDropDetector,
@@ -44,6 +67,30 @@ export {
   ColorSafeStringify,
   TinyPromiseQueue,
   TinyLevelUp,
+  fetchJson,
+  readJsonBlob,
+  saveJsonFile,
+  readJsonFile,
+  writeJsonFile,
+  ensureDirectory,
+  clearDirectory,
+  fileExists,
+  dirExists,
+  isDirEmpty,
+  ensureCopyFile,
+  tryDeleteFile,
+  writeTextFile,
+  listFiles,
+  listDirs,
+  fileSize,
+  dirSize,
+  backupFile,
+  restoreLatestBackup,
+  renameFileBatch,
+  renameFileRegex,
+  renameFileAddPrefixSuffix,
+  renameFileNormalizeCase,
+  renameFilePadNumbers,
   documentIsFullScreen,
   isScreenFilled,
   requestFullScreen,
