@@ -23,6 +23,7 @@ import {
   renameFileAddPrefixSuffix,
   renameFileNormalizeCase,
   renameFilePadNumbers,
+  getLatestBackupPath,
 } from '../../dist/v1/index.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -114,6 +115,7 @@ const testFolderManager = async () => {
 
   console.log(`${GREEN}♻️ Restoring from backup...${RESET}`);
   await new Promise((resolve) => setTimeout(() => resolve(), 1000));
+  console.log(`${GREEN}♻️ ${getLatestBackupPath(testTextPath)}...${RESET}`);
   restoreLatestBackup(testTextPath);
 
   // === Listing

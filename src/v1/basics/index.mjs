@@ -44,9 +44,11 @@ import {
   renameFileAddPrefixSuffix,
   renameFileNormalizeCase,
   renameFilePadNumbers,
+  getLatestBackupPath,
 } from './fileManager.mjs';
 
 export {
+  getLatestBackupPath,
   fetchJson,
   readJsonBlob,
   saveJsonFile,

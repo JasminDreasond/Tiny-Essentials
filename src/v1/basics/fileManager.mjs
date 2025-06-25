@@ -241,11 +241,12 @@ export function backupFile(filePath, ext = 'bak') {
 }
 
 /**
- * Restores the most recent backup of a file.
+ * Returns the most recent backup file path for a given file.
  * @param {string} filePath
  * @param {string} [ext='bak']
+ * @returns {string} Full path to the most recent backup
  */
-export function restoreLatestBackup(filePath, ext = 'bak') {
+export function getLatestBackupPath(filePath, ext = 'bak') {
   const dir = path.dirname(filePath);
   const baseName = path.basename(filePath);
   const backups = fs
@@ -255,7 +256,17 @@ export function restoreLatestBackup(filePath, ext = 'bak') {
     .reverse();
 
   if (backups.length === 0) throw new Error(`No backups found for ${filePath}`);
-  const latestBackup = path.join(dir, backups[0]);
+
+  return path.join(dir, backups[0]);
+}
+
+/**
+ * Restores the most recent backup of a file.
+ * @param {string} filePath
+ * @param {string} [ext='bak']
+ */
+export function restoreLatestBackup(filePath, ext = 'bak') {
+  const latestBackup = getLatestBackupPath(filePath, ext);
   ensureCopyFile(latestBackup, filePath);
 }
 

@@ -57,6 +57,7 @@ import {
   renameFileAddPrefixSuffix,
   renameFileNormalizeCase,
   renameFilePadNumbers,
+  getLatestBackupPath,
 } from './basics/fileManager.mjs';
 
 export {
@@ -67,6 +68,7 @@ export {
   ColorSafeStringify,
   TinyPromiseQueue,
   TinyLevelUp,
+  getLatestBackupPath,
   fetchJson,
   readJsonBlob,
   saveJsonFile,

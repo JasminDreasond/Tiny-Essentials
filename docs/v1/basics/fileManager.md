@@ -98,6 +98,10 @@ A powerful and flexible utility toolkit for managing files and directories in No
 
 🛟 Creates a timestamped `.bak` copy of the file.
 
+### `getLatestBackupPath(filePath: string, ext: string = 'bak'): void`
+
+📦 Returns the **most recent backup file path** for a given file, without modifying anything. Useful for checking which backup would be restored.
+
 ### `restoreLatestBackup(filePath: string, ext: string = 'bak'): void`
 
 ♻️ Restores the most recent backup for the file.
