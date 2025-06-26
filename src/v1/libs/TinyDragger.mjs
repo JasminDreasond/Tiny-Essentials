@@ -36,7 +36,7 @@ class TinyDragger {
   /** @type {HTMLElement|null} */
   #dragProxy = null;
 
-  /** @type {Record<string, number[]|boolean>} */
+  /** @type {VibrationPatterns} */
   #vibration = { start: false, end: false, collide: false, move: false };
 
   /** @type {HTMLElement|null} */
@@ -120,9 +120,12 @@ class TinyDragger {
     validateString(options.classHidden, 'classHidden');
 
     if (options.jail instanceof HTMLElement) this.#jail = options.jail;
+
+    /** @type {VibrationPatterns} */
+    const vibrationTemplate = { start: false, end: false, collide: false, move: false };
     this.#vibration = Object.assign(
-      { start: false, end: false, collide: false, move: false },
-      options.vibration || {},
+      vibrationTemplate,
+      isJsonObject(options.vibration) ? options.vibration : {},
     );
 
     if (typeof options.classDragging === 'string') this.#classDragging = options.classDragging;
@@ -598,6 +601,142 @@ class TinyDragger {
   setDropInJailOnly(value) {
     if (typeof value !== 'boolean') throw new Error('dropInJailOnly must be a boolean.');
     this.#dropInJailOnly = value;
+  }
+
+  /**
+   * Returns the original target element being dragged.
+   * @returns {HTMLElement}
+   */
+  getTarget() {
+    return this.#target;
+  }
+
+  /**
+   * Returns the current jail container (if any).
+   * @returns {HTMLElement|null}
+   */
+  getJail() {
+    return this.#jail;
+  }
+
+  /**
+   * Returns the current proxy element being dragged (if any).
+   * @returns {HTMLElement|null}
+   */
+  getDragProxy() {
+    return this.#dragProxy;
+  }
+
+  /**
+   * Returns the last collided element (if any).
+   * @returns {HTMLElement|null}
+   */
+  getLastCollision() {
+    return this.#lastCollision;
+  }
+
+  /**
+   * Returns all registered collidable elements.
+   * @returns {HTMLElement[]}
+   */
+  getCollidables() {
+    return [...this.#collidables];
+  }
+
+  /**
+   * Returns the CSS class used to hide the target during drag.
+   * @returns {string}
+   */
+  getDragHiddenClass() {
+    return this.#dragHiddenClass;
+  }
+
+  /**
+   * Returns the CSS class applied to the clone during dragging.
+   * @returns {string}
+   */
+  getClassDragging() {
+    return this.#classDragging;
+  }
+
+  /**
+   * Returns the CSS class applied to <body> during dragging.
+   * @returns {string}
+   */
+  getClassBodyDragging() {
+    return this.#classBodyDragging;
+  }
+
+  /**
+   * Returns the CSS class applied to the jail during dragging.
+   * @returns {string}
+   */
+  getClassJailDragging() {
+    return this.#classJailDragging;
+  }
+
+  /**
+   * Returns the CSS class applied to the jail when dragging is disabled.
+   * @returns {string}
+   */
+  getClassJailDragDisabled() {
+    return this.#classJailDragDisabled;
+  }
+
+  /**
+   * Returns the CSS class applied to a collided element.
+   * @returns {string}
+   */
+  getClassDragCollision() {
+    return this.#classDragCollision;
+  }
+
+  /**
+   * Returns the full vibration configuration.
+   * @returns {VibrationPatterns}
+   */
+  getVibrations() {
+    return { ...this.#vibration };
+  }
+
+  /**
+   * Returns the vibration pattern for drag start.
+   * @returns {number[]|boolean}
+   */
+  getStartVibration() {
+    return this.#vibration.start;
+  }
+
+  /**
+   * Returns the vibration pattern for drag end.
+   * @returns {number[]|boolean}
+   */
+  getEndVibration() {
+    return this.#vibration.end;
+  }
+
+  /**
+   * Returns the vibration pattern for collisions.
+   * @returns {number[]|boolean}
+   */
+  getCollideVibration() {
+    return this.#vibration.collide;
+  }
+
+  /**
+   * Returns the vibration pattern during movement.
+   * @returns {number[]|boolean}
+   */
+  getMoveVibration() {
+    return this.#vibration.move;
+  }
+
+  /**
+   * Returns whether the dragger is currently enabled.
+   * @returns {boolean}
+   */
+  isEnabled() {
+    return this.#enabled;
   }
 
   /**

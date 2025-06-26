@@ -94,14 +94,14 @@ type VibrationPatterns = {
 
 ### `addCollidable(element: HTMLElement)`
 
-➕ Adds an element to the collision tracking list.
+➕ Adds an element to the collision tracking list.  
 🛑 Throws if the element is not a valid `HTMLElement`.
 
 ---
 
 ### `removeCollidable(element: HTMLElement)`
 
-➖ Removes an element from the collision list.
+➖ Removes an element from the collision list.  
 🛑 Throws if the element is not a valid `HTMLElement`.
 
 ---
@@ -121,21 +121,21 @@ Each pattern must be either `false` or an array of numbers.
 
 ### `getOffset(event: MouseEvent | Touch): { x: number, y: number }`
 
-📐 Returns the X and Y offset from the event to the top-left corner of the element.
+📐 Returns the X and Y offset from the event to the top-left corner of the element.  
 🛑 Throws if the event is invalid.
 
 ---
 
 ### `getCollidedElementByRect(rect: DOMRect): HTMLElement | null`
 
-🎯 Detects if a `DOMRect` collides with any registered collidable elements.
+🎯 Detects if a `DOMRect` collides with any registered collidable elements.  
 🛑 Throws if the rect is invalid.
 
 ---
 
 ### `getCollidedElement(x: number, y: number): HTMLElement | null`
 
-📌 Detects if the given screen coordinates collide with any tracked element.
+📌 Detects if the given screen coordinates collide with any tracked element.  
 🛑 Throws if `x` or `y` is not a number.
 
 ---
@@ -212,6 +212,110 @@ Each pattern must be either `false` or an array of numbers.
 📍 Uses either the mouse point or the proxy rectangle depending on `collisionByMouse`.  
 🔒 Respects `dropInJailOnly` and jail boundaries.  
 🛑 Returns `{ inJail: false, collidedElement: null }` if dragging is not active.
+
+---
+
+### `getTarget(): HTMLElement`
+
+🎯 Returns the original element being dragged.
+
+---
+
+### `getJail(): HTMLElement | null`
+
+🚧 Returns the jail container element if one is set.  
+Returns `null` if no jail is configured.
+
+---
+
+### `getDragProxy(): HTMLElement | null`
+
+👻 Returns the current proxy (clone) element being dragged.  
+Returns `null` if no proxy is active.
+
+---
+
+### `getLastCollision(): HTMLElement | null`
+
+💥 Returns the last collided element (if any).
+
+---
+
+### `getCollidables(): HTMLElement[]`
+
+🧲 Returns the list of elements that are considered for collision detection.
+
+---
+
+### `getDragHiddenClass(): string`
+
+👀 Returns the CSS class used to hide the original element during dragging.
+
+---
+
+### `getClassDragging(): string`
+
+🎬 Returns the CSS class applied to the clone while it is being dragged.
+
+---
+
+### `getClassBodyDragging(): string`
+
+🧍 Returns the CSS class applied to `<body>` when dragging is active.
+
+---
+
+### `getClassJailDragging(): string`
+
+🏗️ Returns the CSS class applied to the jail element while dragging is active.
+
+---
+
+### `getClassJailDragDisabled(): string`
+
+🚫 Returns the CSS class applied to the jail when dragging is disabled.
+
+---
+
+### `getClassDragCollision(): string`
+
+⚠️ Returns the CSS class applied to elements when a collision is detected.
+
+---
+
+### `getVibrations(): { start: number[] | false, end: number[] | false, collide: number[] | false, move: number[] | false }`
+
+🎵 Returns the full vibration pattern configuration used during dragging.
+
+---
+
+### `getStartVibration(): number[] | false`
+
+📳 Returns the vibration pattern used at the **start** of a drag.
+
+---
+
+### `getEndVibration(): number[] | false`
+
+📴 Returns the vibration pattern used at the **end** of a drag.
+
+---
+
+### `getCollideVibration(): number[] | false`
+
+🎯 Returns the vibration pattern used when **colliding** with another element.
+
+---
+
+### `getMoveVibration(): number[] | false`
+
+🚶 Returns the vibration pattern used during **movement** while dragging.
+
+---
+
+### `isEnabled(): boolean`
+
+✅ Returns whether the drag-and-drop functionality is currently enabled.
 
 ---
 
