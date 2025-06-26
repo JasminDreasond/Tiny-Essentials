@@ -117,7 +117,7 @@ class TinyDragger {
    * Enables the drag functionality.
    */
   enable() {
-    if (this.#destroyed) throw new Error('');
+    this.#checkDestroy();
     if (this.#jail) this.#jail.classList.add(this.#classJailDragDisabled);
     this.#enabled = true;
   }
@@ -135,6 +135,7 @@ class TinyDragger {
    * @param {HTMLElement} element - The element to track collisions with.
    */
   addCollidable(element) {
+    this.#checkDestroy();
     if (!this.#collidables.includes(element)) this.#collidables.push(element);
   }
 
@@ -143,6 +144,7 @@ class TinyDragger {
    * @param {HTMLElement} element - The element to remove.
    */
   removeCollidable(element) {
+    this.#checkDestroy();
     this.#collidables = this.#collidables.filter((el) => el !== element);
   }
 
@@ -160,6 +162,7 @@ class TinyDragger {
     collidePattern = false,
     movePattern = false,
   } = {}) {
+    this.#checkDestroy();
     this.#vibration = {
       start: startPattern,
       end: endPattern,
@@ -172,6 +175,7 @@ class TinyDragger {
    * Disables all vibration feedback.
    */
   disableVibration() {
+    this.#checkDestroy();
     this.#vibration = { start: false, end: false, collide: false, move: false };
   }
 
@@ -181,6 +185,7 @@ class TinyDragger {
    * @returns {{x: number, y: number}} The offset in pixels.
    */
   getOffset(event) {
+    this.#checkDestroy();
     const targetRect = this.#target.getBoundingClientRect();
     const { left: borderLeft, top: borderTop } = getHtmlElBordersWidth(this.#target);
     return {
@@ -195,7 +200,7 @@ class TinyDragger {
    */
   #startDrag(event) {
     if (event instanceof MouseEvent) event.preventDefault();
-    if (!this.#enabled || !this.#target.parentElement) return;
+    if (this.#destroyed || !this.#enabled || !this.#target.parentElement) return;
 
     const dragProxy = this.#target.cloneNode(true);
     if (!(dragProxy instanceof HTMLElement)) return;
@@ -245,7 +250,7 @@ class TinyDragger {
    */
   #drag(event) {
     if (event instanceof MouseEvent) event.preventDefault();
-    if (!this.#dragging || !this.#enabled || !this.#dragProxy) return;
+    if (this.#destroyed || !this.#dragging || !this.#enabled || !this.#dragProxy) return;
 
     const parent = this.#dragProxy.offsetParent || document.body;
     const parentRect = parent.getBoundingClientRect();
@@ -297,7 +302,7 @@ class TinyDragger {
    * @returns {{ inJail: boolean; collidedElement: HTMLElement|null }}
    */
   #execCollision(event) {
-    if (!this.#dragProxy) return { inJail: false, collidedElement: null };
+    if (this.#destroyed || !this.#dragProxy) return { inJail: false, collidedElement: null };
 
     let collidedElement;
     let inJail = true;
@@ -333,7 +338,7 @@ class TinyDragger {
    */
   #endDrag(event) {
     if (event instanceof MouseEvent) event.preventDefault();
-    if (!this.#dragging) return;
+    if (this.#destroyed || !this.#dragging) return;
 
     this.#dragging = false;
     if (!this.#dragProxy) return;
@@ -382,6 +387,7 @@ class TinyDragger {
    * @returns {HTMLElement|null} The collided element or null.
    */
   getCollidedElementByRect(rect) {
+    this.#checkDestroy();
     return (
       this.#collidables.find((el) => {
         const elRect = el.getBoundingClientRect();
@@ -402,6 +408,7 @@ class TinyDragger {
    * @returns {HTMLElement|null} The collided element or null.
    */
   getCollidedElement(x, y) {
+    this.#checkDestroy();
     return (
       this.#collidables.find((el) => {
         const rect = el.getBoundingClientRect();
@@ -419,11 +426,16 @@ class TinyDragger {
     this.#target.dispatchEvent(event);
   }
 
+  #checkDestroy() {
+    if (this.#destroyed) throw new Error('');
+  }
+
   /**
    * Completely disables drag-and-drop and cleans up all event listeners.
    * Does NOT remove the original HTML element.
    */
   destroy() {
+    if (this.#destroyed) return;
     this.disable();
 
     this.#target.removeEventListener('mousedown', this._onMouseDown);
