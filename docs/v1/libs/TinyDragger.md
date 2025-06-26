@@ -267,6 +267,27 @@ dragger.destroy();
 
 ---
 
+## 🧪 Testing & Styling
+
+* 🎨 **Example Stylesheets:**
+  You can find optional example styles to get started or test layout integration in:
+
+  ```
+  dist/v1/css/TinyDraggerExample.css
+  dist/v1/css/TinyDraggerExample.min.css
+  ```
+
+* 🧱 **Test Environment:**
+  A ready-to-use HTML test page is available at:
+
+  ```
+  test/html/TinyDragger
+  ```
+
+  This includes practical demos and scenarios to test dragging, collision, jail constraints, and more.
+
+---
+
 ## 🧠 Notes
 
 * Touch support uses the first touch point only.
