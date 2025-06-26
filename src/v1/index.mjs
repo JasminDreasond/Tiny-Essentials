@@ -68,8 +68,10 @@ import {
   renameFilePadNumbers,
   getLatestBackupPath,
 } from './basics/fileManager.mjs';
+import TinyDragger from './libs/TinyDragger.mjs';
 
 export {
+  TinyDragger,
   TinyDragDropDetector,
   TinyToastNotify,
   TinyNotifyCenter,

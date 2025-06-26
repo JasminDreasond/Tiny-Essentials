@@ -31,6 +31,7 @@ This folder contains the core scripts we have worked on so far. Each file is a m
 - 🍞 **[TinyToastNotify](./libs/TinyToastNotify.md)** — A lightweight toast notification system supporting positioning, timing customization, avatars, click actions, and fade-out animations.
 - 📥 **[TinyDragDropDetector](./libs/TinyDragDropDetector.md)** — A lightweight drag-and-drop detector for files, handling the full drag lifecycle (`enter`, `over`, `leave`, `drop`) with CSS hover management and safe event handling on any DOM element or the full page.
 * 📂 **[TinyUploadClicker](./libs/TinyUploadClicker.md)** — A minimal utility to bind any clickable element to a hidden file input, offering full control over styling, behavior, and upload event hooks.
+* 🧲 **[TinyDragger](./libs/TinyDragger.md)** — A flexible drag-and-drop manager with collision detection, jail constraints, vibration feedback, visual proxies, revert-on-drop, and full custom event support.
 
 ---
 
