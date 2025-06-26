@@ -4,6 +4,10 @@
   z-index: 9999;
 }
 
+.dragging-collision {
+  outline: 2px dashed rgb(51, 170, 67);
+}
+
 body.drag-active {
   cursor: grabbing !important;
 }

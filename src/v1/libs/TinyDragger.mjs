@@ -48,6 +48,7 @@ class TinyDragger {
   #classBodyDragging = 'drag-active';
   #classJailDragging = 'jail-drag-active';
   #classJailDragDisabled = 'jail-drag-disabled';
+  #classDragCollision = 'dragging-collision';
 
   /** @typedef {(event: TouchEvent) => void} TouchDragEvent */
 
@@ -60,6 +61,7 @@ class TinyDragger {
    * @param {string} [options.classBodyDragging='drag-active'] - CSS class applied to <body> during dragging.
    * @param {string} [options.classJailDragging='jail-drag-active'] - CSS class applied to jail element during drag.
    * @param {string} [options.classJailDragDisabled='jail-drag-disabled'] - CSS class applied to jail element disabled.
+   * @param {string} [options.classDragCollision='dragging-collision'] - CSS class applied to collision element.
    * @param {boolean} [options.lockInsideJail=false] - Restrict movement within the jail container.
    * @param {boolean} [options.dropInJailOnly=false] - Restrict drop within the jail container.
    * @param {VibrationPatterns|false} [options.vibration=false] - Vibration feedback configuration.
@@ -85,6 +87,8 @@ class TinyDragger {
     if (typeof options.classJailDragDisabled === 'string')
       this.#classJailDragDisabled = options.classJailDragDisabled;
     if (typeof options.classHidden === 'string') this.#dragHiddenClass = options.classHidden;
+    if (typeof options.classDragCollision === 'string')
+      this.#classDragCollision = options.classDragCollision;
 
     if (typeof options.collisionByMouse === 'boolean')
       this.#collisionByMouse = options.collisionByMouse;
@@ -272,13 +276,15 @@ class TinyDragger {
       navigator.vibrate(this.#vibration.move);
     }
 
-    const collided = this.getCollidedElement(event.clientX, event.clientY);
+    const { collidedElement: collided } = this.#execCollision(event);
     if (collided && collided !== this.#lastCollision) {
       if (navigator.vibrate && Array.isArray(this.#vibration.collide)) {
         navigator.vibrate(this.#vibration.collide);
       }
       this.#lastCollision = collided;
+      if (this.#lastCollision) this.#lastCollision.classList.add(this.#classDragCollision);
     } else if (!collided) {
+      if (this.#lastCollision) this.#lastCollision.classList.remove(this.#classDragCollision);
       this.#lastCollision = null;
     }
 
@@ -286,25 +292,12 @@ class TinyDragger {
   }
 
   /**
-   * Handles the end of a drag.
+   * Handles the collision of a drag.
    * @param {MouseEvent|Touch} event - The release event.
+   * @returns {{ inJail: boolean; collidedElement: HTMLElement|null }}
    */
-  #endDrag(event) {
-    if (event instanceof MouseEvent) event.preventDefault();
-    if (!this.#dragging) return;
-
-    this.#dragging = false;
-    if (!this.#dragProxy) return;
-
-    this.#target.classList.remove(this.#classDragging);
-    document.body.classList.remove(this.#classBodyDragging);
-    if (this.#jail) this.#jail.classList.remove(this.#classJailDragging);
-
-    document.removeEventListener('mousemove', this._onMouseMove);
-    document.removeEventListener('mouseup', this._onMouseUp);
-
-    document.removeEventListener('touchmove', this._onTouchMove);
-    document.removeEventListener('touchend', this._onTouchEnd);
+  #execCollision(event) {
+    if (!this.#dragProxy) return { inJail: false, collidedElement: null };
 
     let collidedElement;
     let inJail = true;
@@ -331,6 +324,31 @@ class TinyDragger {
       collidedElement = inJail ? this.getCollidedElementByRect(targetRect) : null;
     }
 
+    return { inJail, collidedElement };
+  }
+
+  /**
+   * Handles the end of a drag.
+   * @param {MouseEvent|Touch} event - The release event.
+   */
+  #endDrag(event) {
+    if (event instanceof MouseEvent) event.preventDefault();
+    if (!this.#dragging) return;
+
+    this.#dragging = false;
+    if (!this.#dragProxy) return;
+
+    this.#target.classList.remove(this.#classDragging);
+    document.body.classList.remove(this.#classBodyDragging);
+    if (this.#jail) this.#jail.classList.remove(this.#classJailDragging);
+
+    document.removeEventListener('mousemove', this._onMouseMove);
+    document.removeEventListener('mouseup', this._onMouseUp);
+
+    document.removeEventListener('touchmove', this._onTouchMove);
+    document.removeEventListener('touchend', this._onTouchEnd);
+    const { collidedElement } = this.#execCollision(event);
+
     if (navigator.vibrate && Array.isArray(this.#vibration.end)) {
       navigator.vibrate(this.#vibration.end);
     }
@@ -342,6 +360,7 @@ class TinyDragger {
       this.#dragProxy = null;
     }
 
+    if (this.#lastCollision) this.#lastCollision.classList.remove(this.#classDragCollision);
     this.#target.classList.remove(this.#dragHiddenClass);
     if (!this.#revertOnDrop) {
       this.#target.style.left = newX;
@@ -416,6 +435,7 @@ class TinyDragger {
     document.removeEventListener('touchmove', this._onTouchMove);
     document.removeEventListener('touchend', this._onTouchEnd);
 
+    if (this.#lastCollision) this.#lastCollision.classList.remove(this.#classDragCollision);
     if (this.#dragProxy) {
       this.#dragProxy.remove();
       this.#dragProxy = null;
@@ -427,9 +447,8 @@ class TinyDragger {
 
     this.#target.classList.remove(this.#dragHiddenClass, this.#classDragging);
     document.body.classList.remove(this.#classBodyDragging);
-    if (this.#jail) {
+    if (this.#jail)
       this.#jail.classList.remove(this.#classJailDragging, this.#classJailDragDisabled);
-    }
 
     this.#destroyed = true;
   }
