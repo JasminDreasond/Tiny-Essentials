@@ -145,17 +145,29 @@ class TinyDragger {
     if (typeof options.lockInsideJail === 'boolean') this.#lockInsideJail = options.lockInsideJail;
     if (typeof options.dropInJailOnly === 'boolean') this.#dropInJailOnly = options.dropInJailOnly;
 
+    /** @private */
     this._onMouseDown = this.#startDrag.bind(this);
+    /** @private */
     this._onMouseMove = this.#drag.bind(this);
+    /** @private */
     this._onMouseUp = this.#endDrag.bind(this);
 
-    /** @type {TouchDragEvent} */
+    /**
+     * @type {TouchDragEvent}
+     * @private
+     */
     this._onTouchStart = (e) => this.#startDrag(e.touches[0]);
 
-    /** @type {TouchDragEvent} */
+    /**
+     * @type {TouchDragEvent}
+     * @private
+     */
     this._onTouchMove = (e) => this.#drag(e.touches[0]);
 
-    /** @type {TouchDragEvent} */
+    /**
+     * @type {TouchDragEvent}
+     * @private
+     */
     this._onTouchEnd = (e) => this.#endDrag(e.changedTouches[0]);
 
     this.#target.addEventListener('mousedown', this._onMouseDown);
