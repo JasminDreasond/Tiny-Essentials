@@ -316,7 +316,7 @@ class TinyDragger {
       navigator.vibrate(this.#vibration.start);
     }
 
-    this.#checkDragCollision(event);
+    this.checkDragCollision(event);
     this.#dispatchEvent('drag');
   }
 
@@ -324,8 +324,8 @@ class TinyDragger {
    * Handles dragging collision.
    * @param {MouseEvent|Touch} event - The drag event.
    */
-  #checkDragCollision(event) {
-    const { collidedElement: collided } = this.#execCollision(event);
+  checkDragCollision(event) {
+    const { collidedElement: collided } = this.execCollision(event);
     if (collided && collided !== this.#lastCollision) {
       if (navigator.vibrate && Array.isArray(this.#vibration.collide)) {
         navigator.vibrate(this.#vibration.collide);
@@ -375,7 +375,7 @@ class TinyDragger {
       navigator.vibrate(this.#vibration.move);
     }
 
-    this.#checkDragCollision(event);
+    this.checkDragCollision(event);
     this.#dispatchEvent('dragging');
   }
 
@@ -384,7 +384,7 @@ class TinyDragger {
    * @param {MouseEvent|Touch} event - The release event.
    * @returns {{ inJail: boolean; collidedElement: HTMLElement|null }}
    */
-  #execCollision(event) {
+  execCollision(event) {
     if (this.#destroyed || !this.#dragProxy) return { inJail: false, collidedElement: null };
 
     let collidedElement;
@@ -435,7 +435,7 @@ class TinyDragger {
 
     document.removeEventListener('touchmove', this._onTouchMove);
     document.removeEventListener('touchend', this._onTouchEnd);
-    const { collidedElement } = this.#execCollision(event);
+    const { collidedElement } = this.execCollision(event);
 
     if (navigator.vibrate && Array.isArray(this.#vibration.end)) {
       navigator.vibrate(this.#vibration.end);

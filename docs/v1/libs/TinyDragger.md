@@ -198,6 +198,23 @@ Each pattern must be either `false` or an array of numbers.
 
 ---
 
+### `checkDragCollision(event: MouseEvent | Touch): void`
+
+🎯 Checks for collision between the drag proxy and registered elements.
+💥 Applies or removes the collision class depending on overlap.
+📳 Triggers vibration if configured.
+
+---
+
+### `execCollision(event: MouseEvent | Touch): { inJail: boolean; collidedElement: HTMLElement | null }`
+
+🧩 Executes collision detection logic based on the drag position and mode.
+📍 Uses either the mouse point or the proxy rectangle depending on `collisionByMouse`.
+🔒 Respects `dropInJailOnly` and jail boundaries.
+🛑 Returns `{ inJail: false, collidedElement: null }` if dragging is not active.
+
+---
+
 ## 🔁 Events
 
 The target element will emit these events:
