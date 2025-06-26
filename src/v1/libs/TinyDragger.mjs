@@ -525,6 +525,82 @@ class TinyDragger {
   }
 
   /**
+   * Gets whether dragging is currently active.
+   * @returns {boolean}
+   */
+  getDragging() {
+    return this.#dragging;
+  }
+
+  /**
+   * Gets whether movement is restricted inside the jail container.
+   * @returns {boolean}
+   */
+  getLockInsideJail() {
+    return this.#lockInsideJail;
+  }
+
+  /**
+   * Sets whether movement is restricted inside the jail container.
+   * @param {boolean} value
+   */
+  setLockInsideJail(value) {
+    if (typeof value !== 'boolean') throw new Error('lockInsideJail must be a boolean.');
+    this.#lockInsideJail = value;
+  }
+
+  /**
+   * Gets whether the element should revert to original position on drop.
+   * @returns {boolean}
+   */
+  getRevertOnDrop() {
+    return this.#revertOnDrop;
+  }
+
+  /**
+   * Sets whether the element should revert to original position on drop.
+   * @param {boolean} value
+   */
+  setRevertOnDrop(value) {
+    if (typeof value !== 'boolean') throw new Error('revertOnDrop must be a boolean.');
+    this.#revertOnDrop = value;
+  }
+
+  /**
+   * Gets whether collision detection uses mouse position.
+   * @returns {boolean}
+   */
+  getCollisionByMouse() {
+    return this.#collisionByMouse;
+  }
+
+  /**
+   * Sets whether collision detection uses mouse position.
+   * @param {boolean} value
+   */
+  setCollisionByMouse(value) {
+    if (typeof value !== 'boolean') throw new Error('collisionByMouse must be a boolean.');
+    this.#collisionByMouse = value;
+  }
+
+  /**
+   * Gets whether dropping is restricted inside the jail container.
+   * @returns {boolean}
+   */
+  getDropInJailOnly() {
+    return this.#dropInJailOnly;
+  }
+
+  /**
+   * Sets whether dropping is restricted inside the jail container.
+   * @param {boolean} value
+   */
+  setDropInJailOnly(value) {
+    if (typeof value !== 'boolean') throw new Error('dropInJailOnly must be a boolean.');
+    this.#dropInJailOnly = value;
+  }
+
+  /**
    * Internal method to verify if the instance has been destroyed.
    * Throws an error if any operation is attempted after destruction.
    */

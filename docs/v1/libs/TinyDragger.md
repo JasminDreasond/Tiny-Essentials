@@ -140,6 +140,64 @@ Each pattern must be either `false` or an array of numbers.
 
 ---
 
+### `getDragging(): boolean`
+
+🔄 Returns whether dragging is currently active.
+
+---
+
+### `getLockInsideJail(): boolean`
+
+🔒 Returns whether movement is restricted inside the jail container.
+
+---
+
+### `setLockInsideJail(value: boolean): void`
+
+⚙️ Sets whether movement is restricted inside the jail container.  
+🛑 Throws if `value` is not a boolean.
+
+---
+
+### `getRevertOnDrop(): boolean`
+
+↩️ Returns whether the element should revert to its original position on drop.
+
+---
+
+### `setRevertOnDrop(value: boolean): void`
+
+⚙️ Sets whether the element should revert to its original position on drop.  
+🛑 Throws if `value` is not a boolean.
+
+---
+
+### `getCollisionByMouse(): boolean`
+
+🖱️ Returns whether collision detection uses mouse position instead of element bounding rectangles.
+
+---
+
+### `setCollisionByMouse(value: boolean): void`
+
+⚙️ Sets whether collision detection uses mouse position instead of element bounding rectangles.  
+🛑 Throws if `value` is not a boolean.
+
+---
+
+### `getDropInJailOnly(): boolean`
+
+🚫 Returns whether dropping is restricted inside the jail container.
+
+---
+
+### `setDropInJailOnly(value: boolean): void`
+
+⚙️ Sets whether dropping is restricted inside the jail container.  
+🛑 Throws if `value` is not a boolean.
+
+---
+
 ## 🔁 Events
 
 The target element will emit these events:
