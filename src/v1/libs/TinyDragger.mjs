@@ -1,4 +1,5 @@
 import { getHtmlElBordersWidth } from '../basics/html.mjs';
+import { isJsonObject } from '../basics/objFilter.mjs';
 
 /**
  * @typedef {Object} VibrationPatterns
@@ -67,11 +68,56 @@ class TinyDragger {
    * @param {VibrationPatterns|false} [options.vibration=false] - Vibration feedback configuration.
    * @param {boolean} [options.revertOnDrop=false] - Whether to return to original position on drop.
    * @param {string} [options.classHidden='drag-hidden'] - CSS class to hide original element during dragging.
+   * @throws {Error} If any option has an invalid type.
    */
   constructor(targetElement, options = {}) {
-    if (!targetElement) throw new Error('');
+    if (!(targetElement instanceof HTMLElement))
+      throw new Error('TinyDragger requires a valid target HTMLElement to initialize.');
 
     this.#target = targetElement;
+
+    // === Validations ===
+    if (options.jail !== undefined && !(options.jail instanceof HTMLElement))
+      throw new Error('The "jail" option must be an HTMLElement if provided.');
+
+    if (
+      options.vibration !== undefined &&
+      options.vibration !== false &&
+      !isJsonObject(options.vibration)
+    )
+      throw new Error('The "vibration" option must be an object or false.');
+
+    /**
+     * @param {any} val
+     * @param {string} name
+     */
+    const validateBoolean = (val, name) => {
+      if (val !== undefined && typeof val !== 'boolean') {
+        throw new Error(`The "${name}" option must be a boolean.`);
+      }
+    };
+
+    /**
+     * @param {any} val
+     * @param {string} name
+     */
+    const validateString = (val, name) => {
+      if (val !== undefined && typeof val !== 'string') {
+        throw new Error(`The "${name}" option must be a string.`);
+      }
+    };
+
+    validateBoolean(options.collisionByMouse, 'collisionByMouse');
+    validateBoolean(options.lockInsideJail, 'lockInsideJail');
+    validateBoolean(options.dropInJailOnly, 'dropInJailOnly');
+    validateBoolean(options.revertOnDrop, 'revertOnDrop');
+
+    validateString(options.classDragging, 'classDragging');
+    validateString(options.classBodyDragging, 'classBodyDragging');
+    validateString(options.classJailDragging, 'classJailDragging');
+    validateString(options.classJailDragDisabled, 'classJailDragDisabled');
+    validateString(options.classDragCollision, 'classDragCollision');
+    validateString(options.classHidden, 'classHidden');
 
     if (options.jail instanceof HTMLElement) this.#jail = options.jail;
     this.#vibration = Object.assign(
@@ -133,18 +179,24 @@ class TinyDragger {
   /**
    * Adds an element to be considered for collision detection.
    * @param {HTMLElement} element - The element to track collisions with.
+   * @throws {Error} If the element is not a valid HTMLElement.
    */
   addCollidable(element) {
     this.#checkDestroy();
+    if (!(element instanceof HTMLElement))
+      throw new Error('addCollidable expects an HTMLElement as argument.');
     if (!this.#collidables.includes(element)) this.#collidables.push(element);
   }
 
   /**
    * Removes a collidable element from the tracking list.
    * @param {HTMLElement} element - The element to remove.
+   * @throws {Error} If the element is not a valid HTMLElement.
    */
   removeCollidable(element) {
     this.#checkDestroy();
+    if (!(element instanceof HTMLElement))
+      throw new Error('removeCollidable expects an HTMLElement as argument.');
     this.#collidables = this.#collidables.filter((el) => el !== element);
   }
 
@@ -155,6 +207,7 @@ class TinyDragger {
    * @param {number[]|false} [param0.endPattern=false] - Vibration on drag end.
    * @param {number[]|false} [param0.collidePattern=false] - Vibration on collision.
    * @param {number[]|false} [param0.movePattern=false] - Vibration during movement.
+   * @throws {Error} If any pattern is not false or an array of numbers.
    */
   setVibrationPattern({
     startPattern = false,
@@ -163,6 +216,20 @@ class TinyDragger {
     movePattern = false,
   } = {}) {
     this.#checkDestroy();
+
+    /** @param {any} value */
+    const isValidPattern = (value) =>
+      value === false || (Array.isArray(value) && value.every((n) => typeof n === 'number'));
+
+    if (!isValidPattern(startPattern))
+      throw new Error('Invalid "startPattern": must be false or an array of numbers.');
+    if (!isValidPattern(endPattern))
+      throw new Error('Invalid "endPattern": must be false or an array of numbers.');
+    if (!isValidPattern(collidePattern))
+      throw new Error('Invalid "collidePattern": must be false or an array of numbers.');
+    if (!isValidPattern(movePattern))
+      throw new Error('Invalid "movePattern": must be false or an array of numbers.');
+
     this.#vibration = {
       start: startPattern,
       end: endPattern,
@@ -183,9 +250,17 @@ class TinyDragger {
    * Calculates the cursor offset relative to the top-left of the target element.
    * @param {MouseEvent|Touch} event - The mouse or touch event.
    * @returns {{x: number, y: number}} The offset in pixels.
+   * @throws {Error} If event is not a MouseEvent or Touch with clientX/clientY.
    */
   getOffset(event) {
     this.#checkDestroy();
+    if (
+      (!(event instanceof MouseEvent) && !(event instanceof Touch)) ||
+      typeof event.clientX !== 'number' ||
+      typeof event.clientY !== 'number'
+    )
+      throw new Error('getOffset expects an event with valid clientX and clientY coordinates.');
+
     const targetRect = this.#target.getBoundingClientRect();
     const { left: borderLeft, top: borderTop } = getHtmlElBordersWidth(this.#target);
     return {
@@ -241,7 +316,26 @@ class TinyDragger {
       navigator.vibrate(this.#vibration.start);
     }
 
+    this.#checkDragCollision(event);
     this.#dispatchEvent('drag');
+  }
+
+  /**
+   * Handles dragging collision.
+   * @param {MouseEvent|Touch} event - The drag event.
+   */
+  #checkDragCollision(event) {
+    const { collidedElement: collided } = this.#execCollision(event);
+    if (collided && collided !== this.#lastCollision) {
+      if (navigator.vibrate && Array.isArray(this.#vibration.collide)) {
+        navigator.vibrate(this.#vibration.collide);
+      }
+      this.#lastCollision = collided;
+      if (this.#lastCollision) this.#lastCollision.classList.add(this.#classDragCollision);
+    } else if (!collided) {
+      if (this.#lastCollision) this.#lastCollision.classList.remove(this.#classDragCollision);
+      this.#lastCollision = null;
+    }
   }
 
   /**
@@ -281,18 +375,7 @@ class TinyDragger {
       navigator.vibrate(this.#vibration.move);
     }
 
-    const { collidedElement: collided } = this.#execCollision(event);
-    if (collided && collided !== this.#lastCollision) {
-      if (navigator.vibrate && Array.isArray(this.#vibration.collide)) {
-        navigator.vibrate(this.#vibration.collide);
-      }
-      this.#lastCollision = collided;
-      if (this.#lastCollision) this.#lastCollision.classList.add(this.#classDragCollision);
-    } else if (!collided) {
-      if (this.#lastCollision) this.#lastCollision.classList.remove(this.#classDragCollision);
-      this.#lastCollision = null;
-    }
-
+    this.#checkDragCollision(event);
     this.#dispatchEvent('dragging');
   }
 
@@ -366,6 +449,8 @@ class TinyDragger {
     }
 
     if (this.#lastCollision) this.#lastCollision.classList.remove(this.#classDragCollision);
+    this.#lastCollision = null;
+
     this.#target.classList.remove(this.#dragHiddenClass);
     if (!this.#revertOnDrop) {
       this.#target.style.left = newX;
@@ -385,9 +470,19 @@ class TinyDragger {
    * Detects collision based on rectangle intersection.
    * @param {DOMRect} rect - Bounding rectangle of the dragged proxy.
    * @returns {HTMLElement|null} The collided element or null.
+   * @throws {Error} If rect is not a DOMRect with valid numeric properties.
    */
   getCollidedElementByRect(rect) {
     this.#checkDestroy();
+    if (
+      !(rect instanceof DOMRect) ||
+      typeof rect.left !== 'number' ||
+      typeof rect.right !== 'number' ||
+      typeof rect.top !== 'number' ||
+      typeof rect.bottom !== 'number'
+    )
+      throw new Error('getCollidedElementByRect expects a valid DOMRect object.');
+
     return (
       this.#collidables.find((el) => {
         const elRect = el.getBoundingClientRect();
@@ -409,6 +504,9 @@ class TinyDragger {
    */
   getCollidedElement(x, y) {
     this.#checkDestroy();
+    if (typeof x !== 'number' || typeof y !== 'number')
+      throw new Error('getCollidedElement expects numeric x and y coordinates.');
+
     return (
       this.#collidables.find((el) => {
         const rect = el.getBoundingClientRect();
@@ -426,8 +524,13 @@ class TinyDragger {
     this.#target.dispatchEvent(event);
   }
 
+  /**
+   * Internal method to verify if the instance has been destroyed.
+   * Throws an error if any operation is attempted after destruction.
+   */
   #checkDestroy() {
-    if (this.#destroyed) throw new Error('');
+    if (this.#destroyed)
+      throw new Error('This TinyDragger instance has been destroyed and can no longer be used.');
   }
 
   /**
