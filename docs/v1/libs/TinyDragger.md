@@ -54,6 +54,7 @@ new TinyDragger(targetElement, options?)
 | `classHidden`           | `string`                       | `'drag-hidden'`        | Class used to hide the original element while dragging   |
 | `lockInsideJail`        | `boolean`                      | `false`                | Prevent drag from exceeding jail bounds                  |
 | `dropInJailOnly`        | `boolean`                      | `false`                | Prevent drop outside the jail area                       |
+| `multiCollision`        | `boolean`                      | `false`                | Enables returning multiple collided elements             |
 | `vibration`             | `VibrationPatterns` or `false` | `false`                | Vibration feedback configuration                         |
 | `revertOnDrop`          | `boolean`                      | `false`                | Return to original position after dropping               |
 
@@ -133,9 +134,23 @@ Each pattern must be either `false` or an array of numbers.
 
 ---
 
+### `getAllCollidedElementsByRect(rect: DOMRect): HTMLElement[]`
+
+📌 Returns **all elements** currently intersecting the given rectangle. Useful for detecting multiple overlaps when dragging.
+🛑 Throws if `rect` is not a valid `DOMRect` with numeric `left`, `right`, `top`, and `bottom` properties.
+
+---
+
 ### `getCollidedElement(x: number, y: number): HTMLElement | null`
 
 📌 Detects if the given screen coordinates collide with any tracked element.  
+🛑 Throws if `x` or `y` is not a number.
+
+---
+
+### `getAllCollidedElements(x: number, y: number): HTMLElement[]`
+
+📌 Detects **all elements** currently under the given screen coordinates. Works well when `collisionByMouse` is enabled.
 🛑 Throws if `x` or `y` is not a number.
 
 ---

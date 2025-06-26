@@ -21,6 +21,7 @@ class TinyDragger {
   #offsetY = 0;
   #offsetX = 0;
 
+  #multiCollision = false;
   #lockInsideJail = false;
   #revertOnDrop = false;
   #dragging = false;
@@ -65,6 +66,7 @@ class TinyDragger {
    * @param {string} [options.classDragCollision='dragging-collision'] - CSS class applied to collision element.
    * @param {boolean} [options.lockInsideJail=false] - Restrict movement within the jail container.
    * @param {boolean} [options.dropInJailOnly=false] - Restrict drop within the jail container.
+   * @param {boolean} [options.multiCollision=false] - Enables returning multiple collided elements.
    * @param {VibrationPatterns|false} [options.vibration=false] - Vibration feedback configuration.
    * @param {boolean} [options.revertOnDrop=false] - Whether to return to original position on drop.
    * @param {string} [options.classHidden='drag-hidden'] - CSS class to hide original element during dragging.
@@ -111,6 +113,7 @@ class TinyDragger {
     validateBoolean(options.lockInsideJail, 'lockInsideJail');
     validateBoolean(options.dropInJailOnly, 'dropInJailOnly');
     validateBoolean(options.revertOnDrop, 'revertOnDrop');
+    validateBoolean(options.multiCollision, 'multiCollision');
 
     validateString(options.classDragging, 'classDragging');
     validateString(options.classBodyDragging, 'classBodyDragging');
@@ -144,6 +147,7 @@ class TinyDragger {
     if (typeof options.revertOnDrop === 'boolean') this.#revertOnDrop = options.revertOnDrop;
     if (typeof options.lockInsideJail === 'boolean') this.#lockInsideJail = options.lockInsideJail;
     if (typeof options.dropInJailOnly === 'boolean') this.#dropInJailOnly = options.dropInJailOnly;
+    if (typeof options.multiCollision === 'boolean') this.#multiCollision = options.multiCollision;
 
     /** @private */
     this._onMouseDown = this.#startDrag.bind(this);
@@ -335,22 +339,67 @@ class TinyDragger {
     this.#dispatchEvent('drag');
   }
 
+  /** @type {HTMLElement[]} */
+  #collisionsMarked = [];
+
+  /**
+   * Marks an element as currently collided by adding the collision CSS class.
+   * The element is stored in an internal list for easy removal later.
+   *
+   * @param {HTMLElement|null} el - The element to mark as collided.
+   */
+  #addCollision(el) {
+    if (!el) return;
+    el.classList.add(this.#classDragCollision);
+    this.#collisionsMarked.push(el);
+  }
+
+  /**
+   * Removes the collision CSS class from all previously marked elements.
+   * Also clears the last single collision element, if set.
+   *
+   */
+  #removeCollision() {
+    while (this.#collisionsMarked.length > 0) {
+      const el = this.#collisionsMarked.shift();
+      if (el) el.classList.remove(this.#classDragCollision);
+    }
+    if (!this.#lastCollision) return;
+    this.#lastCollision.classList.remove(this.#classDragCollision);
+  }
+
   /**
    * Handles dragging collision.
    * @param {MouseEvent|Touch} event - The drag event.
    */
   checkDragCollision(event) {
-    const { collidedElement: collided } = this.execCollision(event);
-    if (collided && collided !== this.#lastCollision) {
-      if (navigator.vibrate && Array.isArray(this.#vibration.collide)) {
-        navigator.vibrate(this.#vibration.collide);
-      }
-      this.#lastCollision = collided;
-      if (this.#lastCollision) this.#lastCollision.classList.add(this.#classDragCollision);
-    } else if (!collided) {
-      if (this.#lastCollision) this.#lastCollision.classList.remove(this.#classDragCollision);
-      this.#lastCollision = null;
+    const { collidedElements } = this.execCollision(event);
+    const first = collidedElements[0] || null;
+
+    // Removes old marking if necessary
+    if (this.#lastCollision && !collidedElements.includes(this.#lastCollision)) {
+      this.#removeCollision();
     }
+
+    // Adds Marking for All Colluded
+    collidedElements.forEach((el) => this.#addCollision(el));
+
+    // Removes markings from who no longer collided
+    this.#collidables.forEach((el) => {
+      if (!collidedElements.includes(el)) {
+        el.classList.remove(this.#classDragCollision);
+      }
+    });
+
+    if (
+      navigator.vibrate &&
+      Array.isArray(this.#vibration.collide) &&
+      collidedElements.length > 0
+    ) {
+      navigator.vibrate(this.#vibration.collide);
+    }
+
+    this.#lastCollision = first;
   }
 
   /**
@@ -397,37 +446,48 @@ class TinyDragger {
   /**
    * Handles the collision of a drag.
    * @param {MouseEvent|Touch} event - The release event.
-   * @returns {{ inJail: boolean; collidedElement: HTMLElement|null }}
+   * @returns {{ inJail: boolean; collidedElements: (HTMLElement | null)[] }}
    */
   execCollision(event) {
-    if (this.#destroyed || !this.#dragProxy) return { inJail: false, collidedElement: null };
+    if (this.#destroyed || !this.#dragProxy) return { inJail: false, collidedElements: [] };
 
-    let collidedElement;
+    let collidedElements = [];
     let inJail = true;
     const jailRect = this.#jail?.getBoundingClientRect();
+
     if (this.#collisionByMouse) {
       const x = event.clientX;
       const y = event.clientY;
+
       if (this.#dropInJailOnly && this.#jail && jailRect) {
         inJail =
           x >= jailRect.left && x <= jailRect.right && y >= jailRect.top && y <= jailRect.bottom;
       }
 
-      collidedElement = inJail ? this.getCollidedElement(x, y) : null;
+      collidedElements = inJail
+        ? this.#multiCollision
+          ? this.getAllCollidedElements(x, y)
+          : [this.getCollidedElement(x, y)].filter(Boolean)
+        : [];
     } else {
-      const targetRect = this.#dragProxy.getBoundingClientRect();
+      const rect = this.#dragProxy.getBoundingClientRect();
+
       if (this.#dropInJailOnly && this.#jail && jailRect) {
         inJail =
-          targetRect.left >= jailRect.left &&
-          targetRect.right <= jailRect.right &&
-          targetRect.top >= jailRect.top &&
-          targetRect.bottom <= jailRect.bottom;
+          rect.left >= jailRect.left &&
+          rect.right <= jailRect.right &&
+          rect.top >= jailRect.top &&
+          rect.bottom <= jailRect.bottom;
       }
 
-      collidedElement = inJail ? this.getCollidedElementByRect(targetRect) : null;
+      collidedElements = inJail
+        ? this.#multiCollision
+          ? this.getAllCollidedElementsByRect(rect)
+          : [this.getCollidedElementByRect(rect)].filter(Boolean)
+        : [];
     }
 
-    return { inJail, collidedElement };
+    return { inJail, collidedElements };
   }
 
   /**
@@ -450,7 +510,7 @@ class TinyDragger {
 
     document.removeEventListener('touchmove', this._onTouchMove);
     document.removeEventListener('touchend', this._onTouchEnd);
-    const { collidedElement } = this.execCollision(event);
+    const { collidedElements } = this.execCollision(event);
 
     if (navigator.vibrate && Array.isArray(this.#vibration.end)) {
       navigator.vibrate(this.#vibration.end);
@@ -463,7 +523,7 @@ class TinyDragger {
       this.#dragProxy = null;
     }
 
-    if (this.#lastCollision) this.#lastCollision.classList.remove(this.#classDragCollision);
+    if (this.#lastCollision) this.#removeCollision();
     this.#lastCollision = null;
 
     this.#target.classList.remove(this.#dragHiddenClass);
@@ -474,11 +534,48 @@ class TinyDragger {
 
     const dropEvent = new CustomEvent('drop', {
       detail: {
-        target: collidedElement,
+        targets: collidedElements,
+        first: collidedElements[0] || null,
       },
     });
-
     this.#target.dispatchEvent(dropEvent);
+  }
+
+  /**
+   * Checks if the provided element intersects with the given bounding rectangle.
+   *
+   * @param {HTMLElement} el - The element to test for collision.
+   * @param {DOMRect} rect - The bounding rectangle to check against.
+   * @returns {boolean} True if the element intersects with the rectangle.
+   */
+  #getCollidedElementByRect(el, rect) {
+    const elRect = el.getBoundingClientRect();
+    return !(
+      rect.right < elRect.left ||
+      rect.left > elRect.right ||
+      rect.bottom < elRect.top ||
+      rect.top > elRect.bottom
+    );
+  }
+
+  /**
+   * Returns all elements currently colliding with the given rectangle.
+   *
+   * @param {DOMRect} rect - Bounding rectangle of the dragged proxy.
+   * @returns {HTMLElement[]} A list of all collided elements.
+   * @throws {Error} If the input is not a valid DOMRect with numeric bounds.
+   */
+  getAllCollidedElementsByRect(rect) {
+    this.#checkDestroy();
+    if (
+      !(rect instanceof DOMRect) ||
+      typeof rect.left !== 'number' ||
+      typeof rect.right !== 'number' ||
+      typeof rect.top !== 'number' ||
+      typeof rect.bottom !== 'number'
+    )
+      throw new Error('getCollidedElementByRect expects a valid DOMRect object.');
+    return this.#collidables.filter((el) => this.#getCollidedElementByRect(el, rect));
   }
 
   /**
@@ -497,18 +594,32 @@ class TinyDragger {
       typeof rect.bottom !== 'number'
     )
       throw new Error('getCollidedElementByRect expects a valid DOMRect object.');
+    return this.#collidables.find((el) => this.#getCollidedElementByRect(el, rect)) || null;
+  }
 
-    return (
-      this.#collidables.find((el) => {
-        const elRect = el.getBoundingClientRect();
-        return !(
-          rect.right < elRect.left ||
-          rect.left > elRect.right ||
-          rect.bottom < elRect.top ||
-          rect.top > elRect.bottom
-        );
-      }) || null
-    );
+  /**
+   * Checks whether a given (x, y) coordinate is inside the bounding rectangle of an element.
+   *
+   * @param {HTMLElement} el - The element to test for collision.
+   * @param {number} x - Horizontal screen coordinate.
+   * @param {number} y - Vertical screen coordinate.
+   * @returns {boolean} True if the point is within the element's bounds.
+   */
+  #getCollidedElement(el, x, y) {
+    const rect = el.getBoundingClientRect();
+    return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+  }
+
+  /**
+   * @param {number} x - Horizontal screen coordinate.
+   * @param {number} y - Vertical screen coordinate.
+   * @returns {HTMLElement[]} The collided element or null.
+   */
+  getAllCollidedElements(x, y) {
+    this.#checkDestroy();
+    if (typeof x !== 'number' || typeof y !== 'number')
+      throw new Error('getCollidedElement expects numeric x and y coordinates.');
+    return this.#collidables.filter((el) => this.#getCollidedElement(el, x, y));
   }
 
   /**
@@ -521,13 +632,7 @@ class TinyDragger {
     this.#checkDestroy();
     if (typeof x !== 'number' || typeof y !== 'number')
       throw new Error('getCollidedElement expects numeric x and y coordinates.');
-
-    return (
-      this.#collidables.find((el) => {
-        const rect = el.getBoundingClientRect();
-        return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
-      }) || null
-    );
+    return this.#collidables.find((el) => this.#getCollidedElement(el, x, y)) || null;
   }
 
   /**
@@ -777,7 +882,7 @@ class TinyDragger {
     document.removeEventListener('touchmove', this._onTouchMove);
     document.removeEventListener('touchend', this._onTouchEnd);
 
-    if (this.#lastCollision) this.#lastCollision.classList.remove(this.#classDragCollision);
+    if (this.#lastCollision) this.#removeCollision();
     if (this.#dragProxy) {
       this.#dragProxy.remove();
       this.#dragProxy = null;
