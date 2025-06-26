@@ -1,0 +1,17 @@
+.dragging {
+  opacity: 0.7;
+  outline: 2px dashed #3aa;
+  z-index: 9999;
+}
+
+body.drag-active {
+  cursor: grabbing !important;
+}
+
+.jail-drag-active {
+  outline: 2px dashed #f90;
+}
+
+.drag-hidden {
+  opacity: 0 !important;
+}

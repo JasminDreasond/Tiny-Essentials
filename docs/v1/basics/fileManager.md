@@ -11,12 +11,14 @@ A powerful and flexible utility toolkit for managing files and directories in No
 📖 Reads and parses a JSON file.
 
 * Throws an error if the file doesn't exist or contains invalid JSON.
+* Async version: `readJsonFileAsync`.
 
 ### `writeJsonFile(filePath: string, data: any, spaces: number = 2): void`
 
 💾 Saves a JavaScript object as a formatted JSON file.
 
 * Automatically creates the directory if it doesn't exist.
+* Async version: `writeJsonFileAsync`.
 
 ---
 
@@ -54,9 +56,13 @@ A powerful and flexible utility toolkit for managing files and directories in No
 
 📋 Copies a file from `src` to `dest`, ensuring the destination directory exists.
 
+* Async version: `ensureCopyFileAsync`.
+
 ### `tryDeleteFile(filePath: string): boolean`
 
 🗑️ Tries to delete a file if it exists. Returns `true` if deleted.
+
+* Async version: `tryDeleteFileAsync`.
 
 ---
 
@@ -65,6 +71,8 @@ A powerful and flexible utility toolkit for managing files and directories in No
 ### `writeTextFile(filePath: string, content: string, ops?: fs.WriteFileOptions): void`
 
 ✍️ Writes text content to a file. Ensures the directory exists before writing.
+
+* Async version: `writeTextFileAsync`.
 
 ---
 
@@ -98,6 +106,8 @@ A powerful and flexible utility toolkit for managing files and directories in No
 
 🛟 Creates a timestamped `.bak` copy of the file.
 
+* Async version: `backupFileAsync`.
+
 ### `getLatestBackupPath(filePath: string, ext: string = 'bak'): void`
 
 📦 Returns the **most recent backup file path** for a given file, without modifying anything. Useful for checking which backup would be restored.
@@ -105,6 +115,14 @@ A powerful and flexible utility toolkit for managing files and directories in No
 ### `restoreLatestBackup(filePath: string, ext: string = 'bak'): void`
 
 ♻️ Restores the most recent backup for the file.
+
+Output: `/home/yasmin/notes.txt.bak.20250625T153000`
+
+```
+<file name>.<ext>.<timestamp>
+```
+
+* Async version: `restoreLatestBackupAsync`.
 
 ---
 

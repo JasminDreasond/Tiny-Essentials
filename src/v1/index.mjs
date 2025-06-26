@@ -33,7 +33,16 @@ import TinyPromiseQueue from './libs/TinyPromiseQueue.mjs';
 import TinyRateLimiter from './libs/TinyRateLimiter.mjs';
 import TinyNotifyCenter from './libs/TinyNotifyCenter.mjs';
 import TinyToastNotify from './libs/TinyToastNotify.mjs';
-import { areElementsColliding, readJsonBlob, saveJsonFile, fetchJson } from './basics/html.mjs';
+import {
+  areHtmlElsColliding,
+  readJsonBlob,
+  saveJsonFile,
+  fetchJson,
+  getHtmlElBorders,
+  getHtmlElBordersWidth,
+  getHtmlElMargin,
+  getHtmlElPadding,
+} from './basics/html.mjs';
 import TinyDragDropDetector from './libs/TinyDragDropDetector.mjs';
 import {
   readJsonFile,
@@ -68,6 +77,10 @@ export {
   ColorSafeStringify,
   TinyPromiseQueue,
   TinyLevelUp,
+  getHtmlElBorders,
+  getHtmlElBordersWidth,
+  getHtmlElMargin,
+  getHtmlElPadding,
   getLatestBackupPath,
   fetchJson,
   readJsonBlob,
@@ -100,7 +113,7 @@ export {
   isFullScreenMode,
   onFullScreenChange,
   offFullScreenChange,
-  areElementsColliding,
+  areHtmlElsColliding,
   isJsonObject,
   arraySortPositions,
   formatBytes,

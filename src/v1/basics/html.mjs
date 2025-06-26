@@ -7,7 +7,7 @@ import { isJsonObject } from './objFilter.mjs';
  * @param {Element} elem2 - Second DOM element.
  * @returns {boolean} - Returns true if the elements are colliding.
  */
-export function areElementsColliding(elem1, elem2) {
+export function areHtmlElsColliding(elem1, elem2) {
   const rect1 = elem1.getBoundingClientRect();
   const rect2 = elem2.getBoundingClientRect();
 
@@ -165,3 +165,87 @@ export async function fetchJson(
     `Failed to fetch JSON from "${url}"${lastError ? `: ${lastError.message}` : '.'}`,
   );
 }
+
+/**
+ * @typedef {Object} HtmlElBoxSides
+ * @property {number} x - Total horizontal size (left + right)
+ * @property {number} y - Total vertical size (top + bottom)
+ * @property {number} left
+ * @property {number} right
+ * @property {number} top
+ * @property {number} bottom
+ */
+
+/**
+ * Returns the total border width and individual sides from `border{Side}Width` CSS properties.
+ *
+ * @param {Element} el - The target DOM element.
+ * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) border widths, and each side individually.
+ */
+export const getHtmlElBordersWidth = (el) => {
+  const styles = getComputedStyle(el);
+  const left = parseFloat(styles.borderLeftWidth) || 0;
+  const right = parseFloat(styles.borderRightWidth) || 0;
+  const top = parseFloat(styles.borderTopWidth) || 0;
+  const bottom = parseFloat(styles.borderBottomWidth) || 0;
+  const x = left + right;
+  const y = top + bottom;
+
+  return { x, y, left, right, top, bottom };
+};
+
+/**
+ * Returns the total border size and individual sides from `border{Side}` CSS properties.
+ *
+ * @param {Element} el - The target DOM element.
+ * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) border sizes, and each side individually.
+ */
+export const getHtmlElBorders = (el) => {
+  const styles = getComputedStyle(el);
+  const left = parseFloat(styles.borderLeft) || 0;
+  const right = parseFloat(styles.borderRight) || 0;
+  const top = parseFloat(styles.borderTop) || 0;
+  const bottom = parseFloat(styles.borderBottom) || 0;
+  const x = left + right;
+  const y = top + bottom;
+
+  return { x, y, left, right, top, bottom };
+};
+
+/**
+ * Returns the total margin and individual sides from `margin{Side}` CSS properties.
+ *
+ * @param {Element} el - The target DOM element.
+ * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) margins, and each side individually.
+ */
+export const getHtmlElMargin = (el) => {
+  const styles = getComputedStyle(el);
+  const left = parseFloat(styles.marginLeft) || 0;
+  const right = parseFloat(styles.marginRight) || 0;
+  const top = parseFloat(styles.marginTop) || 0;
+  const bottom = parseFloat(styles.marginBottom) || 0;
+
+  const x = left + right;
+  const y = top + bottom;
+
+  return { x, y, left, right, top, bottom };
+};
+
+/**
+ * Returns the total padding and individual sides from `padding{Side}` CSS properties.
+ *
+ * @param {Element} el - The target DOM element.
+ * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) paddings, and each side individually.
+ */
+export const getHtmlElPadding = (el) => {
+  const styles = getComputedStyle(el);
+  const left = parseFloat(styles.paddingLeft) || 0;
+  const right = parseFloat(styles.paddingRight) || 0;
+  const top = parseFloat(styles.paddingTop) || 0;
+  const bottom = parseFloat(styles.paddingBottom) || 0;
+
+  const x = left + right;
+  const y = top + bottom;
+
+  return { x, y, left, right, top, bottom };
+};

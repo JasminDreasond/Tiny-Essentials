@@ -30,6 +30,31 @@ export function writeJsonFile(filePath, data, spaces = 2) {
   fs.writeFileSync(filePath, json, 'utf-8');
 }
 
+/**
+ * Reads and parses a JSON file.
+ * Throws an error if the file content is not valid JSON.
+ * @param {string} filePath
+ * @returns {Promise<any>}
+ */
+export async function readJsonFileAsync(filePath) {
+  if (!fs.existsSync(filePath)) throw new Error(`File not found: ${filePath}`);
+  const content = await fs.promises.readFile(filePath, 'utf-8');
+  return JSON.parse(content);
+}
+
+/**
+ * Saves an object as JSON to a file.
+ * Automatically creates the directory if it does not exist.
+ * @param {string} filePath
+ * @param {any} data
+ * @param {number} [spaces=2]
+ * @returns {Promise<void>}
+ */
+export function writeJsonFileAsync(filePath, data, spaces = 2) {
+  const json = JSON.stringify(data, null, spaces);
+  return fs.promises.writeFile(filePath, json, 'utf-8');
+}
+
 /*========================*
  * Directory Management
  *========================*/
@@ -121,6 +146,31 @@ export function tryDeleteFile(filePath) {
   return false;
 }
 
+/**
+ * Copies a file to a destination.
+ * @param {string} src
+ * @param {string} dest
+ * @param {number} [mode]
+ * @returns {Promise<void>}
+ */
+export function ensureCopyFileAsync(src, dest, mode) {
+  ensureDirectory(path.dirname(dest));
+  return fs.promises.copyFile(src, dest, mode);
+}
+
+/**
+ * Deletes a file (If the file exists).
+ * @param {string} filePath
+ * @returns {Promise<boolean>}
+ */
+export async function tryDeleteFileAsync(filePath) {
+  if (fileExists(filePath)) {
+    await fs.promises.unlink(filePath);
+    return true;
+  }
+  return false;
+}
+
 /*========================*
  * Text Operations
  *========================*/
@@ -135,6 +185,19 @@ export function writeTextFile(filePath, content, ops = 'utf-8') {
   const dir = path.dirname(filePath);
   ensureDirectory(dir);
   fs.writeFileSync(filePath, content, ops);
+}
+
+/**
+ * Writes text to a file (Ensures that the directory exists, creating it recursively if needed).
+ * @param {string} filePath
+ * @param {string} content
+ * @param {fs.WriteFileOptions} [ops='utf-8']
+ * @returns {Promise<void>}
+ */
+export function writeTextFileAsync(filePath, content, ops = 'utf-8') {
+  const dir = path.dirname(filePath);
+  ensureDirectory(dir);
+  return fs.promises.writeFile(filePath, content, ops);
 }
 
 /*========================*
@@ -268,6 +331,30 @@ export function getLatestBackupPath(filePath, ext = 'bak') {
 export function restoreLatestBackup(filePath, ext = 'bak') {
   const latestBackup = getLatestBackupPath(filePath, ext);
   ensureCopyFile(latestBackup, filePath);
+}
+
+/**
+ * Restores the most recent backup of a file.
+ * @param {string} filePath
+ * @param {string} [ext='bak']
+ * @returns {Promise<void>}
+ */
+export function restoreLatestBackupAsync(filePath, ext = 'bak') {
+  const latestBackup = getLatestBackupPath(filePath, ext);
+  return ensureCopyFileAsync(latestBackup, filePath);
+}
+
+/**
+ * Creates a backup copy of a file with .bak timestamp suffix.
+ * @param {string} filePath
+ * @param {string} [ext='bak']
+ * @returns {Promise<void>}
+ */
+export async function backupFileAsync(filePath, ext = 'bak') {
+  if (!fileExists(filePath)) return;
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const backupPath = `${filePath}.${ext}.${timestamp}`;
+  return ensureCopyFileAsync(filePath, backupPath);
 }
 
 /*========================*

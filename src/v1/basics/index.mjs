@@ -2,7 +2,16 @@ import arraySortPositions from '../../legacy/libs/arraySortPositions.mjs';
 import asyncReplace from '../../legacy/libs/replaceAsync.mjs';
 import { shuffleArray } from './array.mjs';
 import { formatCustomTimer, formatDayTimer, formatTimer, getTimeDuration } from './clock.mjs';
-import { areElementsColliding, readJsonBlob, saveJsonFile, fetchJson } from './html.mjs';
+import {
+  areHtmlElsColliding,
+  readJsonBlob,
+  saveJsonFile,
+  fetchJson,
+  getHtmlElBorders,
+  getHtmlElBordersWidth,
+  getHtmlElMargin,
+  getHtmlElPadding,
+} from './html.mjs';
 import {
   countObj,
   extendObjType,
@@ -48,6 +57,10 @@ import {
 } from './fileManager.mjs';
 
 export {
+  getHtmlElBorders,
+  getHtmlElBordersWidth,
+  getHtmlElMargin,
+  getHtmlElPadding,
   getLatestBackupPath,
   fetchJson,
   readJsonBlob,
@@ -80,7 +93,7 @@ export {
   isFullScreenMode,
   onFullScreenChange,
   offFullScreenChange,
-  areElementsColliding,
+  areHtmlElsColliding,
   isJsonObject,
   arraySortPositions,
   formatBytes,

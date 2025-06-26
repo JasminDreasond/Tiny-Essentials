@@ -1,4 +1,4 @@
-## 🚀 `areElementsColliding()`
+## 🚀 `areHtmlElsColliding()`
 
 Check if two DOM elements are **colliding on the screen**! Perfect for games, draggable elements, UI interactions, and more.
 
@@ -16,7 +16,7 @@ It compares the bounding rectangles of both elements:
 ## 🧠 Syntax
 
 ```javascript
-areElementsColliding(elem1, elem2);
+areHtmlElsColliding(elem1, elem2);
 ```
 
 ---
@@ -44,7 +44,7 @@ areElementsColliding(elem1, elem2);
 const box1 = document.getElementById('box1');
 const box2 = document.getElementById('box2');
 
-if (areElementsColliding(box1, box2)) {
+if (areHtmlElsColliding(box1, box2)) {
   console.log('🎯 Collision detected!');
 } else {
   console.log('❌ No collision.');
@@ -172,3 +172,72 @@ const data = await fetchJson('https://api.example.com/data', {
   signal: controller.signal, // optional
 });
 ```
+
+---
+
+### 📦 `HtmlElBoxSides` Type
+
+```ts
+type HtmlElBoxSides = {
+  x: number;      // Total horizontal size (left + right)
+  y: number;      // Total vertical size (top + bottom)
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+}
+```
+
+A common return format used to describe the box model dimensions (borders, padding, margin) of an HTML element.
+
+---
+
+### 🔲 `getHtmlElBordersWidth(el)`
+
+📏 Returns the total **border width** of an element using `border{Side}Width` values from computed styles.
+
+```js
+getHtmlElBordersWidth(el: Element): HtmlElBoxSides
+```
+
+* `el`: The target DOM element.
+* **Returns**: An object containing total horizontal/vertical border widths, and each side individually.
+
+---
+
+### 🔳 `getHtmlElBorders(el)`
+
+📐 Returns the total **border size** of an element using `border{Side}` shorthand values from computed styles.
+
+```js
+getHtmlElBorders(el: Element): HtmlElBoxSides
+```
+
+* `el`: The target DOM element.
+* **Returns**: An object with total horizontal/vertical border sizes and all four sides.
+
+---
+
+### ➖ `getHtmlElMargin(el)`
+
+📏 Returns the total **margin** of an element using `margin{Side}` from computed styles.
+
+```js
+getHtmlElMargin(el: Element): HtmlElBoxSides
+```
+
+* `el`: The target DOM element.
+* **Returns**: An object containing margin values for each side and totals for horizontal (`x`) and vertical (`y`).
+
+---
+
+### ➕ `getHtmlElPadding(el)`
+
+🧩 Returns the total **padding** of an element using `padding{Side}` from computed styles.
+
+```js
+getHtmlElPadding(el: Element): HtmlElBoxSides
+```
+
+* `el`: The target DOM element.
+* **Returns**: Padding values for all sides and summed horizontal (`x`) and vertical (`y`) values.
