@@ -24,6 +24,7 @@ class TinyDragger {
   #revertOnDrop = false;
   #dragging = false;
   #collisionByMouse = false;
+  #dropInJailOnly = false;
 
   /** @type {HTMLElement|null} */
   #lastCollision = null;
@@ -60,6 +61,7 @@ class TinyDragger {
    * @param {string} [options.classJailDragging='jail-drag-active'] - CSS class applied to jail element during drag.
    * @param {string} [options.classJailDragDisabled='jail-drag-disabled'] - CSS class applied to jail element disabled.
    * @param {boolean} [options.lockInsideJail=false] - Restrict movement within the jail container.
+   * @param {boolean} [options.dropInJailOnly=false] - Restrict drop within the jail container.
    * @param {VibrationPatterns|false} [options.vibration=false] - Vibration feedback configuration.
    * @param {boolean} [options.revertOnDrop=false] - Whether to return to original position on drop.
    * @param {string} [options.classHidden='drag-hidden'] - CSS class to hide original element during dragging.
@@ -88,6 +90,7 @@ class TinyDragger {
       this.#collisionByMouse = options.collisionByMouse;
     if (typeof options.revertOnDrop === 'boolean') this.#revertOnDrop = options.revertOnDrop;
     if (typeof options.lockInsideJail === 'boolean') this.#lockInsideJail = options.lockInsideJail;
+    if (typeof options.dropInJailOnly === 'boolean') this.#dropInJailOnly = options.dropInJailOnly;
 
     this._onMouseDown = this.#startDrag.bind(this);
     this._onMouseMove = this.#drag.bind(this);
@@ -309,7 +312,7 @@ class TinyDragger {
     if (this.#collisionByMouse) {
       const x = event.clientX;
       const y = event.clientY;
-      if (this.#jail && jailRect) {
+      if (this.#dropInJailOnly && this.#jail && jailRect) {
         inJail =
           x >= jailRect.left && x <= jailRect.right && y >= jailRect.top && y <= jailRect.bottom;
       }
@@ -317,7 +320,7 @@ class TinyDragger {
       collidedElement = inJail ? this.getCollidedElement(x, y) : null;
     } else {
       const targetRect = this.#dragProxy.getBoundingClientRect();
-      if (this.#jail && jailRect) {
+      if (this.#dropInJailOnly && this.#jail && jailRect) {
         inJail =
           targetRect.left >= jailRect.left &&
           targetRect.right <= jailRect.right &&
