@@ -54,9 +54,20 @@ import {
   renameFileNormalizeCase,
   renameFilePadNumbers,
   getLatestBackupPath,
+  listFilesAsync,
+  listDirsAsync,
+  clearDirectoryAsync,
+  fileSizeAsync,
+  dirSizeAsync,
+  isDirEmptyAsync,
 } from './fileManager.mjs';
 
 export {
+  isDirEmptyAsync,
+  fileSizeAsync,
+  dirSizeAsync,
+  listFilesAsync,
+  listDirsAsync,
   getHtmlElBorders,
   getHtmlElBordersWidth,
   getHtmlElMargin,
@@ -69,6 +80,7 @@ export {
   writeJsonFile,
   ensureDirectory,
   clearDirectory,
+  clearDirectoryAsync,
   fileExists,
   dirExists,
   isDirEmpty,

@@ -11,7 +11,7 @@ import {
   statSync,
   renameSync,
 } from 'fs';
-import { readFile, writeFile, copyFile, unlink } from 'fs/promises';
+import { readFile, writeFile, copyFile, unlink, readdir, lstat, rm, stat } from 'fs/promises';
 import { join, dirname, basename, extname } from 'path';
 import { toTitleCase } from './text.mjs';
 
@@ -91,13 +91,50 @@ export function clearDirectory(dirPath) {
   const files = readdirSync(dirPath);
   for (const file of files) {
     const fullPath = join(dirPath, file);
-    const stat = lstatSync(fullPath);
-    if (stat.isDirectory()) {
+    const statData = lstatSync(fullPath);
+    if (statData.isDirectory()) {
       rmSync(fullPath, { recursive: true, force: true });
     } else {
       unlinkSync(fullPath);
     }
   }
+}
+
+/**
+ * Clears all contents inside a directory but keeps the directory.
+ * @param {string} dirPath
+ */
+export async function clearDirectoryAsync(dirPath) {
+  if (!existsSync(dirPath)) return;
+  const files = await readdir(dirPath);
+
+  /** @type {Record<string, import('fs').Stats>} */
+  const dataList = {};
+  const promises = [];
+
+  for (const file of files) {
+    const fullPath = join(dirPath, file);
+    const lsResult = lstat(fullPath);
+
+    lsResult.then((statData) => {
+      dataList[fullPath] = statData;
+      return statData;
+    });
+    promises.push(lsResult);
+  }
+
+  await Promise.all(promises);
+  const promises2 = [];
+  for (const fullPath in dataList) {
+    const statData = dataList[fullPath];
+    if (statData.isDirectory()) {
+      promises2.push(rm(fullPath, { recursive: true, force: true }));
+    } else {
+      promises2.push(unlink(fullPath));
+    }
+  }
+
+  await Promise.all(promises2);
 }
 
 /*========================*
@@ -128,7 +165,17 @@ export function dirExists(dirPath) {
  * @returns {boolean}
  */
 export function isDirEmpty(dirPath) {
-  return existsSync(dirPath) && readdirSync(dirPath).length === 0;
+  return readdirSync(dirPath).length === 0;
+}
+
+/**
+ * Checks whether a directory is empty.
+ * @param {string} dirPath
+ * @returns {Promise<boolean>}
+ */
+export async function isDirEmptyAsync(dirPath) {
+  const data = await readdir(dirPath);
+  return data.length === 0;
 }
 
 /*========================*
@@ -231,8 +278,8 @@ export function listFiles(dirPath, recursive = false) {
   const entries = readdirSync(dirPath);
   for (const entry of entries) {
     const fullPath = join(dirPath, entry);
-    const stat = lstatSync(fullPath);
-    if (stat.isDirectory()) {
+    const statData = lstatSync(fullPath);
+    if (statData.isDirectory()) {
       results.dirs.push(fullPath);
       if (recursive) {
         const results2 = listFiles(fullPath, true);
@@ -260,8 +307,62 @@ export function listDirs(dirPath, recursive = false) {
   const entries = readdirSync(dirPath);
   for (const entry of entries) {
     const fullPath = join(dirPath, entry);
-    const stat = lstatSync(fullPath);
-    if (stat.isDirectory()) {
+    const statData = lstatSync(fullPath);
+    if (statData.isDirectory()) {
+      results.push(fullPath);
+      if (recursive) {
+        results.push(...listDirs(fullPath, true));
+      }
+    }
+  }
+  return results;
+}
+
+/**
+ * Lists all files and dirs in a directory (optionally recursive).
+ * @param {string} dirPath
+ * @param {boolean} [recursive=false]
+ * @returns {Promise<{ files: string[]; dirs: string[] }>}
+ */
+export async function listFilesAsync(dirPath, recursive = false) {
+  /** @type {{ files: string[]; dirs: string[] }} */
+  const results = { files: [], dirs: [] };
+  if (!dirExists(dirPath)) return results;
+
+  const entries = await readdir(dirPath);
+  for (const entry of entries) {
+    const fullPath = join(dirPath, entry);
+    const statData = await lstat(fullPath);
+    if (statData.isDirectory()) {
+      results.dirs.push(fullPath);
+      if (recursive) {
+        const results2 = listFiles(fullPath, true);
+        results.files.push(...results2.files);
+        results.dirs.push(...results2.dirs);
+      }
+    } else {
+      results.files.push(fullPath);
+    }
+  }
+  return results;
+}
+
+/**
+ * Lists all directories in a directory (optionally recursive).
+ * @param {string} dirPath
+ * @param {boolean} [recursive=false]
+ * @returns {Promise<string[]>}
+ */
+export async function listDirsAsync(dirPath, recursive = false) {
+  /** @type {string[]} */
+  const results = [];
+  if (!dirExists(dirPath)) return results;
+
+  const entries = await readdir(dirPath);
+  for (const entry of entries) {
+    const fullPath = join(dirPath, entry);
+    const statData = await lstat(fullPath);
+    if (statData.isDirectory()) {
       results.push(fullPath);
       if (recursive) {
         results.push(...listDirs(fullPath, true));
@@ -297,6 +398,38 @@ export function dirSize(dirPath) {
   for (const file of files) {
     total += fileSize(file);
   }
+  return total;
+}
+
+/**
+ * Returns the size of a file in bytes.
+ * @param {string} filePath
+ * @returns {Promise<number>}
+ */
+export async function fileSizeAsync(filePath) {
+  if (!fileExists(filePath)) return 0;
+  const stats = await stat(filePath);
+  return stats.size;
+}
+
+/**
+ * Returns the total size of a directory in bytes.
+ * @param {string} dirPath
+ * @returns {Promise<number>}
+ */
+export async function dirSizeAsync(dirPath) {
+  let total = 0;
+  const { files } = await listFilesAsync(dirPath, true);
+  const promises = [];
+  for (const file of files) {
+    const result = fileSizeAsync(file);
+    result.then((item) => {
+      total += item;
+      return item;
+    });
+    promises.push(result);
+  }
+  await Promise.all(promises);
   return total;
 }
 

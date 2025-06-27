@@ -6,7 +6,6 @@ import {
   readJsonFile,
   writeJsonFile,
   ensureDirectory,
-  clearDirectory,
   fileExists,
   dirExists,
   isDirEmpty,
@@ -24,6 +23,7 @@ import {
   renameFileNormalizeCase,
   renameFilePadNumbers,
   getLatestBackupPath,
+  clearDirectoryAsync,
 } from '../../dist/v1/index.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -57,8 +57,13 @@ const testFolderManager = async () => {
 
   // === Setup
   section('Preparing Test Environment');
-  console.log(`${BLUE}🔧 Creating test root directory:${RESET}\n  → ${CYAN}${testRoot}${RESET}`);
-  clearDirectory(testRoot);
+  if (dirExists(testRoot)) {
+    console.log(`${BLUE}🧹 Cleaning test root directory:${RESET}\n  → ${CYAN}${testRoot}${RESET}`);
+    await clearDirectoryAsync(testRoot);
+    await new Promise((resolve) => setTimeout(() => resolve(), 1000));
+  } else
+    console.log(`${BLUE}🔧 Creating test root directory:${RESET}\n  → ${CYAN}${testRoot}${RESET}`);
+
   ensureDirectory(testRoot);
   ensureDirectory(normalizeFolder);
   ensureDirectory(paddingFolder);

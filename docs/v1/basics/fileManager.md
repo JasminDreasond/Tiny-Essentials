@@ -32,6 +32,8 @@ A powerful and flexible utility toolkit for managing files and directories in No
 
 🧹 Deletes all contents inside a directory while keeping the directory itself.
 
+* Async version: `clearDirectoryAsync`.
+
 ---
 
 ## 🧪 File Checks
@@ -47,6 +49,8 @@ A powerful and flexible utility toolkit for managing files and directories in No
 ### `isDirEmpty(dirPath: string): boolean`
 
 📭 Checks if a directory is empty.
+
+* Async version: `isDirEmptyAsync`.
 
 ---
 
@@ -82,9 +86,13 @@ A powerful and flexible utility toolkit for managing files and directories in No
 
 📃 Lists all files and dirs in a directory. Can be recursive.
 
+* Async version: `listFilesAsync`.
+
 ### `listDirs(dirPath: string, recursive?: boolean): string[]`
 
 📁 Lists all directories in a directory. Can be recursive.
+
+* Async version: `listDirsAsync`.
 
 ---
 
@@ -94,9 +102,13 @@ A powerful and flexible utility toolkit for managing files and directories in No
 
 ⚖️ Gets the size of a single file in bytes.
 
+* Async version: `fileSizeAsync`.
+
 ### `dirSize(dirPath: string): number`
 
 📦 Gets the total size of all files inside a directory (recursive).
+
+* Async version: `dirSizeAsync`.
 
 ---
 
