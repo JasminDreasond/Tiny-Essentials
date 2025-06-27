@@ -1,4 +1,3 @@
-import * as TinyEssentials from '../dist/v1/index.mjs';
 import testFolderManager from './fileManager/index.mjs';
 import testColorSafeStringify from './libs/ColorSafeStringify.mjs';
 import testLevelUp from './libs/TinyLevelUp.mjs';

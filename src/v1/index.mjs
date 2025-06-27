@@ -44,14 +44,12 @@ import {
   getHtmlElPadding,
 } from './basics/html.mjs';
 import TinyDragDropDetector from './libs/TinyDragDropDetector.mjs';
+
 import {
-  listFilesAsync,
-  listDirsAsync,
   readJsonFile,
   writeJsonFile,
   ensureDirectory,
   clearDirectory,
-  clearDirectoryAsync,
   fileExists,
   dirExists,
   isDirEmpty,
@@ -62,8 +60,6 @@ import {
   listDirs,
   fileSize,
   dirSize,
-  fileSizeAsync,
-  dirSizeAsync,
   backupFile,
   restoreLatestBackup,
   renameFileBatch,
@@ -72,8 +68,17 @@ import {
   renameFileNormalizeCase,
   renameFilePadNumbers,
   getLatestBackupPath,
+} from './fileManager/normalFuncs.mjs';
+
+import {
+  listFilesAsync,
+  listDirsAsync,
+  clearDirectoryAsync,
   isDirEmptyAsync,
-} from './fileManager/normal.mjs';
+  fileSizeAsync,
+  dirSizeAsync,
+} from './fileManager/asyncFuncs.mjs';
+
 import TinyDragger from './libs/TinyDragger.mjs';
 
 export {

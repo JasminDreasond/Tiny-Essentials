@@ -21,13 +21,16 @@ import {
   renameFileNormalizeCase,
   renameFilePadNumbers,
   getLatestBackupPath,
+} from './normalFuncs.mjs';
+
+import {
   listFilesAsync,
   listDirsAsync,
   clearDirectoryAsync,
   fileSizeAsync,
   dirSizeAsync,
   isDirEmptyAsync,
-} from './normal.mjs';
+} from './asyncFuncs.mjs';
 
 export {
   isDirEmptyAsync,
