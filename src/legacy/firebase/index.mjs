@@ -1,7 +1,7 @@
 // @ts-nocheck
 
-import path from 'path';
-import fs from 'fs';
+import { join } from 'path';
+import { existsSync, lstatSync, readFileSync } from 'fs';
 
 import AuthSystem from './cookieSession.mjs';
 import domainRedirect from './domainRedirect.mjs';
@@ -233,12 +233,12 @@ firebaseObject.start = function (admin, item, data) {
       if (typeof item.appID === 'string') {
         // Key File
         let keyFile = null;
-        if (item.keysFolder) keyFile = path.join(item.keysFolder, item.appID + '.json');
+        if (item.keysFolder) keyFile = join(item.keysFolder, item.appID + '.json');
 
         // Exist File
-        if (keyFile && fs.existsSync(keyFile) && fs.lstatSync(keyFile).isFile()) {
+        if (keyFile && existsSync(keyFile) && lstatSync(keyFile).isFile()) {
           try {
-            const jsonData = fs.readFileSync(keyFile, 'utf8');
+            const jsonData = readFileSync(keyFile, 'utf8');
             const parsedKey = JSON.parse(jsonData);
             start_firebase(parsedKey);
           } catch (err) {

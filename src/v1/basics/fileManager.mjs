@@ -1,5 +1,18 @@
-import fs from 'fs';
-import path from 'path';
+import {
+  existsSync,
+  readFileSync,
+  writeFileSync,
+  mkdirSync,
+  readdirSync,
+  lstatSync,
+  rmSync,
+  unlinkSync,
+  copyFileSync,
+  statSync,
+  renameSync,
+} from 'fs';
+import { readFile, writeFile, copyFile, unlink } from 'fs/promises';
+import { join, dirname, basename, extname } from 'path';
 import { toTitleCase } from './text.mjs';
 
 /*========================*
@@ -13,8 +26,8 @@ import { toTitleCase } from './text.mjs';
  * @returns {any}
  */
 export function readJsonFile(filePath) {
-  if (!fs.existsSync(filePath)) throw new Error(`File not found: ${filePath}`);
-  const content = fs.readFileSync(filePath, 'utf-8');
+  if (!existsSync(filePath)) throw new Error(`File not found: ${filePath}`);
+  const content = readFileSync(filePath, 'utf-8');
   return JSON.parse(content);
 }
 
@@ -27,7 +40,7 @@ export function readJsonFile(filePath) {
  */
 export function writeJsonFile(filePath, data, spaces = 2) {
   const json = JSON.stringify(data, null, spaces);
-  fs.writeFileSync(filePath, json, 'utf-8');
+  writeFileSync(filePath, json, 'utf-8');
 }
 
 /**
@@ -37,8 +50,8 @@ export function writeJsonFile(filePath, data, spaces = 2) {
  * @returns {Promise<any>}
  */
 export async function readJsonFileAsync(filePath) {
-  if (!fs.existsSync(filePath)) throw new Error(`File not found: ${filePath}`);
-  const content = await fs.promises.readFile(filePath, 'utf-8');
+  if (!existsSync(filePath)) throw new Error(`File not found: ${filePath}`);
+  const content = await readFile(filePath, 'utf-8');
   return JSON.parse(content);
 }
 
@@ -52,7 +65,7 @@ export async function readJsonFileAsync(filePath) {
  */
 export function writeJsonFileAsync(filePath, data, spaces = 2) {
   const json = JSON.stringify(data, null, spaces);
-  return fs.promises.writeFile(filePath, json, 'utf-8');
+  return writeFile(filePath, json, 'utf-8');
 }
 
 /*========================*
@@ -64,8 +77,8 @@ export function writeJsonFileAsync(filePath, data, spaces = 2) {
  * @param {string} dirPath
  */
 export function ensureDirectory(dirPath) {
-  if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath, { recursive: true });
+  if (!existsSync(dirPath)) {
+    mkdirSync(dirPath, { recursive: true });
   }
 }
 
@@ -74,15 +87,15 @@ export function ensureDirectory(dirPath) {
  * @param {string} dirPath
  */
 export function clearDirectory(dirPath) {
-  if (!fs.existsSync(dirPath)) return;
-  const files = fs.readdirSync(dirPath);
+  if (!existsSync(dirPath)) return;
+  const files = readdirSync(dirPath);
   for (const file of files) {
-    const fullPath = path.join(dirPath, file);
-    const stat = fs.lstatSync(fullPath);
+    const fullPath = join(dirPath, file);
+    const stat = lstatSync(fullPath);
     if (stat.isDirectory()) {
-      fs.rmSync(fullPath, { recursive: true, force: true });
+      rmSync(fullPath, { recursive: true, force: true });
     } else {
-      fs.unlinkSync(fullPath);
+      unlinkSync(fullPath);
     }
   }
 }
@@ -97,7 +110,7 @@ export function clearDirectory(dirPath) {
  * @returns {boolean}
  */
 export function fileExists(filePath) {
-  return fs.existsSync(filePath) && fs.lstatSync(filePath).isFile();
+  return existsSync(filePath) && lstatSync(filePath).isFile();
 }
 
 /**
@@ -106,7 +119,7 @@ export function fileExists(filePath) {
  * @returns {boolean}
  */
 export function dirExists(dirPath) {
-  return fs.existsSync(dirPath) && fs.lstatSync(dirPath).isDirectory();
+  return existsSync(dirPath) && lstatSync(dirPath).isDirectory();
 }
 
 /**
@@ -115,7 +128,7 @@ export function dirExists(dirPath) {
  * @returns {boolean}
  */
 export function isDirEmpty(dirPath) {
-  return fs.existsSync(dirPath) && fs.readdirSync(dirPath).length === 0;
+  return existsSync(dirPath) && readdirSync(dirPath).length === 0;
 }
 
 /*========================*
@@ -129,8 +142,8 @@ export function isDirEmpty(dirPath) {
  * @param {number} [mode]
  */
 export function ensureCopyFile(src, dest, mode) {
-  ensureDirectory(path.dirname(dest));
-  fs.copyFileSync(src, dest, mode);
+  ensureDirectory(dirname(dest));
+  copyFileSync(src, dest, mode);
 }
 
 /**
@@ -140,7 +153,7 @@ export function ensureCopyFile(src, dest, mode) {
  */
 export function tryDeleteFile(filePath) {
   if (fileExists(filePath)) {
-    fs.unlinkSync(filePath);
+    unlinkSync(filePath);
     return true;
   }
   return false;
@@ -154,8 +167,8 @@ export function tryDeleteFile(filePath) {
  * @returns {Promise<void>}
  */
 export function ensureCopyFileAsync(src, dest, mode) {
-  ensureDirectory(path.dirname(dest));
-  return fs.promises.copyFile(src, dest, mode);
+  ensureDirectory(dirname(dest));
+  return copyFile(src, dest, mode);
 }
 
 /**
@@ -165,7 +178,7 @@ export function ensureCopyFileAsync(src, dest, mode) {
  */
 export async function tryDeleteFileAsync(filePath) {
   if (fileExists(filePath)) {
-    await fs.promises.unlink(filePath);
+    await unlink(filePath);
     return true;
   }
   return false;
@@ -179,25 +192,25 @@ export async function tryDeleteFileAsync(filePath) {
  * Writes text to a file (Ensures that the directory exists, creating it recursively if needed).
  * @param {string} filePath
  * @param {string} content
- * @param {fs.WriteFileOptions} [ops='utf-8']
+ * @param {import('fs').WriteFileOptions} [ops='utf-8']
  */
 export function writeTextFile(filePath, content, ops = 'utf-8') {
-  const dir = path.dirname(filePath);
+  const dir = dirname(filePath);
   ensureDirectory(dir);
-  fs.writeFileSync(filePath, content, ops);
+  writeFileSync(filePath, content, ops);
 }
 
 /**
  * Writes text to a file (Ensures that the directory exists, creating it recursively if needed).
  * @param {string} filePath
  * @param {string} content
- * @param {fs.WriteFileOptions} [ops='utf-8']
+ * @param {import('fs').WriteFileOptions} [ops='utf-8']
  * @returns {Promise<void>}
  */
 export function writeTextFileAsync(filePath, content, ops = 'utf-8') {
-  const dir = path.dirname(filePath);
+  const dir = dirname(filePath);
   ensureDirectory(dir);
-  return fs.promises.writeFile(filePath, content, ops);
+  return writeFile(filePath, content, ops);
 }
 
 /*========================*
@@ -215,10 +228,10 @@ export function listFiles(dirPath, recursive = false) {
   const results = { files: [], dirs: [] };
   if (!dirExists(dirPath)) return results;
 
-  const entries = fs.readdirSync(dirPath);
+  const entries = readdirSync(dirPath);
   for (const entry of entries) {
-    const fullPath = path.join(dirPath, entry);
-    const stat = fs.lstatSync(fullPath);
+    const fullPath = join(dirPath, entry);
+    const stat = lstatSync(fullPath);
     if (stat.isDirectory()) {
       results.dirs.push(fullPath);
       if (recursive) {
@@ -244,10 +257,10 @@ export function listDirs(dirPath, recursive = false) {
   const results = [];
   if (!dirExists(dirPath)) return results;
 
-  const entries = fs.readdirSync(dirPath);
+  const entries = readdirSync(dirPath);
   for (const entry of entries) {
-    const fullPath = path.join(dirPath, entry);
-    const stat = fs.lstatSync(fullPath);
+    const fullPath = join(dirPath, entry);
+    const stat = lstatSync(fullPath);
     if (stat.isDirectory()) {
       results.push(fullPath);
       if (recursive) {
@@ -269,7 +282,7 @@ export function listDirs(dirPath, recursive = false) {
  */
 export function fileSize(filePath) {
   if (!fileExists(filePath)) return 0;
-  const stats = fs.statSync(filePath);
+  const stats = statSync(filePath);
   return stats.size;
 }
 
@@ -310,17 +323,16 @@ export function backupFile(filePath, ext = 'bak') {
  * @returns {string} Full path to the most recent backup
  */
 export function getLatestBackupPath(filePath, ext = 'bak') {
-  const dir = path.dirname(filePath);
-  const baseName = path.basename(filePath);
-  const backups = fs
-    .readdirSync(dir)
+  const dir = dirname(filePath);
+  const baseName = basename(filePath);
+  const backups = readdirSync(dir)
     .filter((name) => name.startsWith(`${baseName}.${ext}.`))
     .sort()
     .reverse();
 
   if (backups.length === 0) throw new Error(`No backups found for ${filePath}`);
 
-  return path.join(dir, backups[0]);
+  return join(dir, backups[0]);
 }
 
 /**
@@ -375,7 +387,7 @@ export function renameFileBatch(dirPath, renameFn, extensions = []) {
   if (typeof dirPath !== 'string') throw new TypeError('dirPath must be a string');
   if (typeof renameFn !== 'function') throw new TypeError('renameFn must be a function');
   if (!Array.isArray(extensions)) throw new TypeError('extensions must be an array of strings');
-  if (!fs.existsSync(dirPath) || !fs.statSync(dirPath).isDirectory())
+  if (!existsSync(dirPath) || !statSync(dirPath).isDirectory())
     throw new Error(`Directory not found or invalid: ${dirPath}`);
   for (const ext of extensions) {
     if (typeof ext !== 'string' || !ext.startsWith('.'))
@@ -386,16 +398,16 @@ export function renameFileBatch(dirPath, renameFn, extensions = []) {
   let index = 0;
 
   for (const file of files) {
-    const ext = path.extname(file);
+    const ext = extname(file);
     if (extensions.length && !extensions.includes(ext)) continue;
 
-    const originalName = path.basename(file);
+    const originalName = basename(file);
     const newName = renameFn(originalName, index++);
-    const newPath = path.join(dirPath, newName);
+    const newPath = join(dirPath, newName);
 
     if (originalName === newName) continue;
 
-    fs.renameSync(file, newPath);
+    renameSync(file, newPath);
   }
 }
 
@@ -410,8 +422,8 @@ export function renameFileRegex(dirPath, pattern, replacement, extensions = []) 
   renameFileBatch(
     dirPath,
     (filename) => {
-      const ext = path.extname(filename);
-      const name = path.basename(filename, ext).replace(pattern, replacement);
+      const ext = extname(filename);
+      const name = basename(filename, ext).replace(pattern, replacement);
       return `${name}${ext}`;
     },
     extensions,
@@ -428,8 +440,8 @@ export function renameFileAddPrefixSuffix(dirPath, { prefix = '', suffix = '' },
   renameFileBatch(
     dirPath,
     (filename) => {
-      const ext = path.extname(filename);
-      const name = path.basename(filename, ext);
+      const ext = extname(filename);
+      const name = basename(filename, ext);
       return `${prefix}${name}${suffix}${ext}`;
     },
     extensions,
@@ -466,9 +478,9 @@ export function renameFileNormalizeCase(
         else return text;
       };
 
-      const rawExt = path.extname(filename);
+      const rawExt = extname(filename);
       const ext = normalizeExt ? changeToMode(rawExt) : rawExt;
-      const name = changeToMode(path.basename(filename, rawExt));
+      const name = changeToMode(basename(filename, rawExt));
       return `${name}${ext}`;
     },
     extensions,
