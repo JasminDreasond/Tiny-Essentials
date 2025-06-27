@@ -46,6 +46,10 @@
     "./basics": {
       "require": "./dist/v1/basics/index.cjs",
       "import": "./dist/v1/basics/index.mjs"
+    },
+    "./fileManager": {
+      "require": "./dist/v1/fileManager/index.cjs",
+      "import": "./dist/v1/fileManager/index.mjs"
     }
   },
   "repository": {

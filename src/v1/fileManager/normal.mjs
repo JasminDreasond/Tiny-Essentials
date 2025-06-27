@@ -13,7 +13,7 @@ import {
 } from 'fs';
 import { readFile, writeFile, copyFile, unlink, readdir, lstat, rm, stat } from 'fs/promises';
 import { join, dirname, basename, extname } from 'path';
-import { toTitleCase } from './text.mjs';
+import { toTitleCase } from '../basics/text.mjs';
 
 /*========================*
  * JSON Operations

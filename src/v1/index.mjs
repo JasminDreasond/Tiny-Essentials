@@ -73,7 +73,7 @@ import {
   renameFilePadNumbers,
   getLatestBackupPath,
   isDirEmptyAsync,
-} from './basics/fileManager.mjs';
+} from './fileManager/normal.mjs';
 import TinyDragger from './libs/TinyDragger.mjs';
 
 export {
