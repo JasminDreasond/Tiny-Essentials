@@ -80,8 +80,10 @@ import {
 } from './fileManager/asyncFuncs.mjs';
 
 import TinyDragger from './libs/TinyDragger.mjs';
+import TinyDomReadyManager from './libs/TinyDomReadyManager.mjs';
 
 export {
+  TinyDomReadyManager,
   TinyDragger,
   TinyDragDropDetector,
   TinyToastNotify,

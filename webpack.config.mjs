@@ -69,6 +69,7 @@ addModule(1, './src/v1/build/TinyNotifyCenter.mjs', 'TinyNotifyCenter', true);
 addModule(1, './src/v1/build/TinyToastNotify.mjs', 'TinyToastNotify', true);
 addModule(1, './src/v1/build/TinyDragDropDetector.mjs', 'TinyDragDropDetector', true);
 addModule(1, './src/v1/build/TinyUploadClicker.mjs', 'TinyUploadClicker', true);
+addModule(1, './src/v1/build/TinyDomReadyManager.mjs', 'TinyDomReadyManager', true);
 addModule(1, './src/v1/build/TinyDragger.mjs', 'TinyDragger', true);
 
 export default modules;

@@ -31,6 +31,7 @@ This folder contains the core scripts we have worked on so far. Each file is a m
 - 📥 **[TinyDragDropDetector](./libs/TinyDragDropDetector.md)** — A lightweight drag-and-drop detector for files, handling the full drag lifecycle (`enter`, `over`, `leave`, `drop`) with CSS hover management and safe event handling on any DOM element or the full page.
 * 📂 **[TinyUploadClicker](./libs/TinyUploadClicker.md)** — A minimal utility to bind any clickable element to a hidden file input, offering full control over styling, behavior, and upload event hooks.
 * 🧲 **[TinyDragger](./libs/TinyDragger.md)** — A flexible drag-and-drop manager with collision detection, jail constraints, vibration feedback, visual proxies, revert-on-drop, and full custom event support.
+* 🕒 **[TinyDomReadyManager](./libs/TinyDomReadyManager.md)** — A readiness manager for DOM and async conditions, supporting prioritized callbacks, custom filters, and event-based or promise-based bootstrapping.
 
 ### 3. **`fileManager/`**
 * 📁 **[main](./fileManager/main.md)** — A Node.js file/directory utility module with support for JSON, backups, renaming, size analysis, and more.
