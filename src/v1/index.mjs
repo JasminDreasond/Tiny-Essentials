@@ -26,7 +26,13 @@ import {
   onFullScreenChange,
   offFullScreenChange,
 } from './basics/fullScreen.mjs';
-import { formatBytes, getAge, getSimplePerc, ruleOfThree } from './basics/simpleMath.mjs';
+import {
+  formatBytes,
+  genFibonacciSeq,
+  getAge,
+  getSimplePerc,
+  ruleOfThree,
+} from './basics/simpleMath.mjs';
 import { addAiMarkerShortcut, toTitleCase, toTitleCaseLowerFirst } from './basics/text.mjs';
 import ColorSafeStringify from './libs/ColorSafeStringify.mjs';
 import TinyPromiseQueue from './libs/TinyPromiseQueue.mjs';
@@ -92,6 +98,7 @@ export {
   ColorSafeStringify,
   TinyPromiseQueue,
   TinyLevelUp,
+  genFibonacciSeq,
   isDirEmptyAsync,
   fileSizeAsync,
   dirSizeAsync,

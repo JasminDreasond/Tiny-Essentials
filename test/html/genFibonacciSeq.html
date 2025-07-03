@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Fibonacci Canvas</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: #111;
+        color: #fff;
+        font-family: sans-serif;
+      }
+      canvas {
+        display: block;
+        background: #222;
+      }
+      #controls {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 10;
+        background: #0008;
+        padding: 10px;
+        border-radius: 8px;
+      }
+      input {
+        width: 60px;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+
+    <div id="controls">
+      <label>Base A: <input onchange="draw()" type="number" id="baseA" value="0" /></label><br />
+      <label>Base B: <input onchange="draw()" type="number" id="baseB" value="1" /></label><br />
+      <label>Length: <input onchange="draw()" type="number" id="length" value="15" /></label><br />
+      <button onclick="draw()">Draw</button>
+    </div>
+
+    <script>
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+
+      window.addEventListener('resize', resizeCanvas);
+      resizeCanvas();
+
+      function generateFibonacciSequence({
+        baseValues = [0, 1],
+        length = 10,
+        combiner = (a, b) => a + b,
+      } = {}) {
+        if (!Array.isArray(baseValues) || baseValues.length !== 2) {
+          throw new Error('baseValues must be an array of exactly two numbers');
+        }
+
+        const sequence = [...baseValues.slice(0, 2)];
+
+        for (let i = 2; i < length; i++) {
+          const next = combiner(sequence[i - 2], sequence[i - 1], i);
+          sequence.push(next);
+        }
+
+        return sequence;
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const baseA = parseInt(document.getElementById('baseA').value);
+        const baseB = parseInt(document.getElementById('baseB').value);
+        const length = parseInt(document.getElementById('length').value);
+
+        const fib = generateFibonacciSequence({
+          baseValues: [baseA, baseB],
+          length,
+        });
+
+        let x = canvas.width / 2;
+        let y = canvas.height / 2;
+        let angle = 0;
+
+        ctx.strokeStyle = '#00ff88';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+
+        for (let i = 0; i < fib.length; i++) {
+          const dist = fib[i] * 5; // escala visual
+          angle += Math.PI / 2; // 90° graus para criar espiral
+          x += Math.cos(angle) * dist;
+          y += Math.sin(angle) * dist;
+          ctx.lineTo(x, y);
+        }
+
+        ctx.stroke();
+      }
+
+      draw();
+    </script>
+  </body>
+</html>

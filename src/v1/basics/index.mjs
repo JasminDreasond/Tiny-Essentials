@@ -29,10 +29,11 @@ import {
   onFullScreenChange,
   offFullScreenChange,
 } from './fullScreen.mjs';
-import { formatBytes, getAge, getSimplePerc, ruleOfThree } from './simpleMath.mjs';
+import { formatBytes, genFibonacciSeq, getAge, getSimplePerc, ruleOfThree } from './simpleMath.mjs';
 import { addAiMarkerShortcut, toTitleCase, toTitleCaseLowerFirst } from './text.mjs';
 
 export {
+  genFibonacciSeq,
   getHtmlElBorders,
   getHtmlElBordersWidth,
   getHtmlElMargin,

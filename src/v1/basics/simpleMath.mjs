@@ -123,3 +123,40 @@ export function formatBytes(bytes, decimals = null, maxUnit = null) {
   const unit = sizes[i];
   return { unit, value };
 }
+
+/**
+ * Generates a Fibonacci-like sequence as an array of vectors.
+ *
+ * @param {Object} [settings={}]
+ * @param {number[]} [settings.baseValues=[0, 1]] - An array of two starting numbers (e.g. [0, 1] or [1, 1]).
+ * @param {number} [settings.length=10] - Total number of items to generate in the sequence.
+ * @param {(a: number, b: number, index: number) => number} [settings.combiner=((a, b) => a + b)] - A custom function to combine previous two numbers.
+ * @returns {number[]} The resulting Fibonacci sequence.
+ *
+ * FibonacciVectors2D
+ * @example
+ * generateFibonacciSequence({
+ *   baseValues: [[0, 1], [1, 1]],
+ *   length: 10,
+ *   combiner: ([x1, y1], [x2, y2]) => [x1 + x2, y1 + y2]
+ * });
+ *
+ * @beta
+ */
+export function genFibonacciSeq({
+  baseValues = [0, 1],
+  length = 10,
+  combiner = (a, b) => a + b,
+} = {}) {
+  if (!Array.isArray(baseValues) || baseValues.length !== 2)
+    throw new Error('baseValues must be an array of exactly two numbers');
+
+  const sequence = [...baseValues.slice(0, 2)];
+
+  for (let i = 2; i < length; i++) {
+    const next = combiner(sequence[i - 2], sequence[i - 1], i);
+    sequence.push(next);
+  }
+
+  return sequence;
+}

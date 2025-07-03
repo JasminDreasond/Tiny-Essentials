@@ -119,3 +119,31 @@ formatBytes(1073741824, 2, 'MB');
 * **Formatting:** Converts bytes to the most appropriate unit (from 'Bytes' to 'YB') based on the byte value.
 * **Max Unit:** The `maxUnit` parameter allows you to limit the highest unit for conversion. If not provided, it will convert all the way up to 'YB'.
 * **Decimals:** The result can be customized with a specified number of decimal places for precision. If `decimals` is `null`, no rounding is applied, and the full precision value is returned.
+
+---
+
+### 🔢 `genFibonacciSeq()` — Custom Fibonacci Sequence Generator
+
+📐 Flexible, combinable, and vector-friendly!
+
+Generates a customizable Fibonacci-like sequence. You can use simple numbers or even 2D/ND vectors by passing a custom `combiner` function.
+
+```js
+genFibonacciSeq({
+  baseValues: [[0, 1], [1, 1]],
+  length: 10,
+  combiner: ([x1, y1], [x2, y2]) => [x1 + x2, y1 + y2]
+});
+```
+
+#### ⚙️ Options
+
+* `baseValues` 🧬: Two starting values (default: `[0, 1]`)
+* `length` 📏: How many items to generate (default: `10`)
+* `combiner` 🧪: Custom function to generate next value from the last two (default: `(a, b) => a + b`)
+
+#### 🧠 Returns
+
+An array representing the generated sequence.
+
+> 🔖 **Beta** – Still experimental and fun to tweak!
