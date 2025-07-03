@@ -66,6 +66,7 @@ Check out the full documentation here:
 - 🔐 [**tiny-crypto-suite**](https://github.com/JasminDreasond/Tiny-Crypto-Suite) — Lightweight cryptography toolkit.
 - 🖥️ [**tiny-server-essentials**](https://github.com/JasminDreasond/Tiny-Server-Essentials) — Node.js server utilities.
 - 🪟 [**tiny-electron-essentials**](https://github.com/JasminDreasond/Tiny-Electron-Essentials) — Essential tools for Electron apps.
+* 🗃️ [**puddysql**](https://github.com/JasminDreasond/PuddySQL) — Smart SQL engine for structured data, tags, and advanced queries.
 
 ---
 
