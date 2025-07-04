@@ -249,3 +249,103 @@ export const getHtmlElPadding = (el) => {
 
   return { x, y, left, right, top, bottom };
 };
+
+/**
+ * Installs a script that toggles CSS classes on a given element
+ * based on the page's visibility or focus state.
+ *
+ * @param {Object} [settings={}]
+ * @param {HTMLElement} [settings.element=document.body] - The element to receive visibility classes.
+ * @param {string} [settings.hiddenClass='windowHidden'] - CSS class applied when the page is hidden.
+ * @param {string} [settings.visibleClass='windowVisible'] - CSS class applied when the page is visible.
+ * @returns {() => void} Function that removes all installed event listeners.
+ */
+export function installWindowHiddenScript({
+  element = document.body,
+  hiddenClass = 'windowHidden',
+  visibleClass = 'windowVisible',
+} = {}) {
+  const removeClass = () => {
+    element.classList.remove(hiddenClass);
+    element.classList.remove(visibleClass);
+  };
+
+  /** @type {string|null} */
+  let hiddenProp = null;
+  /** @type {(this: any, evt: Event) => void} */
+  let handler;
+
+  const visibilityEvents = [
+    'visibilitychange',
+    'mozvisibilitychange',
+    'webkitvisibilitychange',
+    'msvisibilitychange',
+  ];
+
+  const visibilityProps = ['hidden', 'mozHidden', 'webkitHidden', 'msHidden'];
+
+  for (let i = 0; i < visibilityProps.length; i++) {
+    if (visibilityProps[i] in document) {
+      hiddenProp = visibilityProps[i];
+      break;
+    }
+  }
+
+  handler = function (evt) {
+    removeClass();
+
+    const type = evt?.type;
+    // @ts-ignore
+    const isHidden = hiddenProp && document[hiddenProp];
+
+    const visibleEvents = ['focus', 'focusin', 'pageshow'];
+    const hiddenEvents = ['blur', 'focusout', 'pagehide'];
+
+    if (visibleEvents.includes(type)) {
+      element.classList.add(visibleClass);
+    } else if (hiddenEvents.includes(type)) {
+      element.classList.add(hiddenClass);
+    } else {
+      element.classList.add(isHidden ? hiddenClass : visibleClass);
+    }
+  };
+
+  /** @type {() => void} */
+  let uninstall = () => {};
+
+  if (hiddenProp) {
+    const eventType = visibilityEvents[visibilityProps.indexOf(hiddenProp)];
+    document.addEventListener(eventType, handler);
+    window.addEventListener('focus', handler);
+    window.addEventListener('blur', handler);
+
+    uninstall = () => {
+      document.removeEventListener(eventType, handler);
+      window.removeEventListener('focus', handler);
+      window.removeEventListener('blur', handler);
+      removeClass();
+    };
+  } else if ('onfocusin' in document) {
+    // Fallback for IE9 and older
+    // @ts-ignore
+    document.onfocusin = document.onfocusout = handler;
+    uninstall = () => {
+      // @ts-ignore
+      document.onfocusin = document.onfocusout = null;
+      removeClass();
+    };
+  } else {
+    // Last resort fallback
+    window.onpageshow = window.onpagehide = window.onfocus = window.onblur = handler;
+    uninstall = () => {
+      window.onpageshow = window.onpagehide = window.onfocus = window.onblur = null;
+      removeClass();
+    };
+  }
+
+  // @ts-ignore
+  const simulatedEvent = new Event(hiddenProp && document[hiddenProp] ? 'blur' : 'focus');
+  handler(simulatedEvent);
+
+  return uninstall;
+}

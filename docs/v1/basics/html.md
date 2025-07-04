@@ -1,4 +1,4 @@
-## 🚀 `areHtmlElsColliding()`
+### 🚀 `areHtmlElsColliding()`
 
 Check if two DOM elements are **colliding on the screen**! Perfect for games, draggable elements, UI interactions, and more.
 
@@ -13,7 +13,7 @@ It compares the bounding rectangles of both elements:
 
 ---
 
-## 🧠 Syntax
+#### 🧠 Syntax
 
 ```javascript
 areHtmlElsColliding(elem1, elem2);
@@ -21,7 +21,7 @@ areHtmlElsColliding(elem1, elem2);
 
 ---
 
-## 🎯 Parameters
+#### 🎯 Parameters
 
 | Parameter | Type      | Description             |
 | --------- | --------- | ----------------------- |
@@ -30,7 +30,7 @@ areHtmlElsColliding(elem1, elem2);
 
 ---
 
-## 🔁 Return
+#### 🔁 Return
 
 | Type      | Description                                                        |
 | --------- | ------------------------------------------------------------------ |
@@ -38,7 +38,7 @@ areHtmlElsColliding(elem1, elem2);
 
 ---
 
-## 📦 Example
+#### 📦 Example
 
 ```javascript
 const box1 = document.getElementById('box1');
@@ -53,31 +53,31 @@ if (areHtmlElsColliding(box1, box2)) {
 
 ---
 
-## 🚧 Limitations
+#### 🚧 Limitations
 
 * Only works with **axis-aligned elements** (rectangular shapes).
 * Does not handle rotated elements or complex shapes.
 
 ---
 
-## 📖 `readJsonBlob(file: File): Promise<any>`
+### 📖 `readJsonBlob(file: File): Promise<any>`
 
 Reads and parses a JSON file using the [`FileReader`](https://developer.mozilla.org/en-US/docs/Web/API/FileReader) API.
 
-### 📥 Parameters
+#### 📥 Parameters
 
 * `file` *(File)*: The file object selected by the user (e.g., from an `<input type="file">` element).
 
-### 📤 Returns
+#### 📤 Returns
 
 * `Promise<any>`: Resolves with the parsed JSON object, or rejects with an error if the content is invalid.
 
-### ⚠️ Throws
+#### ⚠️ Throws
 
 * An error if the content is not valid JSON.
 * An error if the file can't be read.
 
-### 🧪 Example
+#### 🧪 Example
 
 ```js
 const input = document.querySelector('input[type="file"]');
@@ -93,36 +93,36 @@ input.addEventListener('change', async () => {
 
 ---
 
-## 💾 `saveJsonFile(filename: string, data: any, spaces: number = 2): void`
+### 💾 `saveJsonFile(filename: string, data: any, spaces: number = 2): void`
 
 Converts a JavaScript object to JSON and triggers a download in the browser.
 
-### 📥 Parameters
+#### 📥 Parameters
 
 * `filename` *(string)*: The name of the file to save (e.g., `"data.json"`).
 * `data` *(any)*: The JavaScript object to convert to JSON.
 * `spaces` *(number)* *(optional)*: Indentation level for formatting the JSON string. Default is `2`.
 
-### 📤 Returns
+#### 📤 Returns
 
 * `void`
 
-### 📂 Behavior
+#### 📂 Behavior
 
 Creates a temporary `<a>` element, downloads the file, and cleans up the URL.
 
-### 🧪 Example
+#### 🧪 Example
 
 ```js
 const data = { name: 'Yasmin', type: 'dev' };
 saveJsonFile('yasmin.json', data);
 ```
 
-## 🌐 `fetchJson(url, options?): Promise<any>`
+### 🌐 `fetchJson(url, options?): Promise<any>`
 
 Loads and parses a JSON from a remote URL using the Fetch API, with support for custom HTTP methods, retries, timeouts, headers, and even external abort controllers.
 
-### 📥 Parameters
+#### 📥 Parameters
 
 * `url` *(string)*: The full URL to fetch JSON from (must start with `http://`, `https://`, `/`, `./`, or `../`).
 * `options` *(object)* *(optional)*:
@@ -134,7 +134,7 @@ Loads and parses a JSON from a remote URL using the Fetch API, with support for 
   * `headers` *(object)*: Additional headers to include in the request.
   * `body` *(object)*: Request body. If the value is a plain object, it will be automatically stringified as JSON.
 
-#### `signal` (`AbortSignal` | `null`) — *optional*
+##### `signal` (`AbortSignal` | `null`) — *optional*
 
 Custom abort signal. If set:
 
@@ -142,21 +142,21 @@ Custom abort signal. If set:
 * Retry logic is **disabled**
 * Abortion is handled externally
 
-### 📤 Returns
+#### 📤 Returns
 
 * `Promise<any>`: Resolves with the parsed JSON data.
 
-### ⚠️ Throws
+#### ⚠️ Throws
 
 * `Error` if the fetch fails or exceeds the timeout
 * `Error` if the response is not `application/json`
 * `Error` if the result is not a plain JSON object
 
-## 🧠 Tip
+#### 🧠 Tip
 
 If you pass your own `signal`, this disables both `timeout` and `retries`. Use it when you're managing cancellation manually (e.g. in UI components or async workflows).
 
-### 🧪 Example
+#### 🧪 Example
 
 ```js
 const controller = new AbortController();
@@ -241,3 +241,106 @@ getHtmlElPadding(el: Element): HtmlElBoxSides
 
 * `el`: The target DOM element.
 * **Returns**: Padding values for all sides and summed horizontal (`x`) and vertical (`y`) values.
+
+---
+
+### 📄 `installWindowHiddenScript`
+
+Automatically toggles CSS classes on a given element based on the browser window or tab **visibility** and **focus** state.
+
+Perfect for UI states like dimming, pausing animations, or showing "away" statuses.
+
+---
+
+#### 🧠 Features
+
+* ✅ Adds or removes custom CSS classes depending on page visibility or focus
+* ✅ Supports modern and legacy browsers (including IE9)
+* ✅ Automatically dispatches an initial state check on load
+* ✅ Returns a cleanup function to remove all listeners
+
+---
+
+#### 🧪 Usage
+
+```js
+import { installWindowHiddenScript } from 'tiny-essentials';
+
+const uninstall = installWindowHiddenScript({
+  element: document.getElementById('app'),
+  hiddenClass: 'is-hidden',
+  visibleClass: 'is-visible',
+});
+
+// To remove all listeners later
+uninstall();
+```
+
+---
+
+#### ⚙️ Options
+
+| Option         | Type          | Default           | Description                                                       |
+| -------------- | ------------- | ----------------- | ----------------------------------------------------------------- |
+| `element`      | `HTMLElement` | `document.body`   | The element to which the visibility classes will be applied       |
+| `hiddenClass`  | `string`      | `'windowHidden'`  | Class name to apply when the window is **not visible or blurred** |
+| `visibleClass` | `string`      | `'windowVisible'` | Class name to apply when the window is **visible or focused**     |
+
+---
+
+#### 🔄 Return Value
+
+```ts
+() => void
+```
+
+Returns a function that, when called, will:
+
+* 🧹 Remove all attached event listeners
+* ❌ Remove both visibility classes from the target element
+
+---
+
+#### 🚦 Events Supported
+
+The script handles multiple events depending on browser support:
+
+* `visibilitychange`, `webkitvisibilitychange`, `mozvisibilitychange`, `msvisibilitychange`
+* `focus`, `blur`, `focusin`, `focusout`
+* `pageshow`, `pagehide`
+* IE fallback: `onfocusin`, `onfocusout`
+
+---
+
+#### 🔍 Initial Trigger
+
+Immediately after installation, the script simulates a `focus` or `blur` event based on the current visibility state to **ensure the classes are applied from the start**.
+
+---
+
+#### 🧯 Uninstalling
+
+Don’t forget to call the returned function if you dynamically load/unload components or scripts:
+
+```js
+const stopWatching = installWindowHiddenScript(...);
+stopWatching(); // later
+```
+
+---
+
+#### 🎨 CSS Example
+
+```css
+.windowVisible {
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 0.3s ease;
+}
+
+.windowHidden {
+  opacity: 0.4;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+```

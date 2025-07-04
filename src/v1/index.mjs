@@ -48,6 +48,7 @@ import {
   getHtmlElBordersWidth,
   getHtmlElMargin,
   getHtmlElPadding,
+  installWindowHiddenScript,
 } from './basics/html.mjs';
 import TinyDragDropDetector from './libs/TinyDragDropDetector.mjs';
 
@@ -98,6 +99,7 @@ export {
   ColorSafeStringify,
   TinyPromiseQueue,
   TinyLevelUp,
+  installWindowHiddenScript,
   genFibonacciSeq,
   isDirEmptyAsync,
   fileSizeAsync,

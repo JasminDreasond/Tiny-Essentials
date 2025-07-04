@@ -11,6 +11,7 @@ import {
   getHtmlElBordersWidth,
   getHtmlElMargin,
   getHtmlElPadding,
+  installWindowHiddenScript,
 } from './html.mjs';
 import {
   countObj,
@@ -33,6 +34,7 @@ import { formatBytes, genFibonacciSeq, getAge, getSimplePerc, ruleOfThree } from
 import { addAiMarkerShortcut, toTitleCase, toTitleCaseLowerFirst } from './text.mjs';
 
 export {
+  installWindowHiddenScript,
   genFibonacciSeq,
   getHtmlElBorders,
   getHtmlElBordersWidth,
