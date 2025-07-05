@@ -56,6 +56,8 @@ import {
   installWindowHiddenScript,
   readFileBlob,
   readBase64Blob,
+  isInViewport,
+  isScrolledIntoView,
 } from './basics/html.mjs';
 import TinyDragDropDetector from './libs/TinyDragDropDetector.mjs';
 
@@ -108,6 +110,8 @@ export {
   ColorSafeStringify,
   TinyPromiseQueue,
   TinyLevelUp,
+  isInViewport,
+  isScrolledIntoView,
   safeTextTrim,
   installWindowHiddenScript,
   genFibonacciSeq,

@@ -14,6 +14,8 @@ import {
   installWindowHiddenScript,
   readFileBlob,
   readBase64Blob,
+  isInViewport,
+  isScrolledIntoView,
 } from './html.mjs';
 import {
   countObj,
@@ -36,6 +38,8 @@ import { formatBytes, genFibonacciSeq, getAge, getSimplePerc, ruleOfThree } from
 import { addAiMarkerShortcut, safeTextTrim, toTitleCase, toTitleCaseLowerFirst } from './text.mjs';
 
 export {
+  isInViewport,
+  isScrolledIntoView,
   safeTextTrim,
   installWindowHiddenScript,
   genFibonacciSeq,

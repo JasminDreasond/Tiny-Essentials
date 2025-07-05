@@ -444,3 +444,35 @@ export function installWindowHiddenScript({
 
   return uninstall;
 }
+
+/**
+ * Checks if the given element is at least partially visible in the viewport.
+ *
+ * @param {HTMLElement} element - The DOM element to check.
+ * @returns {boolean} True if the element is partially in the viewport, false otherwise.
+ */
+export function isInViewport(element) {
+  const elementTop = element.offsetTop;
+  const elementBottom = elementTop + element.offsetHeight;
+
+  const viewportTop = window.scrollY;
+  const viewportBottom = viewportTop + window.innerHeight;
+
+  return elementBottom > viewportTop && elementTop < viewportBottom;
+}
+
+/**
+ * Checks if the given element is fully visible in the viewport (top and bottom).
+ *
+ * @param {HTMLElement} element - The DOM element to check.
+ * @returns {boolean} True if the element is fully visible in the viewport, false otherwise.
+ */
+export function isScrolledIntoView(element) {
+  const viewportTop = window.scrollY;
+  const viewportBottom = viewportTop + window.innerHeight;
+
+  const elemTop = element.offsetTop;
+  const elemBottom = elemTop + element.offsetHeight;
+
+  return elemBottom <= viewportBottom && elemTop >= viewportTop;
+}

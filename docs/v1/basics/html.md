@@ -279,6 +279,32 @@ getHtmlElBordersWidth(el: Element): HtmlElBoxSides
 
 ---
 
+### 👁️ `isInViewport(element)`
+
+🔍 Checks if an element is **partially visible** in the current viewport.
+
+```js
+isInViewport(element: HTMLElement): boolean
+```
+
+* `element`: The DOM element to check.
+* **Returns**: `true` if the element is at least partially visible; `false` otherwise.
+
+---
+
+### ✅ `isScrolledIntoView(element)`
+
+📦 Checks if an element is **fully visible** (top and bottom) within the viewport.
+
+```js
+isScrolledIntoView(element: HTMLElement): boolean
+```
+
+* `element`: The DOM element to check.
+* **Returns**: `true` if the entire element is within the viewport; `false` otherwise.
+
+---
+
 ### 🔳 `getHtmlElBorders(el)`
 
 📐 Returns the total **border size** of an element using `border{Side}` shorthand values from computed styles.
