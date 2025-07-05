@@ -136,7 +136,7 @@ input.addEventListener('change', async () => {
 
 ### 📖 `readJsonBlob(file: File): Promise<any>`
 
-Reads and parses a JSON file using the [`FileReader`](https://developer.mozilla.org/en-US/docs/Web/API/FileReader) API.
+Reads and parses a JSON file using the FileReader API.
 
 #### 📥 Parameters
 
