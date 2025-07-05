@@ -11,15 +11,11 @@ It compares the bounding rectangles of both elements:
 * ✅ Checks if **rect1** is NOT entirely to the left, right, above, or below **rect2**.
 * ✅ If none of these are true, then the elements are overlapping.
 
----
-
 #### 🧠 Syntax
 
 ```javascript
 areHtmlElsColliding(elem1, elem2);
 ```
-
----
 
 #### 🎯 Parameters
 
@@ -28,15 +24,11 @@ areHtmlElsColliding(elem1, elem2);
 | `elem1`   | `Element` | The first DOM element.  |
 | `elem2`   | `Element` | The second DOM element. |
 
----
-
 #### 🔁 Return
 
 | Type      | Description                                                        |
 | --------- | ------------------------------------------------------------------ |
 | `boolean` | ✅ `true` if elements are colliding. <br>❌ `false` if they are not. |
-
----
 
 #### 📦 Example
 
@@ -51,12 +43,94 @@ if (areHtmlElsColliding(box1, box2)) {
 }
 ```
 
----
-
 #### 🚧 Limitations
 
 * Only works with **axis-aligned elements** (rectangular shapes).
 * Does not handle rotated elements or complex shapes.
+
+---
+
+### 📖 `readBase64Blob(file: File, isDataUrl?: boolean | string): Promise<string>`
+
+Reads a file and returns its Base64 content using the FileReader API, with optional formatting as a full Data URL.
+
+#### 📥 Parameters
+
+* `file` *(File)*: The file object selected by the user (e.g., from an `<input type="file">` element).
+* `isDataUrl` *(boolean | string, optional)*:
+
+  * If `false` *(default)*: returns only the Base64 portion.
+  * If `true`: returns the original Data URL string from `FileReader`.
+  * If a string: treated as a custom MIME type for building a new Data URL.
+
+#### 📤 Returns
+
+* `Promise<string>`: Resolves with either the Base64 string or a complete Data URL, depending on `isDataUrl`.
+
+#### ⚠️ Throws
+
+* `TypeError` if:
+
+  * The result is not a string.
+  * The `isDataUrl` argument is not a boolean or a string.
+* `Error` if:
+
+  * The string is not a valid Base64 or Data URL format.
+  * The MIME string format is invalid.
+* `DOMException` if the file cannot be read by `FileReader`.
+
+#### 🧪 Example
+
+```js
+const input = document.querySelector('input[type="file"]');
+input.addEventListener('change', async () => {
+  try {
+    const base64 = await readBase64Blob(input.files[0], false);
+    console.log(base64); // Logs only the Base64 string
+  } catch (err) {
+    console.error('Error reading file:', err.message);
+  }
+});
+```
+
+---
+
+### 📖 `readFileBlob(file: File, method: 'readAsArrayBuffer' | 'readAsDataURL' | 'readAsText' | 'readAsBinaryString'): Promise<any>`
+
+Reads the contents of a file using a specified FileReader method.
+
+#### 📥 Parameters
+
+* `file` *(File)*: The file object selected by the user (e.g., from an `<input type="file">` element).
+* `method` *(string)*: The FileReader method to use:
+
+  * `'readAsArrayBuffer'` — for binary buffers
+  * `'readAsDataURL'` — for Base64 encoded data URLs
+  * `'readAsText'` — for plain text
+  * `'readAsBinaryString'` — for legacy binary string output
+
+#### 📤 Returns
+
+* `Promise<any>`: Resolves with the file content, depending on the method used.
+
+#### ⚠️ Throws
+
+* `Error` if an unexpected error occurs while resolving the result.
+* `DOMException` if `FileReader` encounters a failure during the read process.
+
+#### 🧪 Example
+
+```js
+const input = document.querySelector('input[type="file"]');
+input.addEventListener('change', async () => {
+  try {
+    const text = await readFileBlob(input.files[0], 'readAsText');
+    console.log(text); // Logs the file content as plain text
+  } catch (err) {
+    console.error('Error reading file:', err.message);
+  }
+});
+```
 
 ---
 
@@ -250,16 +324,13 @@ Automatically toggles CSS classes on a given element based on the browser window
 
 Perfect for UI states like dimming, pausing animations, or showing "away" statuses.
 
----
-
 #### 🧠 Features
 
 * ✅ Adds or removes custom CSS classes depending on page visibility or focus
 * ✅ Supports modern and legacy browsers (including IE9)
 * ✅ Automatically dispatches an initial state check on load
+* ✅ Allows custom **callbacks** for visibility changes (`onVisible`, `onHidden`)
 * ✅ Returns a cleanup function to remove all listeners
-
----
 
 #### 🧪 Usage
 
@@ -270,13 +341,13 @@ const uninstall = installWindowHiddenScript({
   element: document.getElementById('app'),
   hiddenClass: 'is-hidden',
   visibleClass: 'is-visible',
+  onVisible: () => console.log('Window is now visible'),
+  onHidden: () => console.log('Window is now hidden'),
 });
 
 // To remove all listeners later
 uninstall();
 ```
-
----
 
 #### ⚙️ Options
 
@@ -285,8 +356,8 @@ uninstall();
 | `element`      | `HTMLElement` | `document.body`   | The element to which the visibility classes will be applied       |
 | `hiddenClass`  | `string`      | `'windowHidden'`  | Class name to apply when the window is **not visible or blurred** |
 | `visibleClass` | `string`      | `'windowVisible'` | Class name to apply when the window is **visible or focused**     |
-
----
+| `onVisible`    | `() => void`  | `undefined`       | Optional callback fired when the window becomes visible           |
+| `onHidden`     | `() => void`  | `undefined`       | Optional callback fired when the window becomes hidden            |
 
 #### 🔄 Return Value
 
@@ -299,8 +370,6 @@ Returns a function that, when called, will:
 * 🧹 Remove all attached event listeners
 * ❌ Remove both visibility classes from the target element
 
----
-
 #### 🚦 Events Supported
 
 The script handles multiple events depending on browser support:
@@ -310,13 +379,9 @@ The script handles multiple events depending on browser support:
 * `pageshow`, `pagehide`
 * IE fallback: `onfocusin`, `onfocusout`
 
----
-
 #### 🔍 Initial Trigger
 
-Immediately after installation, the script simulates a `focus` or `blur` event based on the current visibility state to **ensure the classes are applied from the start**.
-
----
+Immediately after installation, the script simulates a `focus` or `blur` event based on the current visibility state to **ensure the classes and callbacks are applied from the start**.
 
 #### 🧯 Uninstalling
 
@@ -326,8 +391,6 @@ Don’t forget to call the returned function if you dynamically load/unload comp
 const stopWatching = installWindowHiddenScript(...);
 stopWatching(); // later
 ```
-
----
 
 #### 🎨 CSS Example
 

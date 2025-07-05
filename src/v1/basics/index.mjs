@@ -12,6 +12,8 @@ import {
   getHtmlElMargin,
   getHtmlElPadding,
   installWindowHiddenScript,
+  readFileBlob,
+  readBase64Blob,
 } from './html.mjs';
 import {
   countObj,
@@ -31,9 +33,10 @@ import {
   offFullScreenChange,
 } from './fullScreen.mjs';
 import { formatBytes, genFibonacciSeq, getAge, getSimplePerc, ruleOfThree } from './simpleMath.mjs';
-import { addAiMarkerShortcut, toTitleCase, toTitleCaseLowerFirst } from './text.mjs';
+import { addAiMarkerShortcut, safeTextTrim, toTitleCase, toTitleCaseLowerFirst } from './text.mjs';
 
 export {
+  safeTextTrim,
   installWindowHiddenScript,
   genFibonacciSeq,
   getHtmlElBorders,
@@ -42,6 +45,8 @@ export {
   getHtmlElPadding,
   fetchJson,
   readJsonBlob,
+  readFileBlob,
+  readBase64Blob,
   saveJsonFile,
   documentIsFullScreen,
   isScreenFilled,

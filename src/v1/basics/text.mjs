@@ -62,6 +62,48 @@ export function addAiMarkerShortcut(key = 'a') {
   });
 }
 
+/**
+ * Trims a text string to a specified character limit, attempting to avoid cutting words in half.
+ * If a space is found before the limit and it's not too far from the limit (at least 60%),
+ * the cut is made at that space; otherwise, the text is hard-cut at the limit.
+ * If the input is shorter than the limit, it is returned unchanged.
+ *
+ * @param {string} text - The input text to be trimmed.
+ * @param {number} limit - The maximum number of characters allowed.
+ * @param {number} [safeCutZone=0.6] - A decimal between 0 and 1 representing the minimal acceptable position
+ *                                     (as a fraction of `limit`) to cut at a space. Defaults to 0.6.
+ * @returns {string} - The trimmed text, possibly ending with an ellipsis ("...").
+ * @throws {TypeError} - Throws if `text` is not a string.
+ * @throws {TypeError} - Throws if `limit` is not a positive integer.
+ * @throws {TypeError} - Throws if `safeCutZone` is not a number between 0 and 1 (inclusive).
+ */
+export function safeTextTrim(text, limit, safeCutZone = 0.6) {
+  if (typeof text !== 'string')
+    throw new TypeError(`Expected a string for 'text', but received ${typeof text}`);
+  if (!Number.isInteger(limit) || limit <= 0)
+    throw new TypeError(`Expected 'limit' to be a positive integer, but received ${limit}`);
+  if (typeof safeCutZone !== 'number' || safeCutZone < 0 || safeCutZone > 1)
+    throw new TypeError(
+      `Expected 'safeCutZone' to be a number between 0 and 1, but received ${safeCutZone}`,
+    );
+
+  let result = text.trim();
+  if (result.length > limit) {
+    // Try to cut the string into a space before the limit
+    const safeCut = result.lastIndexOf(' ', limit);
+
+    if (safeCut > 0 && safeCut >= limit * safeCutZone) {
+      // Only cuts where there is a space, and if the cut is not too early
+      return `${result.substring(0, safeCut).trim()}...`;
+    } else {
+      // Emergency: Cuts straight to the limit and adds "...".
+      return `${result.substring(0, limit).trim()}...`;
+    }
+  }
+
+  return result;
+}
+
 /*
 import { useEffect } from "react";
 

@@ -20,32 +20,103 @@ export function areHtmlElsColliding(elem1, elem2) {
 }
 
 /**
- * Reads and parses a JSON data using FileReader.
- * Throws an error if the content is not valid JSON.
- * @param {File} file
- * @returns {Promise<any>}
+ * Reads the contents of a file using the specified FileReader method.
+ *
+ * @param {File} file - The file to be read.
+ * @param {'readAsArrayBuffer'|'readAsDataURL'|'readAsText'|'readAsBinaryString'} method -
+ *   The FileReader method to use for reading the file.
+ * @returns {Promise<any>} - A promise that resolves with the file content, according to the chosen method.
+ * @throws {Error} - If an unexpected error occurs while handling the result.
+ * @throws {DOMException} - If the FileReader encounters an error while reading the file.
  */
-export function readJsonBlob(file) {
+export function readFileBlob(file, method) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-
     reader.onload = () => {
       try {
-        // @ts-ignore
-        const result = JSON.parse(reader.result);
-        resolve(result);
+        resolve(reader.result);
       } catch (error) {
-        // @ts-ignore
-        reject(new Error(`Invalid JSON in file: ${file.name}\n${error.message}`));
+        reject(error);
       }
     };
-
     reader.onerror = () => {
-      reject(new Error(`Error reading file: ${file.name}`));
+      reject(reader.error);
     };
-
-    reader.readAsText(file);
+    reader[method](file);
   });
+}
+
+/**
+ * Reads a file as a Base64 string using FileReader, and optionally formats it as a full data URL.
+ *
+ * Performs strict validation to ensure the result is a valid Base64 string or a proper data URL.
+ *
+ * @param {File} file - The file to be read.
+ * @param {boolean|string} [isDataUrl=false] - If true, returns a full data URL; if false, returns only the Base64 string;
+ *   if a string is passed, it is used as the MIME type in the data URL.
+ * @returns {Promise<string>} - A promise that resolves with the Base64 string or data URL.
+ *
+ * @throws {TypeError} - If the result is not a string or if `isDataUrl` is not a valid type.
+ * @throws {Error} - If the result does not match the expected data URL format or Base64 structure.
+ * @throws {DOMException} - If the FileReader fails to read the file.
+ */
+export function readBase64Blob(file, isDataUrl = false) {
+  return new Promise((resolve, reject) => {
+    if (typeof isDataUrl !== 'string' && typeof isDataUrl !== 'boolean')
+      reject(new TypeError('The isDataUrl parameter must be a boolean or a string.'));
+    readFileBlob(file, 'readAsDataURL')
+      .then(
+        /**
+         * Ensure that the URL format is correct in the required pattern
+         * @param {string} base64Data
+         */ (base64Data) => {
+          if (typeof base64Data !== 'string')
+            throw new TypeError('Expected file content to be a string.');
+
+          const match = base64Data.match(/^data:(.+);base64,(.*)$/);
+          if (!match || !match[2])
+            throw new Error('Invalid data URL format or missing Base64 content.');
+          const [, mimeType, base64] = match;
+          if (!/^[\w/+]+=*$/.test(base64)) throw new Error('Base64 content is malformed.');
+
+          if (typeof isDataUrl === 'boolean') return resolve(isDataUrl ? base64Data : base64);
+          if (!/^[\w-]+\/[\w.+-]+$/.test(isDataUrl))
+            throw new Error(`Invalid MIME type string: ${isDataUrl}`);
+
+          return resolve(`data:${isDataUrl};base64,${base64}`);
+        },
+      )
+      .catch(reject);
+  });
+}
+
+/**
+ * Reads a file and strictly validates its content as proper JSON using FileReader.
+ *
+ * Performs several checks to ensure the file contains valid, parsable JSON data.
+ *
+ * @param {File} file - The file to be read. It must contain valid JSON as plain text.
+ * @returns {Promise<Record<string|number|symbol, any>|any[]>} - A promise that resolves with the parsed JSON object.
+ *
+ * @throws {SyntaxError} - If the file content is not valid JSON syntax.
+ * @throws {TypeError} - If the result is not a string or does not represent a JSON value.
+ * @throws {Error} - If the result is empty or structurally invalid as JSON.
+ * @throws {DOMException} - If the FileReader fails to read the file.
+ */
+export function readJsonBlob(file) {
+  return new Promise((resolve, reject) =>
+    readFileBlob(file, 'readAsText')
+      .then((data) => {
+        if (typeof data !== 'string') throw new TypeError('Expected file content to be a string.');
+        const trimmed = data.trim();
+        if (trimmed.length === 0) throw new Error('File is empty or contains only whitespace.');
+        const parsed = JSON.parse(trimmed);
+        if (typeof parsed !== 'object' || parsed === null)
+          throw new Error('Parsed content is not a valid JSON object or array.');
+        resolve(parsed);
+      })
+      .catch(reject),
+  );
 }
 
 /**
@@ -150,7 +221,8 @@ export async function fetchJson(
 
       const data = await response.json();
 
-      if (!isJsonObject(data)) throw new Error('Received invalid data instead of valid JSON.');
+      if (!Array.isArray(data) && !isJsonObject(data))
+        throw new Error('Received invalid data instead of valid JSON.');
 
       return data;
     } catch (err) {
@@ -252,19 +324,34 @@ export const getHtmlElPadding = (el) => {
 
 /**
  * Installs a script that toggles CSS classes on a given element
- * based on the page's visibility or focus state.
+ * based on the page's visibility or focus state, and optionally
+ * triggers callbacks on visibility changes.
  *
  * @param {Object} [settings={}]
  * @param {HTMLElement} [settings.element=document.body] - The element to receive visibility classes.
  * @param {string} [settings.hiddenClass='windowHidden'] - CSS class applied when the page is hidden.
  * @param {string} [settings.visibleClass='windowVisible'] - CSS class applied when the page is visible.
+ * @param {() => void} [settings.onVisible] - Callback called when page becomes visible.
+ * @param {() => void} [settings.onHidden] - Callback called when page becomes hidden.
  * @returns {() => void} Function that removes all installed event listeners.
+ * @throws {TypeError} If any provided setting is invalid.
  */
 export function installWindowHiddenScript({
   element = document.body,
   hiddenClass = 'windowHidden',
   visibleClass = 'windowVisible',
+  onVisible,
+  onHidden,
 } = {}) {
+  if (!(element instanceof HTMLElement))
+    throw new TypeError(`"element" must be an instance of HTMLElement.`);
+  if (typeof hiddenClass !== 'string') throw new TypeError(`"hiddenClass" must be a string.`);
+  if (typeof visibleClass !== 'string') throw new TypeError(`"visibleClass" must be a string.`);
+  if (onVisible !== undefined && typeof onVisible !== 'function')
+    throw new TypeError(`"onVisible" must be a function if provided.`);
+  if (onHidden !== undefined && typeof onHidden !== 'function')
+    throw new TypeError(`"onHidden" must be a function if provided.`);
+
   const removeClass = () => {
     element.classList.remove(hiddenClass);
     element.classList.remove(visibleClass);
@@ -272,8 +359,6 @@ export function installWindowHiddenScript({
 
   /** @type {string|null} */
   let hiddenProp = null;
-  /** @type {(this: any, evt: Event) => void} */
-  let handler;
 
   const visibilityEvents = [
     'visibilitychange',
@@ -291,7 +376,8 @@ export function installWindowHiddenScript({
     }
   }
 
-  handler = function (evt) {
+  /** @type {(this: any, evt: Event) => void} */
+  const handler = function (evt) {
     removeClass();
 
     const type = evt?.type;
@@ -303,10 +389,18 @@ export function installWindowHiddenScript({
 
     if (visibleEvents.includes(type)) {
       element.classList.add(visibleClass);
+      onVisible?.();
     } else if (hiddenEvents.includes(type)) {
       element.classList.add(hiddenClass);
+      onHidden?.();
     } else {
-      element.classList.add(isHidden ? hiddenClass : visibleClass);
+      if (isHidden) {
+        element.classList.add(hiddenClass);
+        onHidden?.();
+      } else {
+        element.classList.add(visibleClass);
+        onVisible?.();
+      }
     }
   };
 
@@ -343,6 +437,7 @@ export function installWindowHiddenScript({
     };
   }
 
+  // Trigger initial state
   // @ts-ignore
   const simulatedEvent = new Event(hiddenProp && document[hiddenProp] ? 'blur' : 'focus');
   handler(simulatedEvent);

@@ -33,7 +33,12 @@ import {
   getSimplePerc,
   ruleOfThree,
 } from './basics/simpleMath.mjs';
-import { addAiMarkerShortcut, toTitleCase, toTitleCaseLowerFirst } from './basics/text.mjs';
+import {
+  addAiMarkerShortcut,
+  safeTextTrim,
+  toTitleCase,
+  toTitleCaseLowerFirst,
+} from './basics/text.mjs';
 import ColorSafeStringify from './libs/ColorSafeStringify.mjs';
 import TinyPromiseQueue from './libs/TinyPromiseQueue.mjs';
 import TinyRateLimiter from './libs/TinyRateLimiter.mjs';
@@ -49,6 +54,8 @@ import {
   getHtmlElMargin,
   getHtmlElPadding,
   installWindowHiddenScript,
+  readFileBlob,
+  readBase64Blob,
 } from './basics/html.mjs';
 import TinyDragDropDetector from './libs/TinyDragDropDetector.mjs';
 
@@ -88,8 +95,10 @@ import {
 
 import TinyDragger from './libs/TinyDragger.mjs';
 import TinyDomReadyManager from './libs/TinyDomReadyManager.mjs';
+import TinyNotifications from './libs/TinyNotifications.mjs';
 
 export {
+  TinyNotifications,
   TinyDomReadyManager,
   TinyDragger,
   TinyDragDropDetector,
@@ -99,6 +108,7 @@ export {
   ColorSafeStringify,
   TinyPromiseQueue,
   TinyLevelUp,
+  safeTextTrim,
   installWindowHiddenScript,
   genFibonacciSeq,
   isDirEmptyAsync,
@@ -113,6 +123,8 @@ export {
   getLatestBackupPath,
   fetchJson,
   readJsonBlob,
+  readFileBlob,
+  readBase64Blob,
   saveJsonFile,
   readJsonFile,
   writeJsonFile,
