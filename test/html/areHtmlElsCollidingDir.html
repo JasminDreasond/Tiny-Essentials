@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Collision Test</title>
+    <style>
+      body {
+        margin: 0;
+        height: 100vh;
+        overflow: hidden;
+        background: #f0f0f0;
+        font-family: sans-serif;
+      }
+
+      #wall {
+        position: absolute;
+        top: 150px;
+        left: 300px;
+        width: 200px;
+        height: 200px;
+        background-color: #0077ff;
+      }
+
+      #box {
+        position: absolute;
+        top: 200px;
+        left: 50px;
+        width: 100px;
+        height: 100px;
+        background-color: red;
+        cursor: grab;
+        transition: box-shadow 0.2s;
+      }
+
+      #box.colliding {
+        box-shadow: 0 0 10px 4px #ff0000;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="wall"></div>
+    <div id="box"></div>
+
+    <script>
+      const box = document.getElementById('box');
+      const wall = document.getElementById('wall');
+      let offsetX, offsetY;
+      let isDragging = false;
+
+      const getHtmlElsCollDataTop = (rect1, rect2) => rect1.bottom < rect2.top;
+      const getHtmlElsCollDataBottom = (rect1, rect2) => rect1.top > rect2.bottom;
+      const getHtmlElsCollDataLeft = (rect1, rect2) => rect1.right < rect2.left;
+      const getHtmlElsCollDataRight = (rect1, rect2) => rect1.left > rect2.right;
+
+      const getHtmlElsCollData = (rect1, rect2) =>
+        !(
+          getHtmlElsCollDataLeft(rect1, rect2) ||
+          getHtmlElsCollDataRight(rect1, rect2) ||
+          getHtmlElsCollDataTop(rect1, rect2) ||
+          getHtmlElsCollDataBottom(rect1, rect2)
+        );
+
+      function areHtmlElsCollidingWithLock(elem1, elem2, lockDirection, stateMap) {
+        const rect1 = elem1.getBoundingClientRect();
+        const rect2 = elem2.getBoundingClientRect();
+        const isColliding = getHtmlElsCollData(rect1, rect2);
+
+        if (isColliding) {
+          // Save entry direction
+          if (!stateMap.has(elem1)) {
+            stateMap.set(elem1, lockDirection);
+          }
+          return true;
+        }
+
+        // Handle unlock logic
+        if (stateMap.has(elem1)) {
+          const lastDirection = stateMap.get(elem1);
+
+          switch (lastDirection) {
+            case 'top':
+              if (getHtmlElsCollDataTop(rect1, rect2)) stateMap.delete(elem1); // exited from top
+              break;
+            case 'bottom':
+              if (getHtmlElsCollDataBottom(rect1, rect2)) stateMap.delete(elem1); // exited from bottom
+              break;
+            case 'left':
+              if (getHtmlElsCollDataLeft(rect1, rect2)) stateMap.delete(elem1); // exited from left
+              break;
+            case 'right':
+              if (getHtmlElsCollDataRight(rect1, rect2)) stateMap.delete(elem1); // exited from right
+              break;
+          }
+
+          return stateMap.has(elem1); // still colliding (locked)
+        }
+
+        return false;
+      }
+
+      box.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        offsetX = e.clientX - box.offsetLeft;
+        offsetY = e.clientY - box.offsetTop;
+        box.style.cursor = 'grabbing';
+      });
+
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+        box.style.cursor = 'grab';
+      });
+
+      const stateMap = new WeakMap();
+      document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const x = e.clientX - offsetX;
+        const y = e.clientY - offsetY;
+        box.style.left = `${x}px`;
+        box.style.top = `${y}px`;
+
+        const colliding = areHtmlElsCollidingWithLock(box, wall, 'bottom', stateMap); // change 'right' if needed
+        box.classList.toggle('colliding', colliding);
+      });
+    </script>
+  </body>
+</html>
