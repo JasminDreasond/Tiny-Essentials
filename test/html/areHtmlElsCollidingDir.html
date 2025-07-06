@@ -140,8 +140,11 @@
       function getElsCollDetails(rect1, rect2) {
         const isColliding = areElsPerfColliding(rect1, rect2);
 
-        /** @type {{ inDir: Dirs | null;  dirX: Dirs | null;  dirY: Dirs | null; }} */
-        const dirs = { inDir: null, dirX: null, dirY: null };
+        /** @type {CollDirs} */
+        const dirs = { in: null, x: null, y: null };
+
+        /** @type {NegCollDirs} */
+        const negDirs = { y: null, x: null };
 
         /** @type {Record<Dirs, number>} */
         const depth = { top: 0, bottom: 0, left: 0, right: 0 };
@@ -172,18 +175,25 @@
           overlapTop: overlapBottom,
           overlapBottom: overlapTop,
         });
-        dirs.dirY = dirY;
-        dirs.dirX = dirX;
+        dirs.y = dirY;
+        dirs.x = dirX;
 
-        dirs.inDir = isColliding ? (entries.length ? entries[0][0] : 'top') : null; // fallback in case of exact match
-        return { ...dirs, ...depth };
+        if (depth.bottom < 0) negDirs.y = 'bottom';
+        else if (depth.top < 0) negDirs.y = 'top';
+        if (depth.left < 0) negDirs.x = 'left';
+        else if (depth.right < 0) negDirs.x = 'right';
+
+        dirs.in = isColliding ? (entries.length ? entries[0][0] : 'top') : null; // fallback in case of exact match
+        return { dirs, depth, negDirs };
       }
 
       function areHtmlElsCollidingWithLock(elem1, elem2, lockDirection, stateMap) {
         const rect1 = elem1.getBoundingClientRect();
         const rect2 = elem2.getBoundingClientRect();
         const isColliding = areElsColliding(rect1, rect2);
-        console.log(getElsCollDetails(rect1, rect2));
+
+        const details = getElsCollDetails(rect1, rect2);
+        console.log(details.depth, details.dirs, details.negDirs);
         // console.log(getElsCollDirDepth(rect1, rect2));
 
         if (isColliding) {

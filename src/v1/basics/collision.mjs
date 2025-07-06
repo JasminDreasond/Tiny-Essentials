@@ -191,25 +191,44 @@ export function getElsCollDirDepth(rect1, rect2) {
 /** @typedef {'top'|'bottom'|'left'|'right'} Dirs */
 
 /**
- * Detects the collision direction and depth between two DOMRects.
- *
- * @param {DOMRect} rect1 - The bounding rectangle of the first element.
- * @param {DOMRect} rect2 - The bounding rectangle of the second element.
- * @returns {{
- *   inDir: Dirs | null;
- *   dirX: Dirs | null;
- *   dirY: Dirs | null;
+ * @typedef {{
+ *   in: Dirs | null;
+ *   x: Dirs | null;
+ *   y: Dirs | null;
+ * }} CollDirs
+ */
+
+/**
+ * @typedef {{
+ *   x: Dirs | null;
+ *   y: Dirs | null;
+ * }} NegCollDirs
+ */
+
+/**
+ * @typedef {{
  *   top: number;
  *   bottom: number;
  *   left: number;
  *   right: number;
- * }} Collision info or null if no collision is detected.
+ * }} CollData
+ */
+
+/**
+ * Detects the collision direction and depth between two DOMRects.
+ *
+ * @param {DOMRect} rect1 - The bounding rectangle of the first element.
+ * @param {DOMRect} rect2 - The bounding rectangle of the second element.
+ * @returns {{ depth: CollData; dirs: CollDirs; negDirs: NegCollDirs }} Collision info or null if no collision is detected.
  */
 export function getElsCollDetails(rect1, rect2) {
   const isColliding = areElsPerfColliding(rect1, rect2);
 
-  /** @type {{ inDir: Dirs | null;  dirX: Dirs | null;  dirY: Dirs | null; }} */
-  const dirs = { inDir: null, dirX: null, dirY: null };
+  /** @type {CollDirs} */
+  const dirs = { in: null, x: null, y: null };
+
+  /** @type {NegCollDirs} */
+  const negDirs = { y: null, x: null };
 
   /** @type {Record<Dirs, number>} */
   const depth = { top: 0, bottom: 0, left: 0, right: 0 };
@@ -237,9 +256,14 @@ export function getElsCollDetails(rect1, rect2) {
     overlapTop: overlapBottom,
     overlapBottom: overlapTop,
   });
-  dirs.dirY = dirY;
-  dirs.dirX = dirX;
+  dirs.y = dirY;
+  dirs.x = dirX;
 
-  dirs.inDir = isColliding ? (entries.length ? entries[0][0] : 'top') : null; // fallback in case of exact match
-  return { ...dirs, ...depth };
+  if (depth.bottom < 0) negDirs.y = 'bottom';
+  else if (depth.top < 0) negDirs.y = 'top';
+  if (depth.left < 0) negDirs.x = 'left';
+  else if (depth.right < 0) negDirs.x = 'right';
+
+  dirs.in = isColliding ? (entries.length ? entries[0][0] : 'top') : null; // fallback in case of exact match
+  return { dirs, depth, negDirs };
 }
