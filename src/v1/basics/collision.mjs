@@ -1,5 +1,5 @@
 /**
- * A direction relative to a DOM rectangle.
+ * A direction relative to a rectangle.
  *
  * Represents one of the four cardinal directions from the perspective of the element.
  *
@@ -45,13 +45,28 @@
  * @property {number} y - Vertical distance in pixels from rect1's center to rect2's center.
  */
 
+/**
+ * Represents a rectangular area in absolute pixel values.
+ *
+ * Similar to `DOMRect`, this object describes the dimensions and position of a box
+ * in the 2D plane, typically representing an element's bounding box.
+ *
+ * @typedef {Object} ObjRect
+ * @property {number} height - The total height of the rectangle in pixels.
+ * @property {number} width - The total width of the rectangle in pixels.
+ * @property {number} top - The Y-coordinate of the top edge of the rectangle.
+ * @property {number} bottom - The Y-coordinate of the bottom edge of the rectangle.
+ * @property {number} left - The X-coordinate of the left edge of the rectangle.
+ * @property {number} right - The X-coordinate of the right edge of the rectangle.
+ */
+
 // Normal collision checks (loose overlap detection)
 
 /**
  * Checks if rect1 is completely above rect2 (no vertical overlap).
  *
- * @param {DOMRect} rect1 - The bounding rectangle of the first element.
- * @param {DOMRect} rect2 - The bounding rectangle of the second element.
+ * @param {ObjRect} rect1 - The bounding rectangle of the first element.
+ * @param {ObjRect} rect2 - The bounding rectangle of the second element.
  * @returns {boolean} True if rect1 is entirely above rect2.
  */
 export const areElsCollTop = (rect1, rect2) => rect1.bottom < rect2.top;
@@ -59,8 +74,8 @@ export const areElsCollTop = (rect1, rect2) => rect1.bottom < rect2.top;
 /**
  * Checks if rect1 is completely below rect2 (no vertical overlap).
  *
- * @param {DOMRect} rect1
- * @param {DOMRect} rect2
+ * @param {ObjRect} rect1
+ * @param {ObjRect} rect2
  * @returns {boolean} True if rect1 is entirely below rect2.
  */
 export const areElsCollBottom = (rect1, rect2) => rect1.top > rect2.bottom;
@@ -68,8 +83,8 @@ export const areElsCollBottom = (rect1, rect2) => rect1.top > rect2.bottom;
 /**
  * Checks if rect1 is completely to the left of rect2 (no horizontal overlap).
  *
- * @param {DOMRect} rect1
- * @param {DOMRect} rect2
+ * @param {ObjRect} rect1
+ * @param {ObjRect} rect2
  * @returns {boolean} True if rect1 is entirely to the left of rect2.
  */
 export const areElsCollLeft = (rect1, rect2) => rect1.right < rect2.left;
@@ -77,8 +92,8 @@ export const areElsCollLeft = (rect1, rect2) => rect1.right < rect2.left;
 /**
  * Checks if rect1 is completely to the right of rect2 (no horizontal overlap).
  *
- * @param {DOMRect} rect1
- * @param {DOMRect} rect2
+ * @param {ObjRect} rect1
+ * @param {ObjRect} rect2
  * @returns {boolean} True if rect1 is entirely to the right of rect2.
  */
 export const areElsCollRight = (rect1, rect2) => rect1.left > rect2.right;
@@ -88,8 +103,8 @@ export const areElsCollRight = (rect1, rect2) => rect1.left > rect2.right;
 /**
  * Checks if rect1 is perfectly above rect2 (no vertical touch or overlap).
  *
- * @param {DOMRect} rect1
- * @param {DOMRect} rect2
+ * @param {ObjRect} rect1
+ * @param {ObjRect} rect2
  * @returns {boolean} True if rect1 is fully above or touching rect2's top.
  */
 export const areElsCollPerfTop = (rect1, rect2) => rect1.bottom <= rect2.top;
@@ -97,8 +112,8 @@ export const areElsCollPerfTop = (rect1, rect2) => rect1.bottom <= rect2.top;
 /**
  * Checks if rect1 is perfectly below rect2 (no vertical touch or overlap).
  *
- * @param {DOMRect} rect1
- * @param {DOMRect} rect2
+ * @param {ObjRect} rect1
+ * @param {ObjRect} rect2
  * @returns {boolean} True if rect1 is fully below or touching rect2's bottom.
  */
 export const areElsCollPerfBottom = (rect1, rect2) => rect1.top >= rect2.bottom;
@@ -106,8 +121,8 @@ export const areElsCollPerfBottom = (rect1, rect2) => rect1.top >= rect2.bottom;
 /**
  * Checks if rect1 is perfectly to the left of rect2 (no horizontal touch or overlap).
  *
- * @param {DOMRect} rect1
- * @param {DOMRect} rect2
+ * @param {ObjRect} rect1
+ * @param {ObjRect} rect2
  * @returns {boolean} True if rect1 is fully left or touching rect2's left.
  */
 export const areElsCollPerfLeft = (rect1, rect2) => rect1.right <= rect2.left;
@@ -115,8 +130,8 @@ export const areElsCollPerfLeft = (rect1, rect2) => rect1.right <= rect2.left;
 /**
  * Checks if rect1 is perfectly to the right of rect2 (no horizontal touch or overlap).
  *
- * @param {DOMRect} rect1
- * @param {DOMRect} rect2
+ * @param {ObjRect} rect1
+ * @param {ObjRect} rect2
  * @returns {boolean} True if rect1 is fully right or touching rect2's right.
  */
 export const areElsCollPerfRight = (rect1, rect2) => rect1.left >= rect2.right;
@@ -126,8 +141,8 @@ export const areElsCollPerfRight = (rect1, rect2) => rect1.left >= rect2.right;
 /**
  * Returns true if rect1 and rect2 are colliding (partially or fully overlapping).
  *
- * @param {DOMRect} rect1
- * @param {DOMRect} rect2
+ * @param {ObjRect} rect1
+ * @param {ObjRect} rect2
  * @returns {boolean} True if there's any collision between rect1 and rect2.
  */
 export const areElsColliding = (rect1, rect2) =>
@@ -141,8 +156,8 @@ export const areElsColliding = (rect1, rect2) =>
 /**
  * Returns true if rect1 and rect2 are colliding or perfectly touching.
  *
- * @param {DOMRect} rect1
- * @param {DOMRect} rect2
+ * @param {ObjRect} rect1
+ * @param {ObjRect} rect2
  * @returns {boolean} True if there's any contact or overlap.
  */
 export const areElsPerfColliding = (rect1, rect2) =>
@@ -158,8 +173,8 @@ export const areElsPerfColliding = (rect1, rect2) =>
 /**
  * Attempts to determine the direction rect1 entered rect2 based on loose overlap rules.
  *
- * @param {DOMRect} rect1
- * @param {DOMRect} rect2
+ * @param {ObjRect} rect1
+ * @param {ObjRect} rect2
  * @returns {string|null} 'top' | 'bottom' | 'left' | 'right' | null
  */
 export const getElsColliding = (rect1, rect2) => {
@@ -173,8 +188,8 @@ export const getElsColliding = (rect1, rect2) => {
 /**
  * Attempts to determine the direction rect1 touched or entered rect2 using perfect mode.
  *
- * @param {DOMRect} rect1
- * @param {DOMRect} rect2
+ * @param {ObjRect} rect1
+ * @param {ObjRect} rect2
  * @returns {'top' | 'bottom' | 'left' | 'right' | null}
  */
 export const getElsPerfColliding = (rect1, rect2) => {
@@ -190,8 +205,8 @@ export const getElsPerfColliding = (rect1, rect2) => {
 /**
  * Calculates overlap values between rect1 and rect2 in all directions.
  *
- * @param {DOMRect} rect1
- * @param {DOMRect} rect2
+ * @param {ObjRect} rect1
+ * @param {ObjRect} rect2
  * @returns {{
  *   overlapLeft: number,
  *   overlapRight: number,
@@ -231,7 +246,7 @@ export const getElsCollOverlapPos = ({
 /**
  * Calculates the center point (X and Y) of a given Rect.
  *
- * @param {DOMRect} rect - The bounding rectangle of the element.
+ * @param {ObjRect} rect - The bounding rectangle of the element.
  * @returns {{ x: number, y: number }} An object with the `x` and `y` coordinates of the center.
  */
 export const getRectCenter = (rect) => ({
@@ -244,8 +259,8 @@ export const getRectCenter = (rect) => ({
  *
  * The values will be 0 when rect1 is perfectly centered over rect2.
  *
- * @param {DOMRect} rect1 - The bounding rectangle of the reference element.
- * @param {DOMRect} rect2 - The bounding rectangle of the element being compared.
+ * @param {ObjRect} rect1 - The bounding rectangle of the reference element.
+ * @param {ObjRect} rect2 - The bounding rectangle of the element being compared.
  * @returns {{
  *   x: number,
  *   y: number
@@ -270,8 +285,8 @@ export function getRelativeCenterOffset(rect1, rect2) {
  * Detects the direction of the dominant collision between two elements
  * and calculates how deep the overlap is in both x and y axes.
  *
- * @param {DOMRect} rect1 - The bounding rectangle of the first element.
- * @param {DOMRect} rect2 - The bounding rectangle of the second element.
+ * @param {ObjRect} rect1 - The bounding rectangle of the first element.
+ * @param {ObjRect} rect2 - The bounding rectangle of the second element.
  * @returns {{
  *   inDir: Dirs | null;
  *   dirX: Dirs | null;
@@ -313,8 +328,8 @@ export function getElsCollDirDepth(rect1, rect2) {
 /**
  * Detects the collision direction and depth between two DOMRects.
  *
- * @param {DOMRect} rect1 - The bounding rectangle of the first element.
- * @param {DOMRect} rect2 - The bounding rectangle of the second element.
+ * @param {ObjRect} rect1 - The bounding rectangle of the first element.
+ * @param {ObjRect} rect2 - The bounding rectangle of the second element.
  * @returns {{ depth: CollData; dirs: CollDirs; isNeg: NegCollDirs; }} Collision info or null if no collision is detected.
  */
 export function getElsCollDetails(rect1, rect2) {
