@@ -1,3 +1,5 @@
+// Normal numbers
+
 /**
  * Checks if rect1 is completely above rect2 (no vertical collision).
  *
@@ -34,6 +36,8 @@ export const areElsCollLeft = (rect1, rect2) => rect1.right < rect2.left;
  */
 export const areElsCollRight = (rect1, rect2) => rect1.left > rect2.right;
 
+// Perfect numbers
+
 /**
  * @param {DOMRect} rect1 - The bounding rectangle of the first element.
  * @param {DOMRect} rect2 - The bounding rectangle of the second element.
@@ -61,6 +65,8 @@ export const areElsCollPerfLeft = (rect1, rect2) => rect1.right <= rect2.left;
  * @returns {boolean} True if rect1 is right of rect2 without overlapping.
  */
 export const areElsCollPerfRight = (rect1, rect2) => rect1.left >= rect2.right;
+
+// Main Collision
 
 /**
  * Checks if two elements (via their bounding rectangles) are overlapping or touching.
@@ -116,6 +122,8 @@ export const getElsPerfColliding = (rect1, rect2) => {
   return null;
 };
 
+// Overlap
+
 /**
  * @param {DOMRect} rect1 - The bounding rectangle of the first element.
  * @param {DOMRect} rect2 - The bounding rectangle of the second element.
@@ -145,6 +153,46 @@ export const getElsCollOverlapPos = ({
   dirX: overlapLeft < overlapRight ? 'right' : 'left',
   dirY: overlapTop < overlapBottom ? 'bottom' : 'top',
 });
+
+// Center
+
+/**
+ * Calculates the center point (X and Y) of a given Rect.
+ *
+ * @param {DOMRect} rect - The bounding rectangle of the element.
+ * @returns {{ x: number, y: number }} An object with the `x` and `y` coordinates of the center.
+ */
+export const getRectCenter = (rect) => ({
+  x: rect.left + rect.width / 2,
+  y: rect.top + rect.height / 2,
+});
+
+// Tools
+
+/**
+ * Calculates the offset between the center of rect2 and the center of rect1.
+ *
+ * The values will be 0 when rect1 is perfectly centered over rect2.
+ *
+ * @param {DOMRect} rect1 - The bounding rectangle of the reference element.
+ * @param {DOMRect} rect2 - The bounding rectangle of the element being compared.
+ * @returns {{
+ *   x: number,
+ *   y: number
+ * }} An object with the X and Y offset in pixels from rect1's center to rect2's center.
+ */
+export function getRelativeCenterOffset(rect1, rect2) {
+  const center1X = rect1.left + rect1.width / 2;
+  const center1Y = rect1.top + rect1.height / 2;
+
+  const center2X = rect2.left + rect2.width / 2;
+  const center2Y = rect2.top + rect2.height / 2;
+
+  return {
+    x: center2X - center1X,
+    y: center2Y - center1Y,
+  };
+}
 
 /**
  * Detects the direction of the dominant collision between two elements
@@ -192,7 +240,7 @@ export function getElsCollDirDepth(rect1, rect2) {
 
 /**
  * @typedef {{
- *   in: Dirs | null;
+ *   in: Dirs | 'center' | null;
  *   x: Dirs | null;
  *   y: Dirs | null;
  * }} CollDirs
@@ -215,11 +263,18 @@ export function getElsCollDirDepth(rect1, rect2) {
  */
 
 /**
+ * @typedef {{
+ *   x: number;
+ *   y: number;
+ * }} CollCenter
+ */
+
+/**
  * Detects the collision direction and depth between two DOMRects.
  *
  * @param {DOMRect} rect1 - The bounding rectangle of the first element.
  * @param {DOMRect} rect2 - The bounding rectangle of the second element.
- * @returns {{ depth: CollData; dirs: CollDirs; negDirs: NegCollDirs }} Collision info or null if no collision is detected.
+ * @returns {{ depth: CollData; dirs: CollDirs; isNeg: NegCollDirs; }} Collision info or null if no collision is detected.
  */
 export function getElsCollDetails(rect1, rect2) {
   const isColliding = areElsPerfColliding(rect1, rect2);
@@ -228,11 +283,12 @@ export function getElsCollDetails(rect1, rect2) {
   const dirs = { in: null, x: null, y: null };
 
   /** @type {NegCollDirs} */
-  const negDirs = { y: null, x: null };
+  const isNeg = { y: null, x: null };
 
   /** @type {Record<Dirs, number>} */
   const depth = { top: 0, bottom: 0, left: 0, right: 0 };
 
+  // Depth
   // Yes, it's actually reversed the values orders
   const { overlapLeft, overlapRight, overlapTop, overlapBottom } = getElsCollOverlap(rect2, rect1);
   depth.top = overlapTop;
@@ -240,6 +296,7 @@ export function getElsCollDetails(rect1, rect2) {
   depth.left = overlapLeft;
   depth.right = overlapRight;
 
+  // Dirs
   /**
    * Detect the direction with the smallest positive overlap (entry point)
    * @type {[Dirs, number][]}
@@ -259,11 +316,21 @@ export function getElsCollDetails(rect1, rect2) {
   dirs.y = dirY;
   dirs.x = dirX;
 
-  if (depth.bottom < 0) negDirs.y = 'bottom';
-  else if (depth.top < 0) negDirs.y = 'top';
-  if (depth.left < 0) negDirs.x = 'left';
-  else if (depth.right < 0) negDirs.x = 'right';
+  // isNeg
+  if (depth.bottom < 0) isNeg.y = 'bottom';
+  else if (depth.top < 0) isNeg.y = 'top';
+  if (depth.left < 0) isNeg.x = 'left';
+  else if (depth.right < 0) isNeg.x = 'right';
 
-  dirs.in = isColliding ? (entries.length ? entries[0][0] : 'top') : null; // fallback in case of exact match
-  return { dirs, depth, negDirs };
+  // Inside Dir
+  dirs.in = isColliding
+    ? depth.top === depth.bottom && depth.bottom === depth.left && depth.left === depth.right
+      ? 'center'
+      : entries.length
+        ? entries[0][0]
+        : 'top'
+    : null; // fallback in case of exact match
+
+  // Complete
+  return { dirs, depth, isNeg };
 }

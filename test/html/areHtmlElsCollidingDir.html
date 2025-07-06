@@ -3,6 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <title>Collision Test</title>
+    <script src="/__buffer.js"></script>
+    <script type="module">
+      import * as tinyHtml from './src/v1/basics/html.mjs';
+      import * as tinyCollisions from './src/v1/basics/collision.mjs';
+      Object.assign(window, tinyCollisions);
+      Object.assign(window, tinyHtml);
+    </script>
     <style>
       body {
         margin: 0;
@@ -46,188 +53,9 @@
       const wall = document.getElementById('wall');
       let offsetX, offsetY;
       let isDragging = false;
+      let moveStep = 1; // velocidade em px
 
-      const areElsCollTop = (rect1, rect2) => rect1.bottom < rect2.top;
-      const areElsCollBottom = (rect1, rect2) => rect1.top > rect2.bottom;
-      const areElsCollLeft = (rect1, rect2) => rect1.right < rect2.left;
-      const areElsCollRight = (rect1, rect2) => rect1.left > rect2.right;
-
-      const areElsCollPerfTop = (rect1, rect2) => rect1.bottom <= rect2.top;
-      const areElsCollPerfBottom = (rect1, rect2) => rect1.top >= rect2.bottom;
-      const areElsCollPerfLeft = (rect1, rect2) => rect1.right <= rect2.left;
-      const areElsCollPerfRight = (rect1, rect2) => rect1.left >= rect2.right;
-
-      const areElsColliding = (rect1, rect2) =>
-        !(
-          areElsCollLeft(rect1, rect2) ||
-          areElsCollRight(rect1, rect2) ||
-          areElsCollTop(rect1, rect2) ||
-          areElsCollBottom(rect1, rect2)
-        );
-
-      const areElsPerfColliding = (rect1, rect2) =>
-        !(
-          areElsCollPerfLeft(rect1, rect2) ||
-          areElsCollPerfRight(rect1, rect2) ||
-          areElsCollPerfTop(rect1, rect2) ||
-          areElsCollPerfBottom(rect1, rect2)
-        );
-
-      const getElsColliding = (rect1, rect2) => {
-        if (areElsCollLeft(rect1, rect2)) return 'left';
-        else if (areElsCollRight(rect1, rect2)) return 'right';
-        else if (areElsCollTop(rect1, rect2)) return 'top';
-        else if (areElsCollBottom(rect1, rect2)) return 'bottom';
-        return null;
-      };
-
-      const getElsPerfColliding = (rect1, rect2) => {
-        if (areElsCollPerfLeft(rect1, rect2)) return 'left';
-        else if (areElsCollPerfRight(rect1, rect2)) return 'right';
-        else if (areElsCollPerfTop(rect1, rect2)) return 'top';
-        else if (areElsCollPerfBottom(rect1, rect2)) return 'bottom';
-        return null;
-      };
-
-      const getElsCollOverlap = (rect1, rect2) => ({
-        overlapLeft: rect2.right - rect1.left,
-        overlapRight: rect1.right - rect2.left,
-        overlapTop: rect2.bottom - rect1.top,
-        overlapBottom: rect1.bottom - rect2.top,
-      });
-
-      const getElsCollOverlapPos = ({
-        overlapLeft = -1,
-        overlapRight = -1,
-        overlapTop = -1,
-        overlapBottom = -1,
-      } = {}) => ({
-        dirX: overlapLeft < overlapRight ? 'right' : 'left',
-        dirY: overlapTop < overlapBottom ? 'bottom' : 'top',
-      });
-
-      function getElsCollDirDepth(rect1, rect2) {
-        if (!areElsPerfColliding(rect1, rect2))
-          return {
-            inDir: null,
-            dirX: null,
-            dirY: null,
-            depthX: 0,
-            depthY: 0,
-          };
-
-        const { overlapLeft, overlapRight, overlapTop, overlapBottom } = getElsCollOverlap(
-          rect1,
-          rect2,
-        );
-        const { dirX, dirY } = getElsCollOverlapPos({
-          overlapLeft,
-          overlapRight,
-          overlapTop,
-          overlapBottom,
-        });
-        const depthX = Math.min(overlapLeft, overlapRight);
-        const depthY = Math.min(overlapTop, overlapBottom);
-
-        /** @type {Dirs} */
-        let inDir;
-
-        if (depthX < depthY) inDir = dirX;
-        else inDir = dirY;
-        return { inDir, dirX, dirY, depthX, depthY };
-      }
-
-      function getElsCollDetails(rect1, rect2) {
-        const isColliding = areElsPerfColliding(rect1, rect2);
-
-        /** @type {CollDirs} */
-        const dirs = { in: null, x: null, y: null };
-
-        /** @type {NegCollDirs} */
-        const negDirs = { y: null, x: null };
-
-        /** @type {Record<Dirs, number>} */
-        const depth = { top: 0, bottom: 0, left: 0, right: 0 };
-
-        // Yes, it's actually reversed the values orders
-        const { overlapLeft, overlapRight, overlapTop, overlapBottom } = getElsCollOverlap(
-          rect2,
-          rect1,
-        );
-        depth.top = overlapTop;
-        depth.bottom = overlapBottom;
-        depth.left = overlapLeft;
-        depth.right = overlapRight;
-
-        /**
-         * Detect the direction with the smallest positive overlap (entry point)
-         * @type {[Dirs, number][]}
-         */
-        // @ts-ignore
-        const entries = Object.entries(depth)
-          .filter(([, val]) => val > 0)
-          .sort((a, b) => a[1] - b[1]);
-
-        // Yes, it's actually reversed the values orders here too
-        const { dirX, dirY } = getElsCollOverlapPos({
-          overlapLeft: overlapRight,
-          overlapRight: overlapLeft,
-          overlapTop: overlapBottom,
-          overlapBottom: overlapTop,
-        });
-        dirs.y = dirY;
-        dirs.x = dirX;
-
-        if (depth.bottom < 0) negDirs.y = 'bottom';
-        else if (depth.top < 0) negDirs.y = 'top';
-        if (depth.left < 0) negDirs.x = 'left';
-        else if (depth.right < 0) negDirs.x = 'right';
-
-        dirs.in = isColliding ? (entries.length ? entries[0][0] : 'top') : null; // fallback in case of exact match
-        return { dirs, depth, negDirs };
-      }
-
-      function areHtmlElsCollidingWithLock(elem1, elem2, lockDirection, stateMap) {
-        const rect1 = elem1.getBoundingClientRect();
-        const rect2 = elem2.getBoundingClientRect();
-        const isColliding = areElsColliding(rect1, rect2);
-
-        const details = getElsCollDetails(rect1, rect2);
-        console.log(details.depth, details.dirs, details.negDirs);
-        // console.log(getElsCollDirDepth(rect1, rect2));
-
-        if (isColliding) {
-          // Save entry direction
-          if (!stateMap.has(elem1)) {
-            stateMap.set(elem1, lockDirection);
-          }
-          return true;
-        }
-
-        // Handle unlock logic
-        if (stateMap.has(elem1)) {
-          const lastDirection = stateMap.get(elem1);
-
-          switch (lastDirection) {
-            case 'top':
-              if (areElsCollTop(rect1, rect2)) stateMap.delete(elem1); // exited from top
-              break;
-            case 'bottom':
-              if (areElsCollBottom(rect1, rect2)) stateMap.delete(elem1); // exited from bottom
-              break;
-            case 'left':
-              if (areElsCollLeft(rect1, rect2)) stateMap.delete(elem1); // exited from left
-              break;
-            case 'right':
-              if (areElsCollRight(rect1, rect2)) stateMap.delete(elem1); // exited from right
-              break;
-          }
-
-          return stateMap.has(elem1); // still colliding (locked)
-        }
-
-        return false;
-      }
+      const stateMap = new WeakMap();
 
       box.addEventListener('mousedown', (e) => {
         isDragging = true;
@@ -241,17 +69,50 @@
         box.style.cursor = 'grab';
       });
 
-      const stateMap = new WeakMap();
       document.addEventListener('mousemove', (e) => {
         if (!isDragging) return;
-        const x = e.clientX - offsetX;
-        const y = e.clientY - offsetY;
+        moveBoxTo(e.clientX - offsetX, e.clientY - offsetY);
+      });
+
+      document.addEventListener('keydown', (e) => {
+        const left = box.offsetLeft;
+        const top = box.offsetTop;
+
+        switch (e.key) {
+          case 'ArrowLeft':
+          case 'a':
+            moveBoxTo(left - moveStep, top);
+            break;
+          case 'ArrowRight':
+          case 'd':
+            moveBoxTo(left + moveStep, top);
+            break;
+          case 'ArrowUp':
+          case 'w':
+            moveBoxTo(left, top - moveStep);
+            break;
+          case 'ArrowDown':
+          case 's':
+            moveBoxTo(left, top + moveStep);
+            break;
+        }
+      });
+
+      function moveBoxTo(x, y) {
         box.style.left = `${x}px`;
         box.style.top = `${y}px`;
 
         const colliding = areHtmlElsCollidingWithLock(box, wall, 'bottom', stateMap); // change 'right' if needed
         box.classList.toggle('colliding', colliding);
-      });
+
+        const rect1 = box.getBoundingClientRect();
+        const rect2 = wall.getBoundingClientRect();
+
+        const details = getElsCollDetails(rect1, rect2);
+        console.log('DETAILS', details.depth, details.dirs, details.isNeg);
+        // console.log('CENTER', getRelativeCenterOffset(rect1, rect2));
+        // console.log('DEPTH', getElsCollDirDepth(rect1, rect2));
+      }
     </script>
   </body>
 </html>
