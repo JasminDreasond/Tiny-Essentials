@@ -153,7 +153,7 @@ export const getElsCollOverlapPos = ({
  * @param {DOMRect} rect1 - The bounding rectangle of the first element.
  * @param {DOMRect} rect2 - The bounding rectangle of the second element.
  * @returns {{
- *   dir: Dirs | null;
+ *   inDir: Dirs | null;
  *   dirX: Dirs | null;
  *   dirY: Dirs | null;
  *   depthX: number;
@@ -163,7 +163,7 @@ export const getElsCollOverlapPos = ({
 export function getElsCollDirDepth(rect1, rect2) {
   if (!areElsPerfColliding(rect1, rect2))
     return {
-      dir: null,
+      inDir: null,
       dirX: null,
       dirY: null,
       depthX: 0,
@@ -181,11 +181,11 @@ export function getElsCollDirDepth(rect1, rect2) {
   const depthY = Math.min(overlapTop, overlapBottom);
 
   /** @type {Dirs} */
-  let dir;
+  let inDir;
 
-  if (depthX < depthY) dir = dirX;
-  else dir = dirY;
-  return { dir, dirX, dirY, depthX, depthY };
+  if (depthX < depthY) inDir = dirX;
+  else inDir = dirY;
+  return { inDir, dirX, dirY, depthX, depthY };
 }
 
 /** @typedef {'top'|'bottom'|'left'|'right'} Dirs */
@@ -196,7 +196,7 @@ export function getElsCollDirDepth(rect1, rect2) {
  * @param {DOMRect} rect1 - The bounding rectangle of the first element.
  * @param {DOMRect} rect2 - The bounding rectangle of the second element.
  * @returns {{
- *   dir: Dirs | null;
+ *   inDir: Dirs | null;
  *   dirX: Dirs | null;
  *   dirY: Dirs | null;
  *   top: number;
@@ -208,8 +208,8 @@ export function getElsCollDirDepth(rect1, rect2) {
 export function getElsCollDetails(rect1, rect2) {
   const isColliding = areElsPerfColliding(rect1, rect2);
 
-  /** @type {{ dir: Dirs | null;  dirX: Dirs | null;  dirY: Dirs | null; }} */
-  const dirs = { dir: null, dirX: null, dirY: null };
+  /** @type {{ inDir: Dirs | null;  dirX: Dirs | null;  dirY: Dirs | null; }} */
+  const dirs = { inDir: null, dirX: null, dirY: null };
 
   /** @type {Record<Dirs, number>} */
   const depth = { top: 0, bottom: 0, left: 0, right: 0 };
@@ -240,6 +240,6 @@ export function getElsCollDetails(rect1, rect2) {
   dirs.dirY = dirY;
   dirs.dirX = dirX;
 
-  dirs.dir = isColliding ? (entries.length ? entries[0][0] : 'top') : null; // fallback in case of exact match
+  dirs.inDir = isColliding ? (entries.length ? entries[0][0] : 'top') : null; // fallback in case of exact match
   return { ...dirs, ...depth };
 }

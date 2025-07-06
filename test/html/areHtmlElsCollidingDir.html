@@ -109,7 +109,7 @@
       function getElsCollDirDepth(rect1, rect2) {
         if (!areElsPerfColliding(rect1, rect2))
           return {
-            dir: null,
+            inDir: null,
             dirX: null,
             dirY: null,
             depthX: 0,
@@ -130,18 +130,18 @@
         const depthY = Math.min(overlapTop, overlapBottom);
 
         /** @type {Dirs} */
-        let dir;
+        let inDir;
 
-        if (depthX < depthY) dir = dirX;
-        else dir = dirY;
-        return { dir, dirX, dirY, depthX, depthY };
+        if (depthX < depthY) inDir = dirX;
+        else inDir = dirY;
+        return { inDir, dirX, dirY, depthX, depthY };
       }
 
       function getElsCollDetails(rect1, rect2) {
         const isColliding = areElsPerfColliding(rect1, rect2);
 
-        /** @type {{ dir: Dirs | null;  dirX: Dirs | null;  dirY: Dirs | null; }} */
-        const dirs = { dir: null, dirX: null, dirY: null };
+        /** @type {{ inDir: Dirs | null;  dirX: Dirs | null;  dirY: Dirs | null; }} */
+        const dirs = { inDir: null, dirX: null, dirY: null };
 
         /** @type {Record<Dirs, number>} */
         const depth = { top: 0, bottom: 0, left: 0, right: 0 };
@@ -175,7 +175,7 @@
         dirs.dirY = dirY;
         dirs.dirX = dirX;
 
-        dirs.dir = isColliding ? (entries.length ? entries[0][0] : 'top') : null; // fallback in case of exact match
+        dirs.inDir = isColliding ? (entries.length ? entries[0][0] : 'top') : null; // fallback in case of exact match
         return { ...dirs, ...depth };
       }
 
