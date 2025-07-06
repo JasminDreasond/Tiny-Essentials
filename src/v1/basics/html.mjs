@@ -1,10 +1,10 @@
 import { isJsonObject } from './objFilter.mjs';
 import {
-  getHtmlElsCollData,
-  getHtmlElsCollDataTop,
-  getHtmlElsCollDataBottom,
-  getHtmlElsCollDataLeft,
-  getHtmlElsCollDataRight,
+  getElsCollData,
+  getElsCollDataTop,
+  getElsCollDataBottom,
+  getElsCollDataLeft,
+  getElsCollDataRight,
 } from './collision.mjs';
 
 /**
@@ -17,7 +17,7 @@ import {
 export function areHtmlElsColliding(elem1, elem2) {
   const rect1 = elem1.getBoundingClientRect();
   const rect2 = elem2.getBoundingClientRect();
-  return getHtmlElsCollData(rect1, rect2);
+  return getElsCollData(rect1, rect2);
 }
 
 /**
@@ -33,7 +33,7 @@ export function areHtmlElsColliding(elem1, elem2) {
 export function areHtmlElsCollidingWithLock(elem1, elem2, lockDirection, stateMap) {
   const rect1 = elem1.getBoundingClientRect();
   const rect2 = elem2.getBoundingClientRect();
-  const isColliding = getHtmlElsCollData(rect1, rect2);
+  const isColliding = getElsCollData(rect1, rect2);
 
   if (isColliding) {
     // Save entry direction
@@ -49,16 +49,16 @@ export function areHtmlElsCollidingWithLock(elem1, elem2, lockDirection, stateMa
 
     switch (lastDirection) {
       case 'top':
-        if (getHtmlElsCollDataTop(rect1, rect2)) stateMap.delete(elem1); // exited from top
+        if (getElsCollDataTop(rect1, rect2)) stateMap.delete(elem1); // exited from top
         break;
       case 'bottom':
-        if (getHtmlElsCollDataBottom(rect1, rect2)) stateMap.delete(elem1); // exited from bottom
+        if (getElsCollDataBottom(rect1, rect2)) stateMap.delete(elem1); // exited from bottom
         break;
       case 'left':
-        if (getHtmlElsCollDataLeft(rect1, rect2)) stateMap.delete(elem1); // exited from left
+        if (getElsCollDataLeft(rect1, rect2)) stateMap.delete(elem1); // exited from left
         break;
       case 'right':
-        if (getHtmlElsCollDataRight(rect1, rect2)) stateMap.delete(elem1); // exited from right
+        if (getElsCollDataRight(rect1, rect2)) stateMap.delete(elem1); // exited from right
         break;
     }
 

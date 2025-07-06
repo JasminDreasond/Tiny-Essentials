@@ -47,23 +47,23 @@
       let offsetX, offsetY;
       let isDragging = false;
 
-      const getHtmlElsCollDataTop = (rect1, rect2) => rect1.bottom < rect2.top;
-      const getHtmlElsCollDataBottom = (rect1, rect2) => rect1.top > rect2.bottom;
-      const getHtmlElsCollDataLeft = (rect1, rect2) => rect1.right < rect2.left;
-      const getHtmlElsCollDataRight = (rect1, rect2) => rect1.left > rect2.right;
+      const getElsCollDataTop = (rect1, rect2) => rect1.bottom < rect2.top;
+      const getElsCollDataBottom = (rect1, rect2) => rect1.top > rect2.bottom;
+      const getElsCollDataLeft = (rect1, rect2) => rect1.right < rect2.left;
+      const getElsCollDataRight = (rect1, rect2) => rect1.left > rect2.right;
 
-      const getHtmlElsCollData = (rect1, rect2) =>
+      const getElsCollData = (rect1, rect2) =>
         !(
-          getHtmlElsCollDataLeft(rect1, rect2) ||
-          getHtmlElsCollDataRight(rect1, rect2) ||
-          getHtmlElsCollDataTop(rect1, rect2) ||
-          getHtmlElsCollDataBottom(rect1, rect2)
+          getElsCollDataLeft(rect1, rect2) ||
+          getElsCollDataRight(rect1, rect2) ||
+          getElsCollDataTop(rect1, rect2) ||
+          getElsCollDataBottom(rect1, rect2)
         );
 
       function areHtmlElsCollidingWithLock(elem1, elem2, lockDirection, stateMap) {
         const rect1 = elem1.getBoundingClientRect();
         const rect2 = elem2.getBoundingClientRect();
-        const isColliding = getHtmlElsCollData(rect1, rect2);
+        const isColliding = getElsCollData(rect1, rect2);
 
         if (isColliding) {
           // Save entry direction
@@ -79,16 +79,16 @@
 
           switch (lastDirection) {
             case 'top':
-              if (getHtmlElsCollDataTop(rect1, rect2)) stateMap.delete(elem1); // exited from top
+              if (getElsCollDataTop(rect1, rect2)) stateMap.delete(elem1); // exited from top
               break;
             case 'bottom':
-              if (getHtmlElsCollDataBottom(rect1, rect2)) stateMap.delete(elem1); // exited from bottom
+              if (getElsCollDataBottom(rect1, rect2)) stateMap.delete(elem1); // exited from bottom
               break;
             case 'left':
-              if (getHtmlElsCollDataLeft(rect1, rect2)) stateMap.delete(elem1); // exited from left
+              if (getElsCollDataLeft(rect1, rect2)) stateMap.delete(elem1); // exited from left
               break;
             case 'right':
-              if (getHtmlElsCollDataRight(rect1, rect2)) stateMap.delete(elem1); // exited from right
+              if (getElsCollDataRight(rect1, rect2)) stateMap.delete(elem1); // exited from right
               break;
           }
 
