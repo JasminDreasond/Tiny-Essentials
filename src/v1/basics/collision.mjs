@@ -117,6 +117,36 @@ export const getElsPerfColliding = (rect1, rect2) => {
 };
 
 /**
+ * @param {DOMRect} rect1 - The bounding rectangle of the first element.
+ * @param {DOMRect} rect2 - The bounding rectangle of the second element.
+ * @returns {}
+ */
+export const getElsCollOverlap = (rect1, rect2) => ({
+  overlapLeft: rect2.right - rect1.left,
+  overlapRight: rect1.right - rect2.left,
+  overlapTop: rect2.bottom - rect1.top,
+  overlapBottom: rect1.bottom - rect2.top,
+});
+
+/**
+ * @param {Object} [settings={}]
+ * @param {number} [settings.overlapLeft]
+ * @param {number} [settings.overlapRight]
+ * @param {number} [settings.overlapTop]
+ * @param {number} [settings.overlapBottom]
+ * @returns {{ dirX: Dirs, dirY: Dirs }}
+ */
+export const getElsCollOverlapPos = ({
+  overlapLeft = -1,
+  overlapRight = -1,
+  overlapTop = -1,
+  overlapBottom = -1,
+} = {}) => ({
+  dirX: overlapLeft < overlapRight ? 'right' : 'left',
+  dirY: overlapTop < overlapBottom ? 'bottom' : 'top',
+});
+
+/**
  * Detects the direction of the dominant collision between two elements
  * and calculates how deep the overlap is in both x and y axes.
  *
@@ -140,22 +170,18 @@ export function getElsCollDirDepth(rect1, rect2) {
       depthY: 0,
     };
 
-  const overlapLeft = rect2.right - rect1.left;
-  const overlapRight = rect1.right - rect2.left;
-  const overlapTop = rect2.bottom - rect1.top;
-  const overlapBottom = rect1.bottom - rect2.top;
-
+  const { overlapLeft, overlapRight, overlapTop, overlapBottom } = getElsCollOverlap(rect1, rect2);
+  const { dirX, dirY } = getElsCollOverlapPos({
+    overlapLeft,
+    overlapRight,
+    overlapTop,
+    overlapBottom,
+  });
   const depthX = Math.min(overlapLeft, overlapRight);
   const depthY = Math.min(overlapTop, overlapBottom);
 
   /** @type {Dirs} */
   let dir;
-
-  /** @type {Dirs} */
-  let dirX = overlapLeft < overlapRight ? 'right' : 'left';
-
-  /** @type {Dirs} */
-  let dirY = overlapTop < overlapBottom ? 'bottom' : 'top';
 
   if (depthX < depthY) dir = dirX;
   else dir = dirY;
@@ -170,7 +196,9 @@ export function getElsCollDirDepth(rect1, rect2) {
  * @param {DOMRect} rect1 - The bounding rectangle of the first element.
  * @param {DOMRect} rect2 - The bounding rectangle of the second element.
  * @returns {{
- *   direction: Dirs|null;
+ *   dir: Dirs | null;
+ *   dirX: Dirs | null;
+ *   dirY: Dirs | null;
  *   top: number;
  *   bottom: number;
  *   left: number;
@@ -179,14 +207,19 @@ export function getElsCollDirDepth(rect1, rect2) {
  */
 export function getElsCollDetails(rect1, rect2) {
   const isColliding = areElsPerfColliding(rect1, rect2);
+
+  /** @type {{ dir: Dirs | null;  dirX: Dirs | null;  dirY: Dirs | null; }} */
+  const dirs = { dir: null, dirX: null, dirY: null };
+
   /** @type {Record<Dirs, number>} */
   const depth = { top: 0, bottom: 0, left: 0, right: 0 };
-  if (!isColliding) return { direction: null, ...depth };
+  if (!isColliding) return { ...dirs, ...depth };
 
-  depth.top = Math.max(0, rect1.bottom - rect2.top);
-  depth.bottom = Math.max(0, rect2.bottom - rect1.top);
-  depth.left = Math.max(0, rect1.right - rect2.left);
-  depth.right = Math.max(0, rect2.right - rect1.left);
+  const { overlapLeft, overlapRight, overlapTop, overlapBottom } = getElsCollOverlap(rect2, rect1);
+  depth.top = overlapTop;
+  depth.bottom = overlapBottom;
+  depth.left = overlapLeft;
+  depth.right = overlapRight;
 
   /**
    * Detect the direction with the smallest positive overlap (entry point)
@@ -197,7 +230,14 @@ export function getElsCollDetails(rect1, rect2) {
     .filter(([, val]) => val > 0)
     .sort((a, b) => a[1] - b[1]);
 
-  /** @type {Dirs} */
-  const direction = entries.length ? entries[0][0] : 'top'; // fallback in case of exact match
-  return { direction, ...depth };
+  const { dirX, dirY } = getElsCollOverlapPos({
+    overlapLeft,
+    overlapRight,
+    overlapTop,
+    overlapBottom,
+  });
+  dirs.dirY = dirX;
+  dirs.dirX = dirY;
+  dirs.dir = entries.length ? entries[0][0] : 'top'; // fallback in case of exact match
+  return { ...dirs, ...depth };
 }
