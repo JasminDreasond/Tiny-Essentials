@@ -1,10 +1,10 @@
 import { isJsonObject } from './objFilter.mjs';
 import {
-  getElsCollData,
-  getElsCollDataTop,
-  getElsCollDataBottom,
-  getElsCollDataLeft,
-  getElsCollDataRight,
+  areElsColliding,
+  areElsCollTop,
+  areElsCollBottom,
+  areElsCollLeft,
+  areElsCollRight,
 } from './collision.mjs';
 
 /**
@@ -17,7 +17,7 @@ import {
 export function areHtmlElsColliding(elem1, elem2) {
   const rect1 = elem1.getBoundingClientRect();
   const rect2 = elem2.getBoundingClientRect();
-  return getElsCollData(rect1, rect2);
+  return areElsColliding(rect1, rect2);
 }
 
 /**
@@ -33,7 +33,7 @@ export function areHtmlElsColliding(elem1, elem2) {
 export function areHtmlElsCollidingWithLock(elem1, elem2, lockDirection, stateMap) {
   const rect1 = elem1.getBoundingClientRect();
   const rect2 = elem2.getBoundingClientRect();
-  const isColliding = getElsCollData(rect1, rect2);
+  const isColliding = areElsColliding(rect1, rect2);
 
   if (isColliding) {
     // Save entry direction
@@ -49,16 +49,16 @@ export function areHtmlElsCollidingWithLock(elem1, elem2, lockDirection, stateMa
 
     switch (lastDirection) {
       case 'top':
-        if (getElsCollDataTop(rect1, rect2)) stateMap.delete(elem1); // exited from top
+        if (areElsCollTop(rect1, rect2)) stateMap.delete(elem1); // exited from top
         break;
       case 'bottom':
-        if (getElsCollDataBottom(rect1, rect2)) stateMap.delete(elem1); // exited from bottom
+        if (areElsCollBottom(rect1, rect2)) stateMap.delete(elem1); // exited from bottom
         break;
       case 'left':
-        if (getElsCollDataLeft(rect1, rect2)) stateMap.delete(elem1); // exited from left
+        if (areElsCollLeft(rect1, rect2)) stateMap.delete(elem1); // exited from left
         break;
       case 'right':
-        if (getElsCollDataRight(rect1, rect2)) stateMap.delete(elem1); // exited from right
+        if (areElsCollRight(rect1, rect2)) stateMap.delete(elem1); // exited from right
         break;
     }
 
