@@ -213,8 +213,8 @@ export function getElsCollDetails(rect1, rect2) {
 
   /** @type {Record<Dirs, number>} */
   const depth = { top: 0, bottom: 0, left: 0, right: 0 };
-  if (!isColliding) return { ...dirs, ...depth };
 
+  // Yes, it's actually reversed the values orders
   const { overlapLeft, overlapRight, overlapTop, overlapBottom } = getElsCollOverlap(rect2, rect1);
   depth.top = overlapTop;
   depth.bottom = overlapBottom;
@@ -230,14 +230,16 @@ export function getElsCollDetails(rect1, rect2) {
     .filter(([, val]) => val > 0)
     .sort((a, b) => a[1] - b[1]);
 
+  // Yes, it's actually reversed the values orders here too
   const { dirX, dirY } = getElsCollOverlapPos({
-    overlapLeft,
-    overlapRight,
-    overlapTop,
-    overlapBottom,
+    overlapLeft: overlapRight,
+    overlapRight: overlapLeft,
+    overlapTop: overlapBottom,
+    overlapBottom: overlapTop,
   });
-  dirs.dirY = dirX;
-  dirs.dirX = dirY;
-  dirs.dir = entries.length ? entries[0][0] : 'top'; // fallback in case of exact match
+  dirs.dirY = dirY;
+  dirs.dirX = dirX;
+
+  dirs.dir = isColliding ? (entries.length ? entries[0][0] : 'top') : null; // fallback in case of exact match
   return { ...dirs, ...depth };
 }
