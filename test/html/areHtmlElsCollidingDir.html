@@ -89,8 +89,15 @@
         return null;
       };
 
-      function getElsCollDirAndDepth(rect1, rect2) {
-        if (!areElsPerfColliding(rect1, rect2)) return { direction: null, depthX: 0, depthY: 0 };
+      function getElsCollDirDepth(rect1, rect2) {
+        if (!areElsPerfColliding(rect1, rect2))
+          return {
+            dir: null,
+            dirX: null,
+            dirY: null,
+            depthX: 0,
+            depthY: 0,
+          };
 
         const overlapLeft = rect2.right - rect1.left;
         const overlapRight = rect1.right - rect2.left;
@@ -100,11 +107,18 @@
         const depthX = Math.min(overlapLeft, overlapRight);
         const depthY = Math.min(overlapTop, overlapBottom);
 
-        /** @type {Dirs | null} */
-        let direction = null;
-        if (depthX < depthY) direction = overlapLeft < overlapRight ? 'right' : 'left';
-        else direction = overlapTop < overlapBottom ? 'bottom' : 'top';
-        return { direction, depthX, depthY };
+        /** @type {Dirs} */
+        let dir;
+
+        /** @type {Dirs} */
+        let dirX = overlapLeft < overlapRight ? 'right' : 'left';
+
+        /** @type {Dirs} */
+        let dirY = overlapTop < overlapBottom ? 'bottom' : 'top';
+
+        if (depthX < depthY) dir = dirX;
+        else dir = dirY;
+        return { dir, dirX, dirY, depthX, depthY };
       }
 
       function getElsCollDetails(rect1, rect2) {
@@ -137,7 +151,7 @@
         const rect2 = elem2.getBoundingClientRect();
         const isColliding = areElsColliding(rect1, rect2);
         // console.log(getElsCollDetails(rect1, rect2));
-        console.log(getElsCollDirAndDepth(rect1, rect2));
+        console.log(getElsCollDirDepth(rect1, rect2));
 
         if (isColliding) {
           // Save entry direction

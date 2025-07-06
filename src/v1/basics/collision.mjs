@@ -123,13 +123,22 @@ export const getElsPerfColliding = (rect1, rect2) => {
  * @param {DOMRect} rect1 - The bounding rectangle of the first element.
  * @param {DOMRect} rect2 - The bounding rectangle of the second element.
  * @returns {{
- *   direction: Dirs | null,
- *   depthX: number,
- *   depthY: number
+ *   dir: Dirs | null;
+ *   dirX: Dirs | null;
+ *   dirY: Dirs | null;
+ *   depthX: number;
+ *   depthY: number;
  * }} An object containing the collision direction and how deep the overlap is.
  */
-export function getElsCollDirAndDepth(rect1, rect2) {
-  if (!areElsPerfColliding(rect1, rect2)) return { direction: null, depthX: 0, depthY: 0 };
+export function getElsCollDirDepth(rect1, rect2) {
+  if (!areElsPerfColliding(rect1, rect2))
+    return {
+      dir: null,
+      dirX: null,
+      dirY: null,
+      depthX: 0,
+      depthY: 0,
+    };
 
   const overlapLeft = rect2.right - rect1.left;
   const overlapRight = rect1.right - rect2.left;
@@ -139,11 +148,18 @@ export function getElsCollDirAndDepth(rect1, rect2) {
   const depthX = Math.min(overlapLeft, overlapRight);
   const depthY = Math.min(overlapTop, overlapBottom);
 
-  /** @type {Dirs | null} */
-  let direction = null;
-  if (depthX < depthY) direction = overlapLeft < overlapRight ? 'right' : 'left';
-  else direction = overlapTop < overlapBottom ? 'bottom' : 'top';
-  return { direction, depthX, depthY };
+  /** @type {Dirs} */
+  let dir;
+
+  /** @type {Dirs} */
+  let dirX = overlapLeft < overlapRight ? 'right' : 'left';
+
+  /** @type {Dirs} */
+  let dirY = overlapTop < overlapBottom ? 'bottom' : 'top';
+
+  if (depthX < depthY) dir = dirX;
+  else dir = dirY;
+  return { dir, dirX, dirY, depthX, depthY };
 }
 
 /** @typedef {'top'|'bottom'|'left'|'right'} Dirs */
