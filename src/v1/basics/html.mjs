@@ -345,13 +345,7 @@ export async function fetchJson(
 ///////////////////////////////////////////////////////////////////////////
 
 /**
- * @typedef {Object} HtmlElBoxSides
- * @property {number} x - Total horizontal size (left + right)
- * @property {number} y - Total vertical size (top + bottom)
- * @property {number} left
- * @property {number} right
- * @property {number} top
- * @property {number} bottom
+ * @typedef {import('../libs/TinyHtml.mjs').HtmlElBoxSides} HtmlElBoxSides
  */
 
 /**
@@ -359,23 +353,10 @@ export async function fetchJson(
  *
  * @param {HTMLElement} el - The target DOM element.
  * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) border widths, and each side individually.
+ * @deprecated - Use TinyHtml.borderWidth instead.
  */
 export const getHtmlElBordersWidth = (el) => {
-  const {
-    borderLeftWidth: left,
-    borderRightWidth: right,
-    borderTopWidth: top,
-    borderBottomWidth: bottom,
-  } = TinyHtml.cssFloats(el, [
-    'borderLeftWidth',
-    'borderRightWidth',
-    'borderTopWidth',
-    'borderBottomWidth',
-  ]);
-  const x = left + right;
-  const y = top + bottom;
-
-  return { x, y, left, right, top, bottom };
+  return TinyHtml.borderWidth(el);
 };
 
 /**
@@ -383,18 +364,10 @@ export const getHtmlElBordersWidth = (el) => {
  *
  * @param {HTMLElement} el - The target DOM element.
  * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) border sizes, and each side individually.
+ * @deprecated - Use TinyHtml.border instead.
  */
 export const getHtmlElBorders = (el) => {
-  const {
-    borderLeft: left,
-    borderRight: right,
-    borderTop: top,
-    borderBottom: bottom,
-  } = TinyHtml.cssFloats(el, ['borderLeft', 'borderRight', 'borderTop', 'borderBottom']);
-  const x = left + right;
-  const y = top + bottom;
-
-  return { x, y, left, right, top, bottom };
+  return TinyHtml.border(el);
 };
 
 /**
@@ -402,18 +375,10 @@ export const getHtmlElBorders = (el) => {
  *
  * @param {HTMLElement} el - The target DOM element.
  * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) margins, and each side individually.
+ * @deprecated - Use TinyHtml.margin instead.
  */
 export const getHtmlElMargin = (el) => {
-  const {
-    marginLeft: left,
-    marginRight: right,
-    marginTop: top,
-    marginBottom: bottom,
-  } = TinyHtml.cssFloats(el, ['marginLeft', 'marginRight', 'marginTop', 'marginBottom']);
-  const x = left + right;
-  const y = top + bottom;
-
-  return { x, y, left, right, top, bottom };
+  return TinyHtml.margin(el);
 };
 
 /**
@@ -421,18 +386,10 @@ export const getHtmlElMargin = (el) => {
  *
  * @param {HTMLElement} el - The target DOM element.
  * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) paddings, and each side individually.
+ * @deprecated - Use TinyHtml.padding instead.
  */
 export const getHtmlElPadding = (el) => {
-  const {
-    paddingLeft: left,
-    paddingRight: right,
-    paddingTop: top,
-    paddingBottom: bottom,
-  } = TinyHtml.cssFloats(el, ['paddingLeft', 'paddingRight', 'paddingTop', 'paddingBottom']);
-  const x = left + right;
-  const y = top + bottom;
-
-  return { x, y, left, right, top, bottom };
+  return TinyHtml.padding(el);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

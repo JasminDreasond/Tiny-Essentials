@@ -1,4 +1,14 @@
 /**
+ * @typedef {Object} HtmlElBoxSides
+ * @property {number} x - Total horizontal size (left + right)
+ * @property {number} y - Total vertical size (top + bottom)
+ * @property {number} left
+ * @property {number} right
+ * @property {number} top
+ * @property {number} bottom
+ */
+
+/**
  * TinyHtml is a utility class that provides static and instance-level methods
  * for precise dimension and position computations on HTML elements.
  * It mimics some jQuery functionalities while using native browser APIs.
@@ -552,6 +562,123 @@ class TinyHtml {
    */
   setScrollLeft(value) {
     return TinyHtml.setScrollLeft(this.#el, value);
+  }
+
+  /**
+   * Returns the total border width and individual sides from `border{Side}Width` CSS properties.
+   *
+   * @param {HTMLElement} el - The target DOM element.
+   * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) border widths, and each side individually.
+   */
+  static borderWidth(el) {
+    const {
+      borderLeftWidth: left,
+      borderRightWidth: right,
+      borderTopWidth: top,
+      borderBottomWidth: bottom,
+    } = TinyHtml.cssFloats(el, [
+      'borderLeftWidth',
+      'borderRightWidth',
+      'borderTopWidth',
+      'borderBottomWidth',
+    ]);
+    const x = left + right;
+    const y = top + bottom;
+
+    return { x, y, left, right, top, bottom };
+  }
+
+  /**
+   * Returns the total border width and individual sides from `border{Side}Width` CSS properties.
+   *
+   * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) border widths, and each side individually.
+   */
+  borderWidth() {
+    return TinyHtml.borderWidth(this.#el);
+  }
+
+  /**
+   * Returns the total border size and individual sides from `border{Side}` CSS properties.
+   *
+   * @param {HTMLElement} el - The target DOM element.
+   * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) border sizes, and each side individually.
+   */
+  static border(el) {
+    const {
+      borderLeft: left,
+      borderRight: right,
+      borderTop: top,
+      borderBottom: bottom,
+    } = TinyHtml.cssFloats(el, ['borderLeft', 'borderRight', 'borderTop', 'borderBottom']);
+    const x = left + right;
+    const y = top + bottom;
+
+    return { x, y, left, right, top, bottom };
+  }
+
+  /**
+   * Returns the total border size and individual sides from `border{Side}` CSS properties.
+   *
+   * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) border sizes, and each side individually.
+   */
+  border() {
+    return TinyHtml.border(this.#el);
+  }
+
+  /**
+   * Returns the total margin and individual sides from `margin{Side}` CSS properties.
+   *
+   * @param {HTMLElement} el - The target DOM element.
+   * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) margins, and each side individually.
+   */
+  static margin(el) {
+    const {
+      marginLeft: left,
+      marginRight: right,
+      marginTop: top,
+      marginBottom: bottom,
+    } = TinyHtml.cssFloats(el, ['marginLeft', 'marginRight', 'marginTop', 'marginBottom']);
+    const x = left + right;
+    const y = top + bottom;
+
+    return { x, y, left, right, top, bottom };
+  }
+
+  /**
+   * Returns the total margin and individual sides from `margin{Side}` CSS properties.
+   *
+   * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) margins, and each side individually.
+   */
+  margin() {
+    return TinyHtml.margin(this.#el);
+  }
+
+  /**
+   * Returns the total padding and individual sides from `padding{Side}` CSS properties.
+   *
+   * @param {HTMLElement} el - The target DOM element.
+   * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) paddings, and each side individually.
+   */
+  static padding(el) {
+    const {
+      paddingLeft: left,
+      paddingRight: right,
+      paddingTop: top,
+      paddingBottom: bottom,
+    } = TinyHtml.cssFloats(el, ['paddingLeft', 'paddingRight', 'paddingTop', 'paddingBottom']);
+    const x = left + right;
+    const y = top + bottom;
+
+    return { x, y, left, right, top, bottom };
+  }
+
+  /**
+   * Returns the total padding and individual sides from `padding{Side}` CSS properties.
+   *
+   * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) paddings, and each side individually.
+   */
+  padding() {
+    return TinyHtml.padding(this.#el);
   }
 }
 

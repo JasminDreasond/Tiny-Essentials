@@ -154,8 +154,8 @@
         controls.height.value = tinyEl.height();
         controls.scrollTop.value = tinyEl.scrollTop();
         controls.scrollLeft.value = tinyEl.scrollLeft();
-        controls.padding.value = parseFloat(getComputedStyle(el).paddingLeft);
-        controls.margin.value = parseFloat(getComputedStyle(el).marginTop);
+        controls.padding.value = tinyEl.padding().left;
+        controls.margin.value = tinyEl.margin().top;
       };
 
       const attachInputEvents = () => {
