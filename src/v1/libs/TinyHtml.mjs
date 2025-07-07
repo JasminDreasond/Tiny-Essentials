@@ -20,6 +20,16 @@
  */
 class TinyHtml {
   /**
+   * @param {*} el
+   * @param {string} where
+   * @param {boolean} [needsWindow]
+   */
+  static #isHtmlElement(el, where, needsWindow = false) {
+    if (!(el instanceof HTMLElement) && (!needsWindow || !(el instanceof Window)))
+      throw new Error(`[TinyHtml] Invalid Element in ${where}().`);
+  }
+
+  /**
    * The target HTML element for instance-level operations.
    * @type {HTMLElement}
    */
@@ -31,6 +41,7 @@ class TinyHtml {
    * @param {HTMLElement} el - The element to wrap and manipulate.
    */
   constructor(el) {
+    TinyHtml.#isHtmlElement(el, 'constructor');
     this.#el = el;
   }
 
@@ -50,6 +61,7 @@ class TinyHtml {
    * @returns {number} - The parsed float value.
    */
   static cssFloat(el, prop) {
+    TinyHtml.#isHtmlElement(el, 'cssFloat');
     // @ts-ignore
     const val = window.getComputedStyle(el)[prop];
     return parseFloat(val) || 0;
@@ -71,6 +83,7 @@ class TinyHtml {
    * @returns {Record<string, number>} - Map of property to float value.
    */
   static cssFloats(el, prop) {
+    TinyHtml.#isHtmlElement(el, 'cssFloats');
     const css = window.getComputedStyle(el);
     /** @type {Record<string, number>} */
     const result = {};
@@ -152,7 +165,7 @@ class TinyHtml {
       // @ts-ignore
       return extra === 'margin' ? el['inner' + name] : el.document.documentElement['client' + name];
     }
-    if (!(el instanceof HTMLElement)) throw new Error('Invalid HTMLElement in getDimension.');
+    TinyHtml.#isHtmlElement(el, 'getDimension');
     /** @type {HTMLElement} */
     const elHtml = el;
 
@@ -229,6 +242,7 @@ class TinyHtml {
    * @param {string|number} value - Height value.
    */
   static setHeight(el, value) {
+    TinyHtml.#isHtmlElement(el, 'setHeight');
     el.style.height = typeof value === 'number' ? `${value}px` : value;
   }
 
@@ -246,6 +260,7 @@ class TinyHtml {
    * @param {string|number} value - Width value.
    */
   static setWidth(el, value) {
+    TinyHtml.#isHtmlElement(el, 'setWidth');
     el.style.width = typeof value === 'number' ? `${value}px` : value;
   }
 
@@ -263,6 +278,7 @@ class TinyHtml {
    * @returns {number}
    */
   static height(el) {
+    TinyHtml.#isHtmlElement(el, 'height');
     return TinyHtml.getDimension(el, 'height', 'content');
   }
 
@@ -280,6 +296,7 @@ class TinyHtml {
    * @returns {number}
    */
   static width(el) {
+    TinyHtml.#isHtmlElement(el, 'width');
     return TinyHtml.getDimension(el, 'width', 'content');
   }
 
@@ -297,6 +314,7 @@ class TinyHtml {
    * @returns {number}
    */
   static innerHeight(el) {
+    TinyHtml.#isHtmlElement(el, 'innerHeight');
     return TinyHtml.getDimension(el, 'height', 'padding');
   }
 
@@ -314,6 +332,7 @@ class TinyHtml {
    * @returns {number}
    */
   static innerWidth(el) {
+    TinyHtml.#isHtmlElement(el, 'innerWidth');
     return TinyHtml.getDimension(el, 'width', 'padding');
   }
 
@@ -332,6 +351,7 @@ class TinyHtml {
    * @returns {number}
    */
   static outerHeight(el, includeMargin = false) {
+    TinyHtml.#isHtmlElement(el, 'outerHeight');
     return TinyHtml.getDimension(el, 'height', includeMargin ? 'margin' : 'border');
   }
 
@@ -351,6 +371,7 @@ class TinyHtml {
    * @returns {number}
    */
   static outerWidth(el, includeMargin = false) {
+    TinyHtml.#isHtmlElement(el, 'outerWidth');
     return TinyHtml.getDimension(el, 'width', includeMargin ? 'margin' : 'border');
   }
 
@@ -371,6 +392,7 @@ class TinyHtml {
    * @returns {{top: number, left: number}}
    */
   static offset(el) {
+    TinyHtml.#isHtmlElement(el, 'offset');
     const rect = el.getBoundingClientRect();
     const scrollTop = window.scrollY || document.documentElement.scrollTop;
     const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
@@ -395,6 +417,7 @@ class TinyHtml {
    * @returns {{top: number, left: number}}
    */
   static position(elem) {
+    TinyHtml.#isHtmlElement(elem, 'position');
     if (!(elem instanceof HTMLElement)) throw new Error('Invalid HTMLElement to get position.');
 
     let offsetParent;
@@ -454,6 +477,7 @@ class TinyHtml {
    * @returns {HTMLElement} - Offset parent element.
    */
   static offsetParent(elem) {
+    TinyHtml.#isHtmlElement(elem, 'offsetParent');
     if (!(elem instanceof HTMLElement)) throw new Error('Invalid HTMLElement to get OffsetParent.');
     let offsetParent = elem.offsetParent;
 
@@ -482,6 +506,7 @@ class TinyHtml {
    * @returns {number}
    */
   static scrollTop(el) {
+    TinyHtml.#isHtmlElement(el, 'scrollTop', true);
     if (TinyHtml.isWindow(el)) return el.pageYOffset;
     // @ts-ignore
     if (el.nodeType === 9) return el.defaultView.pageYOffset;
@@ -502,6 +527,7 @@ class TinyHtml {
    * @returns {number}
    */
   static scrollLeft(el) {
+    TinyHtml.#isHtmlElement(el, 'scrollLeft', true);
     if (TinyHtml.isWindow(el)) return el.pageXOffset;
     // @ts-ignore
     if (el.nodeType === 9) return el.defaultView.pageXOffset;
@@ -522,6 +548,7 @@ class TinyHtml {
    * @param {number} value - Scroll top value.
    */
   static setScrollTop(el, value) {
+    TinyHtml.#isHtmlElement(el, 'setScrollTop', true);
     if (TinyHtml.isWindow(el)) {
       el.scrollTo(el.pageXOffset, value);
     } else if (el.nodeType === 9) {
@@ -546,6 +573,7 @@ class TinyHtml {
    * @param {number} value - Scroll left value.
    */
   static setScrollLeft(el, value) {
+    TinyHtml.#isHtmlElement(el, 'setScrollLeft', true);
     if (TinyHtml.isWindow(el)) {
       el.scrollTo(value, el.pageYOffset);
     } else if (el.nodeType === 9) {
@@ -571,6 +599,7 @@ class TinyHtml {
    * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) border widths, and each side individually.
    */
   static borderWidth(el) {
+    TinyHtml.#isHtmlElement(el, 'borderWidth');
     const {
       borderLeftWidth: left,
       borderRightWidth: right,
@@ -604,6 +633,7 @@ class TinyHtml {
    * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) border sizes, and each side individually.
    */
   static border(el) {
+    TinyHtml.#isHtmlElement(el, 'border');
     const {
       borderLeft: left,
       borderRight: right,
@@ -632,6 +662,7 @@ class TinyHtml {
    * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) margins, and each side individually.
    */
   static margin(el) {
+    TinyHtml.#isHtmlElement(el, 'margin');
     const {
       marginLeft: left,
       marginRight: right,
@@ -660,6 +691,7 @@ class TinyHtml {
    * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) paddings, and each side individually.
    */
   static padding(el) {
+    TinyHtml.#isHtmlElement(el, 'padding');
     const {
       paddingLeft: left,
       paddingRight: right,
