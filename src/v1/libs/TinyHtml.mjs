@@ -1,18 +1,18 @@
 class TinyHtml {
   /**
-   * Check if the object is a window.
-   * @param {*} obj
-   * @returns {obj is Window}
+   * Checks whether the given object is a window.
+   * @param {*} obj - The object to test.
+   * @returns {obj is Window} - True if it's a Window.
    */
   static isWindow(obj) {
     return obj != null && obj === obj.window;
   }
 
   /**
-   * Get the computed CSS value as a float.
-   * @param {HTMLElement} el
-   * @param {string} prop
-   * @returns {number}
+   * Returns the computed CSS float value of a property.
+   * @param {HTMLElement} el - The element to inspect.
+   * @param {string} prop - The CSS property.
+   * @returns {number} - The parsed float value.
    */
   static cssFloat(el, prop) {
     // @ts-ignore
@@ -21,10 +21,10 @@ class TinyHtml {
   }
 
   /**
-   * Get the computed CSS value as a float.
-   * @param {HTMLElement} el
-   * @param {string[]} prop
-   * @returns {Record<string, number>}
+   * Returns computed float values of multiple CSS properties.
+   * @param {HTMLElement} el - The element to inspect.
+   * @param {string[]} prop - An array of CSS properties.
+   * @returns {Record<string, number>} - Map of property to float value.
    */
   static cssFloats(el, prop) {
     const css = window.getComputedStyle(el);
@@ -38,47 +38,59 @@ class TinyHtml {
   }
 
   /**
-   * Get or set the vertical scroll position of the page
-   * @param {number} [value] - Optional value to set scroll position
-   * @returns {number}
+   * Sets the vertical scroll position of the window.
+   * @param {number} [value] - Sets the scroll position.
    */
-  static winScrollTop(value) {
-    if (typeof value === 'number') window.scrollTo({ top: value });
+  static setWinScrollTop(value) {
+    window.scrollTo({ top: value });
+  }
+
+  /**
+   * Sets the horizontal scroll position of the window.
+   * @param {number} [value] - Sets the scroll position.
+   */
+  static setWinScrollLeft(value) {
+    window.scrollTo({ left: value });
+  }
+
+  /**
+   * Gets the vertical scroll position of the window.
+   * @returns {number} - The current scroll top value.
+   */
+  static winScrollTop() {
     return window.scrollY || document.documentElement.scrollTop;
   }
 
   /**
-   * Gets or sets the horizontal scroll position
-   * @param {number} [value]
-   * @returns {number}
+   * Gets the horizontal scroll position of the window.
+   * @returns {number} - The current scroll left value.
    */
-  static winScrollLeft(value) {
-    if (typeof value === 'number') window.scrollTo({ left: value });
+  static winScrollLeft() {
     return window.scrollX || document.documentElement.scrollLeft;
   }
 
   /**
-   * Returns the current height of the viewport (visible window area)
-   * @returns {number}
+   * Returns the current height of the viewport.
+   * @returns {number} - Viewport height in pixels.
    */
   static winInnerHeight() {
     return window.innerHeight || document.documentElement.clientHeight;
   }
 
   /**
-   * Gets the visible width of the window (viewport)
-   * @returns {number}
+   * Returns the current width of the viewport.
+   * @returns {number} - Viewport width in pixels.
    */
   static winInnerWidth() {
     return window.innerWidth || document.documentElement.clientWidth;
   }
 
   /**
-   * Get width or height of an element.
-   * @param {HTMLElement|Window} el
-   * @param {"width"|"height"} type
-   * @param {"content"|"padding"|"border"|"margin"} extra
-   * @returns {number}
+   * Gets the width or height of an element based on the box model.
+   * @param {HTMLElement|Window} el - The element or window.
+   * @param {"width"|"height"} type - Dimension type.
+   * @param {"content"|"padding"|"border"|"margin"} extra - Box model context.
+   * @returns {number} - Computed dimension.
    */
   static getDimension(el, type, extra = 'content') {
     const name = type === 'width' ? 'Width' : 'Height';
@@ -149,60 +161,74 @@ class TinyHtml {
   }
 
   /**
-   * @param {HTMLElement} el
-   * @param {string|number} value
+   * Sets the height of the element.
+   * @param {HTMLElement} el - Target element.
+   * @param {string|number} value - Height value.
    */
   static setHeight(el, value) {
     el.style.height = typeof value === 'number' ? `${value}px` : value;
   }
 
   /**
-   * @param {HTMLElement} el
-   * @param {string|number} value
+   * Sets the width of the element.
+   * @param {HTMLElement} el - Target element.
+   * @param {string|number} value - Width value.
    */
   static setWidth(el, value) {
     el.style.width = typeof value === 'number' ? `${value}px` : value;
   }
 
   /**
-   * @param {HTMLElement} el
+   * Returns content box height.
+   * @param {HTMLElement} el - Target element.
+   * @returns {number}
    */
   static height(el) {
     return TinyHtml.getDimension(el, 'height', 'content');
   }
 
   /**
-   * @param {HTMLElement} el
+   * Returns content box width.
+   * @param {HTMLElement} el - Target element.
+   * @returns {number}
    */
   static width(el) {
     return TinyHtml.getDimension(el, 'width', 'content');
   }
 
   /**
-   * @param {HTMLElement} el
+   * Returns padding box height.
+   * @param {HTMLElement} el - Target element.
+   * @returns {number}
    */
   static innerHeight(el) {
     return TinyHtml.getDimension(el, 'height', 'padding');
   }
 
   /**
-   * @param {HTMLElement} el
+   * Returns padding box width.
+   * @param {HTMLElement} el - Target element.
+   * @returns {number}
    */
   static innerWidth(el) {
     return TinyHtml.getDimension(el, 'width', 'padding');
   }
 
   /**
-   * @param {HTMLElement} el
-   * @param {boolean} includeMargin
+   * Returns outer height of the element, optionally including margin.
+   * @param {HTMLElement} el - Target element.
+   * @param {boolean} [includeMargin=false] - Whether to include margin.
+   * @returns {number}
    */
   static outerHeight(el, includeMargin = false) {
     return TinyHtml.getDimension(el, 'height', includeMargin ? 'margin' : 'border');
   }
 
   /**
-   * @param {HTMLElement} el
-   * @param {boolean} includeMargin
+   * Returns outer width of the element, optionally including margin.
+   * @param {HTMLElement} el - Target element.
+   * @param {boolean} [includeMargin=false] - Whether to include margin.
+   * @returns {number}
    */
   static outerWidth(el, includeMargin = false) {
     return TinyHtml.getDimension(el, 'width', includeMargin ? 'margin' : 'border');
@@ -211,8 +237,8 @@ class TinyHtml {
   //////////////////////////////////////////////////
 
   /**
-   * Gets the element's position relative to the top-left of the document
-   * @param {HTMLElement} el
+   * Gets the offset of the element relative to the document.
+   * @param {HTMLElement} el - Target element.
    * @returns {{top: number, left: number}}
    */
   static offset(el) {
@@ -227,8 +253,8 @@ class TinyHtml {
   }
 
   /**
-   * Get the element's position relative to its offset parent.
-   * @param {HTMLElement} elem
+   * Gets the position of the element relative to its offset parent.
+   * @param {HTMLElement} elem - Target element.
    * @returns {{top: number, left: number}}
    */
   static position(elem) {
@@ -278,9 +304,9 @@ class TinyHtml {
   }
 
   /**
-   * Get the real offsetParent of an element, skipping static ones.
-   * @param {HTMLElement} elem
-   * @returns {HTMLElement}
+   * Gets the closest positioned ancestor element.
+   * @param {HTMLElement} elem - Target element.
+   * @returns {HTMLElement} - Offset parent element.
    */
   static offsetParent(elem) {
     if (!(elem instanceof HTMLElement)) throw new Error('Invalid HTMLElement to get OffsetParent.');
@@ -298,8 +324,8 @@ class TinyHtml {
   }
 
   /**
-   * Get scrollTop (vertical)
-   * @param {HTMLElement|Window} el
+   * Gets the vertical scroll position.
+   * @param {HTMLElement|Window} el - Element or window.
    * @returns {number}
    */
   static scrollTop(el) {
@@ -310,8 +336,8 @@ class TinyHtml {
   }
 
   /**
-   * Get scrollLeft (horizontal)
-   * @param {HTMLElement|Window} el
+   * Gets the horizontal scroll position.
+   * @param {HTMLElement|Window} el - Element or window.
    * @returns {number}
    */
   static scrollLeft(el) {
@@ -322,9 +348,9 @@ class TinyHtml {
   }
 
   /**
-   * Set scrollTop (vertical)
-   * @param {HTMLElement|Window} el
-   * @param {number} value
+   * Sets the vertical scroll position.
+   * @param {HTMLElement|Window} el - Element or window.
+   * @param {number} value - Scroll top value.
    */
   static setScrollTop(el, value) {
     if (TinyHtml.isWindow(el)) {
@@ -338,9 +364,9 @@ class TinyHtml {
   }
 
   /**
-   * Set scrollLeft (horizontal)
-   * @param {HTMLElement|Window} el
-   * @param {number} value
+   * Sets the horizontal scroll position.
+   * @param {HTMLElement|Window} el - Element or window.
+   * @param {number} value - Scroll left value.
    */
   static setScrollLeft(el, value) {
     if (TinyHtml.isWindow(el)) {
