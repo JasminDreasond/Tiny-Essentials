@@ -20,6 +20,7 @@ This folder contains the core scripts we have worked on so far. Each file is a m
 - 🔄 **[asyncReplace](./basics/asyncReplace.md)** — Asynchronously replaces matches in a string using a regex and an async function.
 - 🖼️ **[html](./basics/html.md)** — Utilities for handling DOM element interactions like collision detection and basic element manipulation.
 - 📺 **[fullScreen](./basics/fullScreen.md)** — A complete fullscreen API manager with detection, event handling, and cross-browser compatibility.
+- 🧱 **[collision](./basics/collision.md)** — Full-featured rectangle collision detection system with directional analysis, depth calculation, and center offset metrics.
 
 ### 2. **`libs/`**
 - 🗂️ **[TinyPromiseQueue](./libs/TinyPromiseQueue.md)** — A class that allows sequential execution of asynchronous tasks, supporting task delays, cancellation, and queue management.
