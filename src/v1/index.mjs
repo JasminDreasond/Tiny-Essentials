@@ -118,8 +118,10 @@ import {
   getElsCollDirDepth,
   getElsCollDetails,
 } from './basics/collision.mjs';
+import TinyHtml from './libs/TinyHtml.mjs';
 
 export {
+  TinyHtml,
   TinyNotifications,
   TinyDomReadyManager,
   TinyDragger,

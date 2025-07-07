@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Collision Test</title>
+    <script src="/__buffer.js"></script>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        overflow: hidden;
+        background: #f0f0f0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: sans-serif;
+      }
+
+      #container {
+        position: relative;
+        width: 800px;
+        height: 600px;
+        border: 2px solid #333;
+        background: white;
+      }
+
+      .box {
+        position: absolute;
+        width: 100px;
+        height: 100px;
+        background: steelblue;
+        transition: border 0.2s ease;
+        user-select: none;
+      }
+
+      #fixed {
+        top: 250px;
+        left: 350px;
+        background: tomato;
+      }
+
+      #colliding {
+        cursor: grab;
+      }
+
+      #colliding.colliding {
+        background: limegreen;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <div id="fixed" class="box"></div>
+      <div id="colliding" class="box" style="top: 50px; left: 50px"></div>
+    </div>
+
+    <script type="module">
+      import { areHtmlElsColliding } from './src/v1/basics/html.mjs';
+
+      const fixed = document.getElementById('fixed');
+      const colliding = document.getElementById('colliding');
+
+      let isDragging = false;
+      let offsetX = 0;
+      let offsetY = 0;
+
+      colliding.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        offsetX = e.offsetX;
+        offsetY = e.offsetY;
+        colliding.style.cursor = 'grabbing';
+      });
+
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+        colliding.style.cursor = 'grab';
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+
+        const containerRect = document.getElementById('container').getBoundingClientRect();
+        let x = e.clientX - containerRect.left - offsetX;
+        let y = e.clientY - containerRect.top - offsetY;
+
+        colliding.style.left = `${x}px`;
+        colliding.style.top = `${y}px`;
+
+        const collided = areHtmlElsColliding(colliding, fixed);
+        colliding.classList.toggle('colliding', collided);
+      });
+    </script>
+  </body>
+</html>

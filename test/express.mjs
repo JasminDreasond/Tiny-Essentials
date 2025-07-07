@@ -17,6 +17,28 @@ const __dirname = path.dirname(__filename);
 const publicDir = path.join(__dirname, './html');
 const projectRoot = path.join(__dirname, '../');
 
+app.use(
+  express.static(publicDir, {
+    etag: false,
+    lastModified: false,
+    maxAge: 0,
+    cacheControl: false,
+    setHeaders: (res) => {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      res.setHeader('Surrogate-Control', 'no-store');
+    },
+  }),
+);
+
+function disableCache(res) {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('Surrogate-Control', 'no-store');
+}
+
 /**
  * @typedef {(filePath: string, fileName: string, req: import('express').Request, res: import('express').Response, next?: import('express').NextFunction) => void} ReadFileUrl
  */
@@ -37,6 +59,7 @@ const readFileUrl =
   ) =>
   (req, res, next) =>
     new Promise((resolve, reject) => {
+      disableCache(res);
       const filePath = path.join(projectRoot, folder, req.params[0]);
       if (!filePath.startsWith(projectRoot)) {
         return res.status(403).send('Access denied: path is outside allowed root.');
@@ -66,19 +89,26 @@ const jsLoader = async (filePath, fileName, req, res) => {
   try {
     let code = await fs.promises.readFile(filePath, 'utf-8');
 
+    // Remove imports indesejados
     for (const modName in importsToRemove) {
       const args = importsToRemove[modName];
-      // Remove importações de Buffer (de qualquer tipo)
-      code = code.replace(
-        new RegExp(
-          `import\\s*\\{${args.map((val, index) => `\\s*${val}${index !== args.length - 1 ? ',' : ''}\\s*`)}\\}\\s*from\\s*['"]${modName}['"]\\s*;?`,
-          'g',
-        ),
-        '',
+      const importRegex = new RegExp(
+        `import\\s*\\{\\s*${args.join('\\s*,\\s*')}\\s*\\}\\s*from\\s*['"]${modName}['"];?`,
+        'g',
       );
+      code = code.replace(importRegex, '');
     }
 
-    // Envia com o tipo correto
+    // Conversão de 'export default something;' para 'export { something };'
+    code = code.replace(/export\s+default\s+([a-zA-Z0-9_$]+)\s*;?/g, 'export { $1 };');
+
+    // Conversão de 'import something from "module";' para 'import { something } from "module";'
+    code = code.replace(
+      /import\s+([a-zA-Z0-9_$]+)\s+from\s+(['"][^'"]+['"]);?/g,
+      'import { $1 } from $2;',
+    );
+
+    res.type('application/javascript');
     res.send(code);
   } catch (err) {
     console.error(err);
@@ -143,7 +173,7 @@ for (const src of sources) {
   for (const v of versions) {
     app.get(
       new RegExp(`^\\/${src}\\/${v}\\/(.*)$`),
-      readFileUrl('application/javascript', ['.mjs', '.cjs', '.js'], `./${src}/${v}`, jsLoader),
+      readFileUrl('application/javascript', ['.mjs', '.js'], `./${src}/${v}`, jsLoader),
     );
     app.get(
       new RegExp(`^\\/${src}\\/${v}\\/(.*)$`),
@@ -206,11 +236,15 @@ const installNodeModules = (modName, globalName, globalResult) => async (req, re
 
 // Serve buffer global para o navegador
 app.get('/__buffer.js', installNodeModules('buffer', 'Buffer', 'window.Buffer = Buffer.Buffer;'));
+app.get(
+  '/__jquery.js',
+  installNodeModules('jquery', 'jquery', 'window.jQuery = jquery; window.$ = jquery;'),
+);
 
 // Middleware para servir arquivos estáticos
 app.use(express.static(publicDir));
 
 // Inicia o servidor
-app.listen(port, () => {
+app.listen(port, '127.0.0.1', () => {
   console.log(`Static server running at http://localhost:${port}`);
 });

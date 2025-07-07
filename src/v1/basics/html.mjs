@@ -1,17 +1,21 @@
 import { isJsonObject } from './objFilter.mjs';
+import TinyHtml from '../libs/TinyHtml.mjs';
 import {
   areElsColliding,
   areElsCollTop,
   areElsCollBottom,
   areElsCollLeft,
   areElsCollRight,
+  areElsPerfColliding,
 } from './collision.mjs';
+
+////////////////////////////////////////////////////
 
 /**
  * Checks if two DOM elements are colliding on the screen.
  *
- * @param {Element} elem1 - First DOM element.
- * @param {Element} elem2 - Second DOM element.
+ * @param {HTMLElement} elem1 - First DOM element.
+ * @param {HTMLElement} elem2 - Second DOM element.
  * @returns {boolean} - Returns true if the elements are colliding.
  */
 export function areHtmlElsColliding(elem1, elem2) {
@@ -21,20 +25,35 @@ export function areHtmlElsColliding(elem1, elem2) {
 }
 
 /**
- * Checks if two DOM elements are colliding on the screen, and locks the collision
- * until the element exits through the same side it entered.
+ * Checks if two DOM elements are colliding on the screen.
  *
- * @param {Element} elem1 - First DOM element (e.g. draggable or moving element).
- * @param {Element} elem2 - Second DOM element (e.g. a container or boundary element).
- * @param {'top'|'bottom'|'left'|'right'} lockDirection - Direction that must be respected to unlock the collision.
- * @param {WeakMap<Element, string>} stateMap - A shared WeakMap to track persistent entry direction per element.
- * @returns {boolean} True if collision is still active.
+ * @param {HTMLElement} elem1 - First DOM element.
+ * @param {HTMLElement} elem2 - Second DOM element.
+ * @returns {boolean} - Returns true if the elements are colliding.
  */
-export function areHtmlElsCollidingWithLock(elem1, elem2, lockDirection, stateMap) {
+export function areHtmlElsPerfColliding(elem1, elem2) {
   const rect1 = elem1.getBoundingClientRect();
   const rect2 = elem2.getBoundingClientRect();
-  const isColliding = areElsColliding(rect1, rect2);
+  return areElsPerfColliding(rect1, rect2);
+}
 
+/**
+ * @param {boolean} isColliding
+ * @param {DOMRect} rect1
+ * @param {DOMRect} rect2
+ * @param {HTMLElement} elem1
+ * @param {'top'|'bottom'|'left'|'right'} lockDirection
+ * @param {WeakMap<Element, string>} stateMap
+ * @returns {boolean}
+ */
+function areHtmlElscollidingWithLockBase(
+  isColliding,
+  rect1,
+  rect2,
+  elem1,
+  lockDirection,
+  stateMap,
+) {
   if (isColliding) {
     // Save entry direction
     if (!stateMap.has(elem1)) {
@@ -67,6 +86,42 @@ export function areHtmlElsCollidingWithLock(elem1, elem2, lockDirection, stateMa
 
   return false;
 }
+
+/**
+ * Checks if two DOM elements are colliding on the screen, and locks the collision
+ * until the element exits through the same side it entered.
+ *
+ * @param {HTMLElement} elem1 - First DOM element (e.g. draggable or moving element).
+ * @param {HTMLElement} elem2 - Second DOM element (e.g. a container or boundary element).
+ * @param {'top'|'bottom'|'left'|'right'} lockDirection - Direction that must be respected to unlock the collision.
+ * @param {WeakMap<Element, string>} stateMap - A shared WeakMap to track persistent entry direction per element.
+ * @returns {boolean} True if collision is still active.
+ */
+export function areHtmlElsCollidingWithLock(elem1, elem2, lockDirection, stateMap) {
+  const rect1 = elem1.getBoundingClientRect();
+  const rect2 = elem2.getBoundingClientRect();
+  const isColliding = areElsColliding(rect1, rect2);
+  return areHtmlElscollidingWithLockBase(isColliding, rect1, rect2, elem1, lockDirection, stateMap);
+}
+
+/**
+ * Checks if two DOM elements are colliding on the screen, and locks the collision
+ * until the element exits through the same side it entered.
+ *
+ * @param {HTMLElement} elem1 - First DOM element (e.g. draggable or moving element).
+ * @param {HTMLElement} elem2 - Second DOM element (e.g. a container or boundary element).
+ * @param {'top'|'bottom'|'left'|'right'} lockDirection - Direction that must be respected to unlock the collision.
+ * @param {WeakMap<Element, string>} stateMap - A shared WeakMap to track persistent entry direction per element.
+ * @returns {boolean} True if collision is still active.
+ */
+export function areHtmlElsPerfCollidingWithLock(elem1, elem2, lockDirection, stateMap) {
+  const rect1 = elem1.getBoundingClientRect();
+  const rect2 = elem2.getBoundingClientRect();
+  const isColliding = areElsPerfColliding(rect1, rect2);
+  return areHtmlElscollidingWithLockBase(isColliding, rect1, rect2, elem1, lockDirection, stateMap);
+}
+
+/////////////////////////////////////////////////////////////////
 
 /**
  * Reads the contents of a file using the specified FileReader method.
@@ -287,6 +342,8 @@ export async function fetchJson(
   );
 }
 
+///////////////////////////////////////////////////////////////////////////
+
 /**
  * @typedef {Object} HtmlElBoxSides
  * @property {number} x - Total horizontal size (left + right)
@@ -300,15 +357,21 @@ export async function fetchJson(
 /**
  * Returns the total border width and individual sides from `border{Side}Width` CSS properties.
  *
- * @param {Element} el - The target DOM element.
+ * @param {HTMLElement} el - The target DOM element.
  * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) border widths, and each side individually.
  */
 export const getHtmlElBordersWidth = (el) => {
-  const styles = getComputedStyle(el);
-  const left = parseFloat(styles.borderLeftWidth) || 0;
-  const right = parseFloat(styles.borderRightWidth) || 0;
-  const top = parseFloat(styles.borderTopWidth) || 0;
-  const bottom = parseFloat(styles.borderBottomWidth) || 0;
+  const {
+    borderLeftWidth: left,
+    borderRightWidth: right,
+    borderTopWidth: top,
+    borderBottomWidth: bottom,
+  } = TinyHtml.cssFloats(el, [
+    'borderLeftWidth',
+    'borderRightWidth',
+    'borderTopWidth',
+    'borderBottomWidth',
+  ]);
   const x = left + right;
   const y = top + bottom;
 
@@ -318,15 +381,16 @@ export const getHtmlElBordersWidth = (el) => {
 /**
  * Returns the total border size and individual sides from `border{Side}` CSS properties.
  *
- * @param {Element} el - The target DOM element.
+ * @param {HTMLElement} el - The target DOM element.
  * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) border sizes, and each side individually.
  */
 export const getHtmlElBorders = (el) => {
-  const styles = getComputedStyle(el);
-  const left = parseFloat(styles.borderLeft) || 0;
-  const right = parseFloat(styles.borderRight) || 0;
-  const top = parseFloat(styles.borderTop) || 0;
-  const bottom = parseFloat(styles.borderBottom) || 0;
+  const {
+    borderLeft: left,
+    borderRight: right,
+    borderTop: top,
+    borderBottom: bottom,
+  } = TinyHtml.cssFloats(el, ['borderLeft', 'borderRight', 'borderTop', 'borderBottom']);
   const x = left + right;
   const y = top + bottom;
 
@@ -336,16 +400,16 @@ export const getHtmlElBorders = (el) => {
 /**
  * Returns the total margin and individual sides from `margin{Side}` CSS properties.
  *
- * @param {Element} el - The target DOM element.
+ * @param {HTMLElement} el - The target DOM element.
  * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) margins, and each side individually.
  */
 export const getHtmlElMargin = (el) => {
-  const styles = getComputedStyle(el);
-  const left = parseFloat(styles.marginLeft) || 0;
-  const right = parseFloat(styles.marginRight) || 0;
-  const top = parseFloat(styles.marginTop) || 0;
-  const bottom = parseFloat(styles.marginBottom) || 0;
-
+  const {
+    marginLeft: left,
+    marginRight: right,
+    marginTop: top,
+    marginBottom: bottom,
+  } = TinyHtml.cssFloats(el, ['marginLeft', 'marginRight', 'marginTop', 'marginBottom']);
   const x = left + right;
   const y = top + bottom;
 
@@ -355,21 +419,23 @@ export const getHtmlElMargin = (el) => {
 /**
  * Returns the total padding and individual sides from `padding{Side}` CSS properties.
  *
- * @param {Element} el - The target DOM element.
+ * @param {HTMLElement} el - The target DOM element.
  * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) paddings, and each side individually.
  */
 export const getHtmlElPadding = (el) => {
-  const styles = getComputedStyle(el);
-  const left = parseFloat(styles.paddingLeft) || 0;
-  const right = parseFloat(styles.paddingRight) || 0;
-  const top = parseFloat(styles.paddingTop) || 0;
-  const bottom = parseFloat(styles.paddingBottom) || 0;
-
+  const {
+    paddingLeft: left,
+    paddingRight: right,
+    paddingTop: top,
+    paddingBottom: bottom,
+  } = TinyHtml.cssFloats(el, ['paddingLeft', 'paddingRight', 'paddingTop', 'paddingBottom']);
   const x = left + right;
   const y = top + bottom;
 
   return { x, y, left, right, top, bottom };
 };
+
+///////////////////////////////////////////////////////////////////////////////
 
 /**
  * Installs a script that toggles CSS classes on a given element
@@ -504,8 +570,8 @@ export function isInViewport(element) {
   const elementTop = element.offsetTop;
   const elementBottom = elementTop + element.offsetHeight;
 
-  const viewportTop = window.scrollY;
-  const viewportBottom = viewportTop + window.innerHeight;
+  const viewportTop = TinyHtml.winScrollTop();
+  const viewportBottom = viewportTop + TinyHtml.winInnerHeight();
 
   return elementBottom > viewportTop && elementTop < viewportBottom;
 }
@@ -517,8 +583,8 @@ export function isInViewport(element) {
  * @returns {boolean} True if the element is fully visible in the viewport, false otherwise.
  */
 export function isScrolledIntoView(element) {
-  const viewportTop = window.scrollY;
-  const viewportBottom = viewportTop + window.innerHeight;
+  const viewportTop = TinyHtml.winScrollTop();
+  const viewportBottom = viewportTop + TinyHtml.winInnerHeight();
 
   const elemTop = element.offsetTop;
   const elemBottom = elemTop + element.offsetHeight;
