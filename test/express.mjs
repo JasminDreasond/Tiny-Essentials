@@ -6,6 +6,8 @@ import { marked } from 'marked';
 import sass from 'sass';
 import { build } from 'esbuild';
 
+import { arraySortPositions } from '../src/v1/index.mjs';
+
 const app = express();
 const port = 3145;
 
@@ -196,33 +198,54 @@ const importsToRemove = {
   buffer: ['Buffer'],
 };
 
-/** @type {(modName: string, globalName: string, globalResult: string) => import('express').Application} */
-const installNodeModules = (modName, globalName, globalResult) => async (req, res, next) => {
+/** @type {(modNames: string[], globalNames: string[], globalResults: string[]) => import('express').Application} */
+const installNodeModules = (modNames, globalNames, globalResults) => async (req, res, next) => {
   try {
-    const result = await build({
-      entryPoints: [modName],
-      bundle: true,
-      write: false,
-      format: 'iife',
-      globalName,
-      platform: 'browser',
-    });
+    const jsList = [];
+    const promises = [];
+    for (const index in modNames) {
+      const modName = modNames[index];
+      promises.push(
+        new Promise(async (resolve, reject) => {
+          try {
+            const result = await build({
+              entryPoints: [modName],
+              bundle: true,
+              write: false,
+              format: 'iife',
+              globalName: globalNames[index],
+              platform: 'browser',
+              external: [...modNames, 'window', 'global'],
+            });
 
-    if (result.errors.length > 0) {
-      for (const err of result.errors) console.error(err);
-      throw new Error(`Failed to bundle ${modName}`);
+            if (result.errors.length > 0) {
+              for (const err of result.errors) console.error(err);
+              throw new Error(`Failed to bundle ${modName}`);
+            }
+
+            if (result.warnings.length > 0) {
+              for (const warn of result.warnings) console.warn(warn);
+            }
+
+            jsList.push({
+              data: `${result.outputFiles[0].text}${typeof globalResults[index] === 'string' ? `\n${globalResults[index]}\n` : ''}`,
+              index,
+            });
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
+        }),
+      );
     }
 
-    if (result.warnings.length > 0) {
-      for (const warn of result.warnings) console.warn(warn);
-    }
+    await Promise.all(promises);
+    jsList.sort(arraySortPositions('index'));
 
-    const js = result.outputFiles[0].text;
     const final = `
-      // Polyfill: require('${modName}') e ${globalName} global
+      // Polyfill: require('${modNames[0]}') e ${globalNames[0]} global
       (function () {
-        ${js}
-        ${globalResult}
+        ${jsList.map((js) => js.data).join('\n')}
       })();
     `;
 
@@ -230,7 +253,7 @@ const installNodeModules = (modName, globalName, globalResult) => async (req, re
     res.send(final);
   } catch (err) {
     console.error(err);
-    res.status(500).send(`Failed to bundle ${modName}`);
+    res.status(500).send(`Failed to bundle ${modNames[0]}`);
   }
 };
 
@@ -238,7 +261,11 @@ const installNodeModules = (modName, globalName, globalResult) => async (req, re
 app.get('/__buffer.js', installNodeModules('buffer', 'Buffer', 'window.Buffer = Buffer.Buffer;'));
 app.get(
   '/__jquery.js',
-  installNodeModules('jquery', 'jquery', 'window.jQuery = jquery; window.$ = jquery;'),
+  installNodeModules(
+    ['jquery'],
+    ['jQuery'],
+    ['window.jQuery = jQuery; window.$ = jQuery;'],
+  ),
 );
 
 // Middleware para servir arquivos estáticos
