@@ -1,4 +1,29 @@
+/**
+ * TinyHtml is a utility class that provides static and instance-level methods
+ * for precise dimension and position computations on HTML elements.
+ * It mimics some jQuery functionalities while using native browser APIs.
+ *
+ * Inspired by the jQuery project's open source implementations of element dimension
+ * and offset utilities. This class serves as a lightweight alternative using modern DOM APIs.
+ *
+ * @class
+ */
 class TinyHtml {
+  /**
+   * The target HTML element for instance-level operations.
+   * @type {HTMLElement}
+   */
+  #el;
+
+  /**
+   * Creates an instance of TinyHtml for a specific HTMLElement.
+   * Useful when you want to operate repeatedly on the same element using instance methods.
+   * @param {HTMLElement} el - The element to wrap and manipulate.
+   */
+  constructor(el) {
+    this.#el = el;
+  }
+
   /**
    * Checks whether the given object is a window.
    * @param {*} obj - The object to test.
@@ -161,12 +186,30 @@ class TinyHtml {
   }
 
   /**
+   * Gets the width or height of an element based on the box model.
+   * @param {"width"|"height"} type - Dimension type.
+   * @param {"content"|"padding"|"border"|"margin"} extra - Box model context.
+   * @returns {number} - Computed dimension.
+   */
+  getDimension(type, extra) {
+    return TinyHtml.getDimension(this.#el, type, extra);
+  }
+
+  /**
    * Sets the height of the element.
    * @param {HTMLElement} el - Target element.
    * @param {string|number} value - Height value.
    */
   static setHeight(el, value) {
     el.style.height = typeof value === 'number' ? `${value}px` : value;
+  }
+
+  /**
+   * Sets the height of the element.
+   * @param {string|number} value - Height value.
+   */
+  setHeight(value) {
+    return TinyHtml.setHeight(this.#el, value);
   }
 
   /**
@@ -179,12 +222,28 @@ class TinyHtml {
   }
 
   /**
+   * Sets the width of the element.
+   * @param {string|number} value - Width value.
+   */
+  setWidth(value) {
+    return TinyHtml.setWidth(this.#el, value);
+  }
+
+  /**
    * Returns content box height.
    * @param {HTMLElement} el - Target element.
    * @returns {number}
    */
   static height(el) {
     return TinyHtml.getDimension(el, 'height', 'content');
+  }
+
+  /**
+   * Returns content box height.
+   * @returns {number}
+   */
+  height() {
+    return TinyHtml.height(this.#el);
   }
 
   /**
@@ -197,6 +256,14 @@ class TinyHtml {
   }
 
   /**
+   * Returns content box width.
+   * @returns {number}
+   */
+  width() {
+    return TinyHtml.width(this.#el);
+  }
+
+  /**
    * Returns padding box height.
    * @param {HTMLElement} el - Target element.
    * @returns {number}
@@ -206,12 +273,28 @@ class TinyHtml {
   }
 
   /**
+   * Returns padding box height.
+   * @returns {number}
+   */
+  innerHeight() {
+    return TinyHtml.innerHeight(this.#el);
+  }
+
+  /**
    * Returns padding box width.
    * @param {HTMLElement} el - Target element.
    * @returns {number}
    */
   static innerWidth(el) {
     return TinyHtml.getDimension(el, 'width', 'padding');
+  }
+
+  /**
+   * Returns padding box width.
+   * @returns {number}
+   */
+  innerWidth() {
+    return TinyHtml.innerWidth(this.#el);
   }
 
   /**
@@ -225,6 +308,15 @@ class TinyHtml {
   }
 
   /**
+   * Returns outer height of the element, optionally including margin.
+   * @param {boolean} [includeMargin=false] - Whether to include margin.
+   * @returns {number}
+   */
+  outerHeight(includeMargin) {
+    return TinyHtml.outerHeight(this.#el, includeMargin);
+  }
+
+  /**
    * Returns outer width of the element, optionally including margin.
    * @param {HTMLElement} el - Target element.
    * @param {boolean} [includeMargin=false] - Whether to include margin.
@@ -232,6 +324,15 @@ class TinyHtml {
    */
   static outerWidth(el, includeMargin = false) {
     return TinyHtml.getDimension(el, 'width', includeMargin ? 'margin' : 'border');
+  }
+
+  /**
+   * Returns outer width of the element, optionally including margin.
+   * @param {boolean} [includeMargin=false] - Whether to include margin.
+   * @returns {number}
+   */
+  outerWidth(includeMargin) {
+    return TinyHtml.outerWidth(this.#el, includeMargin);
   }
 
   //////////////////////////////////////////////////
@@ -250,6 +351,14 @@ class TinyHtml {
       top: rect.top + scrollTop,
       left: rect.left + scrollLeft,
     };
+  }
+
+  /**
+   * Gets the offset of the element relative to the document.
+   * @returns {{top: number, left: number}}
+   */
+  offset() {
+    return TinyHtml.offset(this.#el);
   }
 
   /**
@@ -304,6 +413,14 @@ class TinyHtml {
   }
 
   /**
+   * Gets the position of the element relative to its offset parent.
+   * @returns {{top: number, left: number}}
+   */
+  position() {
+    return TinyHtml.position(this.#el);
+  }
+
+  /**
    * Gets the closest positioned ancestor element.
    * @param {HTMLElement} elem - Target element.
    * @returns {HTMLElement} - Offset parent element.
@@ -324,6 +441,14 @@ class TinyHtml {
   }
 
   /**
+   * Gets the closest positioned ancestor element.
+   * @returns {HTMLElement} - Offset parent element.
+   */
+  offsetParent() {
+    return TinyHtml.offsetParent(this.#el);
+  }
+
+  /**
    * Gets the vertical scroll position.
    * @param {HTMLElement|Window} el - Element or window.
    * @returns {number}
@@ -336,6 +461,14 @@ class TinyHtml {
   }
 
   /**
+   * Gets the vertical scroll position.
+   * @returns {number}
+   */
+  scrollTop() {
+    return TinyHtml.scrollTop(this.#el);
+  }
+
+  /**
    * Gets the horizontal scroll position.
    * @param {HTMLElement|Window} el - Element or window.
    * @returns {number}
@@ -345,6 +478,14 @@ class TinyHtml {
     // @ts-ignore
     if (el.nodeType === 9) return el.defaultView.pageXOffset;
     return el.scrollLeft;
+  }
+
+  /**
+   * Gets the horizontal scroll position.
+   * @returns {number}
+   */
+  scrollLeft() {
+    return TinyHtml.scrollLeft(this.#el);
   }
 
   /**
@@ -364,6 +505,14 @@ class TinyHtml {
   }
 
   /**
+   * Sets the vertical scroll position.
+   * @param {number} value - Scroll top value.
+   */
+  setScrollTop(value) {
+    return TinyHtml.setScrollTop(this.#el, value);
+  }
+
+  /**
    * Sets the horizontal scroll position.
    * @param {HTMLElement|Window} el - Element or window.
    * @param {number} value - Scroll left value.
@@ -377,6 +526,14 @@ class TinyHtml {
     } else {
       el.scrollLeft = value;
     }
+  }
+
+  /**
+   * Sets the horizontal scroll position.
+   * @param {number} value - Scroll left value.
+   */
+  setScrollLeft(value) {
+    return TinyHtml.setScrollLeft(this.#el, value);
   }
 }
 
