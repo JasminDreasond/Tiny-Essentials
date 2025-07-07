@@ -20,28 +20,54 @@
  */
 class TinyHtml {
   /**
-   * @param {*} el
-   * @param {string} where
-   * @param {boolean} [needsWindow]
+   * Validates whether the given object is an HTMLElement or optionally a Window.
+   * Used internally for argument safety checks.
+   *
+   * @param {*} el - The object to test.
+   * @param {string} where - The context/method name using this validation.
+   * @param {boolean} [needsWindow=false] - If true, allows Window objects as valid.
+   * @readonly
    */
-  static #isHtmlElement(el, where, needsWindow = false) {
+  static _isElement(el, where, needsWindow = false) {
     if (!(el instanceof HTMLElement) && (!needsWindow || !(el instanceof Window)))
       throw new Error(`[TinyHtml] Invalid Element in ${where}().`);
   }
 
   /**
+   * Internal helper to validate and return the HTMLElement.
+   * Throws an error if the element is invalid.
+   *
+   * @param {string} where - The method name or context calling this.
+   * @returns {HTMLElement} - The HTMLElement.
+   */
+  getHtmlElement(where) {
+    if (!(this.#el instanceof HTMLElement))
+      throw new Error(`[TinyHtml] Invalid Element in ${where}().`);
+    return this.#el;
+  }
+
+  /**
+   * Returns the current element held by this instance.
+   *
+   * @returns {HTMLElement|Window} - The instance's target element.
+   */
+  getElement() {
+    return this.#el;
+  }
+
+  /**
    * The target HTML element for instance-level operations.
-   * @type {HTMLElement}
+   * @type {HTMLElement|Window}
    */
   #el;
 
   /**
    * Creates an instance of TinyHtml for a specific HTMLElement.
    * Useful when you want to operate repeatedly on the same element using instance methods.
-   * @param {HTMLElement} el - The element to wrap and manipulate.
+   * @param {HTMLElement|Window} el - The element to wrap and manipulate.
    */
   constructor(el) {
-    TinyHtml.#isHtmlElement(el, 'constructor');
+    TinyHtml._isElement(el, 'constructor');
     this.#el = el;
   }
 
@@ -61,7 +87,7 @@ class TinyHtml {
    * @returns {number} - The parsed float value.
    */
   static cssFloat(el, prop) {
-    TinyHtml.#isHtmlElement(el, 'cssFloat');
+    TinyHtml._isElement(el, 'cssFloat');
     // @ts-ignore
     const val = window.getComputedStyle(el)[prop];
     return parseFloat(val) || 0;
@@ -73,7 +99,7 @@ class TinyHtml {
    * @returns {number} - The parsed float value.
    */
   cssFloat(prop) {
-    return TinyHtml.cssFloat(this.#el, prop);
+    return TinyHtml.cssFloat(this.getHtmlElement('cssFloat'), prop);
   }
 
   /**
@@ -83,7 +109,7 @@ class TinyHtml {
    * @returns {Record<string, number>} - Map of property to float value.
    */
   static cssFloats(el, prop) {
-    TinyHtml.#isHtmlElement(el, 'cssFloats');
+    TinyHtml._isElement(el, 'cssFloats');
     const css = window.getComputedStyle(el);
     /** @type {Record<string, number>} */
     const result = {};
@@ -100,7 +126,7 @@ class TinyHtml {
    * @returns {Record<string, number>} - Map of property to float value.
    */
   cssFloats(prop) {
-    return TinyHtml.cssFloats(this.#el, prop);
+    return TinyHtml.cssFloats(this.getHtmlElement('cssFloats'), prop);
   }
 
   /**
@@ -165,7 +191,7 @@ class TinyHtml {
       // @ts-ignore
       return extra === 'margin' ? el['inner' + name] : el.document.documentElement['client' + name];
     }
-    TinyHtml.#isHtmlElement(el, 'getDimension');
+    TinyHtml._isElement(el, 'getDimension');
     /** @type {HTMLElement} */
     const elHtml = el;
 
@@ -233,7 +259,7 @@ class TinyHtml {
    * @returns {number} - Computed dimension.
    */
   getDimension(type, extra) {
-    return TinyHtml.getDimension(this.#el, type, extra);
+    return TinyHtml.getDimension(this.getElement(), type, extra);
   }
 
   /**
@@ -242,7 +268,7 @@ class TinyHtml {
    * @param {string|number} value - Height value.
    */
   static setHeight(el, value) {
-    TinyHtml.#isHtmlElement(el, 'setHeight');
+    TinyHtml._isElement(el, 'setHeight');
     el.style.height = typeof value === 'number' ? `${value}px` : value;
   }
 
@@ -251,7 +277,7 @@ class TinyHtml {
    * @param {string|number} value - Height value.
    */
   setHeight(value) {
-    return TinyHtml.setHeight(this.#el, value);
+    return TinyHtml.setHeight(this.getHtmlElement('setHeight'), value);
   }
 
   /**
@@ -260,7 +286,7 @@ class TinyHtml {
    * @param {string|number} value - Width value.
    */
   static setWidth(el, value) {
-    TinyHtml.#isHtmlElement(el, 'setWidth');
+    TinyHtml._isElement(el, 'setWidth');
     el.style.width = typeof value === 'number' ? `${value}px` : value;
   }
 
@@ -269,16 +295,16 @@ class TinyHtml {
    * @param {string|number} value - Width value.
    */
   setWidth(value) {
-    return TinyHtml.setWidth(this.#el, value);
+    return TinyHtml.setWidth(this.getHtmlElement('setWidth'), value);
   }
 
   /**
    * Returns content box height.
-   * @param {HTMLElement} el - Target element.
+   * @param {HTMLElement|Window} el - Target element.
    * @returns {number}
    */
   static height(el) {
-    TinyHtml.#isHtmlElement(el, 'height');
+    TinyHtml._isElement(el, 'height');
     return TinyHtml.getDimension(el, 'height', 'content');
   }
 
@@ -287,16 +313,16 @@ class TinyHtml {
    * @returns {number}
    */
   height() {
-    return TinyHtml.height(this.#el);
+    return TinyHtml.height(this.getElement());
   }
 
   /**
    * Returns content box width.
-   * @param {HTMLElement} el - Target element.
+   * @param {HTMLElement|Window} el - Target element.
    * @returns {number}
    */
   static width(el) {
-    TinyHtml.#isHtmlElement(el, 'width');
+    TinyHtml._isElement(el, 'width');
     return TinyHtml.getDimension(el, 'width', 'content');
   }
 
@@ -305,16 +331,16 @@ class TinyHtml {
    * @returns {number}
    */
   width() {
-    return TinyHtml.width(this.#el);
+    return TinyHtml.width(this.getElement());
   }
 
   /**
    * Returns padding box height.
-   * @param {HTMLElement} el - Target element.
+   * @param {HTMLElement|Window} el - Target element.
    * @returns {number}
    */
   static innerHeight(el) {
-    TinyHtml.#isHtmlElement(el, 'innerHeight');
+    TinyHtml._isElement(el, 'innerHeight');
     return TinyHtml.getDimension(el, 'height', 'padding');
   }
 
@@ -323,16 +349,16 @@ class TinyHtml {
    * @returns {number}
    */
   innerHeight() {
-    return TinyHtml.innerHeight(this.#el);
+    return TinyHtml.innerHeight(this.getElement());
   }
 
   /**
    * Returns padding box width.
-   * @param {HTMLElement} el - Target element.
+   * @param {HTMLElement|Window} el - Target element.
    * @returns {number}
    */
   static innerWidth(el) {
-    TinyHtml.#isHtmlElement(el, 'innerWidth');
+    TinyHtml._isElement(el, 'innerWidth');
     return TinyHtml.getDimension(el, 'width', 'padding');
   }
 
@@ -341,17 +367,17 @@ class TinyHtml {
    * @returns {number}
    */
   innerWidth() {
-    return TinyHtml.innerWidth(this.#el);
+    return TinyHtml.innerWidth(this.getElement());
   }
 
   /**
    * Returns outer height of the element, optionally including margin.
-   * @param {HTMLElement} el - Target element.
+   * @param {HTMLElement|Window} el - Target element.
    * @param {boolean} [includeMargin=false] - Whether to include margin.
    * @returns {number}
    */
   static outerHeight(el, includeMargin = false) {
-    TinyHtml.#isHtmlElement(el, 'outerHeight');
+    TinyHtml._isElement(el, 'outerHeight');
     return TinyHtml.getDimension(el, 'height', includeMargin ? 'margin' : 'border');
   }
 
@@ -361,17 +387,17 @@ class TinyHtml {
    * @returns {number}
    */
   outerHeight(includeMargin) {
-    return TinyHtml.outerHeight(this.#el, includeMargin);
+    return TinyHtml.outerHeight(this.getElement(), includeMargin);
   }
 
   /**
    * Returns outer width of the element, optionally including margin.
-   * @param {HTMLElement} el - Target element.
+   * @param {HTMLElement|Window} el - Target element.
    * @param {boolean} [includeMargin=false] - Whether to include margin.
    * @returns {number}
    */
   static outerWidth(el, includeMargin = false) {
-    TinyHtml.#isHtmlElement(el, 'outerWidth');
+    TinyHtml._isElement(el, 'outerWidth');
     return TinyHtml.getDimension(el, 'width', includeMargin ? 'margin' : 'border');
   }
 
@@ -381,7 +407,7 @@ class TinyHtml {
    * @returns {number}
    */
   outerWidth(includeMargin) {
-    return TinyHtml.outerWidth(this.#el, includeMargin);
+    return TinyHtml.outerWidth(this.getElement(), includeMargin);
   }
 
   //////////////////////////////////////////////////
@@ -392,7 +418,7 @@ class TinyHtml {
    * @returns {{top: number, left: number}}
    */
   static offset(el) {
-    TinyHtml.#isHtmlElement(el, 'offset');
+    TinyHtml._isElement(el, 'offset');
     const rect = el.getBoundingClientRect();
     const scrollTop = window.scrollY || document.documentElement.scrollTop;
     const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
@@ -408,7 +434,7 @@ class TinyHtml {
    * @returns {{top: number, left: number}}
    */
   offset() {
-    return TinyHtml.offset(this.#el);
+    return TinyHtml.offset(this.getHtmlElement('offset'));
   }
 
   /**
@@ -417,8 +443,7 @@ class TinyHtml {
    * @returns {{top: number, left: number}}
    */
   static position(elem) {
-    TinyHtml.#isHtmlElement(elem, 'position');
-    if (!(elem instanceof HTMLElement)) throw new Error('Invalid HTMLElement to get position.');
+    TinyHtml._isElement(elem, 'position');
 
     let offsetParent;
     let offset;
@@ -468,7 +493,7 @@ class TinyHtml {
    * @returns {{top: number, left: number}}
    */
   position() {
-    return TinyHtml.position(this.#el);
+    return TinyHtml.position(this.getHtmlElement('position'));
   }
 
   /**
@@ -477,8 +502,7 @@ class TinyHtml {
    * @returns {HTMLElement} - Offset parent element.
    */
   static offsetParent(elem) {
-    TinyHtml.#isHtmlElement(elem, 'offsetParent');
-    if (!(elem instanceof HTMLElement)) throw new Error('Invalid HTMLElement to get OffsetParent.');
+    TinyHtml._isElement(elem, 'offsetParent');
     let offsetParent = elem.offsetParent;
 
     while (
@@ -497,7 +521,7 @@ class TinyHtml {
    * @returns {HTMLElement} - Offset parent element.
    */
   offsetParent() {
-    return TinyHtml.offsetParent(this.#el);
+    return TinyHtml.offsetParent(this.getHtmlElement('offsetParent'));
   }
 
   /**
@@ -506,7 +530,7 @@ class TinyHtml {
    * @returns {number}
    */
   static scrollTop(el) {
-    TinyHtml.#isHtmlElement(el, 'scrollTop', true);
+    TinyHtml._isElement(el, 'scrollTop', true);
     if (TinyHtml.isWindow(el)) return el.pageYOffset;
     // @ts-ignore
     if (el.nodeType === 9) return el.defaultView.pageYOffset;
@@ -518,7 +542,7 @@ class TinyHtml {
    * @returns {number}
    */
   scrollTop() {
-    return TinyHtml.scrollTop(this.#el);
+    return TinyHtml.scrollTop(this.getElement());
   }
 
   /**
@@ -527,7 +551,7 @@ class TinyHtml {
    * @returns {number}
    */
   static scrollLeft(el) {
-    TinyHtml.#isHtmlElement(el, 'scrollLeft', true);
+    TinyHtml._isElement(el, 'scrollLeft', true);
     if (TinyHtml.isWindow(el)) return el.pageXOffset;
     // @ts-ignore
     if (el.nodeType === 9) return el.defaultView.pageXOffset;
@@ -539,7 +563,7 @@ class TinyHtml {
    * @returns {number}
    */
   scrollLeft() {
-    return TinyHtml.scrollLeft(this.#el);
+    return TinyHtml.scrollLeft(this.getElement());
   }
 
   /**
@@ -548,7 +572,7 @@ class TinyHtml {
    * @param {number} value - Scroll top value.
    */
   static setScrollTop(el, value) {
-    TinyHtml.#isHtmlElement(el, 'setScrollTop', true);
+    TinyHtml._isElement(el, 'setScrollTop', true);
     if (TinyHtml.isWindow(el)) {
       el.scrollTo(el.pageXOffset, value);
     } else if (el.nodeType === 9) {
@@ -564,7 +588,7 @@ class TinyHtml {
    * @param {number} value - Scroll top value.
    */
   setScrollTop(value) {
-    return TinyHtml.setScrollTop(this.#el, value);
+    return TinyHtml.setScrollTop(this.getElement(), value);
   }
 
   /**
@@ -573,7 +597,7 @@ class TinyHtml {
    * @param {number} value - Scroll left value.
    */
   static setScrollLeft(el, value) {
-    TinyHtml.#isHtmlElement(el, 'setScrollLeft', true);
+    TinyHtml._isElement(el, 'setScrollLeft', true);
     if (TinyHtml.isWindow(el)) {
       el.scrollTo(value, el.pageYOffset);
     } else if (el.nodeType === 9) {
@@ -589,7 +613,7 @@ class TinyHtml {
    * @param {number} value - Scroll left value.
    */
   setScrollLeft(value) {
-    return TinyHtml.setScrollLeft(this.#el, value);
+    return TinyHtml.setScrollLeft(this.getElement(), value);
   }
 
   /**
@@ -599,7 +623,7 @@ class TinyHtml {
    * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) border widths, and each side individually.
    */
   static borderWidth(el) {
-    TinyHtml.#isHtmlElement(el, 'borderWidth');
+    TinyHtml._isElement(el, 'borderWidth');
     const {
       borderLeftWidth: left,
       borderRightWidth: right,
@@ -623,7 +647,7 @@ class TinyHtml {
    * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) border widths, and each side individually.
    */
   borderWidth() {
-    return TinyHtml.borderWidth(this.#el);
+    return TinyHtml.borderWidth(this.getHtmlElement('borderWidth'));
   }
 
   /**
@@ -633,7 +657,7 @@ class TinyHtml {
    * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) border sizes, and each side individually.
    */
   static border(el) {
-    TinyHtml.#isHtmlElement(el, 'border');
+    TinyHtml._isElement(el, 'border');
     const {
       borderLeft: left,
       borderRight: right,
@@ -652,7 +676,7 @@ class TinyHtml {
    * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) border sizes, and each side individually.
    */
   border() {
-    return TinyHtml.border(this.#el);
+    return TinyHtml.border(this.getHtmlElement('border'));
   }
 
   /**
@@ -662,7 +686,7 @@ class TinyHtml {
    * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) margins, and each side individually.
    */
   static margin(el) {
-    TinyHtml.#isHtmlElement(el, 'margin');
+    TinyHtml._isElement(el, 'margin');
     const {
       marginLeft: left,
       marginRight: right,
@@ -681,7 +705,7 @@ class TinyHtml {
    * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) margins, and each side individually.
    */
   margin() {
-    return TinyHtml.margin(this.#el);
+    return TinyHtml.margin(this.getHtmlElement('margin'));
   }
 
   /**
@@ -691,7 +715,7 @@ class TinyHtml {
    * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) paddings, and each side individually.
    */
   static padding(el) {
-    TinyHtml.#isHtmlElement(el, 'padding');
+    TinyHtml._isElement(el, 'padding');
     const {
       paddingLeft: left,
       paddingRight: right,
@@ -710,7 +734,7 @@ class TinyHtml {
    * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) paddings, and each side individually.
    */
   padding() {
-    return TinyHtml.padding(this.#el);
+    return TinyHtml.padding(this.getHtmlElement('padding'));
   }
 }
 
