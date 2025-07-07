@@ -138,6 +138,7 @@
       const el = document.getElementById('test-box');
       const result = document.getElementById('result');
       const $el = $('#test-box');
+      const tinyEl = new TinyHtml(el);
 
       const controls = {
         width: document.getElementById('set-width'),
@@ -149,29 +150,29 @@
       };
 
       const syncInputs = () => {
-        controls.width.value = TinyHtml.width(el);
-        controls.height.value = TinyHtml.height(el);
-        controls.scrollTop.value = el.scrollTop;
-        controls.scrollLeft.value = el.scrollLeft;
+        controls.width.value = tinyEl.width();
+        controls.height.value = tinyEl.height();
+        controls.scrollTop.value = tinyEl.scrollTop();
+        controls.scrollLeft.value = tinyEl.scrollLeft();
         controls.padding.value = parseFloat(getComputedStyle(el).paddingLeft);
         controls.margin.value = parseFloat(getComputedStyle(el).marginTop);
       };
 
       const attachInputEvents = () => {
         controls.width.addEventListener('input', () => {
-          TinyHtml.setWidth(el, parseInt(controls.width.value));
+          tinyEl.setWidth(parseInt(controls.width.value));
           update();
         });
         controls.height.addEventListener('input', () => {
-          TinyHtml.setHeight(el, parseInt(controls.height.value));
+          tinyEl.setHeight(parseInt(controls.height.value));
           update();
         });
         controls.scrollTop.addEventListener('input', () => {
-          TinyHtml.setScrollTop(el, parseInt(controls.scrollTop.value));
+          tinyEl.setScrollTop(parseInt(controls.scrollTop.value));
           update();
         });
         controls.scrollLeft.addEventListener('input', () => {
-          TinyHtml.setScrollLeft(el, parseInt(controls.scrollLeft.value));
+          tinyEl.setScrollLeft(parseInt(controls.scrollLeft.value));
           update();
         });
         controls.padding.addEventListener('input', () => {
@@ -193,23 +194,23 @@
       const update = () => {
         syncInputs();
         const tinyValues = {
-          'TinyHtml.position': JSON.stringify(TinyHtml.position(el)),
-          'TinyHtml.offset': JSON.stringify(TinyHtml.offset(el)),
-          'TinyHtml.offsetParent': TinyHtml.offsetParent(el).tagName,
-          'TinyHtml.cssFloat(paddingLeft)': TinyHtml.cssFloat(el, 'paddingLeft') + 'px',
+          'TinyHtml.position': JSON.stringify(tinyEl.position()),
+          'TinyHtml.offset': JSON.stringify(tinyEl.offset()),
+          'TinyHtml.offsetParent': tinyEl.offsetParent().tagName,
+          'TinyHtml.cssFloat(paddingLeft)': tinyEl.cssFloat('paddingLeft') + 'px',
           'TinyHtml.cssFloats([marginTop, marginBottom])': JSON.stringify(
-            TinyHtml.cssFloats(el, ['marginTop', 'marginBottom']),
+            tinyEl.cssFloats(['marginTop', 'marginBottom']),
           ),
-          'TinyHtml.height': TinyHtml.height(el) + 'px',
-          'TinyHtml.innerHeight': TinyHtml.innerHeight(el) + 'px',
-          'TinyHtml.outerHeight': TinyHtml.outerHeight(el) + 'px',
-          'TinyHtml.outerHeight (with margin)': TinyHtml.outerHeight(el, true) + 'px',
-          'TinyHtml.width': TinyHtml.width(el) + 'px',
-          'TinyHtml.innerWidth': TinyHtml.innerWidth(el) + 'px',
-          'TinyHtml.outerWidth': TinyHtml.outerWidth(el) + 'px',
-          'TinyHtml.outerWidth (with margin)': TinyHtml.outerWidth(el, true) + 'px',
-          'TinyHtml.scrollTop': TinyHtml.scrollTop(el) + 'px',
-          'TinyHtml.scrollLeft': TinyHtml.scrollLeft(el) + 'px',
+          'TinyHtml.height': tinyEl.height() + 'px',
+          'TinyHtml.innerHeight': tinyEl.innerHeight() + 'px',
+          'TinyHtml.outerHeight': tinyEl.outerHeight() + 'px',
+          'TinyHtml.outerHeight (with margin)': tinyEl.outerHeight(true) + 'px',
+          'TinyHtml.width': tinyEl.width() + 'px',
+          'TinyHtml.innerWidth': tinyEl.innerWidth() + 'px',
+          'TinyHtml.outerWidth': tinyEl.outerWidth() + 'px',
+          'TinyHtml.outerWidth (with margin)': tinyEl.outerWidth(true) + 'px',
+          'TinyHtml.scrollTop': tinyEl.scrollTop() + 'px',
+          'TinyHtml.scrollLeft': tinyEl.scrollLeft() + 'px',
         };
 
         const jQueryValues = {

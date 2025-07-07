@@ -46,6 +46,15 @@ class TinyHtml {
   }
 
   /**
+   * Returns the computed CSS float value of a property.
+   * @param {string} prop - The CSS property.
+   * @returns {number} - The parsed float value.
+   */
+  cssFloat(prop) {
+    return TinyHtml.cssFloat(this.#el, prop);
+  }
+
+  /**
    * Returns computed float values of multiple CSS properties.
    * @param {HTMLElement} el - The element to inspect.
    * @param {string[]} prop - An array of CSS properties.
@@ -60,6 +69,15 @@ class TinyHtml {
       result[name] = parseFloat(css[name]) || 0;
     }
     return result;
+  }
+
+  /**
+   * Returns computed float values of multiple CSS properties.
+   * @param {string[]} prop - An array of CSS properties.
+   * @returns {Record<string, number>} - Map of property to float value.
+   */
+  cssFloats(prop) {
+    return TinyHtml.cssFloats(this.#el, prop);
   }
 
   /**
