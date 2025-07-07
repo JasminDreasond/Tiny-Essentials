@@ -168,7 +168,7 @@ Returns the **center X and Y coordinates** of a rectangle.
 
 ---
 
-### `getRelativeCenterOffset(rect1, rect2)`
+### `getElsRelativeCenterOffset(rect1, rect2)`
 
 Returns the distance from `rect1`'s center to `rect2`'s center:
 

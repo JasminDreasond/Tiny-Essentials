@@ -266,7 +266,7 @@ export const getRectCenter = (rect) => ({
  *   y: number
  * }} An object with the X and Y offset in pixels from rect1's center to rect2's center.
  */
-export function getRelativeCenterOffset(rect1, rect2) {
+export function getElsRelativeCenterOffset(rect1, rect2) {
   const center1X = rect1.left + rect1.width / 2;
   const center1Y = rect1.top + rect1.height / 2;
 
