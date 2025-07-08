@@ -24,7 +24,6 @@
  * @typedef {string|TinyElementPackRaw|TinyElementPackRaw[]|((index: number, el: TinyElementPackRaw) => boolean)} WinnowRequest
  */
 
-
 /**
  * Elements accepted as constructor values for TinyHtml.
  * These include common DOM elements and root containers.
@@ -282,7 +281,30 @@ class TinyHtml {
   static _preElems(elems) {
     /** @param {TinyElementPack[]} item */
     const checkElement = (item) =>
-      item.map((elem) => (elem instanceof TinyHtml ? elem.getHtmlElement(')preElems') : elem));
+      item.map((elem) => (elem instanceof TinyHtml ? elem.getHtmlElement('preElems') : elem));
+    if (!Array.isArray(elems)) return checkElement([elems]);
+    return checkElement(elems);
+  }
+
+  /**
+   * Normalizes and converts one or more DOM elements (or TinyHtml instances)
+   * into an array of `TinyHtml` instances.
+   *
+   * - If a plain DOM element is passed, it is wrapped into a `TinyHtml` instance.
+   * - If a `TinyHtml` instance is already passed, it is preserved.
+   * - If an array is passed, all elements inside are converted accordingly.
+   *
+   * This ensures consistent access to methods of the `TinyHtml` class regardless
+   * of the input form.
+   *
+   * @param {TinyElementPack|TinyElementPack[]} elems - A single element or an array of elements (DOM or TinyHtml).
+   * @returns {TinyHtml[]} An array of TinyHtml instances corresponding to the input elements.
+   * @readonly
+   */
+  static toTinyElm(elems) {
+    /** @param {TinyElementPack[]} item */
+    const checkElement = (item) =>
+      item.map((elem) => (!(elem instanceof TinyHtml) ? new TinyHtml(elem) : elem));
     if (!Array.isArray(elems)) return checkElement([elems]);
     return checkElement(elems);
   }
