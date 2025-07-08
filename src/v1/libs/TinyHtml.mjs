@@ -1786,6 +1786,186 @@ class TinyHtml {
   trigger(event, payload = {}) {
     return TinyHtml.trigger(this.#el, event, payload);
   }
+
+  ///////////////////////////////////////////////////////////////
+
+  /**
+   * Property name normalization similar to jQuery's propFix.
+   */
+  static _propFix = {
+    for: 'htmlFor',
+    class: 'className',
+  };
+
+  /**
+   * Get an attribute on an element.
+   * @param {HTMLElement} el
+   * @param {string} name
+   * @returns {string|null}
+   */
+  static attr(el, name) {
+    TinyHtml._isHtmlElement(el, 'attr');
+    return el.getAttribute(name);
+  }
+
+  /**
+   * Get an attribute on an element.
+   * @param {string} name
+   * @returns {string|null}
+   */
+  attr(name) {
+    return TinyHtml.attr(this.getHtmlElement('attr'), name);
+  }
+
+  /**
+   * Set an attribute on an element.
+   * @param {HTMLElement} el
+   * @param {string} name
+   * @param {string|null} [value=null]
+   */
+  static setAttr(el, name, value = null) {
+    TinyHtml._isHtmlElement(el, 'setAttr');
+    if (value === null) el.removeAttribute(name);
+    else el.setAttribute(name, value);
+  }
+
+  /**
+   * Set an attribute on an element.
+   * @param {string} name
+   * @param {string|null} [value=null]
+   */
+  setAttr(name, value) {
+    return TinyHtml.setAttr(this.getHtmlElement('setAttr'), name, value);
+  }
+
+  /**
+   * Remove attribute(s) from an element.
+   * @param {HTMLElement} el
+   * @param {string} name Space-separated list of attributes.
+   */
+  static removeAttr(el, name) {
+    TinyHtml._isHtmlElement(el, 'removeAttr');
+    el.removeAttribute(name);
+  }
+
+  /**
+   * Remove attribute(s) from an element.
+   * @param {string} name Space-separated list of attributes.
+   */
+  removeAttr(name) {
+    return TinyHtml.removeAttr(this.getHtmlElement('removeAttr'), name);
+  }
+
+  /**
+   * Check if an attribute exists on an element.
+   * @param {HTMLElement} el
+   * @param {string} name
+   * @returns {boolean}
+   */
+  static hasAttr(el, name) {
+    TinyHtml._isHtmlElement(el, 'hasAttr');
+    return el.hasAttribute(name);
+  }
+
+  /**
+   * Check if an attribute exists on an element.
+   * @param {string} name
+   * @returns {boolean}
+   */
+  hasAttr(name) {
+    return TinyHtml.hasAttr(this.getHtmlElement('hasAttr'), name);
+  }
+
+  /**
+   * Check if a property exists.
+   * @param {HTMLElement} el
+   * @param {string} name
+   * @returns {boolean}
+   */
+  static hasProp(el, name) {
+    TinyHtml._isHtmlElement(el, 'hasProp');
+    // @ts-ignore
+    const propName = TinyHtml._propFix[name] || name;
+    // @ts-ignore
+    return !!el[propName];
+  }
+
+  /**
+   * Check if a property exists.
+   * @param {string} name
+   * @returns {boolean}
+   */
+  hasProp(name) {
+    return TinyHtml.hasProp(this.getHtmlElement('hasProp'), name);
+  }
+
+  /**
+   * Set a property on an element.
+   * @param {HTMLElement} el
+   * @param {string} name
+   */
+  static addProp(el, name) {
+    TinyHtml._isHtmlElement(el, 'addProp');
+    // @ts-ignore
+    name = TinyHtml._propFix[name] || name;
+    // @ts-ignore
+    el[name] = true;
+  }
+
+  /**
+   * Set a property on an element.
+   * @param {string} name
+   */
+  addProp(name) {
+    return TinyHtml.addProp(this.getHtmlElement('addProp'), name);
+  }
+
+  /**
+   * Remove a property from an element.
+   * @param {HTMLElement} el
+   * @param {string} name
+   */
+  static removeProp(el, name) {
+    TinyHtml._isHtmlElement(el, 'removeProp');
+    // @ts-ignore
+    name = TinyHtml._propFix[name] || name;
+    // @ts-ignore
+    el[name] = false;
+  }
+
+  /**
+   * Remove a property from an element.
+   * @param {string} name
+   */
+  removeProp(name) {
+    return TinyHtml.removeProp(this.getHtmlElement('removeProp'), name);
+  }
+
+  /**
+   * Toggle a boolean property.
+   * @param {HTMLElement} el
+   * @param {string} name
+   * @param {boolean} [force]
+   */
+  static toggleProp(el, name, force) {
+    TinyHtml._isHtmlElement(el, 'toggleProp');
+    // @ts-ignore
+    const propName = TinyHtml._propFix[name] || name;
+    // @ts-ignore
+    const shouldEnable = force === undefined ? !el[propName] : force;
+    // @ts-ignore
+    if (shouldEnable) TinyHtml.addProp(el, name);
+    else TinyHtml.removeProp(el, name);
+  }
+
+  /**
+   * Toggle a boolean property.
+   * @param {string} name
+   * @param {boolean} [force]
+   */
+  toggleProp(name, force) {
+    return TinyHtml.toggleProp(this.getHtmlElement('toggleProp'), name, force);
+  }
 }
 
 export default TinyHtml;
