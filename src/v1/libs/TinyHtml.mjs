@@ -331,17 +331,6 @@ class TinyHtml {
   }
 
   /**
-   * Filters a set of elements in your element by a CSS selector.
-   *
-   * @param {string} selector
-   * @param {boolean} not
-   * @returns {Element[]}
-   */
-  filter(selector, not = false) {
-    return TinyHtml.filter(this.getHtmlElement('filter'), selector, not);
-  }
-
-  /**
    * Returns only the elements matching the given selector or function.
    *
    * @param {TinyElementPack|TinyElementPack[]} elems
@@ -350,16 +339,6 @@ class TinyHtml {
    */
   static filterOnly(elems, selector) {
     return TinyHtml.winnow(TinyHtml._preElems(elems), selector, false);
-  }
-
-  /**
-   * Returns only the elements in your elemenet matching the given selector or function.
-   *
-   * @param {WinnowRequest} selector
-   * @returns {Element[]}
-   */
-  filterOnly(selector) {
-    return TinyHtml.filterOnly(this.getHtmlElement('filterOnly'), selector);
   }
 
   /**
