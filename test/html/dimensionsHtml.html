@@ -292,27 +292,27 @@
       const handlerC = () => log('✅ Handler C triggered');
 
       document.getElementById('on-test').addEventListener('click', () => {
-        TinyHtml.on(el, 'click', handlerA);
+        tinyEl.on('click', handlerA);
         log('on(): Added handlerA');
       });
 
       document.getElementById('once-test').addEventListener('click', () => {
-        TinyHtml.once(el, 'click', handlerB);
+        tinyEl.once('click', handlerB);
         log('once(): Added handlerB (fires only once)');
       });
 
       document.getElementById('off-test').addEventListener('click', () => {
-        TinyHtml.off(el, 'click', handlerA);
+        tinyEl.off('click', handlerA);
         log('off(): Removed handlerA');
       });
 
       document.getElementById('off-all-test').addEventListener('click', () => {
-        TinyHtml.offAll(el, 'click');
+        tinyEl.offAll('click');
         log('offAll(): Removed all click handlers');
       });
 
       document.getElementById('off-all-types-test').addEventListener('click', () => {
-        TinyHtml.offAllTypes(el);
+        tinyEl.offAllTypes();
         log('offAllTypes(): Removed all handlers from all events');
       });
     </script>

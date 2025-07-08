@@ -1465,6 +1465,39 @@ class TinyHtml {
   offAllTypes(filterFn = null) {
     return TinyHtml.offAllTypes(this.#el, filterFn);
   }
+
+  /**
+   * Triggers all handlers associated with a specific event on the given element.
+   *
+   * @param {ConstructorElValues} el - Target element where the event should be triggered.
+   * @param {string} event - Name of the event to trigger.
+   * @param {Event|CustomEvent|Object} [payload] - Optional event object or data to pass.
+   */
+  static trigger(el, event, payload = {}) {
+    if (!(el instanceof EventTarget))
+      throw new TypeError('[TinyHtml.trigger] Target is not an EventTarget.');
+
+    const evt =
+      payload instanceof Event
+        ? payload
+        : new CustomEvent(event, {
+            bubbles: true,
+            cancelable: true,
+            detail: payload,
+          });
+
+    el.dispatchEvent(evt);
+  }
+
+  /**
+   * Triggers all handlers associated with a specific event on the given element.
+   *
+   * @param {string} event - Name of the event to trigger.
+   * @param {Event|CustomEvent|Object} [payload] - Optional event object or data to pass.
+   */
+  trigger(event, payload = {}) {
+    return TinyHtml.trigger(this.#el, event, payload);
+  }
 }
 
 export default TinyHtml;
