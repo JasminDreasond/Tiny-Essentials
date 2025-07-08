@@ -1,4 +1,31 @@
 /**
+ * Represents any raw HTML element that can be handled by the library.
+ *
+ * @typedef {HTMLElement|Element} TinyElementPackRaw
+ */
+
+/**
+ * Represents a raw DOM element or an instance of TinyHtml.
+ * This type is used to abstract interactions with both plain elements
+ * and wrapped elements via the TinyHtml class.
+ *
+ * @typedef {TinyElementPackRaw|TinyHtml} TinyElementPack
+ */
+
+/**
+ * A parameter type used for filtering or matching elements.
+ * It can be:
+ * - A string (CSS selector),
+ * - A raw DOM element,
+ * - An array of raw DOM elements,
+ * - A filtering function that receives an index and element,
+ *   and returns true if it matches.
+ *
+ * @typedef {string|TinyElementPackRaw|TinyElementPackRaw[]|((index: number, el: TinyElementPackRaw) => boolean)} WinnowRequest
+ */
+
+
+/**
  * Elements accepted as constructor values for TinyHtml.
  * These include common DOM elements and root containers.
  *
@@ -241,6 +268,168 @@ class TinyHtml {
       throw new Error(`[TinyHtml] "getElement" must be a HTMLElement or Window.`);
     return this.#el;
   }
+
+  //////////////////////////////////////////////////////
+
+  /**
+   * Ensures the input is returned as an array.
+   * Useful to normalize operations across multiple or single elements.
+   *
+   * @param {TinyElementPack|TinyElementPack[]} elems - A single element or array of elements.
+   * @returns {TinyElementPackRaw[]} - Always returns an array of elements.
+   * @readonly
+   */
+  static _preElems(elems) {
+    /** @param {TinyElementPack[]} item */
+    const checkElement = (item) =>
+      item.map((elem) => (elem instanceof TinyHtml ? elem.getHtmlElement(')preElems') : elem));
+    if (!Array.isArray(elems)) return checkElement([elems]);
+    return checkElement(elems);
+  }
+
+  /**
+   * Filters an array of elements based on a selector, function, element, or array of elements.
+   *
+   * @param {TinyElementPackRaw[]} elems
+   * @param {WinnowRequest} qualifier
+   * @param {boolean} not Whether to invert the result (used for .not())
+   * @returns {Element[]}
+   */
+  static winnow(elems, qualifier, not = false) {
+    if (typeof qualifier === 'function') {
+      return elems.filter((el, i) => !!qualifier.call(el, i, el) !== not);
+    }
+
+    if (qualifier instanceof Element) {
+      return elems.filter((el) => (el === qualifier) !== not);
+    }
+
+    if (
+      Array.isArray(qualifier) ||
+      (typeof qualifier !== 'string' &&
+        // @ts-ignore
+        qualifier.length != null)
+    ) {
+      return elems.filter((el) => qualifier.includes(el) !== not);
+    }
+
+    // Assume it's a selector string
+    return TinyHtml.filter(elems, qualifier, not);
+  }
+
+  /**
+   * Filters a set of elements by a CSS selector.
+   *
+   * @param {TinyElementPack|TinyElementPack[]} elems
+   * @param {string} selector
+   * @param {boolean} not
+   * @returns {Element[]}
+   */
+  static filter(elems, selector, not = false) {
+    if (not) selector = `:not(${selector})`;
+    return TinyHtml._preElems(elems).filter((el) => el.nodeType === 1 && el.matches(selector));
+  }
+
+  /**
+   * Filters a set of elements in your element by a CSS selector.
+   *
+   * @param {string} selector
+   * @param {boolean} not
+   * @returns {Element[]}
+   */
+  filter(selector, not = false) {
+    return TinyHtml.filter(this.getHtmlElement('filter'), selector, not);
+  }
+
+  /**
+   * Returns only the elements matching the given selector or function.
+   *
+   * @param {TinyElementPack|TinyElementPack[]} elems
+   * @param {WinnowRequest} selector
+   * @returns {Element[]}
+   */
+  static filterOnly(elems, selector) {
+    return TinyHtml.winnow(TinyHtml._preElems(elems), selector, false);
+  }
+
+  /**
+   * Returns only the elements in your elemenet matching the given selector or function.
+   *
+   * @param {WinnowRequest} selector
+   * @returns {Element[]}
+   */
+  filterOnly(selector) {
+    return TinyHtml.filterOnly(this.getHtmlElement('filterOnly'), selector);
+  }
+
+  /**
+   * Returns only the elements **not** matching the given selector or function.
+   *
+   * @param {TinyElementPack|TinyElementPack[]} elems
+   * @param {WinnowRequest} selector
+   * @returns {Element[]}
+   */
+  static not(elems, selector) {
+    return TinyHtml.winnow(TinyHtml._preElems(elems), selector, true);
+  }
+
+  /**
+   * Returns only the elements **not** matching the given selector or function.
+   *
+   * @param {WinnowRequest} selector
+   * @returns {Element[]}
+   */
+  not(selector) {
+    return TinyHtml.not(this.getHtmlElement('not'), selector);
+  }
+
+  /**
+   * Finds elements matching a selector within a context.
+   *
+   * @param {TinyElementPack|TinyElementPack[]} context
+   * @param {string} selector
+   * @returns {Element[]}
+   */
+  static find(context, selector) {
+    const result = [];
+    for (const el of TinyHtml._preElems(context)) {
+      result.push(...el.querySelectorAll(selector));
+    }
+    return [...new Set(result)];
+  }
+
+  /**
+   * Finds elements in your element matching a selector within a context.
+   *
+   * @param {string} selector
+   * @returns {Element[]}
+   */
+  find(selector) {
+    return TinyHtml.find(this.getHtmlElement('find'), selector);
+  }
+
+  /**
+   * Checks if at least one element matches the selector.
+   *
+   * @param {TinyElementPack|TinyElementPack[]} elems
+   * @param {WinnowRequest} selector
+   * @returns {boolean}
+   */
+  static is(elems, selector) {
+    return TinyHtml.winnow(TinyHtml._preElems(elems), selector, false).length > 0;
+  }
+
+  /**
+   * Checks if the element matches the selector.
+   *
+   * @param {WinnowRequest} selector
+   * @returns {boolean}
+   */
+  is(selector) {
+    return TinyHtml.is(this.getHtmlElement('is'), selector);
+  }
+
+  //////////////////////////////////////////////////////
 
   /**
    * The target HTML element for instance-level operations.
