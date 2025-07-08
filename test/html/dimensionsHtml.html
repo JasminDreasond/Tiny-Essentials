@@ -19,9 +19,7 @@
     />
     <script type="module">
       import * as tinyHtml from './src/v1/basics/html.mjs';
-      import { TinyHtml } from './src/v1/libs/TinyHtml.mjs';
       Object.assign(window, tinyHtml);
-      window.TinyHtml = TinyHtml;
     </script>
     <style>
       body {
@@ -139,6 +137,8 @@
       const result = document.getElementById('result');
       const $el = $('#test-box');
       const tinyEl = new TinyHtml(el);
+
+      window.tinyEl = tinyEl;
 
       const controls = {
         width: document.getElementById('set-width'),

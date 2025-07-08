@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>TinyHtml.val Test - All Input Types</title>
+    <script type="module">
+      import { TinyHtml } from './src/v1/libs/TinyHtml.mjs';
+      window.TinyHtml = TinyHtml;
+    </script>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 30px;
+        background: #f9f9f9;
+      }
+      .form-field {
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+      input,
+      select,
+      textarea {
+        padding: 6px;
+        width: 300px;
+        font-size: 1rem;
+      }
+      button {
+        margin-top: 10px;
+        padding: 5px 10px;
+        font-size: 1rem;
+      }
+      pre {
+        margin-top: 20px;
+        background: #efefef;
+        padding: 10px;
+        border: 1px solid #ccc;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Textual Inputs</h2>
+    <div class="form-field">
+      <label><input type="text" id="text-input" value="text value" /> text</label>
+    </div>
+    <div class="form-field">
+      <label><input type="search" id="search-input" value="search value" /> search</label>
+    </div>
+    <div class="form-field">
+      <label><input type="url" id="url-input" value="https://example.com" /> url</label>
+    </div>
+    <div class="form-field">
+      <label
+        ><input type="email" id="email-input" value="test@example.com" multiple /> email
+        (multiple)</label
+      >
+    </div>
+    <div class="form-field">
+      <label
+        ><input type="tel" id="tel-input" value="123-456-7890" multiple /> tel (multiple)</label
+      >
+    </div>
+    <div class="form-field">
+      <label><input type="password" id="password-input" value="secret" /> password</label>
+    </div>
+
+    <h2>Numeric Inputs</h2>
+    <div class="form-field">
+      <label><input type="number" id="number-input" value="42" /> number</label>
+    </div>
+    <div class="form-field">
+      <label><input type="range" id="range-input" value="25" /> range</label>
+    </div>
+
+    <h2>Date/Time Inputs</h2>
+    <div class="form-field">
+      <label><input type="date" id="date-input" value="2025-07-08" /> date</label>
+    </div>
+    <div class="form-field">
+      <label><input type="time" id="time-input" value="12:34" /> time</label>
+    </div>
+    <div class="form-field">
+      <label
+        ><input type="datetime-local" id="datetime-input" value="2025-07-08T12:34" />
+        datetime-local</label
+      >
+    </div>
+    <div class="form-field">
+      <label><input type="month" id="month-input" value="2025-07" /> month</label>
+    </div>
+    <div class="form-field">
+      <label><input type="week" id="week-input" value="2025-W27" /> week</label>
+    </div>
+
+    <h2>Other Inputs</h2>
+    <div class="form-field">
+      <label><input type="color" id="color-input" value="#ff0000" /> color</label>
+    </div>
+    <div class="form-field">
+      <label><input type="checkbox" id="checkbox-input" checked /> checkbox</label>
+    </div>
+    <div class="form-field">
+      <label><input type="radio" id="radio-input" /> radio</label>
+    </div>
+    <div class="form-field">
+      <label
+        >Checkbox Group: <input type="checkbox" name="check-group" value="1" checked /> One
+        <input type="checkbox" name="check-group" value="2" /> Two
+        <input type="checkbox" name="check-group" value="3" checked /> Three
+      </label>
+    </div>
+    <div class="form-field">
+      <label
+        >Radio Group: <input type="radio" name="radio-group" value="a" checked /> A
+        <input type="radio" name="radio-group" value="b" /> B
+      </label>
+    </div>
+    <div class="form-field">
+      <label><input type="hidden" id="hidden-input" value="hidden value" /> hidden</label>
+    </div>
+    <div class="form-field">
+      <label><input type="file" id="file-input" multiple /> file (multiple)</label>
+    </div>
+    <div class="form-field">
+      <label
+        ><input type="image" id="image-input" src="/img.png" alt="img" /> image (visual only)</label
+      >
+    </div>
+    <div class="form-field">
+      <label><input type="button" id="button-input" value="Button" /> button</label>
+    </div>
+    <div class="form-field">
+      <label><input type="submit" id="submit-input" value="Submit" /> submit</label>
+    </div>
+    <div class="form-field">
+      <label><input type="reset" id="reset-input" value="Reset" /> reset</label>
+    </div>
+
+    <h2>Select, Option and Textarea</h2>
+    <div class="form-field">
+      <select id="select-test">
+        <option value="a">A</option>
+        <option value="b" selected>B</option>
+        <option value="c">C</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <select id="select-multiple" multiple>
+        <option value="x" selected>X</option>
+        <option value="y">Y</option>
+        <option value="z" selected>Z</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <textarea id="textarea-test">initial text</textarea>
+    </div>
+
+    <button id="read-values">Read .val()</button>
+    <button id="write-values">Write .setVal()</button>
+
+    <pre id="output"></pre>
+
+    <script type="module">
+      const out = document.getElementById('output');
+
+      const ids = [
+        'text-input',
+        'search-input',
+        'url-input',
+        'email-input',
+        'tel-input',
+        'password-input',
+        'number-input',
+        'range-input',
+        'date-input',
+        'time-input',
+        'datetime-input',
+        'month-input',
+        'week-input',
+        'color-input',
+        'checkbox-input',
+        'radio-input',
+        'hidden-input',
+        'file-input',
+        'image-input',
+        'button-input',
+        'submit-input',
+        'reset-input',
+        'select-test',
+        'select-multiple',
+        'textarea-test',
+      ];
+
+      const instances = {};
+      for (const id of ids) {
+        const el = document.getElementById(id);
+        if (el) instances[id] = new TinyHtml(el);
+      }
+
+      window.instances = instances;
+
+      window.radioInstances = Array.from(
+        document.querySelectorAll('input[name="radio-group"]'),
+      ).map((el) => new TinyHtml(el));
+      window.checkboxInstances = Array.from(
+        document.querySelectorAll('input[name="check-group"]'),
+      ).map((el) => new TinyHtml(el));
+
+      document.getElementById('read-values').addEventListener('click', () => {
+        const results = {};
+        for (const [id, inst] of Object.entries(instances)) {
+          try {
+            results[id] = inst.val();
+            console.log(`${id}:`, results[id]);
+          } catch (err) {
+            results[id] = `[Error] ${(err && err.message) || err}`;
+          }
+        }
+
+        const checkGroup = Array.from(document.querySelectorAll('input[name="check-group"]'));
+        const radioGroup = Array.from(document.querySelectorAll('input[name="radio-group"]'));
+
+        results['check-group'] = checkGroup
+          .filter((i) => new TinyHtml(i).val() === 'on')
+          .map((i) => i.value);
+        const selectedRadio = radioGroup.find((i) => new TinyHtml(i).val() === 'on');
+        results['radio-group'] = selectedRadio ? selectedRadio.value : null;
+
+        out.textContent = 'TinyHtml.val() values:\n' + JSON.stringify(results, null, 2);
+      });
+
+      document.getElementById('write-values').addEventListener('click', () => {
+        for (const [id, inst] of Object.entries(instances)) {
+          try {
+            if (id === 'checkbox-input') {
+              inst.setVal(true);
+            } else if (id === 'radio-input') {
+              inst.setVal(true);
+            } else if (id === 'select-test') {
+              inst.setVal('c');
+            } else if (id === 'select-multiple') {
+              inst.setVal(['y', 'z']);
+            } else if (id === 'file-input' || id === 'image-input') {
+              continue;
+            } else {
+              inst.setVal('updated-' + id);
+            }
+          } catch (err) {
+            // Ignore errors
+          }
+        }
+
+        document.querySelectorAll('input[name="check-group"]').forEach((input) => {
+          input.checked = ['1', '3'].includes(input.value);
+        });
+        document.querySelectorAll('input[name="radio-group"]').forEach((input) => {
+          input.checked = input.value === 'b';
+        });
+
+        out.textContent = 'TinyHtml.setVal() applied.';
+      });
+    </script>
+  </body>
+</html>

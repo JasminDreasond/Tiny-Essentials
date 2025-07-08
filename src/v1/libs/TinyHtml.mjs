@@ -9,6 +9,14 @@
  */
 
 /**
+ * @typedef {string|number|boolean} SetValValueBase - Primitive types accepted as input values.
+ */
+
+/**
+ * @typedef {SetValValueBase|SetValValueBase[]} SetValValue - A single value or an array of values to be assigned to the input element.
+ */
+
+/**
  * TinyHtml is a utility class that provides static and instance-level methods
  * for precise dimension and position computations on HTML elements.
  * It mimics some jQuery functionalities while using native browser APIs.
@@ -26,9 +34,14 @@ class TinyHtml {
    * @param {*} el - The object to test.
    * @param {string} where - The context/method name using this validation.
    * @param {boolean} [needsWindow=false] - If true, allows Window objects as valid.
+   * @throws {TypeError} If `where` is not a string or `needsWindow` is not a boolean.
    * @readonly
    */
   static _isElement(el, where, needsWindow = false) {
+    if (typeof where !== 'string')
+      throw new TypeError('[TinyHtml] "where" in _isElement() must be a string.');
+    if (typeof needsWindow !== 'boolean')
+      throw new TypeError('[TinyHtml] "needsWindow" in _isElement() must be a boolean.');
     if (!(el instanceof HTMLElement) && (!needsWindow || !(el instanceof Window)))
       throw new Error(`[TinyHtml] Invalid Element in ${where}().`);
   }
@@ -39,10 +52,36 @@ class TinyHtml {
    *
    * @param {string} where - The method name or context calling this.
    * @returns {HTMLElement} - The HTMLElement.
+   * @throws {TypeError} If `where` is not a string.
    */
   getHtmlElement(where) {
+    if (typeof where !== 'string')
+      throw new TypeError('[TinyHtml] "where" in getHtmlElement() must be a string.');
     if (!(this.#el instanceof HTMLElement))
       throw new Error(`[TinyHtml] Invalid Element in ${where}().`);
+    return this.#el;
+  }
+
+  /** @typedef {HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement|HTMLOptionElement} HtmlValInputsList */
+
+  /**
+   * Internal helper to validate and return the HTML Value Element.
+   * Throws an error if the element is invalid.
+   *
+   * @param {string} where - The method name or context calling this.
+   * @returns {HtmlValInputsList} - The HTML Value Element.
+   * @throws {TypeError} If `where` is not a string.
+   */
+  getHtmlValElement(where) {
+    if (typeof where !== 'string')
+      throw new TypeError('[TinyHtml] "where" in getHtmlValElement() must be a string.');
+    if (
+      !(this.#el instanceof HTMLInputElement) &&
+      !(this.#el instanceof HTMLSelectElement) &&
+      !(this.#el instanceof HTMLTextAreaElement) &&
+      !(this.#el instanceof HTMLOptionElement)
+    )
+      throw new Error(`[TinyHtml] Invalid Value Element in ${where}().`);
     return this.#el;
   }
 
@@ -64,10 +103,12 @@ class TinyHtml {
   /**
    * Creates an instance of TinyHtml for a specific HTMLElement.
    * Useful when you want to operate repeatedly on the same element using instance methods.
-   * @param {HTMLElement|Window} el - The element to wrap and manipulate.
+   * @param {HTMLElement|Window|Element} el - The element to wrap and manipulate.
    */
   constructor(el) {
     TinyHtml._isElement(el, 'constructor');
+    if (!(el instanceof HTMLElement) && !(el instanceof Window))
+      throw new Error(`[TinyHtml] Invalid Element in constructor.`);
     this.#el = el;
   }
 
@@ -88,6 +129,7 @@ class TinyHtml {
    */
   static cssFloat(el, prop) {
     TinyHtml._isElement(el, 'cssFloat');
+    if (typeof prop !== 'string') throw new TypeError('The prop must be a string.');
     // @ts-ignore
     const val = window.getComputedStyle(el)[prop];
     return parseFloat(val) || 0;
@@ -110,6 +152,7 @@ class TinyHtml {
    */
   static cssFloats(el, prop) {
     TinyHtml._isElement(el, 'cssFloats');
+    if (!Array.isArray(prop)) throw new TypeError('The prop must be an array of strings.');
     const css = window.getComputedStyle(el);
     /** @type {Record<string, number>} */
     const result = {};
@@ -131,17 +174,19 @@ class TinyHtml {
 
   /**
    * Sets the vertical scroll position of the window.
-   * @param {number} [value] - Sets the scroll position.
+   * @param {number} value - Sets the scroll position.
    */
   static setWinScrollTop(value) {
+    if (typeof value !== 'number') throw new TypeError('The value must be a number.');
     window.scrollTo({ top: value });
   }
 
   /**
    * Sets the horizontal scroll position of the window.
-   * @param {number} [value] - Sets the scroll position.
+   * @param {number} value - Sets the scroll position.
    */
   static setWinScrollLeft(value) {
+    if (typeof value !== 'number') throw new TypeError('The value must be a number.');
     window.scrollTo({ left: value });
   }
 
@@ -181,10 +226,14 @@ class TinyHtml {
    * Gets the width or height of an element based on the box model.
    * @param {HTMLElement|Window} el - The element or window.
    * @param {"width"|"height"} type - Dimension type.
-   * @param {"content"|"padding"|"border"|"margin"} extra - Box model context.
+   * @param {"content"|"padding"|"border"|"margin"} [extra='content'] - Box model context.
    * @returns {number} - Computed dimension.
+   * @throws {TypeError} If `type` or `extra` is not a string.
    */
   static getDimension(el, type, extra = 'content') {
+    if (typeof type !== 'string') throw new TypeError('The type must be a string.');
+    if (typeof extra !== 'string') throw new TypeError('The extra must be a string.');
+
     const name = type === 'width' ? 'Width' : 'Height';
 
     if (TinyHtml.isWindow(el)) {
@@ -266,9 +315,12 @@ class TinyHtml {
    * Sets the height of the element.
    * @param {HTMLElement} el - Target element.
    * @param {string|number} value - Height value.
+   * @throws {TypeError} If `value` is neither a string nor number.
    */
   static setHeight(el, value) {
     TinyHtml._isElement(el, 'setHeight');
+    if (typeof value !== 'number' && typeof value !== 'string')
+      throw new TypeError('The value must be a string or number.');
     el.style.height = typeof value === 'number' ? `${value}px` : value;
   }
 
@@ -284,9 +336,12 @@ class TinyHtml {
    * Sets the width of the element.
    * @param {HTMLElement} el - Target element.
    * @param {string|number} value - Width value.
+   * @throws {TypeError} If `value` is neither a string nor number.
    */
   static setWidth(el, value) {
     TinyHtml._isElement(el, 'setWidth');
+    if (typeof value !== 'number' && typeof value !== 'string')
+      throw new TypeError('The value must be a string or number.');
     el.style.width = typeof value === 'number' ? `${value}px` : value;
   }
 
@@ -573,6 +628,7 @@ class TinyHtml {
    */
   static setScrollTop(el, value) {
     TinyHtml._isElement(el, 'setScrollTop', true);
+    if (typeof value !== 'number') throw new TypeError('');
     if (TinyHtml.isWindow(el)) {
       el.scrollTo(el.pageXOffset, value);
     } else if (el.nodeType === 9) {
@@ -598,6 +654,7 @@ class TinyHtml {
    */
   static setScrollLeft(el, value) {
     TinyHtml._isElement(el, 'setScrollLeft', true);
+    if (typeof value !== 'number') throw new TypeError('');
     if (TinyHtml.isWindow(el)) {
       el.scrollTo(value, el.pageYOffset);
     } else if (el.nodeType === 9) {
@@ -735,6 +792,432 @@ class TinyHtml {
    */
   padding() {
     return TinyHtml.padding(this.getHtmlElement('padding'));
+  }
+
+  /////////////////////////////////////////////
+
+  /**
+   * Adds one or more CSS class names to the element.
+   * @type {(...tokens: string[]) => void} - One or more class names to add.
+   */
+  addClass(...args) {
+    const el = this.getHtmlElement('addClass');
+    el.classList.add(...args);
+  }
+
+  /**
+   * Removes one or more CSS class names from the element.
+   * @type {(...tokens: string[]) => void} - One or more class names to remove.
+   */
+  removeClass(...args) {
+    const el = this.getHtmlElement('removeClass');
+    el.classList.remove(...args);
+  }
+
+  /**
+   * Replaces an existing class name with a new one.
+   * @param {string} token - The class name to be replaced.
+   * @param {string} newToken - The new class name to apply.
+   * @returns {boolean} Whether the replacement was successful.
+   * @throws {TypeError} If either argument is not a string.
+   */
+  replaceClass(token, newToken) {
+    const el = this.getHtmlElement('replaceClass');
+    if (typeof token !== 'string') throw new TypeError('The "token" parameter must be a string.');
+    if (typeof newToken !== 'string')
+      throw new TypeError('The "newToken" parameter must be a string.');
+    return el.classList.replace(token, newToken);
+  }
+
+  /**
+   * Returns the class name at the specified index.
+   * @param {number} index - The index of the class name.
+   * @returns {string|null} The class name at the index or null if not found.
+   * @throws {TypeError} If the index is not a number.
+   */
+  classItem(index) {
+    const el = this.getHtmlElement('classItem');
+    if (typeof index !== 'number') throw new TypeError('The "index" parameter must be a number.');
+    return el.classList.item(index);
+  }
+
+  /**
+   * Toggles a class name on the element with an optional force boolean.
+   * @param {string} token - The class name to toggle.
+   * @param {boolean} force - If true, adds the class; if false, removes it.
+   * @returns {boolean} Whether the class is present after the toggle.
+   * @throws {TypeError} If token is not a string or force is not a boolean.
+   */
+  toggleClass(token, force) {
+    const el = this.getHtmlElement('toggleClass');
+    if (typeof token !== 'string') throw new TypeError('The "token" parameter must be a string.');
+    if (typeof force !== 'boolean') throw new TypeError('The "force" parameter must be a boolean.');
+    return el.classList.toggle(token, force);
+  }
+
+  /**
+   * Checks if the element contains the given class name.
+   * @param {string} token - The class name to check.
+   * @returns {boolean} True if the class is present, false otherwise.
+   * @throws {TypeError} If token is not a string.
+   */
+  hasClass(token) {
+    const el = this.getHtmlElement('hasClass');
+    if (typeof token !== 'string') throw new TypeError('The "token" parameter must be a string.');
+    return el.classList.contains(token);
+  }
+
+  /**
+   * Returns the number of classes applied to the element.
+   * @returns {number} The number of classes.
+   */
+  classLength() {
+    const el = this.getHtmlElement('classLength');
+    return el.classList.length;
+  }
+
+  /**
+   * Returns all class names as an array of strings.
+   * @returns {string[]} An array of class names.
+   */
+  classList() {
+    const el = this.getHtmlElement('classList');
+    return el.classList.values().toArray();
+  }
+
+  /////////////////////////////////////////
+
+  /**
+   * Returns the tag name of the element.
+   * @returns {string} The tag name in uppercase.
+   */
+  tagName() {
+    const el = this.getHtmlElement('tagName');
+    return el.tagName;
+  }
+
+  /**
+   * Returns the ID of the element.
+   * @returns {string} The element's ID.
+   */
+  id() {
+    const el = this.getHtmlElement('id');
+    return el.id;
+  }
+
+  /**
+   * Returns the text content of the element.
+   * @returns {string|null} The text content or null if none.
+   */
+  text() {
+    const el = this.getHtmlElement('text');
+    return el.textContent;
+  }
+
+  #valHooks = {
+    option: {
+      /**
+       * @param {HTMLOptionElement} elem
+       * @returns {string|null}
+       */
+      get: (elem) => {
+        const val = elem.getAttribute('value');
+        return val != null ? val : elem.textContent;
+      },
+    },
+
+    select: {
+      /**
+       * @param {HTMLSelectElement} elem
+       * @returns {(string | null)[] | string | null}
+       */
+      get: (elem) => {
+        const options = elem.options;
+        const index = elem.selectedIndex;
+        const isSingle = elem.type === 'select-one';
+        const max = isSingle ? index + 1 : options.length;
+
+        /** @type {(string | null)[] | null} */
+        const values = [];
+        let i = index < 0 ? max : isSingle ? index : 0;
+
+        for (; i < max; i++) {
+          const option = options[i];
+          if (
+            (option.selected || i === index) &&
+            !option.disabled &&
+            (!option.parentNode ||
+              // @ts-ignore
+              !option.parentNode.disabled ||
+              // @ts-ignore
+              option.parentNode.tagName !== 'OPTGROUP')
+          ) {
+            const val = this.#valHooks.option.get(option);
+            if (isSingle) return val;
+            values.push(val);
+          }
+        }
+
+        return values;
+      },
+
+      /**
+       * @param {HTMLSelectElement} elem
+       * @param {string[]|string} value
+       */
+      set: (elem, value) => {
+        const options = elem.options;
+        const values = Array.isArray(value) ? value.map(String) : [String(value)];
+        let optionSet = false;
+
+        for (let i = 0; i < options.length; i++) {
+          const option = options[i];
+          const optionVal = this.#valHooks.option.get(option);
+          if (typeof optionVal === 'string' && (option.selected = values.includes(optionVal))) {
+            optionSet = true;
+          }
+        }
+
+        if (!optionSet) {
+          elem.selectedIndex = -1;
+        }
+
+        return values;
+      },
+    },
+
+    radio: {
+      /**
+       * @param {HTMLInputElement} elem
+       * @returns {string}
+       */
+      get(elem) {
+        return elem.checked ? 'on' : 'off';
+      },
+      /**
+       * @param {HTMLInputElement} elem
+       * @param {string[]} value
+       */
+      set(elem, value) {
+        if (typeof value === 'boolean') {
+          const label = elem.closest('label');
+          if (value && label) {
+            const otherRadios = label.querySelectorAll('input[type="radio"]');
+            otherRadios.forEach((otherRadio) => {
+              if (otherRadio instanceof HTMLInputElement && otherRadio !== elem)
+                otherRadio.checked = false;
+            });
+          }
+          elem.checked = value;
+          return value;
+        }
+      },
+    },
+
+    checkbox: {
+      /**
+       * @param {HTMLInputElement} elem
+       * @returns {string}
+       */
+      get(elem) {
+        return elem.checked ? 'on' : 'off';
+      },
+      /**
+       * @param {HTMLInputElement} elem
+       * @param {boolean} value
+       */
+      set(elem, value) {
+        if (typeof value === 'boolean') {
+          elem.checked = value;
+          return value;
+        }
+      },
+    },
+  };
+
+  /**
+   * Sets the value of the current HTML value element (input, select, textarea, etc.).
+   * Accepts strings, numbers, booleans or arrays of these values, or a callback function that computes them.
+   *
+   * @param {SetValValue|((el: HtmlValInputsList, val: SetValValue) => SetValValue)} value - The value to assign or a function that returns it.
+   * @throws {Error} If the computed value is not a valid string or boolean.
+   */
+  setVal(value) {
+    const el = this.getHtmlValElement('setVal');
+
+    /**
+     * @param {SetValValueBase[]} array
+     * @param {(v: SetValValueBase, i: number) => SetValValueBase} callback
+     */
+    const mapArray = (array, callback) => {
+      const result = [];
+      for (let i = 0; i < array.length; i++) {
+        result.push(callback(array[i], i));
+      }
+      return result;
+    };
+
+    if (el.nodeType !== 1) return;
+    /** @type {SetValValue} */
+    let valToSet = typeof value === 'function' ? value(el, this.val()) : value;
+
+    if (valToSet == null) {
+      valToSet = '';
+    } else if (typeof valToSet === 'number') {
+      valToSet = String(valToSet);
+    } else if (Array.isArray(valToSet)) {
+      valToSet = mapArray(valToSet, (v) => (v == null ? '' : String(v)));
+    }
+
+    // @ts-ignore
+    const hook = this.#valHooks[el.type] || this.#valHooks[el.nodeName.toLowerCase()];
+    if (!hook || typeof hook.set !== 'function' || hook.set(el, valToSet, 'value') === undefined) {
+      if (typeof valToSet !== 'string' && typeof valToSet !== 'boolean')
+        throw new Error(`Invalid setValue "${typeof valToSet}" value.`);
+      if (typeof valToSet === 'string') el.value = valToSet;
+    }
+  }
+
+  /**
+   * Retrieves the raw value from the HTML input element.
+   * If a custom value hook exists, it will be used first.
+   *
+   * @param {string} where
+   * @returns {SetValValue} The raw value retrieved from the element or hook.
+   */
+  #val(where) {
+    const element = this.getHtmlValElement(where);
+    // @ts-ignore
+    const hook = this.#valHooks[element.type] || this.#valHooks[element.nodeName.toLowerCase()];
+    if (hook && typeof hook.get === 'function') {
+      const ret = hook.get(element, 'value');
+      if (ret !== undefined) return typeof ret === 'string' ? ret.replace(/\r/g, '') : ret;
+    }
+
+    return element.value;
+  }
+
+  /**
+   * Gets the value of the current HTML value element.
+   *
+   * @returns {SetValValue} The normalized value, with carriage returns removed.
+   */
+  val() {
+    return this.#val('val');
+  }
+
+  /**
+   * Gets the text of the current HTML value element (for text).
+   *
+   * @returns {string} The text value.
+   * @throws {Error} If the element is not a string value.
+   */
+  valTxt() {
+    const ret = this.#val('valTxt');
+    if (typeof ret !== 'string' && ret !== null) throw new Error('Value is not a valid string.');
+    return ret == null ? '' : typeof ret === 'string' ? ret.replace(/\r/g, '') : ret;
+  }
+
+  /**
+   * Internal helper to get a value from an input expected to return an array.
+   *
+   * @param {string} where - The method name or context using this validation (for error reporting).
+   * @returns {SetValValueBase[]} - The validated value as an array.
+   * @throws {Error} If the returned value is not an array.
+   */
+  #valArr(where) {
+    const ret = this.#val(where);
+    if (!Array.isArray(ret)) throw new Error(`Value expected an array but got ${typeof ret}.`);
+    return ret;
+  }
+
+  /**
+   * Gets the raw value as a generic array of the current HTML value element (for select).
+   *
+   * @returns {SetValValueBase[]} - The value cast as a generic array.
+   * @throws {Error} If the value is not a valid array.
+   */
+  valArr() {
+    return this.#valArr('valArr');
+  }
+
+  /**
+   * Gets the value as an array of strings in the current HTML value element (for select).
+   *
+   * @returns {string[]} - The array of values cast as strings.
+   * @throws {Error} If any value in the array is not a string.
+   */
+  valArrSt() {
+    const arr = this.#valArr('valArrSt');
+    for (let i = 0; i < arr.length; i++) {
+      if (typeof arr[i] !== 'string')
+        throw new Error(`The valArrSt() expected string at index ${i}, got ${typeof arr[i]}.`);
+    }
+    return /** @type {string[]} */ (arr);
+  }
+
+  /**
+   * Gets the value as an array of numbers in the current HTML value element (for ???).
+   *
+   * @returns {number[]} - The array of values cast as numbers.
+   * @throws {Error} If any value in the array is not a valid number.
+   */
+  valArrNb() {
+    const arr = this.#valArr('valArrNb');
+    const result = [];
+    for (let i = 0; i < arr.length; i++) {
+      let val = arr[i];
+      if (typeof val !== 'string' && typeof val !== 'number')
+        throw new Error(`The valArrNb() expected number at index ${i}, got ${arr[i]}.`);
+      if (typeof val === 'string') val = parseFloat(val);
+      if (Number.isNaN(val))
+        throw new Error(`The valArrNb() expected number at index ${i}, got ${arr[i]}.`);
+      result.push(val);
+    }
+    return result;
+  }
+
+  /**
+   * Gets the value as an array of booleans in the current HTML value element (for ???).
+   *
+   * @returns {boolean[]} - The array of values cast as booleans.
+   * @throws {Error} If any value in the array is not a boolean or castable to one.
+   */
+  valArrBool() {
+    const arr = this.#valArr('valArrBool');
+    for (let i = 0; i < arr.length; i++) {
+      if (typeof arr[i] !== 'boolean')
+        throw new Error(`The valArrBool() expected boolean at index ${i}, got ${typeof arr[i]}.`);
+    }
+    return /** @type {boolean[]} */ (arr);
+  }
+
+  /**
+   * Gets the current value parsed as a number (for number/text).
+   *
+   * @returns {number} The numeric value.
+   * @throws {Error} If the element is not a number-compatible input or value is NaN.
+   */
+  valNb() {
+    const element = this.getHtmlValElement('valNb');
+    if (!(element instanceof HTMLInputElement))
+      throw new Error('Element must be an input element.');
+    const result = parseFloat(this.valTxt());
+    if (Number.isNaN(result)) throw new Error('Value is not a valid number.');
+    return result;
+  }
+
+  /**
+   * Checks if the input element is boolean (for checkboxes/radios).
+   *
+   * @returns {boolean} True if the input is considered checked (value === "on"), false otherwise.
+   * @throws {Error} If the element is not a checkbox/radio input.
+   */
+  valBool() {
+    const element = this.getHtmlValElement('valBool');
+    if (!(element instanceof HTMLInputElement))
+      throw new Error('Element must be an input element.');
+    return this.val() === 'on' ? true : false;
   }
 }
 

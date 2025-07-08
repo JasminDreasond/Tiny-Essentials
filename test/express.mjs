@@ -261,11 +261,7 @@ const installNodeModules = (modNames, globalNames, globalResults) => async (req,
 app.get('/__buffer.js', installNodeModules('buffer', 'Buffer', 'window.Buffer = Buffer.Buffer;'));
 app.get(
   '/__jquery.js',
-  installNodeModules(
-    ['jquery'],
-    ['jQuery'],
-    ['window.jQuery = jQuery; window.$ = jQuery;'],
-  ),
+  installNodeModules(['jquery'], ['jQuery'], ['window.jQuery = jQuery; window.$ = jQuery;']),
 );
 
 // Middleware para servir arquivos estáticos
