@@ -1,4 +1,46 @@
 /**
+ * Elements accepted as constructor values for TinyHtml.
+ * These include common DOM elements and root containers.
+ *
+ * @typedef {HTMLElement|Window|Element|Document} ConstructorElValues
+ */
+
+/**
+ * The handler function used in event listeners.
+ *
+ * @typedef {(e: Event) => any} EventRegistryHandle
+ */
+
+/**
+ * Options passed to `addEventListener` or `removeEventListener`.
+ * Can be a boolean or an object of type `AddEventListenerOptions`.
+ *
+ * @typedef {boolean|AddEventListenerOptions} EventRegistryOptions
+ */
+
+/**
+ * Structure describing a registered event callback and its options.
+ *
+ * @typedef {Object} EventRegistryItem
+ * @property {EventRegistryHandle} handler - The function to be executed when the event is triggered.
+ * @property {EventRegistryOptions} [options] - Optional configuration passed to the listener.
+ */
+
+/**
+ * Maps event names (e.g., `"click"`, `"keydown"`) to a list of registered handlers and options.
+ *
+ * @typedef {Record<string, EventRegistryItem[]>} EventRegistryList
+ */
+
+/**
+ * WeakMap storing all event listeners per element.
+ * Each element has a registry mapping event names to their handler lists.
+ *
+ * @type {WeakMap<ConstructorElValues, EventRegistryList>}
+ */
+const __eventRegistry = new WeakMap();
+
+/**
  * @typedef {Object} HtmlElBoxSides
  * @property {number} x - Total horizontal size (left + right)
  * @property {number} y - Total vertical size (top + bottom)
@@ -34,16 +76,62 @@ class TinyHtml {
    * @param {*} el - The object to test.
    * @param {string} where - The context/method name using this validation.
    * @param {boolean} [needsWindow=false] - If true, allows Window objects as valid.
+   * @param {boolean} [canDocument=false] - If true, allows Document objects as valid.
    * @throws {TypeError} If `where` is not a string or `needsWindow` is not a boolean.
    * @readonly
    */
-  static _isElement(el, where, needsWindow = false) {
+  static _isElement(el, where, needsWindow = false, canDocument = false) {
     if (typeof where !== 'string')
       throw new TypeError('[TinyHtml] "where" in _isElement() must be a string.');
     if (typeof needsWindow !== 'boolean')
       throw new TypeError('[TinyHtml] "needsWindow" in _isElement() must be a boolean.');
-    if (!(el instanceof HTMLElement) && (!needsWindow || !(el instanceof Window)))
+    if (
+      !(el instanceof HTMLElement) &&
+      (!needsWindow || !(el instanceof Window)) &&
+      ((!canDocument && el instanceof Document) || (canDocument && !(el instanceof Document)))
+    )
       throw new Error(`[TinyHtml] Invalid Element in ${where}().`);
+  }
+
+  /**
+   * Validates whether the given object is an HTMLElement or optionally a Window.
+   * Used internally for argument safety checks.
+   *
+   * @param {string} where - The context/method name using this validation.
+   * @param {boolean} [needsWindow=false] - If true, allows Window objects as valid.
+   * @param {boolean} [canDocument=false] - If true, allows Document objects as valid.
+   * @throws {TypeError} If `where` is not a string or `needsWindow` is not a boolean.
+   * @readonly
+   */
+  _isElement(where, needsWindow, canDocument) {
+    return TinyHtml._isElement(this.#el, where, needsWindow, canDocument);
+  }
+
+  /**
+   * Validates whether the given object is an Document.
+   * Used internally for argument safety checks.
+   *
+   * @param {*} el - The object to test.
+   * @param {string} where - The context/method name using this validation.
+   * @throws {TypeError} If `where` is not a string .
+   * @readonly
+   */
+  static _isDocument(el, where) {
+    if (typeof where !== 'string')
+      throw new TypeError('[TinyHtml] "where" in _isElement() must be a string.');
+    if (!(el instanceof Document)) throw new Error(`[TinyHtml] Invalid Document in ${where}().`);
+  }
+
+  /**
+   * Validates whether the given object is an Document.
+   * Used internally for argument safety checks.
+   *
+   * @param {string} where - The context/method name using this validation.
+   * @throws {TypeError} If `where` is not a string .
+   * @readonly
+   */
+  _isDocument(where) {
+    return TinyHtml._isDocument(this.#el, where);
   }
 
   /**
@@ -91,23 +179,25 @@ class TinyHtml {
    * @returns {HTMLElement|Window} - The instance's target element.
    */
   getElement() {
+    if (this.#el instanceof Document)
+      throw new Error(`[TinyHtml] "getElement" must be a HTMLElement or Window.`);
     return this.#el;
   }
 
   /**
    * The target HTML element for instance-level operations.
-   * @type {HTMLElement|Window}
+   * @type {HTMLElement|Window|Document}
    */
   #el;
 
   /**
    * Creates an instance of TinyHtml for a specific HTMLElement.
    * Useful when you want to operate repeatedly on the same element using instance methods.
-   * @param {HTMLElement|Window|Element} el - The element to wrap and manipulate.
+   * @param {ConstructorElValues} el - The element to wrap and manipulate.
    */
   constructor(el) {
     TinyHtml._isElement(el, 'constructor');
-    if (!(el instanceof HTMLElement) && !(el instanceof Window))
+    if (!(el instanceof HTMLElement) && !(el instanceof Window) && !(el instanceof Document))
       throw new Error(`[TinyHtml] Invalid Element in constructor.`);
     this.#el = el;
   }
@@ -1202,7 +1292,7 @@ class TinyHtml {
     const element = this.getHtmlValElement('valNb');
     if (!(element instanceof HTMLInputElement))
       throw new Error('Element must be an input element.');
-    const result = parseFloat(this.valTxt());
+    const result = parseFloat(this.valTxt().trim() || '0');
     if (Number.isNaN(result)) throw new Error('Value is not a valid number.');
     return result;
   }
@@ -1218,6 +1308,162 @@ class TinyHtml {
     if (!(element instanceof HTMLInputElement))
       throw new Error('Element must be an input element.');
     return this.val() === 'on' ? true : false;
+  }
+
+  ////////////////////////////////////////////
+
+  /**
+   * Registers an event listener on the specified element.
+   *
+   * @param {HTMLElement|Window|Document} el - The target to listen on.
+   * @param {string} event - The event type (e.g. 'click', 'keydown').
+   * @param {EventRegistryHandle} handler - The callback function to run on event.
+   * @param {EventRegistryOptions} [options] - Optional event listener options.
+   */
+  static on(el, event, handler, options) {
+    TinyHtml._isElement(el, 'on', true, true);
+    el.addEventListener(event, handler, options);
+
+    if (!__eventRegistry.has(el)) __eventRegistry.set(el, {});
+    const events = __eventRegistry.get(el);
+    if (!events) return;
+    if (!Array.isArray(events[event])) events[event] = [];
+    events[event].push({ handler, options });
+  }
+
+  /**
+   * Registers an event listener on the specified element.
+   *
+   * @param {string} event - The event type (e.g. 'click', 'keydown').
+   * @param {EventRegistryHandle} handler - The callback function to run on event.
+   * @param {EventRegistryOptions} [options] - Optional event listener options.
+   */
+  on(event, handler, options) {
+    return TinyHtml.on(this.#el, event, handler, options);
+  }
+
+  /**
+   * Registers an event listener that runs only once, then is removed.
+   *
+   * @param {HTMLElement|Window|Document} el - The target to listen on.
+   * @param {string} event - The event type (e.g. 'click', 'keydown').
+   * @param {EventRegistryHandle} handler - The callback function to run on event.
+   * @param {EventRegistryOptions} [options={}] - Optional event listener options.
+   */
+  static once(el, event, handler, options = {}) {
+    TinyHtml._isElement(el, 'once', true, true);
+    /** @type {EventRegistryHandle} e */
+    const wrapped = (e) => {
+      TinyHtml.off(el, event, wrapped);
+      handler(e);
+    };
+
+    TinyHtml.on(
+      el,
+      event,
+      wrapped,
+      typeof options === 'boolean' ? options : { ...options, once: true },
+    );
+  }
+
+  /**
+   * Registers an event listener that runs only once, then is removed.
+   *
+   * @param {string} event - The event type (e.g. 'click', 'keydown').
+   * @param {EventRegistryHandle} handler - The callback function to run on event.
+   * @param {EventRegistryOptions} [options={}] - Optional event listener options.
+   */
+  once(event, handler, options = {}) {
+    return TinyHtml.once(this.#el, event, handler, options);
+  }
+
+  /**
+   * Removes a specific event listener from an element.
+   *
+   * @param {HTMLElement|Window|Document} el - The target element.
+   * @param {string} event - The event type.
+   * @param {EventRegistryHandle} handler - The function originally bound to the event.
+   * @param {boolean|EventListenerOptions} [options] - Optional listener options.
+   */
+  static off(el, event, handler, options) {
+    TinyHtml._isElement(el, 'off', true, true);
+    el.removeEventListener(event, handler, options);
+
+    const events = __eventRegistry.get(el);
+    if (events && events[event]) {
+      events[event] = events[event].filter((entry) => entry.handler !== handler);
+      if (events[event].length === 0) delete events[event];
+    }
+  }
+
+  /**
+   * Removes a specific event listener from an element.
+   *
+   * @param {string} event - The event type.
+   * @param {EventRegistryHandle} handler - The function originally bound to the event.
+   * @param {boolean|EventListenerOptions} [options] - Optional listener options.
+   */
+  off(event, handler, options) {
+    return TinyHtml.off(this.#el, event, handler, options);
+  }
+
+  /**
+   * Removes all event listeners of a specific type from the element.
+   *
+   * @param {HTMLElement|Window|Document} el - The target element.
+   * @param {string} event - The event type to remove (e.g. 'click').
+   */
+  static offAll(el, event) {
+    TinyHtml._isElement(el, 'offAll', true, true);
+    const events = __eventRegistry.get(el);
+    if (events && events[event]) {
+      for (const entry of events[event]) {
+        el.removeEventListener(event, entry.handler, entry.options);
+      }
+      delete events[event];
+    }
+  }
+
+  /**
+   * Removes all event listeners of a specific type from the element.
+   *
+   * @param {string} event - The event type to remove (e.g. 'click').
+   */
+  offAll(event) {
+    return TinyHtml.offAll(this.#el, event);
+  }
+
+  /**
+   * Removes all event listeners of all types from the element.
+   *
+   * @param {HTMLElement|Window|Document} el - The target element.
+   * @param {((handler: EventListenerOrEventListenerObject, event: string) => boolean)|null} [filterFn=null] -
+   *        Optional filter function to selectively remove specific handlers.
+   */
+  static offAllTypes(el, filterFn = null) {
+    TinyHtml._isElement(el, 'offAllTypes', true, true);
+    const events = __eventRegistry.get(el);
+    if (!events) return;
+
+    for (const event in events) {
+      for (const entry of events[event]) {
+        if (typeof filterFn !== 'function' || filterFn(entry.handler, event)) {
+          el.removeEventListener(event, entry.handler, entry.options);
+        }
+      }
+    }
+
+    __eventRegistry.delete(el);
+  }
+
+  /**
+   * Removes all event listeners of all types from the element.
+   *
+   * @param {((handler: EventListenerOrEventListenerObject, event: string) => boolean)|null} [filterFn=null] -
+   *        Optional filter function to selectively remove specific handlers.
+   */
+  offAllTypes(filterFn = null) {
+    return TinyHtml.offAllTypes(this.#el, filterFn);
   }
 }
 

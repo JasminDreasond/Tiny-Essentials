@@ -130,6 +130,13 @@
         Set Margin:
         <input type="number" id="set-margin" />
       </label>
+
+      <h2>Event System Tests</h2>
+      <label><button class="event-test" id="on-test">Test: on()</button></label>
+      <label><button class="event-test" id="once-test">Test: once()</button></label>
+      <label><button class="event-test" id="off-test">Test: off()</button></label>
+      <label><button class="event-test" id="off-all-test">Test: offAll()</button></label>
+      <label><button class="event-test" id="off-all-types-test">Test: offAllTypes()</button></label>
     </div>
 
     <script type="module">
@@ -272,6 +279,42 @@
       window.addEventListener('scroll', update);
       window.addEventListener('resize', update);
       $(window).on('scroll resize', update);
+
+      //////////////////////////////////////////////////////////////////
+
+      const log = (msg) => {
+        const time = new Date().toLocaleTimeString();
+        console.log(`[${time}] ${msg}`);
+      };
+
+      const handlerA = () => log('✅ Handler A triggered');
+      const handlerB = () => log('✅ Handler B triggered (once)');
+      const handlerC = () => log('✅ Handler C triggered');
+
+      document.getElementById('on-test').addEventListener('click', () => {
+        TinyHtml.on(el, 'click', handlerA);
+        log('on(): Added handlerA');
+      });
+
+      document.getElementById('once-test').addEventListener('click', () => {
+        TinyHtml.once(el, 'click', handlerB);
+        log('once(): Added handlerB (fires only once)');
+      });
+
+      document.getElementById('off-test').addEventListener('click', () => {
+        TinyHtml.off(el, 'click', handlerA);
+        log('off(): Removed handlerA');
+      });
+
+      document.getElementById('off-all-test').addEventListener('click', () => {
+        TinyHtml.offAll(el, 'click');
+        log('offAll(): Removed all click handlers');
+      });
+
+      document.getElementById('off-all-types-test').addEventListener('click', () => {
+        TinyHtml.offAllTypes(el);
+        log('offAllTypes(): Removed all handlers from all events');
+      });
     </script>
   </body>
 </html>
