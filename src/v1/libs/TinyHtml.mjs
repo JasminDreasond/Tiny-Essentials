@@ -160,9 +160,9 @@ class TinyHtml {
    * @returns {HtmlValInputsList} - The HTML Value Element.
    * @throws {TypeError} If `where` is not a string.
    */
-  getHtmlValElement(where) {
+  getValElement(where) {
     if (typeof where !== 'string')
-      throw new TypeError('[TinyHtml] "where" in getHtmlValElement() must be a string.');
+      throw new TypeError('[TinyHtml] "where" in getValElement() must be a string.');
     if (
       !(this.#el instanceof HTMLInputElement) &&
       !(this.#el instanceof HTMLSelectElement) &&
@@ -1133,7 +1133,7 @@ class TinyHtml {
    * @throws {Error} If the computed value is not a valid string or boolean.
    */
   setVal(value) {
-    const el = this.getHtmlValElement('setVal');
+    const el = this.getValElement('setVal');
 
     /**
      * @param {SetValValueBase[]} array
@@ -1176,7 +1176,7 @@ class TinyHtml {
    * @returns {SetValValue} The raw value retrieved from the element or hook.
    */
   #val(where) {
-    const element = this.getHtmlValElement(where);
+    const element = this.getValElement(where);
     // @ts-ignore
     const hook = this.#valHooks[element.type] || this.#valHooks[element.nodeName.toLowerCase()];
     if (hook && typeof hook.get === 'function') {
@@ -1289,7 +1289,7 @@ class TinyHtml {
    * @throws {Error} If the element is not a number-compatible input or value is NaN.
    */
   valNb() {
-    const element = this.getHtmlValElement('valNb');
+    const element = this.getValElement('valNb');
     if (!(element instanceof HTMLInputElement))
       throw new Error('Element must be an input element.');
     const result = parseFloat(this.valTxt().trim() || '0');
@@ -1304,7 +1304,7 @@ class TinyHtml {
    * @throws {Error} If the element is not a checkbox/radio input.
    */
   valBool() {
-    const element = this.getHtmlValElement('valBool');
+    const element = this.getValElement('valBool');
     if (!(element instanceof HTMLInputElement))
       throw new Error('Element must be an input element.');
     return this.val() === 'on' ? true : false;
