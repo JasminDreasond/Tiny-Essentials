@@ -16,8 +16,8 @@ export { TinyHtml };
 /**
  * Checks if two DOM elements are colliding on the screen.
  *
- * @param {HTMLElement} elem1 - First DOM element.
- * @param {HTMLElement} elem2 - Second DOM element.
+ * @param {Element} elem1 - First DOM element.
+ * @param {Element} elem2 - Second DOM element.
  * @returns {boolean} - Returns true if the elements are colliding.
  */
 export function areHtmlElsColliding(elem1, elem2) {
@@ -29,8 +29,8 @@ export function areHtmlElsColliding(elem1, elem2) {
 /**
  * Checks if two DOM elements are colliding on the screen.
  *
- * @param {HTMLElement} elem1 - First DOM element.
- * @param {HTMLElement} elem2 - Second DOM element.
+ * @param {Element} elem1 - First DOM element.
+ * @param {Element} elem2 - Second DOM element.
  * @returns {boolean} - Returns true if the elements are colliding.
  */
 export function areHtmlElsPerfColliding(elem1, elem2) {
@@ -43,7 +43,7 @@ export function areHtmlElsPerfColliding(elem1, elem2) {
  * @param {boolean} isColliding
  * @param {DOMRect} rect1
  * @param {DOMRect} rect2
- * @param {HTMLElement} elem1
+ * @param {Element} elem1
  * @param {'top'|'bottom'|'left'|'right'} lockDirection
  * @param {WeakMap<Element, string>} stateMap
  * @returns {boolean}
@@ -93,8 +93,8 @@ function areHtmlElscollidingWithLockBase(
  * Checks if two DOM elements are colliding on the screen, and locks the collision
  * until the element exits through the same side it entered.
  *
- * @param {HTMLElement} elem1 - First DOM element (e.g. draggable or moving element).
- * @param {HTMLElement} elem2 - Second DOM element (e.g. a container or boundary element).
+ * @param {Element} elem1 - First DOM element (e.g. draggable or moving element).
+ * @param {Element} elem2 - Second DOM element (e.g. a container or boundary element).
  * @param {'top'|'bottom'|'left'|'right'} lockDirection - Direction that must be respected to unlock the collision.
  * @param {WeakMap<Element, string>} stateMap - A shared WeakMap to track persistent entry direction per element.
  * @returns {boolean} True if collision is still active.
@@ -110,8 +110,8 @@ export function areHtmlElsCollidingWithLock(elem1, elem2, lockDirection, stateMa
  * Checks if two DOM elements are colliding on the screen, and locks the collision
  * until the element exits through the same side it entered.
  *
- * @param {HTMLElement} elem1 - First DOM element (e.g. draggable or moving element).
- * @param {HTMLElement} elem2 - Second DOM element (e.g. a container or boundary element).
+ * @param {Element} elem1 - First DOM element (e.g. draggable or moving element).
+ * @param {Element} elem2 - Second DOM element (e.g. a container or boundary element).
  * @param {'top'|'bottom'|'left'|'right'} lockDirection - Direction that must be respected to unlock the collision.
  * @param {WeakMap<Element, string>} stateMap - A shared WeakMap to track persistent entry direction per element.
  * @returns {boolean} True if collision is still active.
@@ -353,7 +353,7 @@ export async function fetchJson(
 /**
  * Returns the total border width and individual sides from `border{Side}Width` CSS properties.
  *
- * @param {HTMLElement} el - The target DOM element.
+ * @param {Element} el - The target DOM element.
  * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) border widths, and each side individually.
  * @deprecated - Use TinyHtml.borderWidth instead.
  */
@@ -364,7 +364,7 @@ export const getHtmlElBordersWidth = (el) => {
 /**
  * Returns the total border size and individual sides from `border{Side}` CSS properties.
  *
- * @param {HTMLElement} el - The target DOM element.
+ * @param {Element} el - The target DOM element.
  * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) border sizes, and each side individually.
  * @deprecated - Use TinyHtml.border instead.
  */
@@ -375,7 +375,7 @@ export const getHtmlElBorders = (el) => {
 /**
  * Returns the total margin and individual sides from `margin{Side}` CSS properties.
  *
- * @param {HTMLElement} el - The target DOM element.
+ * @param {Element} el - The target DOM element.
  * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) margins, and each side individually.
  * @deprecated - Use TinyHtml.margin instead.
  */
@@ -386,7 +386,7 @@ export const getHtmlElMargin = (el) => {
 /**
  * Returns the total padding and individual sides from `padding{Side}` CSS properties.
  *
- * @param {HTMLElement} el - The target DOM element.
+ * @param {Element} el - The target DOM element.
  * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) paddings, and each side individually.
  * @deprecated - Use TinyHtml.padding instead.
  */
@@ -402,7 +402,7 @@ export const getHtmlElPadding = (el) => {
  * triggers callbacks on visibility changes.
  *
  * @param {Object} [settings={}]
- * @param {HTMLElement} [settings.element=document.body] - The element to receive visibility classes.
+ * @param {Element} [settings.element=document.body] - The element to receive visibility classes.
  * @param {string} [settings.hiddenClass='windowHidden'] - CSS class applied when the page is hidden.
  * @param {string} [settings.visibleClass='windowVisible'] - CSS class applied when the page is visible.
  * @param {() => void} [settings.onVisible] - Callback called when page becomes visible.
@@ -417,8 +417,8 @@ export function installWindowHiddenScript({
   onVisible,
   onHidden,
 } = {}) {
-  if (!(element instanceof HTMLElement))
-    throw new TypeError(`"element" must be an instance of HTMLElement.`);
+  if (!(element instanceof Element))
+    throw new TypeError(`"element" must be an instance of Element.`);
   if (typeof hiddenClass !== 'string') throw new TypeError(`"hiddenClass" must be a string.`);
   if (typeof visibleClass !== 'string') throw new TypeError(`"visibleClass" must be a string.`);
   if (onVisible !== undefined && typeof onVisible !== 'function')

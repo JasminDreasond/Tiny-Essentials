@@ -15,6 +15,37 @@
  */
 
 /**
+ * Represents a raw DOM event target element or an instance of TinyHtml.
+ * This type is used to abstract interactions with both plain elements
+ * and wrapped elements via the TinyHtml class.
+ *
+ * @typedef {EventTarget|TinyHtml} TinyEventTarget
+ */
+
+/**
+ * Represents a raw DOM input element or an instance of TinyHtml.
+ * This type is used to abstract interactions with both plain elements
+ * and wrapped elements via the TinyHtml class.
+ *
+ * @typedef {InputElement|TinyHtml} TinyInputElement
+ */
+
+/**
+ * Represents a raw DOM element/window or an instance of TinyHtml.
+ * This type is used to abstract interactions with both plain elements
+ * and wrapped elements via the TinyHtml class.
+ *
+ * @typedef {ElementAndWindow|TinyHtml} TinyElementAndWindow
+ */
+
+/**
+ * Represents a value that can be either a DOM Element or the global Window object.
+ * Useful for functions that operate generically on scrollable or measurable targets.
+ *
+ * @typedef {Element|Window} ElementAndWindow
+ */
+
+/**
  * A parameter type used for filtering or matching elements.
  * It can be:
  * - A string (CSS selector),
@@ -64,7 +95,7 @@
  * WeakMap storing all event listeners per element.
  * Each element has a registry mapping event names to their handler lists.
  *
- * @type {WeakMap<ConstructorElValues, EventRegistryList>}
+ * @type {WeakMap<ConstructorElValues|EventTarget, EventRegistryList>}
  */
 const __eventRegistry = new WeakMap();
 
@@ -90,7 +121,7 @@ const __eventRegistry = new WeakMap();
  * A list of HTML form elements that can have a `.value` property used by TinyHtml.
  * Includes common input types used in forms.
  *
- * @typedef {HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement|HTMLOptionElement} HtmlValInputsList
+ * @typedef {HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement|HTMLOptionElement} InputElement
  */
 
 /**
@@ -352,18 +383,18 @@ class TinyHtml {
    * Throws an error if the element is invalid.
    *
    * @param {string} where - The method name or context calling this.
-   * @returns {HtmlValInputsList} - The HTML Value Element.
+   * @returns {InputElement} - The HTML Value Element.
    * @throws {TypeError} If `where` is not a string.
    */
   getValElement(where) {
     this._isValElement(where);
-    return /** @type {HtmlValInputsList} */ (this.#el);
+    return /** @type {InputElement} */ (this.#el);
   }
 
   /**
    * Returns the current target held by this instance.
    *
-   * @returns {Element|Window} - The instance's target element.
+   * @returns {ElementAndWindow} - The instance's target element.
    */
   getTarget() {
     if (this.#el instanceof Document)
@@ -386,20 +417,29 @@ class TinyHtml {
   //////////////////////////////////////////////////////
 
   /**
-   * @param {TinyElement|TinyElement[]} elems
+   * @param {TinyElement|EventTarget|(TinyElement|EventTarget)[]} elems
    * @param {string} where
-   * @param {any} TheTinyElement
-   * @param {string} elemName
+   * @param {any[]} TheTinyElements
+   * @param {string[]} elemName
    * @returns {any[]}
    * @readonly
    */
-  static _preElemsTemplate(elems, where, TheTinyElement, elemName) {
-    /** @param {TinyElement[]} item */
+  static _preElemsTemplate(elems, where, TheTinyElements, elemName) {
+    /** @param {(TinyElement|EventTarget)[]} item */
     const checkElement = (item) =>
       item.map((elem) => {
         const result = elem instanceof TinyHtml ? elem.getElement(where) : elem;
-        if (!(result instanceof TheTinyElement))
-          throw new Error(`[TinyHtml] Invalid ${elemName} in ${where}().`);
+        let allowed = false;
+        for (const TheTinyElement of TheTinyElements) {
+          if (result instanceof TheTinyElement) {
+            allowed = true;
+            break;
+          }
+        }
+        if (!allowed)
+          throw new Error(
+            `[TinyHtml] Invalid element of the list "${elemName.join(',')}" in ${where}().`,
+          );
         return result;
       });
     if (!Array.isArray(elems)) return checkElement([elems]);
@@ -407,22 +447,31 @@ class TinyHtml {
   }
 
   /**
-   * @param {TinyElement|TinyElement[]} elems
+   * @param {TinyElement|EventTarget|(TinyElement|EventTarget)[]} elems
    * @param {string} where
-   * @param {any} TheTinyElement
-   * @param {string} elemName
+   * @param {any[]} TheTinyElements
+   * @param {string[]} elemName
    * @returns {any}
    * @readonly
    */
-  static _preElemTemplate(elems, where, TheTinyElement, elemName) {
-    /** @param {TinyElement[]} item */
-    const checkElement = (item) =>
-      item.map((elem) => {
-        const result = elem instanceof TinyHtml ? elem.getElement(where) : elem;
-        if (!(result instanceof TheTinyElement))
-          throw new Error(`[TinyHtml] Invalid ${elemName} in ${where}().`);
-        return result;
-      })[0] || null;
+  static _preElemTemplate(elems, where, TheTinyElements, elemName) {
+    /** @param {(TinyElement|EventTarget)[]} item */
+    const checkElement = (item) => {
+      const elem = item[0];
+      const result = elem instanceof TinyHtml ? elem.getElement(where) : elem;
+      let allowed = false;
+      for (const TheTinyElement of TheTinyElements) {
+        if (result instanceof TheTinyElement) {
+          allowed = true;
+          break;
+        }
+      }
+      if (!allowed)
+        throw new Error(
+          `[TinyHtml] Invalid element of the list "${elemName.join(',')}" in ${where}().`,
+        );
+      return result;
+    };
     if (!Array.isArray(elems)) return checkElement([elems]);
     return checkElement(elems);
   }
@@ -437,7 +486,7 @@ class TinyHtml {
    * @readonly
    */
   static _preElems(elems, where) {
-    return TinyHtml._preElemsTemplate(elems, where, Element, 'Element');
+    return TinyHtml._preElemsTemplate(elems, where, [Element], ['Element']);
   }
 
   /**
@@ -446,11 +495,11 @@ class TinyHtml {
    *
    * @param {TinyElement|TinyElement[]} elems - A single element or array of elements.
    * @param {string} where - The method or context name where validation is being called.
-   * @returns {Element | null} - Always returns an array of elements.
+   * @returns {Element} - Always returns an array of elements.
    * @readonly
    */
   static _preElem(elems, where) {
-    return TinyHtml._preElemTemplate(elems, where, Element, 'Element');
+    return TinyHtml._preElemTemplate(elems, where, [Element], ['Element']);
   }
 
   /**
@@ -463,7 +512,7 @@ class TinyHtml {
    * @readonly
    */
   static _preHtmlElems(elems, where) {
-    return TinyHtml._preElemsTemplate(elems, where, HTMLElement, 'HTMLElement');
+    return TinyHtml._preElemsTemplate(elems, where, [HTMLElement], ['HTMLElement']);
   }
 
   /**
@@ -472,11 +521,99 @@ class TinyHtml {
    *
    * @param {TinyElement|TinyElement[]} elems - A single html element or array of html elements.
    * @param {string} where - The method or context name where validation is being called.
-   * @returns {HTMLElement | null} - Always returns an array of html elements.
+   * @returns {HTMLElement} - Always returns an array of html elements.
    * @readonly
    */
   static _preHtmlElem(elems, where) {
-    return TinyHtml._preElemTemplate(elems, where, HTMLElement, 'HTMLElement');
+    return TinyHtml._preElemTemplate(elems, where, [HTMLElement], ['HTMLElement']);
+  }
+
+  /**
+   * Ensures the input is returned as an array.
+   * Useful to normalize operations across multiple or single event target elements.
+   *
+   * @param {TinyInputElement|TinyInputElement[]} elems - A single event target element or array of html elements.
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {InputElement[]} - Always returns an array of event target elements.
+   * @readonly
+   */
+  static _preInputElems(elems, where) {
+    return TinyHtml._preElemsTemplate(
+      elems,
+      where,
+      [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement, HTMLOptionElement],
+      ['HTMLInputElement', 'HTMLSelectElement', 'HTMLTextAreaElement', 'HTMLOptionElement'],
+    );
+  }
+
+  /**
+   * Ensures the input is returned as an single event target element.
+   * Useful to normalize operations across multiple or single event target elements.
+   *
+   * @param {TinyInputElement|TinyInputElement[]} elems - A single event target element or array of html elements.
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {InputElement} - Always returns an array of event target elements.
+   * @readonly
+   */
+  static _preInputElem(elems, where) {
+    return TinyHtml._preElemTemplate(
+      elems,
+      where,
+      [HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement, HTMLOptionElement],
+      ['HTMLInputElement', 'HTMLSelectElement', 'HTMLTextAreaElement', 'HTMLOptionElement'],
+    );
+  }
+
+  /**
+   * Ensures the input is returned as an array.
+   * Useful to normalize operations across multiple or single event target elements.
+   *
+   * @param {TinyEventTarget|TinyEventTarget[]} elems - A single event target element or array of html elements.
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {EventTarget[]} - Always returns an array of event target elements.
+   * @readonly
+   */
+  static _preEventTargetElems(elems, where) {
+    return TinyHtml._preElemsTemplate(elems, where, [EventTarget], ['EventTarget']);
+  }
+
+  /**
+   * Ensures the input is returned as an single event target element.
+   * Useful to normalize operations across multiple or single event target elements.
+   *
+   * @param {TinyEventTarget|TinyEventTarget[]} elems - A single event target element or array of html elements.
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {EventTarget} - Always returns an array of event target elements.
+   * @readonly
+   */
+  static _preEventTargetElem(elems, where) {
+    return TinyHtml._preElemTemplate(elems, where, [EventTarget], ['EventTarget']);
+  }
+
+  /**
+   * Ensures the input is returned as an array.
+   * Useful to normalize operations across multiple or single element/window elements.
+   *
+   * @param {TinyElementAndWindow|TinyElementAndWindow[]} elems - A single element/window element or array of html elements.
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {ElementAndWindow[]} - Always returns an array of element/window elements.
+   * @readonly
+   */
+  static _preElemsAndWindow(elems, where) {
+    return TinyHtml._preElemsTemplate(elems, where, [Element, Window], ['Element', 'Window']);
+  }
+
+  /**
+   * Ensures the input is returned as an single element/window element.
+   * Useful to normalize operations across multiple or single element/window elements.
+   *
+   * @param {TinyElementAndWindow|TinyElementAndWindow[]} elems - A single element/window element or array of html elements.
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {ElementAndWindow} - Always returns an array of element/window elements.
+   * @readonly
+   */
+  static _preElemAndWindow(elems, where) {
+    return TinyHtml._preElemTemplate(elems, where, [Element, Window], ['Element', 'Window']);
   }
 
   /**
@@ -944,15 +1081,15 @@ class TinyHtml {
 
   /**
    * Returns the computed CSS float value of a property.
-   * @param {Element} el - The element to inspect.
+   * @param {TinyElement} el - The element to inspect.
    * @param {string} prop - The CSS property.
    * @returns {number} - The parsed float value.
    */
   static cssFloat(el, prop) {
-    TinyHtml._isElement(el, 'cssFloat');
+    const elem = TinyHtml._preElem(el, 'cssFloat');
     if (typeof prop !== 'string') throw new TypeError('The prop must be a string.');
     // @ts-ignore
-    const val = window.getComputedStyle(el)[prop];
+    const val = window.getComputedStyle(elem)[prop];
     return parseFloat(val) || 0;
   }
 
@@ -967,14 +1104,14 @@ class TinyHtml {
 
   /**
    * Returns computed float values of multiple CSS properties.
-   * @param {Element} el - The element to inspect.
+   * @param {TinyElement} el - The element to inspect.
    * @param {string[]} prop - An array of CSS properties.
    * @returns {Record<string, number>} - Map of property to float value.
    */
   static cssFloats(el, prop) {
-    TinyHtml._isElement(el, 'cssFloats');
+    const elem = TinyHtml._preElem(el, 'cssFloats');
     if (!Array.isArray(prop)) throw new TypeError('The prop must be an array of strings.');
-    const css = window.getComputedStyle(el);
+    const css = window.getComputedStyle(elem);
     /** @type {Record<string, number>} */
     const result = {};
     for (const name of prop) {
@@ -1045,25 +1182,28 @@ class TinyHtml {
 
   /**
    * Gets the width or height of an element based on the box model.
-   * @param {Element|Window} el - The element or window.
+   * @param {TinyElementAndWindow} el - The element or window.
    * @param {"width"|"height"} type - Dimension type.
    * @param {"content"|"padding"|"border"|"margin"} [extra='content'] - Box model context.
    * @returns {number} - Computed dimension.
    * @throws {TypeError} If `type` or `extra` is not a string.
    */
   static getDimension(el, type, extra = 'content') {
-    TinyHtml._isValidElem(el, 'getDimension', true);
+    const elem = TinyHtml._preElemAndWindow(el, 'getDimension');
     if (typeof type !== 'string') throw new TypeError('The type must be a string.');
     if (typeof extra !== 'string') throw new TypeError('The extra must be a string.');
 
     const name = type === 'width' ? 'Width' : 'Height';
 
-    if (TinyHtml.isWindow(el)) {
-      // @ts-ignore
-      return extra === 'margin' ? el['inner' + name] : el.document.documentElement['client' + name];
+    if (TinyHtml.isWindow(elem)) {
+      return extra === 'margin'
+        ? // @ts-ignore
+          elem['inner' + name]
+        : // @ts-ignore
+          elem.document.documentElement['client' + name];
     }
     /** @type {Element} */
-    const elHtml = el;
+    const elHtml = elem;
 
     if (elHtml.nodeType === 9) {
       // @ts-ignore
@@ -1134,15 +1274,15 @@ class TinyHtml {
 
   /**
    * Sets the height of the element.
-   * @param {HTMLElement} el - Target element.
+   * @param {TinyHtmlElement} el - Target element.
    * @param {string|number} value - Height value.
    * @throws {TypeError} If `value` is neither a string nor number.
    */
   static setHeight(el, value) {
-    TinyHtml._isHtmlElement(el, 'setHeight');
+    const elem = TinyHtml._preHtmlElem(el, 'setHeight');
     if (typeof value !== 'number' && typeof value !== 'string')
       throw new TypeError('The value must be a string or number.');
-    el.style.height = typeof value === 'number' ? `${value}px` : value;
+    elem.style.height = typeof value === 'number' ? `${value}px` : value;
   }
 
   /**
@@ -1155,15 +1295,15 @@ class TinyHtml {
 
   /**
    * Sets the width of the element.
-   * @param {HTMLElement} el - Target element.
+   * @param {TinyHtmlElement} el - Target element.
    * @param {string|number} value - Width value.
    * @throws {TypeError} If `value` is neither a string nor number.
    */
   static setWidth(el, value) {
-    TinyHtml._isHtmlElement(el, 'setWidth');
+    const elem = TinyHtml._preHtmlElem(el, 'setWidth');
     if (typeof value !== 'number' && typeof value !== 'string')
       throw new TypeError('The value must be a string or number.');
-    el.style.width = typeof value === 'number' ? `${value}px` : value;
+    elem.style.width = typeof value === 'number' ? `${value}px` : value;
   }
 
   /**
@@ -1176,12 +1316,12 @@ class TinyHtml {
 
   /**
    * Returns content box height.
-   * @param {Element|Window} el - Target element.
+   * @param {TinyElementAndWindow} el - Target element.
    * @returns {number}
    */
   static height(el) {
-    TinyHtml._isValidElem(el, 'height', true);
-    return TinyHtml.getDimension(el, 'height', 'content');
+    const elem = TinyHtml._preElemAndWindow(el, 'height');
+    return TinyHtml.getDimension(elem, 'height', 'content');
   }
 
   /**
@@ -1194,12 +1334,12 @@ class TinyHtml {
 
   /**
    * Returns content box width.
-   * @param {Element|Window} el - Target element.
+   * @param {TinyElementAndWindow} el - Target element.
    * @returns {number}
    */
   static width(el) {
-    TinyHtml._isValidElem(el, 'width', true);
-    return TinyHtml.getDimension(el, 'width', 'content');
+    const elem = TinyHtml._preElemAndWindow(el, 'width');
+    return TinyHtml.getDimension(elem, 'width', 'content');
   }
 
   /**
@@ -1212,12 +1352,12 @@ class TinyHtml {
 
   /**
    * Returns padding box height.
-   * @param {Element|Window} el - Target element.
+   * @param {TinyElementAndWindow} el - Target element.
    * @returns {number}
    */
   static innerHeight(el) {
-    TinyHtml._isValidElem(el, 'innerHeight', true);
-    return TinyHtml.getDimension(el, 'height', 'padding');
+    const elem = TinyHtml._preElemAndWindow(el, 'innerHeight');
+    return TinyHtml.getDimension(elem, 'height', 'padding');
   }
 
   /**
@@ -1230,12 +1370,12 @@ class TinyHtml {
 
   /**
    * Returns padding box width.
-   * @param {Element|Window} el - Target element.
+   * @param {TinyElementAndWindow} el - Target element.
    * @returns {number}
    */
   static innerWidth(el) {
-    TinyHtml._isValidElem(el, 'innerWidth', true);
-    return TinyHtml.getDimension(el, 'width', 'padding');
+    const elem = TinyHtml._preElemAndWindow(el, 'innerWidth');
+    return TinyHtml.getDimension(elem, 'width', 'padding');
   }
 
   /**
@@ -1248,13 +1388,13 @@ class TinyHtml {
 
   /**
    * Returns outer height of the element, optionally including margin.
-   * @param {Element|Window} el - Target element.
+   * @param {TinyElementAndWindow} el - Target element.
    * @param {boolean} [includeMargin=false] - Whether to include margin.
    * @returns {number}
    */
   static outerHeight(el, includeMargin = false) {
-    TinyHtml._isValidElem(el, 'outerHeight', true);
-    return TinyHtml.getDimension(el, 'height', includeMargin ? 'margin' : 'border');
+    const elem = TinyHtml._preElemAndWindow(el, 'outerHeight');
+    return TinyHtml.getDimension(elem, 'height', includeMargin ? 'margin' : 'border');
   }
 
   /**
@@ -1268,13 +1408,13 @@ class TinyHtml {
 
   /**
    * Returns outer width of the element, optionally including margin.
-   * @param {Element|Window} el - Target element.
+   * @param {TinyElementAndWindow} el - Target element.
    * @param {boolean} [includeMargin=false] - Whether to include margin.
    * @returns {number}
    */
   static outerWidth(el, includeMargin = false) {
-    TinyHtml._isValidElem(el, 'outerWidth', true);
-    return TinyHtml.getDimension(el, 'width', includeMargin ? 'margin' : 'border');
+    const elem = TinyHtml._preElemAndWindow(el, 'outerWidth');
+    return TinyHtml.getDimension(elem, 'width', includeMargin ? 'margin' : 'border');
   }
 
   /**
@@ -1290,12 +1430,12 @@ class TinyHtml {
 
   /**
    * Gets the offset of the element relative to the document.
-   * @param {Element} el - Target element.
+   * @param {TinyElement} el - Target element.
    * @returns {{top: number, left: number}}
    */
   static offset(el) {
-    TinyHtml._isElement(el, 'offset');
-    const rect = el.getBoundingClientRect();
+    const elem = TinyHtml._preElem(el, 'offset');
+    const rect = elem.getBoundingClientRect();
     const scrollTop = window.scrollY || document.documentElement.scrollTop;
     const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
 
@@ -1315,24 +1455,24 @@ class TinyHtml {
 
   /**
    * Gets the position of the element relative to its offset parent.
-   * @param {HTMLElement} el - Target element.
+   * @param {TinyHtmlElement} el - Target element.
    * @returns {{top: number, left: number}}
    */
   static position(el) {
-    TinyHtml._isHtmlElement(el, 'position');
+    const elem = TinyHtml._preHtmlElem(el, 'position');
 
     let offsetParent;
     let offset;
     let parentOffset = { top: 0, left: 0 };
 
-    const computedStyle = window.getComputedStyle(el);
+    const computedStyle = window.getComputedStyle(elem);
 
     if (computedStyle.position === 'fixed') {
-      offset = el.getBoundingClientRect();
+      offset = elem.getBoundingClientRect();
     } else {
-      offset = TinyHtml.offset(el);
+      offset = TinyHtml.offset(elem);
 
-      offsetParent = el.offsetParent || document.documentElement;
+      offsetParent = elem.offsetParent || document.documentElement;
       const { position } = window.getComputedStyle(offsetParent);
 
       while (
@@ -1345,7 +1485,7 @@ class TinyHtml {
 
       if (
         offsetParent instanceof HTMLElement &&
-        offsetParent !== el &&
+        offsetParent !== elem &&
         offsetParent.nodeType === 1
       ) {
         const { borderTopWidth, borderLeftWidth } = TinyHtml.cssFloats(offsetParent, [
@@ -1359,8 +1499,8 @@ class TinyHtml {
     }
 
     return {
-      top: offset.top - parentOffset.top - TinyHtml.cssFloat(el, 'marginTop'),
-      left: offset.left - parentOffset.left - TinyHtml.cssFloat(el, 'marginLeft'),
+      top: offset.top - parentOffset.top - TinyHtml.cssFloat(elem, 'marginTop'),
+      left: offset.left - parentOffset.left - TinyHtml.cssFloat(elem, 'marginLeft'),
     };
   }
 
@@ -1374,12 +1514,12 @@ class TinyHtml {
 
   /**
    * Gets the closest positioned ancestor element.
-   * @param {HTMLElement} el - Target element.
+   * @param {TinyHtmlElement} el - Target element.
    * @returns {HTMLElement} - Offset parent element.
    */
   static offsetParent(el) {
-    TinyHtml._isHtmlElement(el, 'offsetParent');
-    let offsetParent = el.offsetParent;
+    const elem = TinyHtml._preHtmlElem(el, 'offsetParent');
+    let offsetParent = elem.offsetParent;
 
     while (
       offsetParent instanceof HTMLElement &&
@@ -1402,15 +1542,15 @@ class TinyHtml {
 
   /**
    * Gets the vertical scroll position.
-   * @param {Element|Window} el - Element or window.
+   * @param {TinyElementAndWindow} el - Element or window.
    * @returns {number}
    */
   static scrollTop(el) {
-    TinyHtml._isValidElem(el, 'scrollTop', true);
-    if (TinyHtml.isWindow(el)) return el.pageYOffset;
+    const elem = TinyHtml._preElemAndWindow(el, 'scrollTop');
+    if (TinyHtml.isWindow(elem)) return elem.pageYOffset;
     // @ts-ignore
-    if (el.nodeType === 9) return el.defaultView.pageYOffset;
-    return el.scrollTop;
+    if (elem.nodeType === 9) return elem.defaultView.pageYOffset;
+    return elem.scrollTop;
   }
 
   /**
@@ -1423,15 +1563,15 @@ class TinyHtml {
 
   /**
    * Gets the horizontal scroll position.
-   * @param {Element|Window} el - Element or window.
+   * @param {TinyElementAndWindow} el - Element or window.
    * @returns {number}
    */
   static scrollLeft(el) {
-    TinyHtml._isValidElem(el, 'scrollLeft', true);
-    if (TinyHtml.isWindow(el)) return el.pageXOffset;
+    const elem = TinyHtml._preElemAndWindow(el, 'scrollLeft');
+    if (TinyHtml.isWindow(elem)) return elem.pageXOffset;
     // @ts-ignore
-    if (el.nodeType === 9) return el.defaultView.pageXOffset;
-    return el.scrollLeft;
+    if (elem.nodeType === 9) return elem.defaultView.pageXOffset;
+    return elem.scrollLeft;
   }
 
   /**
@@ -1444,19 +1584,19 @@ class TinyHtml {
 
   /**
    * Sets the vertical scroll position.
-   * @param {Element|Window} el - Element or window.
+   * @param {TinyElementAndWindow} el - Element or window.
    * @param {number} value - Scroll top value.
    */
   static setScrollTop(el, value) {
-    TinyHtml._isValidElem(el, 'setScrollTop', true);
+    const elem = TinyHtml._preElemAndWindow(el, 'setScrollTop');
     if (typeof value !== 'number') throw new TypeError('');
-    if (TinyHtml.isWindow(el)) {
-      el.scrollTo(el.pageXOffset, value);
-    } else if (el.nodeType === 9) {
+    if (TinyHtml.isWindow(elem)) {
+      elem.scrollTo(elem.pageXOffset, value);
+    } else if (elem.nodeType === 9) {
       // @ts-ignore
-      el.defaultView.scrollTo(el.defaultView.pageXOffset, value);
+      elem.defaultView.scrollTo(elem.defaultView.pageXOffset, value);
     } else {
-      el.scrollTop = value;
+      elem.scrollTop = value;
     }
   }
 
@@ -1470,19 +1610,19 @@ class TinyHtml {
 
   /**
    * Sets the horizontal scroll position.
-   * @param {Element|Window} el - Element or window.
+   * @param {TinyElementAndWindow} el - Element or window.
    * @param {number} value - Scroll left value.
    */
   static setScrollLeft(el, value) {
-    TinyHtml._isValidElem(el, 'setScrollLeft', true);
+    const elem = TinyHtml._preElemAndWindow(el, 'setScrollLeft');
     if (typeof value !== 'number') throw new TypeError('');
-    if (TinyHtml.isWindow(el)) {
-      el.scrollTo(value, el.pageYOffset);
-    } else if (el.nodeType === 9) {
+    if (TinyHtml.isWindow(elem)) {
+      elem.scrollTo(value, elem.pageYOffset);
+    } else if (elem.nodeType === 9) {
       // @ts-ignore
-      el.defaultView.scrollTo(value, el.defaultView.pageYOffset);
+      elem.defaultView.scrollTo(value, elem.defaultView.pageYOffset);
     } else {
-      el.scrollLeft = value;
+      elem.scrollLeft = value;
     }
   }
 
@@ -1501,13 +1641,13 @@ class TinyHtml {
    * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) border widths, and each side individually.
    */
   static borderWidth(el) {
-    TinyHtml._isElement(el, 'borderWidth');
+    const elem = TinyHtml._preElem(el, 'borderWidth');
     const {
       borderLeftWidth: left,
       borderRightWidth: right,
       borderTopWidth: top,
       borderBottomWidth: bottom,
-    } = TinyHtml.cssFloats(el, [
+    } = TinyHtml.cssFloats(elem, [
       'borderLeftWidth',
       'borderRightWidth',
       'borderTopWidth',
@@ -1535,13 +1675,13 @@ class TinyHtml {
    * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) border sizes, and each side individually.
    */
   static border(el) {
-    TinyHtml._isElement(el, 'border');
+    const elem = TinyHtml._preElem(el, 'border');
     const {
       borderLeft: left,
       borderRight: right,
       borderTop: top,
       borderBottom: bottom,
-    } = TinyHtml.cssFloats(el, ['borderLeft', 'borderRight', 'borderTop', 'borderBottom']);
+    } = TinyHtml.cssFloats(elem, ['borderLeft', 'borderRight', 'borderTop', 'borderBottom']);
     const x = left + right;
     const y = top + bottom;
 
@@ -1564,13 +1704,13 @@ class TinyHtml {
    * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) margins, and each side individually.
    */
   static margin(el) {
-    TinyHtml._isElement(el, 'margin');
+    const elem = TinyHtml._preElem(el, 'margin');
     const {
       marginLeft: left,
       marginRight: right,
       marginTop: top,
       marginBottom: bottom,
-    } = TinyHtml.cssFloats(el, ['marginLeft', 'marginRight', 'marginTop', 'marginBottom']);
+    } = TinyHtml.cssFloats(elem, ['marginLeft', 'marginRight', 'marginTop', 'marginBottom']);
     const x = left + right;
     const y = top + bottom;
 
@@ -1593,13 +1733,13 @@ class TinyHtml {
    * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) paddings, and each side individually.
    */
   static padding(el) {
-    TinyHtml._isElement(el, 'padding');
+    const elem = TinyHtml._preElem(el, 'padding');
     const {
       paddingLeft: left,
       paddingRight: right,
       paddingTop: top,
       paddingBottom: bottom,
-    } = TinyHtml.cssFloats(el, ['paddingLeft', 'paddingRight', 'paddingTop', 'paddingBottom']);
+    } = TinyHtml.cssFloats(elem, ['paddingLeft', 'paddingRight', 'paddingTop', 'paddingBottom']);
     const x = left + right;
     const y = top + bottom;
 
@@ -1622,8 +1762,8 @@ class TinyHtml {
    * @type {(el: Element, ...tokens: string[]) => void} - One or more class names to add.
    */
   static addClass(el, ...args) {
-    TinyHtml._isElement(el, 'addClass');
-    el.classList.add(...args);
+    const elem = TinyHtml._preElem(el, 'addClass');
+    elem.classList.add(...args);
   }
 
   /**
@@ -1639,8 +1779,8 @@ class TinyHtml {
    * @type {(el: Element, ...tokens: string[]) => void} - One or more class names to remove.
    */
   static removeClass(el, ...args) {
-    TinyHtml._isElement(el, 'removeClass');
-    el.classList.remove(...args);
+    const elem = TinyHtml._preElem(el, 'removeClass');
+    elem.classList.remove(...args);
   }
 
   /**
@@ -1660,11 +1800,11 @@ class TinyHtml {
    * @throws {TypeError} If either argument is not a string.
    */
   static replaceClass(el, token, newToken) {
-    TinyHtml._isElement(el, 'replaceClass');
+    const elem = TinyHtml._preElem(el, 'replaceClass');
     if (typeof token !== 'string') throw new TypeError('The "token" parameter must be a string.');
     if (typeof newToken !== 'string')
       throw new TypeError('The "newToken" parameter must be a string.');
-    return el.classList.replace(token, newToken);
+    return elem.classList.replace(token, newToken);
   }
 
   /**
@@ -1686,9 +1826,9 @@ class TinyHtml {
    * @throws {TypeError} If the index is not a number.
    */
   static classItem(el, index) {
-    TinyHtml._isElement(el, 'classItem');
+    const elem = TinyHtml._preElem(el, 'classItem');
     if (typeof index !== 'number') throw new TypeError('The "index" parameter must be a number.');
-    return el.classList.item(index);
+    return elem.classList.item(index);
   }
 
   /**
@@ -1710,10 +1850,10 @@ class TinyHtml {
    * @throws {TypeError} If token is not a string or force is not a boolean.
    */
   static toggleClass(el, token, force) {
-    TinyHtml._isElement(el, 'toggleClass');
+    const elem = TinyHtml._preElem(el, 'toggleClass');
     if (typeof token !== 'string') throw new TypeError('The "token" parameter must be a string.');
     if (typeof force !== 'boolean') throw new TypeError('The "force" parameter must be a boolean.');
-    return el.classList.toggle(token, force);
+    return elem.classList.toggle(token, force);
   }
 
   /**
@@ -1735,9 +1875,9 @@ class TinyHtml {
    * @throws {TypeError} If token is not a string.
    */
   static hasClass(el, token) {
-    TinyHtml._isElement(el, 'hasClass');
+    const elem = TinyHtml._preElem(el, 'hasClass');
     if (typeof token !== 'string') throw new TypeError('The "token" parameter must be a string.');
-    return el.classList.contains(token);
+    return elem.classList.contains(token);
   }
 
   /**
@@ -1756,8 +1896,8 @@ class TinyHtml {
    * @returns {number} The number of classes.
    */
   static classLength(el) {
-    TinyHtml._isElement(el, 'classLength');
-    return el.classList.length;
+    const elem = TinyHtml._preElem(el, 'classLength');
+    return elem.classList.length;
   }
 
   /**
@@ -1774,8 +1914,8 @@ class TinyHtml {
    * @returns {string[]} An array of class names.
    */
   static classList(el) {
-    TinyHtml._isElement(el, 'classList');
-    return el.classList.values().toArray();
+    const elem = TinyHtml._preElem(el, 'classList');
+    return elem.classList.values().toArray();
   }
 
   /**
@@ -1794,8 +1934,8 @@ class TinyHtml {
    * @returns {string} The tag name in uppercase.
    */
   static tagName(el) {
-    TinyHtml._isElement(el, 'tagName');
-    return el.tagName;
+    const elem = TinyHtml._preElem(el, 'tagName');
+    return elem.tagName;
   }
 
   /**
@@ -1812,8 +1952,8 @@ class TinyHtml {
    * @returns {string} The element's ID.
    */
   static id(el) {
-    TinyHtml._isElement(el, 'id');
-    return el.id;
+    const elem = TinyHtml._preElem(el, 'id');
+    return elem.id;
   }
 
   /**
@@ -1830,8 +1970,8 @@ class TinyHtml {
    * @returns {string|null} The text content or null if none.
    */
   static text(el) {
-    TinyHtml._isElement(el, 'text');
-    return el.textContent;
+    const elem = TinyHtml._preElem(el, 'text');
+    return elem.textContent;
   }
 
   /**
@@ -1967,12 +2107,12 @@ class TinyHtml {
    * Sets the value of the current HTML value element (input, select, textarea, etc.).
    * Accepts strings, numbers, booleans or arrays of these values, or a callback function that computes them.
    *
-   * @param {HtmlValInputsList} el - Target element.
-   * @param {SetValValue|((el: HtmlValInputsList, val: SetValValue) => SetValValue)} value - The value to assign or a function that returns it.
+   * @param {TinyInputElement} el - Target element.
+   * @param {SetValValue|((el: InputElement, val: SetValValue) => SetValValue)} value - The value to assign or a function that returns it.
    * @throws {Error} If the computed value is not a valid string or boolean.
    */
   static setVal(el, value) {
-    TinyHtml._isValElement(el, 'setVal');
+    const elem = TinyHtml._preInputElem(el, 'setVal');
 
     /**
      * @param {SetValValueBase[]} array
@@ -1986,9 +2126,9 @@ class TinyHtml {
       return result;
     };
 
-    if (el.nodeType !== 1) return;
+    if (elem.nodeType !== 1) return;
     /** @type {SetValValue} */
-    let valToSet = typeof value === 'function' ? value(el, TinyHtml.val(el)) : value;
+    let valToSet = typeof value === 'function' ? value(elem, TinyHtml.val(elem)) : value;
 
     if (valToSet == null) {
       valToSet = '';
@@ -1999,11 +2139,15 @@ class TinyHtml {
     }
 
     // @ts-ignore
-    const hook = TinyHtml._valHooks[el.type] || TinyHtml._valHooks[el.nodeName.toLowerCase()];
-    if (!hook || typeof hook.set !== 'function' || hook.set(el, valToSet, 'value') === undefined) {
+    const hook = TinyHtml._valHooks[elem.type] || TinyHtml._valHooks[elem.nodeName.toLowerCase()];
+    if (
+      !hook ||
+      typeof hook.set !== 'function' ||
+      hook.set(elem, valToSet, 'value') === undefined
+    ) {
       if (typeof valToSet !== 'string' && typeof valToSet !== 'boolean')
         throw new Error(`Invalid setValue "${typeof valToSet}" value.`);
-      if (typeof valToSet === 'string') el.value = valToSet;
+      if (typeof valToSet === 'string') elem.value = valToSet;
     }
   }
 
@@ -2011,7 +2155,7 @@ class TinyHtml {
    * Sets the value of the current HTML value element (input, select, textarea, etc.).
    * Accepts strings, numbers, booleans or arrays of these values, or a callback function that computes them.
    *
-   * @param {SetValValue|((el: HtmlValInputsList, val: SetValValue) => SetValValue)} value - The value to assign or a function that returns it.
+   * @param {SetValValue|((el: InputElement, val: SetValValue) => SetValValue)} value - The value to assign or a function that returns it.
    * @throws {Error} If the computed value is not a valid string or boolean.
    */
   setVal(value) {
@@ -2022,20 +2166,20 @@ class TinyHtml {
    * Retrieves the raw value from the HTML input element.
    * If a custom value hook exists, it will be used first.
    *
-   * @param {HtmlValInputsList} el - Target element.
+   * @param {TinyInputElement} el - Target element.
    * @param {string} where
    * @returns {SetValValue} The raw value retrieved from the element or hook.
    */
   static _val(el, where) {
-    TinyHtml._isValElement(el, where);
+    const elem = TinyHtml._preInputElem(el, where);
     // @ts-ignore
-    const hook = TinyHtml._valHooks[el.type] || TinyHtml._valHooks[el.nodeName.toLowerCase()];
+    const hook = TinyHtml._valHooks[elem.type] || TinyHtml._valHooks[elem.nodeName.toLowerCase()];
     if (hook && typeof hook.get === 'function') {
-      const ret = hook.get(el, 'value');
+      const ret = hook.get(elem, 'value');
       if (ret !== undefined) return typeof ret === 'string' ? ret.replace(/\r/g, '') : ret;
     }
 
-    return el.value;
+    return elem.value;
   }
 
   /**
@@ -2052,7 +2196,7 @@ class TinyHtml {
   /**
    * Gets the value of the current HTML value element.
    *
-   * @param {HtmlValInputsList} el - Target element.
+   * @param {TinyInputElement} el - Target element.
    * @returns {SetValValue} The normalized value, with carriage returns removed.
    */
   static val(el) {
@@ -2071,7 +2215,7 @@ class TinyHtml {
   /**
    * Gets the text of the current HTML value element (for text).
    *
-   * @param {HtmlValInputsList} el - Target element.
+   * @param {TinyInputElement} el - Target element.
    * @returns {string} The text value.
    * @throws {Error} If the element is not a string value.
    */
@@ -2094,7 +2238,7 @@ class TinyHtml {
   /**
    * Internal helper to get a value from an input expected to return an array.
    *
-   * @param {HtmlValInputsList} el - Target element.
+   * @param {TinyInputElement} el - Target element.
    * @param {string} where - The method name or context using this validation (for error reporting).
    * @returns {SetValValueBase[]} - The validated value as an array.
    * @throws {Error} If the returned value is not an array.
@@ -2119,7 +2263,7 @@ class TinyHtml {
   /**
    * Gets the raw value as a generic array of the current HTML value element (for select).
    *
-   * @param {HtmlValInputsList} el - Target element.
+   * @param {TinyInputElement} el - Target element.
    * @returns {SetValValueBase[]} - The value cast as a generic array.
    * @throws {Error} If the value is not a valid array.
    */
@@ -2140,7 +2284,7 @@ class TinyHtml {
   /**
    * Gets the value as an array of strings in the current HTML value element (for select).
    *
-   * @param {HtmlValInputsList} el - Target element.
+   * @param {TinyInputElement} el - Target element.
    * @returns {string[]} - The array of values cast as strings.
    * @throws {Error} If any value in the array is not a string.
    */
@@ -2166,7 +2310,7 @@ class TinyHtml {
   /**
    * Gets the value as an array of numbers in the current HTML value element (for ???).
    *
-   * @param {HtmlValInputsList} el - Target element.
+   * @param {TinyInputElement} el - Target element.
    * @returns {number[]} - The array of values cast as numbers.
    * @throws {Error} If any value in the array is not a valid number.
    */
@@ -2198,7 +2342,7 @@ class TinyHtml {
   /**
    * Gets the value as an array of booleans in the current HTML value element (for ???).
    *
-   * @param {HtmlValInputsList} el - Target element.
+   * @param {TinyInputElement} el - Target element.
    * @returns {boolean[]} - The array of values cast as booleans.
    * @throws {Error} If any value in the array is not a boolean or castable to one.
    */
@@ -2224,14 +2368,14 @@ class TinyHtml {
   /**
    * Gets the current value parsed as a number (for number/text).
    *
-   * @param {HtmlValInputsList} el - Target element.
+   * @param {TinyInputElement} el - Target element.
    * @returns {number} The numeric value.
    * @throws {Error} If the element is not a number-compatible input or value is NaN.
    */
   static valNb(el) {
-    TinyHtml._isValElement(el, 'valNb');
-    if (!(el instanceof HTMLInputElement)) throw new Error('Element must be an input element.');
-    const result = parseFloat(TinyHtml.valTxt(el).trim() || '0');
+    const elem = TinyHtml._preInputElem(el, 'valNb');
+    if (!(elem instanceof HTMLInputElement)) throw new Error('Element must be an input element.');
+    const result = parseFloat(TinyHtml.valTxt(elem).trim() || '0');
     if (Number.isNaN(result)) throw new Error('Value is not a valid number.');
     return result;
   }
@@ -2249,14 +2393,14 @@ class TinyHtml {
   /**
    * Checks if the input element is boolean (for checkboxes/radios).
    *
-   * @param {HtmlValInputsList} el - Target element.
+   * @param {TinyInputElement} el - Target element.
    * @returns {boolean} True if the input is considered checked (value === "on"), false otherwise.
    * @throws {Error} If the element is not a checkbox/radio input.
    */
   static valBool(el) {
-    TinyHtml._isValElement(el, 'valBool');
-    if (!(el instanceof HTMLInputElement)) throw new Error('Element must be an input element.');
-    return TinyHtml.val(el) === 'on' ? true : false;
+    const elem = TinyHtml._preInputElem(el, 'valBool');
+    if (!(elem instanceof HTMLInputElement)) throw new Error('Element must be an input element.');
+    return TinyHtml.val(elem) === 'on' ? true : false;
   }
 
   /**
@@ -2274,17 +2418,17 @@ class TinyHtml {
   /**
    * Registers an event listener on the specified element.
    *
-   * @param {ConstructorElValues} el - The target to listen on.
+   * @param {TinyEventTarget} el - The target to listen on.
    * @param {string} event - The event type (e.g. 'click', 'keydown').
    * @param {EventRegistryHandle} handler - The callback function to run on event.
    * @param {EventRegistryOptions} [options] - Optional event listener options.
    */
   static on(el, event, handler, options) {
-    TinyHtml._isValidElem(el, 'on', true, true);
-    el.addEventListener(event, handler, options);
+    const elem = TinyHtml._preEventTargetElem(el, 'on');
+    elem.addEventListener(event, handler, options);
 
-    if (!__eventRegistry.has(el)) __eventRegistry.set(el, {});
-    const events = __eventRegistry.get(el);
+    if (!__eventRegistry.has(elem)) __eventRegistry.set(elem, {});
+    const events = __eventRegistry.get(elem);
     if (!events) return;
     if (!Array.isArray(events[event])) events[event] = [];
     events[event].push({ handler, options });
@@ -2304,21 +2448,21 @@ class TinyHtml {
   /**
    * Registers an event listener that runs only once, then is removed.
    *
-   * @param {ConstructorElValues} el - The target to listen on.
+   * @param {TinyEventTarget} el - The target to listen on.
    * @param {string} event - The event type (e.g. 'click', 'keydown').
    * @param {EventRegistryHandle} handler - The callback function to run on event.
    * @param {EventRegistryOptions} [options={}] - Optional event listener options.
    */
   static once(el, event, handler, options = {}) {
-    TinyHtml._isValidElem(el, 'once', true, true);
+    const elem = TinyHtml._preEventTargetElem(el, 'once');
     /** @type {EventRegistryHandle} e */
     const wrapped = (e) => {
-      TinyHtml.off(el, event, wrapped);
+      TinyHtml.off(elem, event, wrapped);
       handler(e);
     };
 
     TinyHtml.on(
-      el,
+      elem,
       event,
       wrapped,
       typeof options === 'boolean' ? options : { ...options, once: true },
@@ -2339,16 +2483,16 @@ class TinyHtml {
   /**
    * Removes a specific event listener from an element.
    *
-   * @param {ConstructorElValues} el - The target element.
+   * @param {TinyEventTarget} el - The target element.
    * @param {string} event - The event type.
    * @param {EventRegistryHandle} handler - The function originally bound to the event.
    * @param {boolean|EventListenerOptions} [options] - Optional listener options.
    */
   static off(el, event, handler, options) {
-    TinyHtml._isValidElem(el, 'off', true, true);
-    el.removeEventListener(event, handler, options);
+    const elem = TinyHtml._preEventTargetElem(el, 'off');
+    elem.removeEventListener(event, handler, options);
 
-    const events = __eventRegistry.get(el);
+    const events = __eventRegistry.get(elem);
     if (events && events[event]) {
       events[event] = events[event].filter((entry) => entry.handler !== handler);
       if (events[event].length === 0) delete events[event];
@@ -2369,15 +2513,15 @@ class TinyHtml {
   /**
    * Removes all event listeners of a specific type from the element.
    *
-   * @param {ConstructorElValues} el - The target element.
+   * @param {TinyEventTarget} el - The target element.
    * @param {string} event - The event type to remove (e.g. 'click').
    */
   static offAll(el, event) {
-    TinyHtml._isValidElem(el, 'offAll', true, true);
-    const events = __eventRegistry.get(el);
+    const elem = TinyHtml._preEventTargetElem(el, 'offAll');
+    const events = __eventRegistry.get(elem);
     if (events && events[event]) {
       for (const entry of events[event]) {
-        el.removeEventListener(event, entry.handler, entry.options);
+        elem.removeEventListener(event, entry.handler, entry.options);
       }
       delete events[event];
     }
@@ -2395,24 +2539,24 @@ class TinyHtml {
   /**
    * Removes all event listeners of all types from the element.
    *
-   * @param {ConstructorElValues} el - The target element.
+   * @param {TinyEventTarget} el - The target element.
    * @param {((handler: EventListenerOrEventListenerObject, event: string) => boolean)|null} [filterFn=null] -
    *        Optional filter function to selectively remove specific handlers.
    */
   static offAllTypes(el, filterFn = null) {
-    TinyHtml._isValidElem(el, 'offAllTypes', true, true);
-    const events = __eventRegistry.get(el);
+    const elem = TinyHtml._preEventTargetElem(el, 'offAllTypes');
+    const events = __eventRegistry.get(elem);
     if (!events) return;
 
     for (const event in events) {
       for (const entry of events[event]) {
         if (typeof filterFn !== 'function' || filterFn(entry.handler, event)) {
-          el.removeEventListener(event, entry.handler, entry.options);
+          elem.removeEventListener(event, entry.handler, entry.options);
         }
       }
     }
 
-    __eventRegistry.delete(el);
+    __eventRegistry.delete(elem);
   }
 
   /**
@@ -2428,16 +2572,15 @@ class TinyHtml {
   /**
    * Triggers all handlers associated with a specific event on the given element.
    *
-   * @param {EventTarget} el - Target element where the event should be triggered.
+   * @param {TinyEventTarget} el - Target element where the event should be triggered.
    * @param {string} event - Name of the event to trigger.
-   * @param {Event|CustomEvent|Object} [payload] - Optional event object or data to pass.
+   * @param {Event|CustomEvent|CustomEventInit} [payload] - Optional event object or data to pass.
    */
   static trigger(el, event, payload = {}) {
-    if (!(el instanceof EventTarget))
-      throw new TypeError('[TinyHtml.trigger] Target is not an EventTarget.');
+    const elem = TinyHtml._preEventTargetElem(el, 'trigger');
 
     const evt =
-      payload instanceof Event
+      payload instanceof Event || payload instanceof CustomEvent
         ? payload
         : new CustomEvent(event, {
             bubbles: true,
@@ -2445,14 +2588,14 @@ class TinyHtml {
             detail: payload,
           });
 
-    el.dispatchEvent(evt);
+    elem.dispatchEvent(evt);
   }
 
   /**
    * Triggers all handlers associated with a specific event on the given element.
    *
    * @param {string} event - Name of the event to trigger.
-   * @param {Event|CustomEvent|Object} [payload] - Optional event object or data to pass.
+   * @param {Event|CustomEvent|CustomEventInit} [payload] - Optional event object or data to pass.
    */
   trigger(event, payload = {}) {
     return TinyHtml.trigger(this.#el, event, payload);
@@ -2470,13 +2613,13 @@ class TinyHtml {
 
   /**
    * Get an attribute on an element.
-   * @param {Element} el
+   * @param {TinyElement} el
    * @param {string} name
    * @returns {string|null}
    */
   static attr(el, name) {
-    TinyHtml._isElement(el, 'attr');
-    return el.getAttribute(name);
+    const elem = TinyHtml._preElem(el, 'attr');
+    return elem.getAttribute(name);
   }
 
   /**
@@ -2490,14 +2633,14 @@ class TinyHtml {
 
   /**
    * Set an attribute on an element.
-   * @param {Element} el
+   * @param {TinyElement} el
    * @param {string} name
    * @param {string|null} [value=null]
    */
   static setAttr(el, name, value = null) {
-    TinyHtml._isElement(el, 'setAttr');
-    if (value === null) el.removeAttribute(name);
-    else el.setAttribute(name, value);
+    const elem = TinyHtml._preElem(el, 'setAttr');
+    if (value === null) elem.removeAttribute(name);
+    else elem.setAttribute(name, value);
   }
 
   /**
@@ -2511,12 +2654,12 @@ class TinyHtml {
 
   /**
    * Remove attribute(s) from an element.
-   * @param {Element} el
+   * @param {TinyElement} el
    * @param {string} name Space-separated list of attributes.
    */
   static removeAttr(el, name) {
-    TinyHtml._isElement(el, 'removeAttr');
-    el.removeAttribute(name);
+    const elem = TinyHtml._preElem(el, 'removeAttr');
+    elem.removeAttribute(name);
   }
 
   /**
@@ -2529,13 +2672,13 @@ class TinyHtml {
 
   /**
    * Check if an attribute exists on an element.
-   * @param {Element} el
+   * @param {TinyElement} el
    * @param {string} name
    * @returns {boolean}
    */
   static hasAttr(el, name) {
-    TinyHtml._isElement(el, 'hasAttr');
-    return el.hasAttribute(name);
+    const elem = TinyHtml._preElem(el, 'hasAttr');
+    return elem.hasAttribute(name);
   }
 
   /**
@@ -2549,16 +2692,16 @@ class TinyHtml {
 
   /**
    * Check if a property exists.
-   * @param {Element} el
+   * @param {TinyElement} el
    * @param {string} name
    * @returns {boolean}
    */
   static hasProp(el, name) {
-    TinyHtml._isElement(el, 'hasProp');
+    const elem = TinyHtml._preElem(el, 'hasProp');
     // @ts-ignore
     const propName = TinyHtml._propFix[name] || name;
     // @ts-ignore
-    return !!el[propName];
+    return !!elem[propName];
   }
 
   /**
@@ -2572,15 +2715,15 @@ class TinyHtml {
 
   /**
    * Set a property on an element.
-   * @param {Element} el
+   * @param {TinyElement} el
    * @param {string} name
    */
   static addProp(el, name) {
-    TinyHtml._isElement(el, 'addProp');
+    const elem = TinyHtml._preElem(el, 'addProp');
     // @ts-ignore
     name = TinyHtml._propFix[name] || name;
     // @ts-ignore
-    el[name] = true;
+    elem[name] = true;
   }
 
   /**
@@ -2593,15 +2736,15 @@ class TinyHtml {
 
   /**
    * Remove a property from an element.
-   * @param {Element} el
+   * @param {TinyElement} el
    * @param {string} name
    */
   static removeProp(el, name) {
-    TinyHtml._isElement(el, 'removeProp');
+    const elem = TinyHtml._preElem(el, 'removeProp');
     // @ts-ignore
     name = TinyHtml._propFix[name] || name;
     // @ts-ignore
-    el[name] = false;
+    elem[name] = false;
   }
 
   /**
@@ -2614,19 +2757,19 @@ class TinyHtml {
 
   /**
    * Toggle a boolean property.
-   * @param {Element} el
+   * @param {TinyElement} el
    * @param {string} name
    * @param {boolean} [force]
    */
   static toggleProp(el, name, force) {
-    TinyHtml._isElement(el, 'toggleProp');
+    const elem = TinyHtml._preElem(el, 'toggleProp');
     // @ts-ignore
     const propName = TinyHtml._propFix[name] || name;
     // @ts-ignore
-    const shouldEnable = force === undefined ? !el[propName] : force;
+    const shouldEnable = force === undefined ? !elem[propName] : force;
     // @ts-ignore
-    if (shouldEnable) TinyHtml.addProp(el, name);
-    else TinyHtml.removeProp(el, name);
+    if (shouldEnable) TinyHtml.addProp(elem, name);
+    else TinyHtml.removeProp(elem, name);
   }
 
   /**
@@ -2642,11 +2785,11 @@ class TinyHtml {
 
   /**
    * Removes an element from the DOM.
-   * @param {Element} el - The DOM element or selector to remove.
+   * @param {TinyElement} el - The DOM element or selector to remove.
    */
   static remove(el) {
-    TinyHtml._isElement(el, 'remove');
-    el.remove();
+    const elem = TinyHtml._preElem(el, 'remove');
+    elem.remove();
   }
 
   /**
