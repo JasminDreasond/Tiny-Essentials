@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>TinyHtml DOM Traversal Tester</title>
+    <script src="/__jquery.js"></script>
+    <script type="module">
+      import * as tinyHtml from './src/v1/basics/html.mjs';
+      Object.assign(window, tinyHtml);
+    </script>
+    <style>
+      .box {
+        padding: 10px;
+        margin: 5px;
+        border: 1px solid #ccc;
+        display: inline-block;
+      }
+      .highlight {
+        background: yellow;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <div id="box0" class="box">Box 0</div>
+      <div id="box1" class="box">Box 1</div>
+      <div id="box2" class="box">Box 2</div>
+      <div id="box3" class="box">Box 3</div>
+      <div id="box4" class="box">Box 4</div>
+    </div>
+
+    <template id="tpl">
+      <span>Inside Template</span>
+    </template>
+
+    <iframe id="frame" style="width: 0; height: 0; border: none"></iframe>
+
+    <hr />
+
+    <button onclick="testAll()">Test All</button>
+
+    <script>
+      function testAll() {
+        const box2 = document.getElementById('box2');
+        const tpl = document.getElementById('tpl');
+        const frame = document.getElementById('frame');
+        const container = document.getElementById('container');
+
+        console.log('==================== PARENT ====================');
+        console.log('TinyHtml parent:', TinyHtml.parent(box2));
+        console.log('jQuery parent  :', $(box2).parent()[0]);
+
+        console.log('\n==================== PARENTS ====================');
+        console.log('TinyHtml parents:', TinyHtml.parents(box2));
+        console.log('jQuery parents  :', $(box2).parents().toArray());
+
+        console.log('\n==================== PARENTS UNTIL <html> ====================');
+        console.log(
+          'TinyHtml parents until <html>:',
+          TinyHtml.parents(box2, document.documentElement),
+        );
+        console.log(
+          'jQuery parents until <html>  :',
+          $(box2).parentsUntil(document.documentElement).toArray(),
+        );
+
+        console.log('\n==================== NEXT ====================');
+        console.log('TinyHtml next:', TinyHtml.next(box2));
+        console.log('jQuery next  :', $(box2).next()[0]);
+
+        console.log('\n==================== PREV ====================');
+        console.log('TinyHtml prev:', TinyHtml.prev(box2));
+        console.log('jQuery prev  :', $(box2).prev()[0]);
+
+        console.log('\n==================== NEXT ALL ====================');
+        console.log('TinyHtml nextAll:', TinyHtml.nextAll(box2));
+        console.log('jQuery nextAll  :', $(box2).nextAll().toArray());
+
+        console.log('\n==================== PREV ALL ====================');
+        console.log('TinyHtml prevAll:', TinyHtml.prevAll(box2));
+        console.log('jQuery prevAll  :', $(box2).prevAll().toArray());
+
+        console.log('\n==================== NEXT UNTIL #box4 ====================');
+        console.log('TinyHtml nextUntil:', TinyHtml.nextUntil(box2, '#box4'));
+        console.log('jQuery nextUntil  :', $(box2).nextUntil('#box4').toArray());
+
+        console.log('\n==================== PREV UNTIL #box0 ====================');
+        console.log('TinyHtml prevUntil:', TinyHtml.prevUntil(box2, '#box0'));
+        console.log('jQuery prevUntil  :', $(box2).prevUntil('#box0').toArray());
+
+        console.log('\n==================== SIBLINGS ====================');
+        console.log('TinyHtml siblings:', TinyHtml.siblings(box2));
+        console.log('jQuery siblings  :', $(box2).siblings().toArray());
+
+        console.log('\n==================== CHILDREN of #container ====================');
+        console.log('TinyHtml children:', TinyHtml.children(container));
+        console.log('jQuery children  :', $(container).children().toArray());
+
+        console.log('\n==================== CONTENTS of <template> ====================');
+        console.log('TinyHtml contents:', TinyHtml.contents(tpl));
+        console.log('jQuery contents  :', $(tpl).contents().toArray());
+
+        console.log('\n==================== CONTENTS of <iframe> (empty) ====================');
+        console.log('TinyHtml contents:', TinyHtml.contents(frame));
+        console.log('jQuery contents  :', $(frame).contents().toArray());
+
+        console.log('\n==================== FIM DOS TESTES ====================');
+      }
+    </script>
+  </body>
+</html>

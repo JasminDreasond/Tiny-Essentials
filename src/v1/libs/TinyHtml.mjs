@@ -1,4 +1,12 @@
 /**
+ * Represents a raw Node element or an instance of TinyHtml.
+ * This type is used to abstract interactions with both plain elements
+ * and wrapped elements via the TinyHtml class.
+ *
+ * @typedef {Node|TinyHtml|null} TinyNode
+ */
+
+/**
  * Represents a raw DOM element or an instance of TinyHtml.
  * This type is used to abstract interactions with both plain elements
  * and wrapped elements via the TinyHtml class.
@@ -214,7 +222,7 @@ class TinyHtml {
    *
    * @returns {ConstructorElValues} - The instance's target element.
    */
-  getEl() {
+  get() {
     return this.#el;
   }
 
@@ -233,7 +241,7 @@ class TinyHtml {
   //////////////////////////////////////////////////////
 
   /**
-   * @param {TinyElement|EventTarget|(TinyElement|EventTarget)[]} elems
+   * @param {TinyElement|EventTarget|null|(TinyElement|EventTarget|null)[]} elems
    * @param {string} where
    * @param {any[]} TheTinyElements
    * @param {string[]} elemName
@@ -241,7 +249,7 @@ class TinyHtml {
    * @readonly
    */
   static _preElemsTemplate(elems, where, TheTinyElements, elemName) {
-    /** @param {(TinyElement|EventTarget)[]} item */
+    /** @param {(TinyElement|EventTarget|null)[]} item */
     const checkElement = (item) =>
       item.map((elem) => {
         const result = elem instanceof TinyHtml ? elem._getElement(where) : elem;
@@ -263,18 +271,19 @@ class TinyHtml {
   }
 
   /**
-   * @param {TinyElement|EventTarget|(TinyElement|EventTarget)[]} elems
+   * @param {TinyElement|EventTarget|null|(TinyElement|EventTarget|null)[]} elems
    * @param {string} where
    * @param {any[]} TheTinyElements
    * @param {string[]} elemName
+   * @param {boolean} [canNull=false]
    * @returns {any}
    * @readonly
    */
-  static _preElemTemplate(elems, where, TheTinyElements, elemName) {
-    /** @param {(TinyElement|EventTarget)[]} item */
+  static _preElemTemplate(elems, where, TheTinyElements, elemName, canNull = false) {
+    /** @param {(TinyElement|EventTarget|null)[]} item */
     const checkElement = (item) => {
       const elem = item[0];
-      const result = elem instanceof TinyHtml ? elem._getElement(where) : elem;
+      let result = elem instanceof TinyHtml ? elem._getElement(where) : elem;
       let allowed = false;
       for (const TheTinyElement of TheTinyElements) {
         if (result instanceof TheTinyElement) {
@@ -282,6 +291,12 @@ class TinyHtml {
           break;
         }
       }
+
+      if (canNull && (result === null || typeof result === 'undefined')) {
+        result = null;
+        allowed = true;
+      }
+
       if (!allowed)
         throw new Error(
           `[TinyHtml] Invalid element of the list "${elemName.join(',')}" in ${where}().`,
@@ -311,11 +326,50 @@ class TinyHtml {
    *
    * @param {TinyElement|TinyElement[]} elems - A single element or array of elements.
    * @param {string} where - The method or context name where validation is being called.
-   * @returns {Element} - Always returns an array of elements.
+   * @returns {Element} - Always returns an single element.
    * @readonly
    */
   static _preElem(elems, where) {
     return TinyHtml._preElemTemplate(elems, where, [Element], ['Element']);
+  }
+
+  /**
+   * Ensures the input is returned as an array.
+   * Useful to normalize operations across multiple or single nodes.
+   *
+   * @param {TinyNode|TinyNode[]} elems - A single node or array of nodes.
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {Node[]} - Always returns an array of nodes.
+   * @readonly
+   */
+  static _preNodeElems(elems, where) {
+    return TinyHtml._preElemsTemplate(elems, where, [Node], ['Node']);
+  }
+
+  /**
+   * Ensures the input is returned as an single node.
+   * Useful to normalize operations across multiple or single nodes.
+   *
+   * @param {TinyNode|TinyNode[]} elems - A single node or array of nodes.
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {Node} - Always returns an single node.
+   * @readonly
+   */
+  static _preNodeElem(elems, where) {
+    return TinyHtml._preElemTemplate(elems, where, [Node], ['Node']);
+  }
+
+  /**
+   * Ensures the input is returned as an single node.
+   * Useful to normalize operations across multiple or single nodes.
+   *
+   * @param {TinyNode|TinyNode[]} elems - A single node or array of nodes.
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {Node|null} - Always returns an single node or null.
+   * @readonly
+   */
+  static _preNodeElemWithNull(elems, where) {
+    return TinyHtml._preElemTemplate(elems, where, [Node], ['Node'], true);
   }
 
   /**
@@ -337,7 +391,7 @@ class TinyHtml {
    *
    * @param {TinyElement|TinyElement[]} elems - A single html element or array of html elements.
    * @param {string} where - The method or context name where validation is being called.
-   * @returns {HTMLElement} - Always returns an array of html elements.
+   * @returns {HTMLElement} - Always returns an single html element.
    * @readonly
    */
   static _preHtmlElem(elems, where) {
@@ -368,7 +422,7 @@ class TinyHtml {
    *
    * @param {TinyInputElement|TinyInputElement[]} elems - A single event target element or array of html elements.
    * @param {string} where - The method or context name where validation is being called.
-   * @returns {InputElement} - Always returns an array of event target elements.
+   * @returns {InputElement} - Always returns an single event target element.
    * @readonly
    */
   static _preInputElem(elems, where) {
@@ -399,7 +453,7 @@ class TinyHtml {
    *
    * @param {TinyEventTarget|TinyEventTarget[]} elems - A single event target element or array of html elements.
    * @param {string} where - The method or context name where validation is being called.
-   * @returns {EventTarget} - Always returns an array of event target elements.
+   * @returns {EventTarget} - Always returns an single event target element.
    * @readonly
    */
   static _preEventTargetElem(elems, where) {
@@ -425,7 +479,7 @@ class TinyHtml {
    *
    * @param {TinyElementAndWindow|TinyElementAndWindow[]} elems - A single element/window element or array of html elements.
    * @param {string} where - The method or context name where validation is being called.
-   * @returns {ElementAndWindow} - Always returns an array of element/window elements.
+   * @returns {ElementAndWindow} - Always returns an single element/window element.
    * @readonly
    */
   static _preElemAndWindow(elems, where) {
@@ -714,150 +768,163 @@ class TinyHtml {
   /**
    * Get the sibling element in a given direction.
    *
-   * @param {TinyElement} el
+   * @param {TinyNode} el
    * @param {"previousSibling"|"nextSibling"} direction
-   * @returns {Element|null}
+   * @param {string} where
+   * @returns {ChildNode|null}
    */
-  static getSibling(el, direction) {
+  static _getSibling(el, direction, where) {
     /** @type {Node|null} */
-    let newCurrent = TinyHtml._preElem(el, 'getSibling');
+    let newCurrent = TinyHtml._preNodeElemWithNull(el, where);
     while (newCurrent && (newCurrent = newCurrent[direction]) && newCurrent.nodeType !== 1) {}
-    if (!(newCurrent instanceof Element)) return null;
-    return newCurrent;
+    if (!(newCurrent instanceof Node)) return null;
+    return /** @type {ChildNode} */ (newCurrent);
   }
 
   /**
    * Traverse DOM in a direction collecting elements.
    *
-   * @param {TinyElement} el
+   * @param {TinyNode} el
    * @param {"parentNode"|"nextSibling"|"previousSibling"} direction
-   * @param {TinyElement|string} [until]
-   * @returns {Element[]}
+   * @param {TinyNode|string} [until]
+   * @param {string} [where='domDir']
+   * @returns {ChildNode[]}
    */
-  static domDir(el, direction, until) {
-    /** @type {Element | null} */
-    let elem = TinyHtml._preElem(el, 'domDir');
+  static domDir(el, direction, until, where = 'domDir') {
+    let elem = TinyHtml._preNodeElemWithNull(el, where);
     const matched = [];
-    while (elem && (elem = elem[direction] instanceof Element ? elem[direction] : null)) {
+    // @ts-ignore
+    while (elem && (elem = elem[direction])) {
       if (elem.nodeType !== 1) continue;
-      if (until && (typeof until === 'string' ? elem.matches(until) : elem === until)) break;
+      if (
+        until &&
+        (typeof until === 'string'
+          ? // @ts-ignore
+            elem.matches(until)
+          : elem === until)
+      )
+        break;
       matched.push(elem);
     }
-    return matched;
+    return /** @type {ChildNode[]} */ (matched);
   }
 
   /**
    * Get all sibling elements excluding the given one.
    *
-   * @param {Node|ChildNode|null} start
-   * @param {TinyElement} [exclude]
-   * @returns {Node[]}
+   * @param {string} where
+   * @param {TinyNode} start
+   * @param {TinyNode} [exclude]
+   * @returns {ChildNode[]}
    */
-  static getSiblings(start, exclude) {
-    let st = start;
+  static _getSiblings(where, start, exclude) {
+    let st = TinyHtml._preNodeElemWithNull(start, where);
     const siblings = [];
     for (; st; st = st.nextSibling) {
       if (st.nodeType === 1 && start !== exclude) {
         siblings.push(st);
       }
     }
-    return siblings;
+    return /** @type {ChildNode[]} */ (siblings);
   }
 
   /**
-   * @param {TinyElement} el
+   * @param {TinyNode} el
+   * @returns {ParentNode|null}
    */
   static parent(el) {
-    /** @type {Element | null} */
-    let elem = TinyHtml._preElem(el, 'parent');
+    let elem = TinyHtml._preNodeElemWithNull(el, 'parent');
     const parent = elem ? elem.parentNode : null;
     return parent && parent.nodeType !== 11 ? parent : null;
   }
 
   /**
-   * @param {TinyElement} el
+   * @param {TinyNode} el
+   * @param {TinyNode|string} [until]
+   * @returns {ChildNode[]}
    */
-  static parents(el) {
-    return TinyHtml.domDir(el, 'parentNode');
+  static parents(el, until) {
+    return TinyHtml.domDir(el, 'parentNode', until, 'parents');
   }
 
   /**
-   * @param {TinyElement} el
-   * @param {TinyElement|string} [until]
-   */
-  static parentsUntil(el, until) {
-    return TinyHtml.domDir(el, 'parentNode', until);
-  }
-
-  /**
-   * @param {TinyElement} el
+   * @param {TinyNode} el
+   * @returns {ChildNode|null}
    */
   static next(el) {
-    return TinyHtml.getSibling(el, 'nextSibling');
+    return TinyHtml._getSibling(el, 'nextSibling', 'next');
   }
 
   /**
-   * @param {TinyElement} el
+   * @param {TinyNode} el
+   * @returns {ChildNode|null}
    */
   static prev(el) {
-    return TinyHtml.getSibling(el, 'previousSibling');
+    return TinyHtml._getSibling(el, 'previousSibling', 'prev');
   }
 
   /**
-   * @param {TinyElement} el
+   * @param {TinyNode} el
+   * @returns {ChildNode[]}
    */
   static nextAll(el) {
-    return TinyHtml.domDir(el, 'nextSibling');
+    return TinyHtml.domDir(el, 'nextSibling', undefined, 'nextAll');
   }
 
   /**
-   * @param {TinyElement} el
+   * @param {TinyNode} el
+   * @returns {ChildNode[]}
    */
   static prevAll(el) {
-    return TinyHtml.domDir(el, 'previousSibling');
+    return TinyHtml.domDir(el, 'previousSibling', undefined, 'prevAll');
   }
 
   /**
-   * @param {TinyElement} el
-   * @param {TinyElement|string} [until]
+   * @param {TinyNode} el
+   * @param {TinyNode|string} [until]
+   * @returns {ChildNode[]}
    */
   static nextUntil(el, until) {
-    return TinyHtml.domDir(el, 'nextSibling', until);
+    return TinyHtml.domDir(el, 'nextSibling', until, 'nextUtil');
   }
 
   /**
-   * @param {TinyElement} el
-   * @param {TinyElement|string} [until]
+   * @param {TinyNode} el
+   * @param {TinyNode|string} [until]
+   * @returns {ChildNode[]}
    */
   static prevUntil(el, until) {
-    return TinyHtml.domDir(el, 'previousSibling', until);
+    return TinyHtml.domDir(el, 'previousSibling', until, 'prevUtil');
   }
 
   /**
-   * @param {TinyElement} el
+   * @param {TinyNode} el
+   * @returns {ChildNode[]}
    */
   static siblings(el) {
-    const elem = TinyHtml._preElem(el, 'siblings');
-    return TinyHtml.getSiblings(
+    const elem = TinyHtml._preNodeElemWithNull(el, 'siblings');
+    return TinyHtml._getSiblings(
+      'siblings',
       elem && elem.parentNode ? elem.parentNode.firstChild : null,
-      elem instanceof Element ? elem : undefined,
+      elem instanceof Node ? elem : undefined,
     );
   }
 
   /**
-   * @param {TinyElement} el
+   * @param {TinyNode} el
+   * @returns {ChildNode[]}
    */
   static children(el) {
-    const elem = TinyHtml._preElem(el, 'children');
-    return TinyHtml.getSiblings(elem ? elem.firstChild : null);
+    const elem = TinyHtml._preNodeElemWithNull(el, 'children');
+    return TinyHtml._getSiblings('children', elem ? elem.firstChild : null);
   }
 
   /**
-   * @param {TinyElement} el
+   * @param {TinyNode} el
    * @returns {ChildNode[]|Document}
    */
   static contents(el) {
-    const elem = TinyHtml._preElem(el, 'contents');
+    const elem = TinyHtml._preNodeElemWithNull(el, 'contents');
     if (
       elem instanceof HTMLIFrameElement &&
       elem.contentDocument != null &&
