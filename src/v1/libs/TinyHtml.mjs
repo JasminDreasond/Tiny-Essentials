@@ -831,8 +831,10 @@ class TinyHtml {
   }
 
   /**
-   * @param {TinyNode} el
-   * @returns {ParentNode|null}
+   * Returns the direct parent node of the given element, excluding document fragments.
+   *
+   * @param {TinyNode} el - The DOM node to find the parent of.
+   * @returns {ParentNode|null} The parent node or null if not found.
    */
   static parent(el) {
     let elem = TinyHtml._preNodeElemWithNull(el, 'parent');
@@ -841,67 +843,83 @@ class TinyHtml {
   }
 
   /**
-   * @param {TinyNode} el
-   * @param {TinyNode|string} [until]
-   * @returns {ChildNode[]}
+   * Returns all ancestor nodes of the given element, optionally stopping before a specific ancestor.
+   *
+   * @param {TinyNode} el - The DOM node to start from.
+   * @param {TinyNode|string} [until] - A node or selector to stop before.
+   * @returns {ChildNode[]} An array of ancestor nodes.
    */
   static parents(el, until) {
     return TinyHtml.domDir(el, 'parentNode', until, 'parents');
   }
 
   /**
-   * @param {TinyNode} el
-   * @returns {ChildNode|null}
+   * Returns the next sibling of the given element.
+   *
+   * @param {TinyNode} el - The DOM node to start from.
+   * @returns {ChildNode|null} The next sibling or null if none found.
    */
   static next(el) {
     return TinyHtml._getSibling(el, 'nextSibling', 'next');
   }
 
   /**
-   * @param {TinyNode} el
-   * @returns {ChildNode|null}
+   * Returns the previous sibling of the given element.
+   *
+   * @param {TinyNode} el - The DOM node to start from.
+   * @returns {ChildNode|null} The previous sibling or null if none found.
    */
   static prev(el) {
     return TinyHtml._getSibling(el, 'previousSibling', 'prev');
   }
 
   /**
-   * @param {TinyNode} el
-   * @returns {ChildNode[]}
+   * Returns all next sibling nodes after the given element.
+   *
+   * @param {TinyNode} el - The DOM node to start from.
+   * @returns {ChildNode[]} An array of next sibling nodes.
    */
   static nextAll(el) {
     return TinyHtml.domDir(el, 'nextSibling', undefined, 'nextAll');
   }
 
   /**
-   * @param {TinyNode} el
-   * @returns {ChildNode[]}
+   * Returns all previous sibling nodes before the given element.
+   *
+   * @param {TinyNode} el - The DOM node to start from.
+   * @returns {ChildNode[]} An array of previous sibling nodes.
    */
   static prevAll(el) {
     return TinyHtml.domDir(el, 'previousSibling', undefined, 'prevAll');
   }
 
   /**
-   * @param {TinyNode} el
-   * @param {TinyNode|string} [until]
-   * @returns {ChildNode[]}
+   * Returns all next sibling nodes up to (but not including) the node matched by a selector or element.
+   *
+   * @param {TinyNode} el - The DOM node to start from.
+   * @param {TinyNode|string} [until] - A node or selector to stop before.
+   * @returns {ChildNode[]} An array of next sibling nodes.
    */
   static nextUntil(el, until) {
     return TinyHtml.domDir(el, 'nextSibling', until, 'nextUtil');
   }
 
   /**
-   * @param {TinyNode} el
-   * @param {TinyNode|string} [until]
-   * @returns {ChildNode[]}
+   * Returns all previous sibling nodes up to (but not including) the node matched by a selector or element.
+   *
+   * @param {TinyNode} el - The DOM node to start from.
+   * @param {TinyNode|string} [until] - A node or selector to stop before.
+   * @returns {ChildNode[]} An array of previous sibling nodes.
    */
   static prevUntil(el, until) {
     return TinyHtml.domDir(el, 'previousSibling', until, 'prevUtil');
   }
 
   /**
-   * @param {TinyNode} el
-   * @returns {ChildNode[]}
+   * Returns all sibling nodes of the given element, excluding itself.
+   *
+   * @param {TinyNode} el - The DOM node to find siblings of.
+   * @returns {ChildNode[]} An array of sibling nodes.
    */
   static siblings(el) {
     const elem = TinyHtml._preNodeElemWithNull(el, 'siblings');
@@ -909,8 +927,10 @@ class TinyHtml {
   }
 
   /**
-   * @param {TinyNode} el
-   * @returns {ChildNode[]}
+   * Returns all child nodes of the given element.
+   *
+   * @param {TinyNode} el - The DOM node to get children from.
+   * @returns {ChildNode[]} An array of child nodes.
    */
   static children(el) {
     const elem = TinyHtml._preNodeElemWithNull(el, 'children');
@@ -918,8 +938,10 @@ class TinyHtml {
   }
 
   /**
-   * @param {TinyNode} el
-   * @returns {(ChildNode|DocumentFragment)[]|Document[]}
+   * Returns the contents of the given node. For `<template>` it returns its content; for `<iframe>`, the document.
+   *
+   * @param {TinyNode} el - The DOM node to get contents from.
+   * @returns {(ChildNode|DocumentFragment)[]|Document[]} An array of child nodes or the content document of an iframe.
    */
   static contents(el) {
     const elem = TinyHtml._preNodeElemWithNull(el, 'contents');
