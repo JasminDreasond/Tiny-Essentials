@@ -772,6 +772,7 @@ class TinyHtml {
    * @param {"previousSibling"|"nextSibling"} direction
    * @param {string} where
    * @returns {ChildNode|null}
+   * @readonly
    */
   static _getSibling(el, direction, where) {
     /** @type {Node|null} */
@@ -779,6 +780,26 @@ class TinyHtml {
     while (newCurrent && (newCurrent = newCurrent[direction]) && newCurrent.nodeType !== 1) {}
     if (!(newCurrent instanceof Node)) return null;
     return /** @type {ChildNode} */ (newCurrent);
+  }
+
+  /**
+   * Get all sibling elements excluding the given one.
+   *
+   * @param {Node|null} start
+   * @param {Node|null} [exclude]
+   * @returns {ChildNode[]}
+   * @readonly
+   */
+  static _getSiblings(start, exclude) {
+    /** @type {Node|null} */
+    let st = start;
+    const siblings = [];
+    for (; st; st = st.nextSibling) {
+      if (st.nodeType === 1 && st !== exclude) {
+        siblings.push(st);
+      }
+    }
+    return /** @type {ChildNode[]} */ (siblings);
   }
 
   /**
@@ -807,25 +828,6 @@ class TinyHtml {
       matched.push(elem);
     }
     return /** @type {ChildNode[]} */ (matched);
-  }
-
-  /**
-   * Get all sibling elements excluding the given one.
-   *
-   * @param {Node|null} start
-   * @param {Node|null} [exclude]
-   * @returns {ChildNode[]}
-   */
-  static _getSiblings(start, exclude) {
-    /** @type {Node|null} */
-    let st = start;
-    const siblings = [];
-    for (; st; st = st.nextSibling) {
-      if (st.nodeType === 1 && st !== exclude) {
-        siblings.push(st);
-      }
-    }
-    return /** @type {ChildNode[]} */ (siblings);
   }
 
   /**
@@ -917,7 +919,7 @@ class TinyHtml {
 
   /**
    * @param {TinyNode} el
-   * @returns {ChildNode[]|Document}
+   * @returns {(ChildNode|DocumentFragment)[]|Document[]}
    */
   static contents(el) {
     const elem = TinyHtml._preNodeElemWithNull(el, 'contents');
@@ -926,7 +928,7 @@ class TinyHtml {
       elem.contentDocument != null &&
       Object.getPrototypeOf(elem.contentDocument)
     ) {
-      return elem.contentDocument;
+      return [elem.contentDocument];
     }
 
     if (elem instanceof HTMLTemplateElement) {
@@ -2089,6 +2091,7 @@ class TinyHtml {
    * @param {TinyInputElement} el - Target element.
    * @param {string} where
    * @returns {SetValValue} The raw value retrieved from the element or hook.
+   * @readonly
    */
   static _val(el, where) {
     const elem = TinyHtml._preInputElem(el, where);
@@ -2165,6 +2168,7 @@ class TinyHtml {
    * @param {string} where - The method name or context using this validation (for error reporting).
    * @returns {SetValValueBase[]} - The validated value as an array.
    * @throws {Error} If the returned value is not an array.
+   * @readonly
    */
   static _valArr(el, where) {
     const ret = TinyHtml._val(el, where);
@@ -2535,6 +2539,7 @@ class TinyHtml {
 
   /**
    * Property name normalization similar to jQuery's propFix.
+   * @readonly
    */
   static _propFix = {
     for: 'htmlFor',
