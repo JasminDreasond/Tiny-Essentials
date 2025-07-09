@@ -103,6 +103,78 @@ const __eventRegistry = new WeakMap();
  */
 class TinyHtml {
   /**
+   * Queries the document for the first element matching the CSS selector and wraps it in a TinyHtml instance.
+   *
+   * @param {string} selector - A valid CSS selector string.
+   * @returns {TinyHtml} A TinyHtml instance wrapping the matched element.
+   * @throws {Error} If no element matches the selector.
+   */
+  static query(selector) {
+    const newEl = document.querySelector(selector);
+    if (!newEl) throw new Error(`[TinyHtml] query(): No element found for selector "${selector}".`);
+    return new TinyHtml(newEl);
+  }
+
+  /**
+   * Queries the document for all elements matching the CSS selector and wraps them in TinyHtml instances.
+   *
+   * @param {string} selector - A valid CSS selector string.
+   * @returns {TinyHtml[]} An array of TinyHtml instances wrapping the matched elements.
+   */
+  static queryAll(selector) {
+    const newEls = document.querySelectorAll(selector);
+    return TinyHtml.toTinyElm([...newEls]);
+  }
+
+  /**
+   * Retrieves an element by its ID and wraps it in a TinyHtml instance.
+   *
+   * @param {string} selector - The ID of the element to retrieve.
+   * @returns {TinyHtml} A TinyHtml instance wrapping the found element.
+   * @throws {Error} If no element is found with the specified ID.
+   */
+  static getById(selector) {
+    const newEl = document.getElementById(selector);
+    if (!newEl) throw new Error(`[TinyHtml] getById(): No element found with ID "${selector}".`);
+    return new TinyHtml(newEl);
+  }
+
+  /**
+   * Retrieves all elements with the specified class name and wraps them in TinyHtml instances.
+   *
+   * @param {string} selector - The class name to search for.
+   * @returns {TinyHtml[]} An array of TinyHtml instances wrapping the found elements.
+   */
+  static getByClassName(selector) {
+    const newEls = document.getElementsByClassName(selector);
+    return TinyHtml.toTinyElm([...newEls]);
+  }
+
+  /**
+   * Retrieves all elements with the specified name attribute and wraps them in TinyHtml instances.
+   *
+   * @param {string} selector - The name attribute to search for.
+   * @returns {TinyHtml[]} An array of TinyHtml instances wrapping the found elements.
+   */
+  static getByName(selector) {
+    const newEls = document.getElementsByName(selector);
+    return TinyHtml.toTinyElm([...newEls]);
+  }
+
+  /**
+   * Retrieves all elements with the specified local tag name within the given namespace URI,
+   * and wraps them in TinyHtml instances.
+   *
+   * @param {string} localName - The local name (tag) of the elements to search for.
+   * @param {string|null} [namespaceURI='http://www.w3.org/1999/xhtml'] - The namespace URI to search within.
+   * @returns {TinyHtml[]} An array of TinyHtml instances wrapping the found elements.
+   */
+  static getByTagNameNS(localName, namespaceURI = 'http://www.w3.org/1999/xhtml') {
+    const newEls = document.getElementsByTagNameNS(namespaceURI, localName);
+    return TinyHtml.toTinyElm([...newEls]);
+  }
+
+  /**
    * Validates whether the given object is an HTMLElement or optionally a Window.
    * Used internally for argument safety checks.
    *
