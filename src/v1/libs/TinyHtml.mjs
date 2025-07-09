@@ -371,12 +371,39 @@ class TinyHtml {
    *
    * @param {TinyElementPack|TinyElementPack[]} elems - A single element or an array of elements (DOM or TinyHtml).
    * @returns {TinyHtml[]} An array of TinyHtml instances corresponding to the input elements.
-   * @readonly
    */
   static toTinyElm(elems) {
     /** @param {TinyElementPack[]} item */
     const checkElement = (item) =>
       item.map((elem) => (!(elem instanceof TinyHtml) ? new TinyHtml(elem) : elem));
+    if (!Array.isArray(elems)) return checkElement([elems]);
+    return checkElement(elems);
+  }
+
+  /**
+   * Extracts native `HTMLElement` instances from one or more elements,
+   * which can be either raw DOM elements or wrapped in `TinyHtml`.
+   *
+   * - If a `TinyHtml` instance is passed, its internal DOM element is extracted.
+   * - If a raw DOM element is passed, it is returned as-is.
+   * - If an array is passed, each element is processed accordingly.
+   *
+   * This function guarantees that the return value is always an array of
+   * raw `HTMLElement` objects, regardless of whether the input was
+   * a mix of `TinyHtml` or native DOM elements.
+   *
+   * @param {TinyElementPack|TinyElementPack[]} elems - A single element or an array of elements (DOM or TinyHtml`).
+   * @returns {HTMLElement[]} An array of HTMLElement instances extracted from the input.
+   */
+  static fromTinyElm(elems) {
+    /** @param {TinyElementPack[]} item */
+    const checkElement = (item) =>
+      item.map(
+        (elem) =>
+          /** @type {HTMLElement} */ (
+            elem instanceof TinyHtml ? elem.getHtmlElement('fromTinyElm') : elem
+          ),
+      );
     if (!Array.isArray(elems)) return checkElement([elems]);
     return checkElement(elems);
   }
@@ -526,6 +553,47 @@ class TinyHtml {
    */
   has(target) {
     return TinyHtml.has(this.getHtmlElement('has'), target).length > 0;
+  }
+
+  /**
+   * Finds the closest ancestor (including self) that matches the selector.
+   *
+   * @param {TinyElementPack|TinyElementPack[]} els - A single element or an array of elements (DOM or TinyHtml).
+   * @param {string|Element} selector - A selector string or DOM element to match.
+   * @param {Element|null} [context] - An optional context to stop searching.
+   * @returns {Element[]}
+   */
+  static closest(els, selector, context) {
+    const matched = [];
+
+    for (const el of TinyHtml._preElems(els)) {
+      /** @type {HTMLElement | Element | null} */
+      let current = el;
+      const cont = TinyHtml;
+      while (current && current !== context) {
+        if (
+          current.nodeType === 1 &&
+          (typeof selector === 'string' ? current.matches(selector) : current === selector)
+        ) {
+          matched.push(current);
+          break;
+        }
+        current = current.parentElement;
+      }
+    }
+
+    return [...new Set(matched)];
+  }
+
+  /**
+   * Finds the closest ancestor (including self) that matches the selector.
+   *
+   * @param {string|Element} selector - A selector string or DOM element to match.
+   * @param {Element|null} [context] - An optional context to stop searching.
+   * @returns {Element[]}
+   */
+  closest(selector, context) {
+    return TinyHtml.closest(this.getHtmlElement('closest'), selector, context);
   }
 
   /**
