@@ -7,6 +7,14 @@
  */
 
 /**
+ * Represents a raw DOM html element or an instance of TinyHtml.
+ * This type is used to abstract interactions with both plain elements
+ * and wrapped elements via the TinyHtml class.
+ *
+ * @typedef {HTMLElement|TinyHtml} TinyHtmlElement
+ */
+
+/**
  * A parameter type used for filtering or matching elements.
  * It can be:
  * - A string (CSS selector),
@@ -382,7 +390,7 @@ class TinyHtml {
    * @param {string} where
    * @param {any} TheTinyElement
    * @param {string} elemName
-   * @returns {Element[]}
+   * @returns {any[]}
    * @readonly
    */
   static _preElemsTemplate(elems, where, TheTinyElement, elemName) {
@@ -403,7 +411,7 @@ class TinyHtml {
    * @param {string} where
    * @param {any} TheTinyElement
    * @param {string} elemName
-   * @returns {Element | null}
+   * @returns {any}
    * @readonly
    */
   static _preElemTemplate(elems, where, TheTinyElement, elemName) {
@@ -443,6 +451,32 @@ class TinyHtml {
    */
   static _preElem(elems, where) {
     return TinyHtml._preElemTemplate(elems, where, Element, 'Element');
+  }
+
+  /**
+   * Ensures the input is returned as an array.
+   * Useful to normalize operations across multiple or single html elements.
+   *
+   * @param {TinyElement|TinyElement[]} elems - A single html element or array of html elements.
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {HTMLElement[]} - Always returns an array of html elements.
+   * @readonly
+   */
+  static _preHtmlElems(elems, where) {
+    return TinyHtml._preElemsTemplate(elems, where, HTMLElement, 'HTMLElement');
+  }
+
+  /**
+   * Ensures the input is returned as an single html element.
+   * Useful to normalize operations across multiple or single html elements.
+   *
+   * @param {TinyElement|TinyElement[]} elems - A single html element or array of html elements.
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {HTMLElement | null} - Always returns an array of html elements.
+   * @readonly
+   */
+  static _preHtmlElem(elems, where) {
+    return TinyHtml._preElemTemplate(elems, where, HTMLElement, 'HTMLElement');
   }
 
   /**
