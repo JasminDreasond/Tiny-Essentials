@@ -1257,24 +1257,24 @@ class TinyHtml {
 
   /**
    * Gets the position of the element relative to its offset parent.
-   * @param {HTMLElement} elem - Target element.
+   * @param {HTMLElement} el - Target element.
    * @returns {{top: number, left: number}}
    */
-  static position(elem) {
-    TinyHtml._isHtmlElement(elem, 'position');
+  static position(el) {
+    TinyHtml._isHtmlElement(el, 'position');
 
     let offsetParent;
     let offset;
     let parentOffset = { top: 0, left: 0 };
 
-    const computedStyle = window.getComputedStyle(elem);
+    const computedStyle = window.getComputedStyle(el);
 
     if (computedStyle.position === 'fixed') {
-      offset = elem.getBoundingClientRect();
+      offset = el.getBoundingClientRect();
     } else {
-      offset = TinyHtml.offset(elem);
+      offset = TinyHtml.offset(el);
 
-      offsetParent = elem.offsetParent || document.documentElement;
+      offsetParent = el.offsetParent || document.documentElement;
       const { position } = window.getComputedStyle(offsetParent);
 
       while (
@@ -1287,7 +1287,7 @@ class TinyHtml {
 
       if (
         offsetParent instanceof HTMLElement &&
-        offsetParent !== elem &&
+        offsetParent !== el &&
         offsetParent.nodeType === 1
       ) {
         const { borderTopWidth, borderLeftWidth } = TinyHtml.cssFloats(offsetParent, [
@@ -1301,8 +1301,8 @@ class TinyHtml {
     }
 
     return {
-      top: offset.top - parentOffset.top - TinyHtml.cssFloat(elem, 'marginTop'),
-      left: offset.left - parentOffset.left - TinyHtml.cssFloat(elem, 'marginLeft'),
+      top: offset.top - parentOffset.top - TinyHtml.cssFloat(el, 'marginTop'),
+      left: offset.left - parentOffset.left - TinyHtml.cssFloat(el, 'marginLeft'),
     };
   }
 
@@ -1316,12 +1316,12 @@ class TinyHtml {
 
   /**
    * Gets the closest positioned ancestor element.
-   * @param {HTMLElement} elem - Target element.
+   * @param {HTMLElement} el - Target element.
    * @returns {HTMLElement} - Offset parent element.
    */
-  static offsetParent(elem) {
-    TinyHtml._isHtmlElement(elem, 'offsetParent');
-    let offsetParent = elem.offsetParent;
+  static offsetParent(el) {
+    TinyHtml._isHtmlElement(el, 'offsetParent');
+    let offsetParent = el.offsetParent;
 
     while (
       offsetParent instanceof HTMLElement &&
@@ -2602,18 +2602,18 @@ class TinyHtml {
    * Returns the index of the first element within its parent or relative to a selector/element.
    *
    * @param {Element} el - The element target
-   * @param {string|Element|null} [elem] - Optional target to compare index against.
+   * @param {string|Element|null} [el2] - Optional target to compare index against.
    * @returns {number}
    */
-  static index(el, elem = null) {
+  static index(el, el2 = null) {
     if (!el) return -1;
 
-    if (!elem) {
+    if (!el2) {
       return Array.prototype.indexOf.call(el.parentNode?.children || [], el);
     }
 
-    if (typeof elem === 'string') {
-      const matchEls = document.querySelectorAll(elem);
+    if (typeof el2 === 'string') {
+      const matchEls = document.querySelectorAll(el2);
       return Array.prototype.indexOf.call(matchEls, el);
     }
 
