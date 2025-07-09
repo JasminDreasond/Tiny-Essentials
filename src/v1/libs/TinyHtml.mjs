@@ -1243,6 +1243,44 @@ class TinyHtml {
   //////////////////////////////////////////////////////////////////////
 
   /**
+   * Focus the element.
+   *
+   * @param {TinyHtmlElement} el - The element or a selector string.
+   */
+  static focus(el) {
+    const elem = TinyHtml._preHtmlElem(el, 'focus');
+    elem.focus();
+  }
+
+  /**
+   * Focus the element.
+   */
+  focus() {
+    // @ts-ignore
+    return TinyHtml.focus(this.#el);
+  }
+
+  /**
+   * Blur the element.
+   *
+   * @param {TinyHtmlElement} el - The element or a selector string.
+   */
+  static blur(el) {
+    const elem = TinyHtml._preHtmlElem(el, 'blur');
+    elem.blur();
+  }
+
+  /**
+   * Blur the element.
+   */
+  blur() {
+    // @ts-ignore
+    return TinyHtml.blur(this.#el);
+  }
+
+  //////////////////////////////////////////////////////////////////////
+
+  /**
    * Sets the vertical scroll position of the window.
    * @param {number} value - Sets the scroll position.
    */
