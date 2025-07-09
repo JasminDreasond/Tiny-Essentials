@@ -503,6 +503,32 @@ class TinyHtml {
   }
 
   /**
+   * Returns elements from the current list that contain the given target(s).
+   * @param {TinyElementPack|TinyElementPack[]} roots - A single element or an array of elements (DOM or TinyHtml).
+   * @param {string|TinyElementPack|TinyElementPack[]} target - Selector or DOM element(s).
+   * @returns {Element[]} Elements that contain the target.
+   */
+  static has(roots, target) {
+    const targets =
+      typeof target === 'string'
+        ? [...document.querySelectorAll(target)]
+        : TinyHtml._preElems(target);
+
+    return TinyHtml._preElems(roots).filter((root) =>
+      targets.some((t) => root && root.contains(t)),
+    );
+  }
+
+  /**
+   * Return if the element has the target(s).
+   * @param {string|TinyElementPack|TinyElementPack[]} target - Selector or DOM element(s).
+   * @returns {boolean} Elements that contain the target.
+   */
+  has(target) {
+    return TinyHtml.has(this.getHtmlElement('has'), target).length > 0;
+  }
+
+  /**
    * Compares two DOM elements to determine if they refer to the same node in the document.
    *
    * This performs a strict equality check (`===`) between the two elements.
@@ -2252,6 +2278,56 @@ class TinyHtml {
    */
   toggleProp(name, force) {
     return TinyHtml.toggleProp(this.getHtmlElement('toggleProp'), name, force);
+  }
+
+  /////////////////////////////////////////////////////
+
+  /**
+   * Removes an element from the DOM.
+   * @param {Element} el - The DOM element or selector to remove.
+   */
+  static remove(el) {
+    TinyHtml._isHtmlElement(el, 'remove');
+    el.remove();
+  }
+
+  /**
+   * Removes the element from the DOM.
+   */
+  remove() {
+    return TinyHtml.remove(this.getHtmlElement('remove'));
+  }
+
+  /**
+   * Returns the index of the first element within its parent or relative to a selector/element.
+   *
+   * @param {HTMLElement} el - The element target
+   * @param {string|Element|null} [elem] - Optional target to compare index against.
+   * @returns {number}
+   */
+  static index(el, elem = null) {
+    if (!el) return -1;
+
+    if (!elem) {
+      return Array.prototype.indexOf.call(el.parentNode?.children || [], el);
+    }
+
+    if (typeof elem === 'string') {
+      const matchEls = document.querySelectorAll(elem);
+      return Array.prototype.indexOf.call(matchEls, el);
+    }
+
+    return -1;
+  }
+
+  /**
+   * Returns the index of the first element within its parent or relative to a selector/element.
+   *
+   * @param {string|Element|null} [elem] - Optional target to compare index against.
+   * @returns {number}
+   */
+  index(elem) {
+    return TinyHtml.index(this.getHtmlElement('index'), elem);
   }
 }
 
