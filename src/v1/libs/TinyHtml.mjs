@@ -430,6 +430,31 @@ class TinyHtml {
     return TinyHtml.is(this.getHtmlElement('is'), selector);
   }
 
+  /**
+   * Compares two DOM elements to determine if they refer to the same node in the document.
+   *
+   * This performs a strict equality check (`===`) between the two elements.
+   *
+   * @param {Element} elem - The first DOM element to compare.
+   * @param {Element} otherElem - The second DOM element to compare.
+   * @returns {boolean} `true` if both elements are the same DOM node; otherwise, `false`.
+   */
+  static isSameDom(elem, otherElem) {
+    return elem === otherElem;
+  }
+
+  /**
+   * Compares two DOM elements to determine if they refer to the same node in the document.
+   *
+   * This performs a strict equality check (`===`) between the two elements.
+   *
+   * @param {Element} elem - The DOM element to compare.
+   * @returns {boolean} `true` if both elements are the same DOM node; otherwise, `false`.
+   */
+  isSameDom(elem) {
+    return TinyHtml.isSameDom(this.getHtmlElement('isSameDom'), elem);
+  }
+
   //////////////////////////////////////////////////////
 
   /**
