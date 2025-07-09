@@ -210,60 +210,21 @@ class TinyHtml {
   //////////////////////////////////////////////////////////////////
 
   /**
-   * Internal helper to validate and return the HTMLElement.
-   * Throws an error if the element is invalid.
-   *
-   * @param {string} where - The method name or context calling this.
-   * @returns {HTMLElement} - The HTMLElement.
-   * @throws {TypeError} If `where` is not a string.
-   */
-  getHtmlElement(where) {
-    if (typeof where !== 'string')
-      throw new TypeError('[TinyHtml] "where" in getHtmlElement() must be a string.');
-    if (!(this.#el instanceof HTMLElement))
-      throw new Error(`[TinyHtml] Invalid HtmlElement in ${where}().`);
-    return /** @type {HTMLElement} */ (this.#el);
-  }
-
-  /**
-   * Internal helper to validate and return the HTML Value Element.
-   * Throws an error if the element is invalid.
-   *
-   * @param {string} where - The method name or context calling this.
-   * @returns {InputElement} - The HTML Value Element.
-   * @throws {TypeError} If `where` is not a string.
-   */
-  getValElement(where) {
-    if (typeof where !== 'string')
-      throw new TypeError('[TinyHtml] "where" in getValElement() must be a string.');
-    if (
-      !(this.#el instanceof HTMLInputElement) &&
-      !(this.#el instanceof HTMLSelectElement) &&
-      !(this.#el instanceof HTMLTextAreaElement) &&
-      !(this.#el instanceof HTMLOptionElement)
-    )
-      throw new Error(`[TinyHtml] Invalid Value Element in ${where}().`);
-    return /** @type {InputElement} */ (this.#el);
-  }
-
-  /**
    * Returns the current target held by this instance.
    *
-   * @returns {ElementAndWindow} - The instance's target element.
+   * @returns {ConstructorElValues} - The instance's target element.
    */
-  getTarget() {
-    if (this.#el instanceof Document)
-      throw new Error(`[TinyHtml] "getTarget" must be a Element or Window.`);
+  getEl() {
     return this.#el;
   }
 
   /**
-   * Returns the current element held by this instance.
+   * Returns the current Element held by this instance.
    *
    * @param {string} where - The method name or context calling this.
    * @returns {Element} - The instance's element.
    */
-  getElement(where) {
+  _getElement(where) {
     if (!(this.#el instanceof Element))
       throw new Error(`[TinyHtml] Invalid Element in ${where}().`);
     return this.#el;
@@ -283,7 +244,7 @@ class TinyHtml {
     /** @param {(TinyElement|EventTarget)[]} item */
     const checkElement = (item) =>
       item.map((elem) => {
-        const result = elem instanceof TinyHtml ? elem.getElement(where) : elem;
+        const result = elem instanceof TinyHtml ? elem._getElement(where) : elem;
         let allowed = false;
         for (const TheTinyElement of TheTinyElements) {
           if (result instanceof TheTinyElement) {
@@ -313,7 +274,7 @@ class TinyHtml {
     /** @param {(TinyElement|EventTarget)[]} item */
     const checkElement = (item) => {
       const elem = item[0];
-      const result = elem instanceof TinyHtml ? elem.getElement(where) : elem;
+      const result = elem instanceof TinyHtml ? elem._getElement(where) : elem;
       let allowed = false;
       for (const TheTinyElement of TheTinyElements) {
         if (result instanceof TheTinyElement) {
@@ -513,7 +474,7 @@ class TinyHtml {
     const checkElement = (item) =>
       item.map(
         (elem) =>
-          /** @type {Element} */ (elem instanceof TinyHtml ? elem.getElement('fromTinyElm') : elem),
+          /** @type {Element} */ (elem instanceof TinyHtml ? elem._getElement('fromTinyElm') : elem),
       );
     if (!Array.isArray(elems)) return checkElement([elems]);
     return checkElement(elems);
@@ -600,7 +561,8 @@ class TinyHtml {
    * @returns {Element[]}
    */
   not(selector) {
-    return TinyHtml.not(this.getElement('not'), selector);
+    // @ts-ignore
+    return TinyHtml.not(this.#el, selector);
   }
 
   /**
@@ -625,7 +587,8 @@ class TinyHtml {
    * @returns {Element[]}
    */
   find(selector) {
-    return TinyHtml.find(this.getElement('find'), selector);
+    // @ts-ignore
+    return TinyHtml.find(this.#el, selector);
   }
 
   /**
@@ -646,7 +609,8 @@ class TinyHtml {
    * @returns {boolean}
    */
   is(selector) {
-    return TinyHtml.is(this.getElement('is'), selector);
+    // @ts-ignore
+    return TinyHtml.is(this.#el, selector);
   }
 
   /**
@@ -672,7 +636,8 @@ class TinyHtml {
    * @returns {boolean} Elements that contain the target.
    */
   has(target) {
-    return TinyHtml.has(this.getElement('has'), target).length > 0;
+    // @ts-ignore
+    return TinyHtml.has(this.#el, target).length > 0;
   }
 
   /**
@@ -689,7 +654,6 @@ class TinyHtml {
     for (const el of TinyHtml._preElems(els, 'closest')) {
       /** @type {Element | null} */
       let current = el;
-      const cont = TinyHtml;
       while (current && current !== context) {
         if (
           current.nodeType === 1 &&
@@ -713,7 +677,8 @@ class TinyHtml {
    * @returns {Element[]}
    */
   closest(selector, context) {
-    return TinyHtml.closest(this.getElement('closest'), selector, context);
+    // @ts-ignore
+    return TinyHtml.closest(this.#el, selector, context);
   }
 
   /**
@@ -738,7 +703,8 @@ class TinyHtml {
    * @returns {boolean} `true` if both elements are the same DOM node; otherwise, `false`.
    */
   isSameDom(elem) {
-    return TinyHtml.isSameDom(this.getElement('isSameDom'), elem);
+    // @ts-ignore
+    return TinyHtml.isSameDom(this.#el, elem);
   }
 
   //////////////////////////////////////////////////////
@@ -954,7 +920,8 @@ class TinyHtml {
    * @returns {number} - The parsed float value.
    */
   cssFloat(prop) {
-    return TinyHtml.cssFloat(this.getElement('cssFloat'), prop);
+    // @ts-ignore
+    return TinyHtml.cssFloat(this.#el, prop);
   }
 
   /**
@@ -982,7 +949,8 @@ class TinyHtml {
    * @returns {Record<string, number>} - Map of property to float value.
    */
   cssFloats(prop) {
-    return TinyHtml.cssFloats(this.getElement('cssFloats'), prop);
+    // @ts-ignore
+    return TinyHtml.cssFloats(this.#el, prop);
   }
 
   /**
@@ -1124,7 +1092,8 @@ class TinyHtml {
    * @returns {number} - Computed dimension.
    */
   getDimension(type, extra) {
-    return TinyHtml.getDimension(this.getElement('getDimension'), type, extra);
+    // @ts-ignore
+    return TinyHtml.getDimension(this.#el, type, extra);
   }
 
   /**
@@ -1145,7 +1114,8 @@ class TinyHtml {
    * @param {string|number} value - Height value.
    */
   setHeight(value) {
-    return TinyHtml.setHeight(this.getHtmlElement('setHeight'), value);
+    // @ts-ignore
+    return TinyHtml.setHeight(this.#el, value);
   }
 
   /**
@@ -1166,7 +1136,8 @@ class TinyHtml {
    * @param {string|number} value - Width value.
    */
   setWidth(value) {
-    return TinyHtml.setWidth(this.getHtmlElement('setWidth'), value);
+    // @ts-ignore
+    return TinyHtml.setWidth(this.#el, value);
   }
 
   /**
@@ -1184,7 +1155,8 @@ class TinyHtml {
    * @returns {number}
    */
   height() {
-    return TinyHtml.height(this.getTarget());
+    // @ts-ignore
+    return TinyHtml.height(this.#el);
   }
 
   /**
@@ -1202,7 +1174,8 @@ class TinyHtml {
    * @returns {number}
    */
   width() {
-    return TinyHtml.width(this.getTarget());
+    // @ts-ignore
+    return TinyHtml.width(this.#el);
   }
 
   /**
@@ -1220,7 +1193,8 @@ class TinyHtml {
    * @returns {number}
    */
   innerHeight() {
-    return TinyHtml.innerHeight(this.getTarget());
+    // @ts-ignore
+    return TinyHtml.innerHeight(this.#el);
   }
 
   /**
@@ -1238,7 +1212,8 @@ class TinyHtml {
    * @returns {number}
    */
   innerWidth() {
-    return TinyHtml.innerWidth(this.getTarget());
+    // @ts-ignore
+    return TinyHtml.innerWidth(this.#el);
   }
 
   /**
@@ -1258,7 +1233,8 @@ class TinyHtml {
    * @returns {number}
    */
   outerHeight(includeMargin) {
-    return TinyHtml.outerHeight(this.getTarget(), includeMargin);
+    // @ts-ignore
+    return TinyHtml.outerHeight(this.#el, includeMargin);
   }
 
   /**
@@ -1278,7 +1254,8 @@ class TinyHtml {
    * @returns {number}
    */
   outerWidth(includeMargin) {
-    return TinyHtml.outerWidth(this.getTarget(), includeMargin);
+    // @ts-ignore
+    return TinyHtml.outerWidth(this.#el, includeMargin);
   }
 
   //////////////////////////////////////////////////
@@ -1305,7 +1282,8 @@ class TinyHtml {
    * @returns {{top: number, left: number}}
    */
   offset() {
-    return TinyHtml.offset(this.getElement('offset'));
+    // @ts-ignore
+    return TinyHtml.offset(this.#el);
   }
 
   /**
@@ -1364,7 +1342,8 @@ class TinyHtml {
    * @returns {{top: number, left: number}}
    */
   position() {
-    return TinyHtml.position(this.getHtmlElement('position'));
+    // @ts-ignore
+    return TinyHtml.position(this.#el);
   }
 
   /**
@@ -1392,7 +1371,8 @@ class TinyHtml {
    * @returns {HTMLElement} - Offset parent element.
    */
   offsetParent() {
-    return TinyHtml.offsetParent(this.getHtmlElement('offsetParent'));
+    // @ts-ignore
+    return TinyHtml.offsetParent(this.#el);
   }
 
   /**
@@ -1413,7 +1393,8 @@ class TinyHtml {
    * @returns {number}
    */
   scrollTop() {
-    return TinyHtml.scrollTop(this.getTarget());
+    // @ts-ignore
+    return TinyHtml.scrollTop(this.#el);
   }
 
   /**
@@ -1434,7 +1415,8 @@ class TinyHtml {
    * @returns {number}
    */
   scrollLeft() {
-    return TinyHtml.scrollLeft(this.getTarget());
+    // @ts-ignore
+    return TinyHtml.scrollLeft(this.#el);
   }
 
   /**
@@ -1460,7 +1442,8 @@ class TinyHtml {
    * @param {number} value - Scroll top value.
    */
   setScrollTop(value) {
-    return TinyHtml.setScrollTop(this.getTarget(), value);
+    // @ts-ignore
+    return TinyHtml.setScrollTop(this.#el, value);
   }
 
   /**
@@ -1486,7 +1469,8 @@ class TinyHtml {
    * @param {number} value - Scroll left value.
    */
   setScrollLeft(value) {
-    return TinyHtml.setScrollLeft(this.getTarget(), value);
+    // @ts-ignore
+    return TinyHtml.setScrollLeft(this.#el, value);
   }
 
   /**
@@ -1520,7 +1504,8 @@ class TinyHtml {
    * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) border widths, and each side individually.
    */
   borderWidth() {
-    return TinyHtml.borderWidth(this.getElement('borderWidth'));
+    // @ts-ignore
+    return TinyHtml.borderWidth(this.#el);
   }
 
   /**
@@ -1549,7 +1534,8 @@ class TinyHtml {
    * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) border sizes, and each side individually.
    */
   border() {
-    return TinyHtml.border(this.getElement('border'));
+    // @ts-ignore
+    return TinyHtml.border(this.#el);
   }
 
   /**
@@ -1578,7 +1564,8 @@ class TinyHtml {
    * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) margins, and each side individually.
    */
   margin() {
-    return TinyHtml.margin(this.getElement('margin'));
+    // @ts-ignore
+    return TinyHtml.margin(this.#el);
   }
 
   /**
@@ -1607,7 +1594,8 @@ class TinyHtml {
    * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) paddings, and each side individually.
    */
   padding() {
-    return TinyHtml.padding(this.getElement('padding'));
+    // @ts-ignore
+    return TinyHtml.padding(this.#el);
   }
 
   /////////////////////////////////////////////
@@ -1626,7 +1614,8 @@ class TinyHtml {
    * @type {(...tokens: string[]) => void} - One or more class names to add.
    */
   addClass(...args) {
-    return TinyHtml.addClass(this.getElement('addClass'), ...args);
+    // @ts-ignore
+    return TinyHtml.addClass(this.#el, ...args);
   }
 
   /**
@@ -1643,7 +1632,8 @@ class TinyHtml {
    * @type {(...tokens: string[]) => void} - One or more class names to remove.
    */
   removeClass(...args) {
-    return TinyHtml.removeClass(this.getElement('removeClass'), ...args);
+    // @ts-ignore
+    return TinyHtml.removeClass(this.#el, ...args);
   }
 
   /**
@@ -1670,7 +1660,8 @@ class TinyHtml {
    * @throws {TypeError} If either argument is not a string.
    */
   replaceClass(token, newToken) {
-    return TinyHtml.replaceClass(this.getElement('replaceClass'), token, newToken);
+    // @ts-ignore
+    return TinyHtml.replaceClass(this.#el, token, newToken);
   }
 
   /**
@@ -1693,7 +1684,8 @@ class TinyHtml {
    * @throws {TypeError} If the index is not a number.
    */
   classItem(index) {
-    return TinyHtml.classItem(this.getElement('classItem'), index);
+    // @ts-ignore
+    return TinyHtml.classItem(this.#el, index);
   }
 
   /**
@@ -1719,7 +1711,8 @@ class TinyHtml {
    * @throws {TypeError} If token is not a string or force is not a boolean.
    */
   toggleClass(token, force) {
-    return TinyHtml.toggleClass(this.getElement('toggleClass'), token, force);
+    // @ts-ignore
+    return TinyHtml.toggleClass(this.#el, token, force);
   }
 
   /**
@@ -1742,7 +1735,8 @@ class TinyHtml {
    * @throws {TypeError} If token is not a string.
    */
   hasClass(token) {
-    return TinyHtml.hasClass(this.getElement('hasClass'), token);
+    // @ts-ignore
+    return TinyHtml.hasClass(this.#el, token);
   }
 
   /**
@@ -1760,7 +1754,8 @@ class TinyHtml {
    * @returns {number} The number of classes.
    */
   classLength() {
-    return TinyHtml.classLength(this.getElement('classLength'));
+    // @ts-ignore
+    return TinyHtml.classLength(this.#el);
   }
 
   /**
@@ -1778,7 +1773,8 @@ class TinyHtml {
    * @returns {string[]} An array of class names.
    */
   classList() {
-    return TinyHtml.classList(this.getElement('classList'));
+    // @ts-ignore
+    return TinyHtml.classList(this.#el);
   }
 
   /////////////////////////////////////////
@@ -1798,7 +1794,8 @@ class TinyHtml {
    * @returns {string} The tag name in uppercase.
    */
   tagName() {
-    return TinyHtml.tagName(this.getElement('tagName'));
+    // @ts-ignore
+    return TinyHtml.tagName(this.#el);
   }
 
   /**
@@ -1816,7 +1813,8 @@ class TinyHtml {
    * @returns {string} The element's ID.
    */
   id() {
-    return TinyHtml.id(this.getElement('id'));
+    // @ts-ignore
+    return TinyHtml.id(this.#el);
   }
 
   /**
@@ -1834,7 +1832,8 @@ class TinyHtml {
    * @returns {string|null} The text content or null if none.
    */
   text() {
-    return TinyHtml.text(this.getElement('text'));
+    // @ts-ignore
+    return TinyHtml.text(this.#el);
   }
 
   /** @readonly */
@@ -2014,7 +2013,8 @@ class TinyHtml {
    * @throws {Error} If the computed value is not a valid string or boolean.
    */
   setVal(value) {
-    return TinyHtml.setVal(this.getValElement('setVal'), value);
+    // @ts-ignore
+    return TinyHtml.setVal(this.#el, value);
   }
 
   /**
@@ -2045,7 +2045,8 @@ class TinyHtml {
    * @returns {SetValValue} The raw value retrieved from the element or hook.
    */
   _val(where) {
-    return TinyHtml._val(this.getValElement(where), where);
+    // @ts-ignore
+    return TinyHtml._val(this.#el, where);
   }
 
   /**
@@ -2064,7 +2065,8 @@ class TinyHtml {
    * @returns {SetValValue} The normalized value, with carriage returns removed.
    */
   val() {
-    return TinyHtml.val(this.getValElement('val'));
+    // @ts-ignore
+    return TinyHtml.val(this.#el);
   }
 
   /**
@@ -2087,7 +2089,8 @@ class TinyHtml {
    * @throws {Error} If the element is not a string value.
    */
   valTxt() {
-    return TinyHtml.valTxt(this.getValElement('valTxt'));
+    // @ts-ignore
+    return TinyHtml.valTxt(this.#el);
   }
 
   /**
@@ -2112,7 +2115,8 @@ class TinyHtml {
    * @throws {Error} If the returned value is not an array.
    */
   _valArr(where) {
-    return TinyHtml._valArr(this.getValElement(where), where);
+    // @ts-ignore
+    return TinyHtml._valArr(this.#el, where);
   }
 
   /**
@@ -2133,7 +2137,8 @@ class TinyHtml {
    * @throws {Error} If the value is not a valid array.
    */
   valArr() {
-    return TinyHtml.valArr(this.getValElement('valArr'));
+    // @ts-ignore
+    return TinyHtml.valArr(this.#el);
   }
 
   /**
@@ -2159,7 +2164,8 @@ class TinyHtml {
    * @throws {Error} If any value in the array is not a string.
    */
   valArrSt() {
-    return TinyHtml.valArrSt(this.getValElement('valArrSt'));
+    // @ts-ignore
+    return TinyHtml.valArrSt(this.#el);
   }
 
   /**
@@ -2191,7 +2197,8 @@ class TinyHtml {
    * @throws {Error} If any value in the array is not a valid number.
    */
   valArrNb() {
-    return TinyHtml.valArrNb(this.getValElement('valArrNb'));
+    // @ts-ignore
+    return TinyHtml.valArrNb(this.#el);
   }
 
   /**
@@ -2217,7 +2224,8 @@ class TinyHtml {
    * @throws {Error} If any value in the array is not a boolean or castable to one.
    */
   valArrBool() {
-    return TinyHtml.valArrBool(this.getValElement('valArrBool'));
+    // @ts-ignore
+    return TinyHtml.valArrBool(this.#el);
   }
 
   /**
@@ -2242,7 +2250,8 @@ class TinyHtml {
    * @throws {Error} If the element is not a number-compatible input or value is NaN.
    */
   valNb() {
-    return TinyHtml.valNb(this.getValElement('valNb'));
+    // @ts-ignore
+    return TinyHtml.valNb(this.#el);
   }
 
   /**
@@ -2265,7 +2274,8 @@ class TinyHtml {
    * @throws {Error} If the element is not a checkbox/radio input.
    */
   valBool() {
-    return TinyHtml.valBool(this.getValElement('valBool'));
+    // @ts-ignore
+    return TinyHtml.valBool(this.#el);
   }
 
   ////////////////////////////////////////////
@@ -2483,7 +2493,8 @@ class TinyHtml {
    * @returns {string|null}
    */
   attr(name) {
-    return TinyHtml.attr(this.getElement('attr'), name);
+    // @ts-ignore
+    return TinyHtml.attr(this.#el, name);
   }
 
   /**
@@ -2504,7 +2515,8 @@ class TinyHtml {
    * @param {string|null} [value=null]
    */
   setAttr(name, value) {
-    return TinyHtml.setAttr(this.getElement('setAttr'), name, value);
+    // @ts-ignore
+    return TinyHtml.setAttr(this.#el, name, value);
   }
 
   /**
@@ -2522,7 +2534,8 @@ class TinyHtml {
    * @param {string} name Space-separated list of attributes.
    */
   removeAttr(name) {
-    return TinyHtml.removeAttr(this.getElement('removeAttr'), name);
+    // @ts-ignore
+    return TinyHtml.removeAttr(this.#el, name);
   }
 
   /**
@@ -2542,7 +2555,8 @@ class TinyHtml {
    * @returns {boolean}
    */
   hasAttr(name) {
-    return TinyHtml.hasAttr(this.getElement('hasAttr'), name);
+    // @ts-ignore
+    return TinyHtml.hasAttr(this.#el, name);
   }
 
   /**
@@ -2565,7 +2579,8 @@ class TinyHtml {
    * @returns {boolean}
    */
   hasProp(name) {
-    return TinyHtml.hasProp(this.getElement('hasProp'), name);
+    // @ts-ignore
+    return TinyHtml.hasProp(this.#el, name);
   }
 
   /**
@@ -2586,7 +2601,8 @@ class TinyHtml {
    * @param {string} name
    */
   addProp(name) {
-    return TinyHtml.addProp(this.getElement('addProp'), name);
+    // @ts-ignore
+    return TinyHtml.addProp(this.#el, name);
   }
 
   /**
@@ -2607,7 +2623,8 @@ class TinyHtml {
    * @param {string} name
    */
   removeProp(name) {
-    return TinyHtml.removeProp(this.getElement('removeProp'), name);
+    // @ts-ignore
+    return TinyHtml.removeProp(this.#el, name);
   }
 
   /**
@@ -2633,7 +2650,8 @@ class TinyHtml {
    * @param {boolean} [force]
    */
   toggleProp(name, force) {
-    return TinyHtml.toggleProp(this.getElement('toggleProp'), name, force);
+    // @ts-ignore
+    return TinyHtml.toggleProp(this.#el, name, force);
   }
 
   /////////////////////////////////////////////////////
@@ -2651,7 +2669,8 @@ class TinyHtml {
    * Removes the element from the DOM.
    */
   remove() {
-    return TinyHtml.remove(this.getElement('remove'));
+    // @ts-ignore
+    return TinyHtml.remove(this.#el);
   }
 
   /**
@@ -2685,7 +2704,8 @@ class TinyHtml {
    * @returns {number}
    */
   index(elem) {
-    return TinyHtml.index(this.getElement('index'), elem);
+    // @ts-ignore
+    return TinyHtml.index(this.#el, elem);
   }
 }
 
