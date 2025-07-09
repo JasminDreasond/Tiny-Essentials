@@ -474,7 +474,9 @@ class TinyHtml {
     const checkElement = (item) =>
       item.map(
         (elem) =>
-          /** @type {Element} */ (elem instanceof TinyHtml ? elem._getElement('fromTinyElm') : elem),
+          /** @type {Element} */ (
+            elem instanceof TinyHtml ? elem._getElement('fromTinyElm') : elem
+          ),
       );
     if (!Array.isArray(elems)) return checkElement([elems]);
     return checkElement(elems);
@@ -1426,7 +1428,7 @@ class TinyHtml {
    */
   static setScrollTop(el, value) {
     const elem = TinyHtml._preElemAndWindow(el, 'setScrollTop');
-    if (typeof value !== 'number') throw new TypeError('');
+    if (typeof value !== 'number') throw new TypeError('ScrollTop value must be a number.');
     if (TinyHtml.isWindow(elem)) {
       elem.scrollTo(elem.pageXOffset, value);
     } else if (elem.nodeType === 9) {
@@ -1453,7 +1455,7 @@ class TinyHtml {
    */
   static setScrollLeft(el, value) {
     const elem = TinyHtml._preElemAndWindow(el, 'setScrollLeft');
-    if (typeof value !== 'number') throw new TypeError('');
+    if (typeof value !== 'number') throw new TypeError('ScrollLeft value must be a number.');
     if (TinyHtml.isWindow(elem)) {
       elem.scrollTo(value, elem.pageYOffset);
     } else if (elem.nodeType === 9) {
