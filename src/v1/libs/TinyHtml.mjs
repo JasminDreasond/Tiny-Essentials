@@ -347,13 +347,39 @@ class TinyHtml {
    * Useful to normalize operations across multiple or single elements.
    *
    * @param {TinyElementPack|TinyElementPack[]} elems - A single element or array of elements.
+   * @param {string} where - The method or context name where validation is being called.
    * @returns {TinyElementPackRaw[]} - Always returns an array of elements.
    * @readonly
    */
-  static _preElems(elems) {
+  static _preElems(elems, where) {
     /** @param {TinyElementPack[]} item */
     const checkElement = (item) =>
-      item.map((elem) => (elem instanceof TinyHtml ? elem.getHtmlElement('preElems') : elem));
+      item.map((elem) => {
+        const result = elem instanceof TinyHtml ? elem.getHtmlElement(where) : elem;
+        if (!(result instanceof Element)) throw new Error(`[TinyHtml] Invalid Element in ${where}().`);
+        return result;
+      });
+    if (!Array.isArray(elems)) return checkElement([elems]);
+    return checkElement(elems);
+  }
+
+  /**
+   * Ensures the input is returned as an single element.
+   * Useful to normalize operations across multiple or single elements.
+   *
+   * @param {TinyElementPack|TinyElementPack[]} elems - A single element or array of elements.
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {TinyElementPackRaw | null} - Always returns an array of elements.
+   * @readonly
+   */
+  static _preElem(elems, where) {
+    /** @param {TinyElementPack[]} item */
+    const checkElement = (item) =>
+      item.map((elem) => {
+        const result = elem instanceof TinyHtml ? elem.getHtmlElement(where) : elem;
+        if (!(result instanceof Element)) throw new Error(`[TinyHtml] Invalid Element in ${where}().`);
+        return result;
+      })[0] || null;
     if (!Array.isArray(elems)) return checkElement([elems]);
     return checkElement(elems);
   }
@@ -448,7 +474,9 @@ class TinyHtml {
    */
   static filter(elems, selector, not = false) {
     if (not) selector = `:not(${selector})`;
-    return TinyHtml._preElems(elems).filter((el) => el.nodeType === 1 && el.matches(selector));
+    return TinyHtml._preElems(elems, 'filter').filter(
+      (el) => el.nodeType === 1 && el.matches(selector),
+    );
   }
 
   /**
@@ -459,7 +487,7 @@ class TinyHtml {
    * @returns {Element[]}
    */
   static filterOnly(elems, selector) {
-    return TinyHtml.winnow(TinyHtml._preElems(elems), selector, false);
+    return TinyHtml.winnow(TinyHtml._preElems(elems, 'filterOnly'), selector, false);
   }
 
   /**
@@ -470,7 +498,7 @@ class TinyHtml {
    * @returns {Element[]}
    */
   static not(elems, selector) {
-    return TinyHtml.winnow(TinyHtml._preElems(elems), selector, true);
+    return TinyHtml.winnow(TinyHtml._preElems(elems, 'not'), selector, true);
   }
 
   /**
@@ -492,7 +520,7 @@ class TinyHtml {
    */
   static find(context, selector) {
     const result = [];
-    for (const el of TinyHtml._preElems(context)) {
+    for (const el of TinyHtml._preElems(context, 'find')) {
       result.push(...el.querySelectorAll(selector));
     }
     return [...new Set(result)];
@@ -516,7 +544,7 @@ class TinyHtml {
    * @returns {boolean}
    */
   static is(elems, selector) {
-    return TinyHtml.winnow(TinyHtml._preElems(elems), selector, false).length > 0;
+    return TinyHtml.winnow(TinyHtml._preElems(elems, 'is'), selector, false).length > 0;
   }
 
   /**
@@ -539,9 +567,9 @@ class TinyHtml {
     const targets =
       typeof target === 'string'
         ? [...document.querySelectorAll(target)]
-        : TinyHtml._preElems(target);
+        : TinyHtml._preElems(target, 'has');
 
-    return TinyHtml._preElems(roots).filter((root) =>
+    return TinyHtml._preElems(roots, 'has').filter((root) =>
       targets.some((t) => root && root.contains(t)),
     );
   }
@@ -566,7 +594,7 @@ class TinyHtml {
   static closest(els, selector, context) {
     const matched = [];
 
-    for (const el of TinyHtml._preElems(els)) {
+    for (const el of TinyHtml._preElems(els, 'closest')) {
       /** @type {HTMLElement | Element | null} */
       let current = el;
       const cont = TinyHtml;
@@ -619,6 +647,171 @@ class TinyHtml {
    */
   isSameDom(elem) {
     return TinyHtml.isSameDom(this.getHtmlElement('isSameDom'), elem);
+  }
+
+  //////////////////////////////////////////////////////
+
+  /**
+   * Get the sibling element in a given direction.
+   *
+   * @param {TinyElementPack} el
+   * @param {"previousSibling"|"nextSibling"} direction
+   * @returns {Element|null}
+   */
+  static getSibling(el, direction) {
+    /** @type {Node|null} */
+    let newCurrent = TinyHtml._preElem(el, 'getSibling');
+    while (newCurrent && (newCurrent = newCurrent[direction]) && newCurrent.nodeType !== 1) {}
+    if (!(newCurrent instanceof Element)) return null;
+    return newCurrent;
+  }
+
+  /**
+   * Traverse DOM in a direction collecting elements.
+   *
+   * @param {TinyElementPack} el
+   * @param {"parentNode"|"nextSibling"|"previousSibling"} direction
+   * @param {TinyElementPack|string} [until]
+   * @returns {Element[]}
+   */
+  static domDir(el, direction, until) {
+    /** @type {Element | null} */
+    let elem = TinyHtml._preElem(el, 'domDir');
+    const matched = [];
+    while (elem && (elem = elem[direction] instanceof Element ? elem[direction] : null)) {
+      if (elem.nodeType !== 1) continue;
+      if (until && (typeof until === 'string' ? elem.matches(until) : elem === until)) break;
+      matched.push(elem);
+    }
+    return matched;
+  }
+
+  /**
+   * Get all sibling elements excluding the given one.
+   *
+   * @param {Node|ChildNode|null} start
+   * @param {TinyElementPack} [exclude]
+   * @returns {Node[]}
+   */
+  static getSiblings(start, exclude) {
+    let st = start;
+    const siblings = [];
+    for (; st; st = st.nextSibling) {
+      if (st.nodeType === 1 && start !== exclude) {
+        siblings.push(st);
+      }
+    }
+    return siblings;
+  }
+
+  /**
+   * @param {TinyElementPack} el
+   */
+  static parent(el) {
+    /** @type {Element | null} */
+    let elem = TinyHtml._preElem(el, 'parent');
+    const parent = elem ? elem.parentNode : null;
+    return parent && parent.nodeType !== 11 ? parent : null;
+  }
+
+  /**
+   * @param {TinyElementPack} el
+   */
+  static parents(el) {
+    return TinyHtml.domDir(el, 'parentNode');
+  }
+
+  /**
+   * @param {TinyElementPack} el
+   * @param {TinyElementPack|string} [until]
+   */
+  static parentsUntil(el, until) {
+    return TinyHtml.domDir(el, 'parentNode', until);
+  }
+
+  /**
+   * @param {TinyElementPack} el
+   */
+  static next(el) {
+    return TinyHtml.getSibling(el, 'nextSibling');
+  }
+
+  /**
+   * @param {TinyElementPack} el
+   */
+  static prev(el) {
+    return TinyHtml.getSibling(el, 'previousSibling');
+  }
+
+  /**
+   * @param {TinyElementPack} el
+   */
+  static nextAll(el) {
+    return TinyHtml.domDir(el, 'nextSibling');
+  }
+
+  /**
+   * @param {TinyElementPack} el
+   */
+  static prevAll(el) {
+    return TinyHtml.domDir(el, 'previousSibling');
+  }
+
+  /**
+   * @param {TinyElementPack} el
+   * @param {TinyElementPack|string} [until]
+   */
+  static nextUntil(el, until) {
+    return TinyHtml.domDir(el, 'nextSibling', until);
+  }
+
+  /**
+   * @param {TinyElementPack} el
+   * @param {TinyElementPack|string} [until]
+   */
+  static prevUntil(el, until) {
+    return TinyHtml.domDir(el, 'previousSibling', until);
+  }
+
+  /**
+   * @param {TinyElementPack} el
+   */
+  static siblings(el) {
+    const elem = TinyHtml._preElem(el, 'siblings');
+    return TinyHtml.getSiblings(
+      elem && elem.parentNode ? elem.parentNode.firstChild : null,
+      elem instanceof Element ? elem : undefined,
+    );
+  }
+
+  /**
+   * @param {TinyElementPack} el
+   */
+  static children(el) {
+    const elem = TinyHtml._preElem(el, 'children');
+    return TinyHtml.getSiblings(elem ? elem.firstChild : null);
+  }
+
+  /**
+   * @param {TinyElementPack} el
+   * @returns {ChildNode[]|Document}
+   */
+  static contents(el) {
+    const elem = TinyHtml._preElem(el, 'contents');
+    if (
+      elem instanceof HTMLIFrameElement &&
+      elem.contentDocument != null &&
+      Object.getPrototypeOf(elem.contentDocument)
+    ) {
+      return elem.contentDocument;
+    }
+
+    if (elem instanceof HTMLTemplateElement) {
+      return Array.from((elem.content || elem).childNodes);
+    }
+
+    if (elem) return Array.from(elem.childNodes);
+    return [];
   }
 
   //////////////////////////////////////////////////////
@@ -1581,14 +1774,13 @@ class TinyHtml {
 
         for (; i < max; i++) {
           const option = options[i];
+          /** @type {HTMLSelectElement|null} */
+          // @ts-ignore
+          const parentNode = option.parentNode;
           if (
             (option.selected || i === index) &&
             !option.disabled &&
-            (!option.parentNode ||
-              // @ts-ignore
-              !option.parentNode.disabled ||
-              // @ts-ignore
-              option.parentNode.tagName !== 'OPTGROUP')
+            (!parentNode || !parentNode.disabled || parentNode.tagName !== 'OPTGROUP')
           ) {
             const val = TinyHtml._valHooks.option.get(option);
             if (isSingle) return val;
