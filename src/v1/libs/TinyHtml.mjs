@@ -1,15 +1,9 @@
 /**
- * Represents any raw HTML element that can be handled by the library.
- *
- * @typedef {HTMLElement|Element} TinyElementPackRaw
- */
-
-/**
  * Represents a raw DOM element or an instance of TinyHtml.
  * This type is used to abstract interactions with both plain elements
  * and wrapped elements via the TinyHtml class.
  *
- * @typedef {TinyElementPackRaw|TinyHtml} TinyElementPack
+ * @typedef {Element|TinyHtml} TinyElement
  */
 
 /**
@@ -21,14 +15,14 @@
  * - A filtering function that receives an index and element,
  *   and returns true if it matches.
  *
- * @typedef {string|TinyElementPackRaw|TinyElementPackRaw[]|((index: number, el: TinyElementPackRaw) => boolean)} WinnowRequest
+ * @typedef {string|Element|Element[]|((index: number, el: Element) => boolean)} WinnowRequest
  */
 
 /**
  * Elements accepted as constructor values for TinyHtml.
  * These include common DOM elements and root containers.
  *
- * @typedef {HTMLElement|Window|Element|Document} ConstructorElValues
+ * @typedef {Window|Element|Document} ConstructorElValues
  */
 
 /**
@@ -174,8 +168,10 @@ class TinyHtml {
     return TinyHtml.toTinyElm([...newEls]);
   }
 
+  //////////////////////////////////////////////////////////////////
+
   /**
-   * Validates whether the given object is an HTMLElement or optionally a Window.
+   * Validates whether the given object is an Element or optionally a Window.
    * Used internally for argument safety checks.
    *
    * @param {*} el - The object to test.
@@ -185,13 +181,13 @@ class TinyHtml {
    * @throws {TypeError} If `where` is not a string or `needsWindow` is not a boolean.
    * @readonly
    */
-  static _isElement(el, where, needsWindow = false, canDocument = false) {
+  static _isValidElem(el, where, needsWindow = false, canDocument = false) {
     if (typeof where !== 'string')
-      throw new TypeError('[TinyHtml] "where" in _isElement() must be a string.');
+      throw new TypeError('[TinyHtml] "where" in _isValidElem() must be a string.');
     if (typeof needsWindow !== 'boolean')
-      throw new TypeError('[TinyHtml] "needsWindow" in _isElement() must be a boolean.');
+      throw new TypeError('[TinyHtml] "needsWindow" in _isValidElem() must be a boolean.');
     if (
-      !(el instanceof HTMLElement) &&
+      !(el instanceof Element) &&
       (!needsWindow || !(el instanceof Window)) &&
       ((!canDocument && el instanceof Document) || (canDocument && !(el instanceof Document)))
     )
@@ -199,7 +195,7 @@ class TinyHtml {
   }
 
   /**
-   * Validates whether the given object is an HTMLElement or optionally a Window.
+   * Validates whether the given object is an Element or optionally a Window.
    * Used internally for argument safety checks.
    *
    * @param {string} where - The context/method name using this validation.
@@ -208,8 +204,8 @@ class TinyHtml {
    * @throws {TypeError} If `where` is not a string or `needsWindow` is not a boolean.
    * @readonly
    */
-  _isElement(where, needsWindow, canDocument) {
-    return TinyHtml._isElement(this.#el, where, needsWindow, canDocument);
+  _isValidElem(where, needsWindow, canDocument) {
+    return TinyHtml._isValidElem(this.#el, where, needsWindow, canDocument);
   }
 
   /**
@@ -223,7 +219,7 @@ class TinyHtml {
    */
   static _isDocument(el, where) {
     if (typeof where !== 'string')
-      throw new TypeError('[TinyHtml] "where" in _isElement() must be a string.');
+      throw new TypeError('[TinyHtml] "where" in _isDocument() must be a string.');
     if (!(el instanceof Document)) throw new Error(`[TinyHtml] Invalid Document in ${where}().`);
   }
 
@@ -240,6 +236,33 @@ class TinyHtml {
   }
 
   /**
+   * Validates whether the given object is an Element.
+   * Used internally for argument safety checks.
+   *
+   * @param {*} el - The object to test.
+   * @param {string} where - The context/method name using this validation.
+   * @throws {TypeError} If `where` is not a string.
+   * @readonly
+   */
+  static _isElement(el, where) {
+    if (typeof where !== 'string')
+      throw new TypeError('[TinyHtml] "where" in _isElement() must be a string.');
+    if (!(el instanceof Element)) throw new Error(`[TinyHtml] Invalid Element in ${where}().`);
+  }
+
+  /**
+   * Validates whether the given object is an Element.
+   * Used internally for argument safety checks.
+   *
+   * @param {string} where - The context/method name using this validation.
+   * @throws {TypeError} If `where` is not a string.
+   * @readonly
+   */
+  _isElement(where) {
+    return TinyHtml._isElement(this.#el, where);
+  }
+
+  /**
    * Internal utility to validate if a given element is a valid HTMLElement.
    * Throws an error if the element is not an instance of HTMLElement.
    *
@@ -251,7 +274,7 @@ class TinyHtml {
    */
   static _isHtmlElement(el, where) {
     if (typeof where !== 'string')
-      throw new TypeError('[TinyHtml] "where" in getHtmlElement() must be a string.');
+      throw new TypeError('[TinyHtml] "where" in _isHtmlElement() must be a string.');
     if (!(el instanceof HTMLElement)) throw new Error(`[TinyHtml] Invalid Element in ${where}().`);
   }
 
@@ -293,7 +316,7 @@ class TinyHtml {
    */
   static _isValElement(el, where) {
     if (typeof where !== 'string')
-      throw new TypeError('[TinyHtml] "where" in getValElement() must be a string.');
+      throw new TypeError('[TinyHtml] "where" in _isValElement() must be a string.');
     if (
       !(el instanceof HTMLInputElement) &&
       !(el instanceof HTMLSelectElement) &&
@@ -330,13 +353,25 @@ class TinyHtml {
   }
 
   /**
+   * Returns the current target held by this instance.
+   *
+   * @returns {Element|Window} - The instance's target element.
+   */
+  getTarget() {
+    if (this.#el instanceof Document)
+      throw new Error(`[TinyHtml] "getTarget" must be a Element or Window.`);
+    return this.#el;
+  }
+
+  /**
    * Returns the current element held by this instance.
    *
-   * @returns {HTMLElement|Window} - The instance's target element.
+   * @param {string} where - The method name or context calling this.
+   * @returns {Element} - The instance's element.
    */
-  getElement() {
-    if (this.#el instanceof Document)
-      throw new Error(`[TinyHtml] "getElement" must be a HTMLElement or Window.`);
+  getElement(where) {
+    if (!(this.#el instanceof Element))
+      throw new Error(`[TinyHtml] Invalid Element in ${where}().`);
     return this.#el;
   }
 
@@ -346,17 +381,18 @@ class TinyHtml {
    * Ensures the input is returned as an array.
    * Useful to normalize operations across multiple or single elements.
    *
-   * @param {TinyElementPack|TinyElementPack[]} elems - A single element or array of elements.
+   * @param {TinyElement|TinyElement[]} elems - A single element or array of elements.
    * @param {string} where - The method or context name where validation is being called.
-   * @returns {TinyElementPackRaw[]} - Always returns an array of elements.
+   * @returns {Element[]} - Always returns an array of elements.
    * @readonly
    */
   static _preElems(elems, where) {
-    /** @param {TinyElementPack[]} item */
+    /** @param {TinyElement[]} item */
     const checkElement = (item) =>
       item.map((elem) => {
-        const result = elem instanceof TinyHtml ? elem.getHtmlElement(where) : elem;
-        if (!(result instanceof Element)) throw new Error(`[TinyHtml] Invalid Element in ${where}().`);
+        const result = elem instanceof TinyHtml ? elem.getElement(where) : elem;
+        if (!(result instanceof Element))
+          throw new Error(`[TinyHtml] Invalid Element in ${where}().`);
         return result;
       });
     if (!Array.isArray(elems)) return checkElement([elems]);
@@ -367,17 +403,18 @@ class TinyHtml {
    * Ensures the input is returned as an single element.
    * Useful to normalize operations across multiple or single elements.
    *
-   * @param {TinyElementPack|TinyElementPack[]} elems - A single element or array of elements.
+   * @param {TinyElement|TinyElement[]} elems - A single element or array of elements.
    * @param {string} where - The method or context name where validation is being called.
-   * @returns {TinyElementPackRaw | null} - Always returns an array of elements.
+   * @returns {Element | null} - Always returns an array of elements.
    * @readonly
    */
   static _preElem(elems, where) {
-    /** @param {TinyElementPack[]} item */
+    /** @param {TinyElement[]} item */
     const checkElement = (item) =>
       item.map((elem) => {
-        const result = elem instanceof TinyHtml ? elem.getHtmlElement(where) : elem;
-        if (!(result instanceof Element)) throw new Error(`[TinyHtml] Invalid Element in ${where}().`);
+        const result = elem instanceof TinyHtml ? elem.getElement(where) : elem;
+        if (!(result instanceof Element))
+          throw new Error(`[TinyHtml] Invalid Element in ${where}().`);
         return result;
       })[0] || null;
     if (!Array.isArray(elems)) return checkElement([elems]);
@@ -395,11 +432,11 @@ class TinyHtml {
    * This ensures consistent access to methods of the `TinyHtml` class regardless
    * of the input form.
    *
-   * @param {TinyElementPack|TinyElementPack[]} elems - A single element or an array of elements (DOM or TinyHtml).
+   * @param {TinyElement|TinyElement[]} elems - A single element or an array of elements (DOM or TinyHtml).
    * @returns {TinyHtml[]} An array of TinyHtml instances corresponding to the input elements.
    */
   static toTinyElm(elems) {
-    /** @param {TinyElementPack[]} item */
+    /** @param {TinyElement[]} item */
     const checkElement = (item) =>
       item.map((elem) => (!(elem instanceof TinyHtml) ? new TinyHtml(elem) : elem));
     if (!Array.isArray(elems)) return checkElement([elems]);
@@ -407,7 +444,7 @@ class TinyHtml {
   }
 
   /**
-   * Extracts native `HTMLElement` instances from one or more elements,
+   * Extracts native `Element` instances from one or more elements,
    * which can be either raw DOM elements or wrapped in `TinyHtml`.
    *
    * - If a `TinyHtml` instance is passed, its internal DOM element is extracted.
@@ -415,20 +452,18 @@ class TinyHtml {
    * - If an array is passed, each element is processed accordingly.
    *
    * This function guarantees that the return value is always an array of
-   * raw `HTMLElement` objects, regardless of whether the input was
+   * raw `Element` objects, regardless of whether the input was
    * a mix of `TinyHtml` or native DOM elements.
    *
-   * @param {TinyElementPack|TinyElementPack[]} elems - A single element or an array of elements (DOM or TinyHtml`).
-   * @returns {HTMLElement[]} An array of HTMLElement instances extracted from the input.
+   * @param {TinyElement|TinyElement[]} elems - A single element or an array of elements (DOM or TinyHtml`).
+   * @returns {Element[]} An array of Element instances extracted from the input.
    */
   static fromTinyElm(elems) {
-    /** @param {TinyElementPack[]} item */
+    /** @param {TinyElement[]} item */
     const checkElement = (item) =>
       item.map(
         (elem) =>
-          /** @type {HTMLElement} */ (
-            elem instanceof TinyHtml ? elem.getHtmlElement('fromTinyElm') : elem
-          ),
+          /** @type {Element} */ (elem instanceof TinyHtml ? elem.getElement('fromTinyElm') : elem),
       );
     if (!Array.isArray(elems)) return checkElement([elems]);
     return checkElement(elems);
@@ -437,7 +472,7 @@ class TinyHtml {
   /**
    * Filters an array of elements based on a selector, function, element, or array of elements.
    *
-   * @param {TinyElementPackRaw[]} elems
+   * @param {Element[]} elems
    * @param {WinnowRequest} qualifier
    * @param {boolean} not Whether to invert the result (used for .not())
    * @returns {Element[]}
@@ -467,7 +502,7 @@ class TinyHtml {
   /**
    * Filters a set of elements by a CSS selector.
    *
-   * @param {TinyElementPack|TinyElementPack[]} elems
+   * @param {TinyElement|TinyElement[]} elems
    * @param {string} selector
    * @param {boolean} not
    * @returns {Element[]}
@@ -482,7 +517,7 @@ class TinyHtml {
   /**
    * Returns only the elements matching the given selector or function.
    *
-   * @param {TinyElementPack|TinyElementPack[]} elems
+   * @param {TinyElement|TinyElement[]} elems
    * @param {WinnowRequest} selector
    * @returns {Element[]}
    */
@@ -493,7 +528,7 @@ class TinyHtml {
   /**
    * Returns only the elements **not** matching the given selector or function.
    *
-   * @param {TinyElementPack|TinyElementPack[]} elems
+   * @param {TinyElement|TinyElement[]} elems
    * @param {WinnowRequest} selector
    * @returns {Element[]}
    */
@@ -508,13 +543,13 @@ class TinyHtml {
    * @returns {Element[]}
    */
   not(selector) {
-    return TinyHtml.not(this.getHtmlElement('not'), selector);
+    return TinyHtml.not(this.getElement('not'), selector);
   }
 
   /**
    * Finds elements matching a selector within a context.
    *
-   * @param {TinyElementPack|TinyElementPack[]} context
+   * @param {TinyElement|TinyElement[]} context
    * @param {string} selector
    * @returns {Element[]}
    */
@@ -533,13 +568,13 @@ class TinyHtml {
    * @returns {Element[]}
    */
   find(selector) {
-    return TinyHtml.find(this.getHtmlElement('find'), selector);
+    return TinyHtml.find(this.getElement('find'), selector);
   }
 
   /**
    * Checks if at least one element matches the selector.
    *
-   * @param {TinyElementPack|TinyElementPack[]} elems
+   * @param {TinyElement|TinyElement[]} elems
    * @param {WinnowRequest} selector
    * @returns {boolean}
    */
@@ -554,13 +589,13 @@ class TinyHtml {
    * @returns {boolean}
    */
   is(selector) {
-    return TinyHtml.is(this.getHtmlElement('is'), selector);
+    return TinyHtml.is(this.getElement('is'), selector);
   }
 
   /**
    * Returns elements from the current list that contain the given target(s).
-   * @param {TinyElementPack|TinyElementPack[]} roots - A single element or an array of elements (DOM or TinyHtml).
-   * @param {string|TinyElementPack|TinyElementPack[]} target - Selector or DOM element(s).
+   * @param {TinyElement|TinyElement[]} roots - A single element or an array of elements (DOM or TinyHtml).
+   * @param {string|TinyElement|TinyElement[]} target - Selector or DOM element(s).
    * @returns {Element[]} Elements that contain the target.
    */
   static has(roots, target) {
@@ -576,17 +611,17 @@ class TinyHtml {
 
   /**
    * Return if the element has the target(s).
-   * @param {string|TinyElementPack|TinyElementPack[]} target - Selector or DOM element(s).
+   * @param {string|TinyElement|TinyElement[]} target - Selector or DOM element(s).
    * @returns {boolean} Elements that contain the target.
    */
   has(target) {
-    return TinyHtml.has(this.getHtmlElement('has'), target).length > 0;
+    return TinyHtml.has(this.getElement('has'), target).length > 0;
   }
 
   /**
    * Finds the closest ancestor (including self) that matches the selector.
    *
-   * @param {TinyElementPack|TinyElementPack[]} els - A single element or an array of elements (DOM or TinyHtml).
+   * @param {TinyElement|TinyElement[]} els - A single element or an array of elements (DOM or TinyHtml).
    * @param {string|Element} selector - A selector string or DOM element to match.
    * @param {Element|null} [context] - An optional context to stop searching.
    * @returns {Element[]}
@@ -595,7 +630,7 @@ class TinyHtml {
     const matched = [];
 
     for (const el of TinyHtml._preElems(els, 'closest')) {
-      /** @type {HTMLElement | Element | null} */
+      /** @type {Element | null} */
       let current = el;
       const cont = TinyHtml;
       while (current && current !== context) {
@@ -621,7 +656,7 @@ class TinyHtml {
    * @returns {Element[]}
    */
   closest(selector, context) {
-    return TinyHtml.closest(this.getHtmlElement('closest'), selector, context);
+    return TinyHtml.closest(this.getElement('closest'), selector, context);
   }
 
   /**
@@ -646,7 +681,7 @@ class TinyHtml {
    * @returns {boolean} `true` if both elements are the same DOM node; otherwise, `false`.
    */
   isSameDom(elem) {
-    return TinyHtml.isSameDom(this.getHtmlElement('isSameDom'), elem);
+    return TinyHtml.isSameDom(this.getElement('isSameDom'), elem);
   }
 
   //////////////////////////////////////////////////////
@@ -654,7 +689,7 @@ class TinyHtml {
   /**
    * Get the sibling element in a given direction.
    *
-   * @param {TinyElementPack} el
+   * @param {TinyElement} el
    * @param {"previousSibling"|"nextSibling"} direction
    * @returns {Element|null}
    */
@@ -669,9 +704,9 @@ class TinyHtml {
   /**
    * Traverse DOM in a direction collecting elements.
    *
-   * @param {TinyElementPack} el
+   * @param {TinyElement} el
    * @param {"parentNode"|"nextSibling"|"previousSibling"} direction
-   * @param {TinyElementPack|string} [until]
+   * @param {TinyElement|string} [until]
    * @returns {Element[]}
    */
   static domDir(el, direction, until) {
@@ -690,7 +725,7 @@ class TinyHtml {
    * Get all sibling elements excluding the given one.
    *
    * @param {Node|ChildNode|null} start
-   * @param {TinyElementPack} [exclude]
+   * @param {TinyElement} [exclude]
    * @returns {Node[]}
    */
   static getSiblings(start, exclude) {
@@ -705,7 +740,7 @@ class TinyHtml {
   }
 
   /**
-   * @param {TinyElementPack} el
+   * @param {TinyElement} el
    */
   static parent(el) {
     /** @type {Element | null} */
@@ -715,66 +750,66 @@ class TinyHtml {
   }
 
   /**
-   * @param {TinyElementPack} el
+   * @param {TinyElement} el
    */
   static parents(el) {
     return TinyHtml.domDir(el, 'parentNode');
   }
 
   /**
-   * @param {TinyElementPack} el
-   * @param {TinyElementPack|string} [until]
+   * @param {TinyElement} el
+   * @param {TinyElement|string} [until]
    */
   static parentsUntil(el, until) {
     return TinyHtml.domDir(el, 'parentNode', until);
   }
 
   /**
-   * @param {TinyElementPack} el
+   * @param {TinyElement} el
    */
   static next(el) {
     return TinyHtml.getSibling(el, 'nextSibling');
   }
 
   /**
-   * @param {TinyElementPack} el
+   * @param {TinyElement} el
    */
   static prev(el) {
     return TinyHtml.getSibling(el, 'previousSibling');
   }
 
   /**
-   * @param {TinyElementPack} el
+   * @param {TinyElement} el
    */
   static nextAll(el) {
     return TinyHtml.domDir(el, 'nextSibling');
   }
 
   /**
-   * @param {TinyElementPack} el
+   * @param {TinyElement} el
    */
   static prevAll(el) {
     return TinyHtml.domDir(el, 'previousSibling');
   }
 
   /**
-   * @param {TinyElementPack} el
-   * @param {TinyElementPack|string} [until]
+   * @param {TinyElement} el
+   * @param {TinyElement|string} [until]
    */
   static nextUntil(el, until) {
     return TinyHtml.domDir(el, 'nextSibling', until);
   }
 
   /**
-   * @param {TinyElementPack} el
-   * @param {TinyElementPack|string} [until]
+   * @param {TinyElement} el
+   * @param {TinyElement|string} [until]
    */
   static prevUntil(el, until) {
     return TinyHtml.domDir(el, 'previousSibling', until);
   }
 
   /**
-   * @param {TinyElementPack} el
+   * @param {TinyElement} el
    */
   static siblings(el) {
     const elem = TinyHtml._preElem(el, 'siblings');
@@ -785,7 +820,7 @@ class TinyHtml {
   }
 
   /**
-   * @param {TinyElementPack} el
+   * @param {TinyElement} el
    */
   static children(el) {
     const elem = TinyHtml._preElem(el, 'children');
@@ -793,7 +828,7 @@ class TinyHtml {
   }
 
   /**
-   * @param {TinyElementPack} el
+   * @param {TinyElement} el
    * @returns {ChildNode[]|Document}
    */
   static contents(el) {
@@ -818,19 +853,18 @@ class TinyHtml {
 
   /**
    * The target HTML element for instance-level operations.
-   * @type {HTMLElement|Window|Document}
+   * @type {ConstructorElValues}
    */
   #el;
 
   /**
-   * Creates an instance of TinyHtml for a specific HTMLElement.
+   * Creates an instance of TinyHtml for a specific Element.
    * Useful when you want to operate repeatedly on the same element using instance methods.
    * @param {ConstructorElValues} el - The element to wrap and manipulate.
    */
   constructor(el) {
-    TinyHtml._isElement(el, 'constructor');
-    if (!(el instanceof HTMLElement) && !(el instanceof Window) && !(el instanceof Document))
-      throw new Error(`[TinyHtml] Invalid Element in constructor.`);
+    if (!(el instanceof Element) && !(el instanceof Window) && !(el instanceof Document))
+      throw new Error(`[TinyHtml] Invalid Target in constructor.`);
     this.#el = el;
   }
 
@@ -845,7 +879,7 @@ class TinyHtml {
 
   /**
    * Returns the computed CSS float value of a property.
-   * @param {HTMLElement} el - The element to inspect.
+   * @param {Element} el - The element to inspect.
    * @param {string} prop - The CSS property.
    * @returns {number} - The parsed float value.
    */
@@ -863,12 +897,12 @@ class TinyHtml {
    * @returns {number} - The parsed float value.
    */
   cssFloat(prop) {
-    return TinyHtml.cssFloat(this.getHtmlElement('cssFloat'), prop);
+    return TinyHtml.cssFloat(this.getElement('cssFloat'), prop);
   }
 
   /**
    * Returns computed float values of multiple CSS properties.
-   * @param {HTMLElement} el - The element to inspect.
+   * @param {Element} el - The element to inspect.
    * @param {string[]} prop - An array of CSS properties.
    * @returns {Record<string, number>} - Map of property to float value.
    */
@@ -891,7 +925,7 @@ class TinyHtml {
    * @returns {Record<string, number>} - Map of property to float value.
    */
   cssFloats(prop) {
-    return TinyHtml.cssFloats(this.getHtmlElement('cssFloats'), prop);
+    return TinyHtml.cssFloats(this.getElement('cssFloats'), prop);
   }
 
   /**
@@ -946,13 +980,14 @@ class TinyHtml {
 
   /**
    * Gets the width or height of an element based on the box model.
-   * @param {HTMLElement|Window} el - The element or window.
+   * @param {Element|Window} el - The element or window.
    * @param {"width"|"height"} type - Dimension type.
    * @param {"content"|"padding"|"border"|"margin"} [extra='content'] - Box model context.
    * @returns {number} - Computed dimension.
    * @throws {TypeError} If `type` or `extra` is not a string.
    */
   static getDimension(el, type, extra = 'content') {
+    TinyHtml._isValidElem(el, 'getDimension', true);
     if (typeof type !== 'string') throw new TypeError('The type must be a string.');
     if (typeof extra !== 'string') throw new TypeError('The extra must be a string.');
 
@@ -962,8 +997,7 @@ class TinyHtml {
       // @ts-ignore
       return extra === 'margin' ? el['inner' + name] : el.document.documentElement['client' + name];
     }
-    TinyHtml._isElement(el, 'getDimension');
-    /** @type {HTMLElement} */
+    /** @type {Element} */
     const elHtml = el;
 
     if (elHtml.nodeType === 9) {
@@ -1030,7 +1064,7 @@ class TinyHtml {
    * @returns {number} - Computed dimension.
    */
   getDimension(type, extra) {
-    return TinyHtml.getDimension(this.getElement(), type, extra);
+    return TinyHtml.getDimension(this.getElement('getDimension'), type, extra);
   }
 
   /**
@@ -1040,7 +1074,7 @@ class TinyHtml {
    * @throws {TypeError} If `value` is neither a string nor number.
    */
   static setHeight(el, value) {
-    TinyHtml._isElement(el, 'setHeight');
+    TinyHtml._isHtmlElement(el, 'setHeight');
     if (typeof value !== 'number' && typeof value !== 'string')
       throw new TypeError('The value must be a string or number.');
     el.style.height = typeof value === 'number' ? `${value}px` : value;
@@ -1061,7 +1095,7 @@ class TinyHtml {
    * @throws {TypeError} If `value` is neither a string nor number.
    */
   static setWidth(el, value) {
-    TinyHtml._isElement(el, 'setWidth');
+    TinyHtml._isHtmlElement(el, 'setWidth');
     if (typeof value !== 'number' && typeof value !== 'string')
       throw new TypeError('The value must be a string or number.');
     el.style.width = typeof value === 'number' ? `${value}px` : value;
@@ -1077,11 +1111,11 @@ class TinyHtml {
 
   /**
    * Returns content box height.
-   * @param {HTMLElement|Window} el - Target element.
+   * @param {Element|Window} el - Target element.
    * @returns {number}
    */
   static height(el) {
-    TinyHtml._isElement(el, 'height');
+    TinyHtml._isValidElem(el, 'height', true);
     return TinyHtml.getDimension(el, 'height', 'content');
   }
 
@@ -1090,16 +1124,16 @@ class TinyHtml {
    * @returns {number}
    */
   height() {
-    return TinyHtml.height(this.getElement());
+    return TinyHtml.height(this.getTarget());
   }
 
   /**
    * Returns content box width.
-   * @param {HTMLElement|Window} el - Target element.
+   * @param {Element|Window} el - Target element.
    * @returns {number}
    */
   static width(el) {
-    TinyHtml._isElement(el, 'width');
+    TinyHtml._isValidElem(el, 'width', true);
     return TinyHtml.getDimension(el, 'width', 'content');
   }
 
@@ -1108,16 +1142,16 @@ class TinyHtml {
    * @returns {number}
    */
   width() {
-    return TinyHtml.width(this.getElement());
+    return TinyHtml.width(this.getTarget());
   }
 
   /**
    * Returns padding box height.
-   * @param {HTMLElement|Window} el - Target element.
+   * @param {Element|Window} el - Target element.
    * @returns {number}
    */
   static innerHeight(el) {
-    TinyHtml._isElement(el, 'innerHeight');
+    TinyHtml._isValidElem(el, 'innerHeight', true);
     return TinyHtml.getDimension(el, 'height', 'padding');
   }
 
@@ -1126,16 +1160,16 @@ class TinyHtml {
    * @returns {number}
    */
   innerHeight() {
-    return TinyHtml.innerHeight(this.getElement());
+    return TinyHtml.innerHeight(this.getTarget());
   }
 
   /**
    * Returns padding box width.
-   * @param {HTMLElement|Window} el - Target element.
+   * @param {Element|Window} el - Target element.
    * @returns {number}
    */
   static innerWidth(el) {
-    TinyHtml._isElement(el, 'innerWidth');
+    TinyHtml._isValidElem(el, 'innerWidth', true);
     return TinyHtml.getDimension(el, 'width', 'padding');
   }
 
@@ -1144,17 +1178,17 @@ class TinyHtml {
    * @returns {number}
    */
   innerWidth() {
-    return TinyHtml.innerWidth(this.getElement());
+    return TinyHtml.innerWidth(this.getTarget());
   }
 
   /**
    * Returns outer height of the element, optionally including margin.
-   * @param {HTMLElement|Window} el - Target element.
+   * @param {Element|Window} el - Target element.
    * @param {boolean} [includeMargin=false] - Whether to include margin.
    * @returns {number}
    */
   static outerHeight(el, includeMargin = false) {
-    TinyHtml._isElement(el, 'outerHeight');
+    TinyHtml._isValidElem(el, 'outerHeight', true);
     return TinyHtml.getDimension(el, 'height', includeMargin ? 'margin' : 'border');
   }
 
@@ -1164,17 +1198,17 @@ class TinyHtml {
    * @returns {number}
    */
   outerHeight(includeMargin) {
-    return TinyHtml.outerHeight(this.getElement(), includeMargin);
+    return TinyHtml.outerHeight(this.getTarget(), includeMargin);
   }
 
   /**
    * Returns outer width of the element, optionally including margin.
-   * @param {HTMLElement|Window} el - Target element.
+   * @param {Element|Window} el - Target element.
    * @param {boolean} [includeMargin=false] - Whether to include margin.
    * @returns {number}
    */
   static outerWidth(el, includeMargin = false) {
-    TinyHtml._isElement(el, 'outerWidth');
+    TinyHtml._isValidElem(el, 'outerWidth', true);
     return TinyHtml.getDimension(el, 'width', includeMargin ? 'margin' : 'border');
   }
 
@@ -1184,14 +1218,14 @@ class TinyHtml {
    * @returns {number}
    */
   outerWidth(includeMargin) {
-    return TinyHtml.outerWidth(this.getElement(), includeMargin);
+    return TinyHtml.outerWidth(this.getTarget(), includeMargin);
   }
 
   //////////////////////////////////////////////////
 
   /**
    * Gets the offset of the element relative to the document.
-   * @param {HTMLElement} el - Target element.
+   * @param {Element} el - Target element.
    * @returns {{top: number, left: number}}
    */
   static offset(el) {
@@ -1211,7 +1245,7 @@ class TinyHtml {
    * @returns {{top: number, left: number}}
    */
   offset() {
-    return TinyHtml.offset(this.getHtmlElement('offset'));
+    return TinyHtml.offset(this.getElement('offset'));
   }
 
   /**
@@ -1220,7 +1254,7 @@ class TinyHtml {
    * @returns {{top: number, left: number}}
    */
   static position(elem) {
-    TinyHtml._isElement(elem, 'position');
+    TinyHtml._isHtmlElement(elem, 'position');
 
     let offsetParent;
     let offset;
@@ -1279,7 +1313,7 @@ class TinyHtml {
    * @returns {HTMLElement} - Offset parent element.
    */
   static offsetParent(elem) {
-    TinyHtml._isElement(elem, 'offsetParent');
+    TinyHtml._isHtmlElement(elem, 'offsetParent');
     let offsetParent = elem.offsetParent;
 
     while (
@@ -1303,11 +1337,11 @@ class TinyHtml {
 
   /**
    * Gets the vertical scroll position.
-   * @param {HTMLElement|Window} el - Element or window.
+   * @param {Element|Window} el - Element or window.
    * @returns {number}
    */
   static scrollTop(el) {
-    TinyHtml._isElement(el, 'scrollTop', true);
+    TinyHtml._isValidElem(el, 'scrollTop', true);
     if (TinyHtml.isWindow(el)) return el.pageYOffset;
     // @ts-ignore
     if (el.nodeType === 9) return el.defaultView.pageYOffset;
@@ -1319,16 +1353,16 @@ class TinyHtml {
    * @returns {number}
    */
   scrollTop() {
-    return TinyHtml.scrollTop(this.getElement());
+    return TinyHtml.scrollTop(this.getTarget());
   }
 
   /**
    * Gets the horizontal scroll position.
-   * @param {HTMLElement|Window} el - Element or window.
+   * @param {Element|Window} el - Element or window.
    * @returns {number}
    */
   static scrollLeft(el) {
-    TinyHtml._isElement(el, 'scrollLeft', true);
+    TinyHtml._isValidElem(el, 'scrollLeft', true);
     if (TinyHtml.isWindow(el)) return el.pageXOffset;
     // @ts-ignore
     if (el.nodeType === 9) return el.defaultView.pageXOffset;
@@ -1340,16 +1374,16 @@ class TinyHtml {
    * @returns {number}
    */
   scrollLeft() {
-    return TinyHtml.scrollLeft(this.getElement());
+    return TinyHtml.scrollLeft(this.getTarget());
   }
 
   /**
    * Sets the vertical scroll position.
-   * @param {HTMLElement|Window} el - Element or window.
+   * @param {Element|Window} el - Element or window.
    * @param {number} value - Scroll top value.
    */
   static setScrollTop(el, value) {
-    TinyHtml._isElement(el, 'setScrollTop', true);
+    TinyHtml._isValidElem(el, 'setScrollTop', true);
     if (typeof value !== 'number') throw new TypeError('');
     if (TinyHtml.isWindow(el)) {
       el.scrollTo(el.pageXOffset, value);
@@ -1366,16 +1400,16 @@ class TinyHtml {
    * @param {number} value - Scroll top value.
    */
   setScrollTop(value) {
-    return TinyHtml.setScrollTop(this.getElement(), value);
+    return TinyHtml.setScrollTop(this.getTarget(), value);
   }
 
   /**
    * Sets the horizontal scroll position.
-   * @param {HTMLElement|Window} el - Element or window.
+   * @param {Element|Window} el - Element or window.
    * @param {number} value - Scroll left value.
    */
   static setScrollLeft(el, value) {
-    TinyHtml._isElement(el, 'setScrollLeft', true);
+    TinyHtml._isValidElem(el, 'setScrollLeft', true);
     if (typeof value !== 'number') throw new TypeError('');
     if (TinyHtml.isWindow(el)) {
       el.scrollTo(value, el.pageYOffset);
@@ -1392,13 +1426,13 @@ class TinyHtml {
    * @param {number} value - Scroll left value.
    */
   setScrollLeft(value) {
-    return TinyHtml.setScrollLeft(this.getElement(), value);
+    return TinyHtml.setScrollLeft(this.getTarget(), value);
   }
 
   /**
    * Returns the total border width and individual sides from `border{Side}Width` CSS properties.
    *
-   * @param {HTMLElement} el - The target DOM element.
+   * @param {Element} el - The target DOM element.
    * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) border widths, and each side individually.
    */
   static borderWidth(el) {
@@ -1426,13 +1460,13 @@ class TinyHtml {
    * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) border widths, and each side individually.
    */
   borderWidth() {
-    return TinyHtml.borderWidth(this.getHtmlElement('borderWidth'));
+    return TinyHtml.borderWidth(this.getElement('borderWidth'));
   }
 
   /**
    * Returns the total border size and individual sides from `border{Side}` CSS properties.
    *
-   * @param {HTMLElement} el - The target DOM element.
+   * @param {Element} el - The target DOM element.
    * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) border sizes, and each side individually.
    */
   static border(el) {
@@ -1455,13 +1489,13 @@ class TinyHtml {
    * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) border sizes, and each side individually.
    */
   border() {
-    return TinyHtml.border(this.getHtmlElement('border'));
+    return TinyHtml.border(this.getElement('border'));
   }
 
   /**
    * Returns the total margin and individual sides from `margin{Side}` CSS properties.
    *
-   * @param {HTMLElement} el - The target DOM element.
+   * @param {Element} el - The target DOM element.
    * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) margins, and each side individually.
    */
   static margin(el) {
@@ -1484,13 +1518,13 @@ class TinyHtml {
    * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) margins, and each side individually.
    */
   margin() {
-    return TinyHtml.margin(this.getHtmlElement('margin'));
+    return TinyHtml.margin(this.getElement('margin'));
   }
 
   /**
    * Returns the total padding and individual sides from `padding{Side}` CSS properties.
    *
-   * @param {HTMLElement} el - The target DOM element.
+   * @param {Element} el - The target DOM element.
    * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) paddings, and each side individually.
    */
   static padding(el) {
@@ -1513,14 +1547,14 @@ class TinyHtml {
    * @returns {HtmlElBoxSides} - Total horizontal (x) and vertical (y) paddings, and each side individually.
    */
   padding() {
-    return TinyHtml.padding(this.getHtmlElement('padding'));
+    return TinyHtml.padding(this.getElement('padding'));
   }
 
   /////////////////////////////////////////////
 
   /**
    * Adds one or more CSS class names to the element.
-   * @type {(el: HTMLElement, ...tokens: string[]) => void} - One or more class names to add.
+   * @type {(el: Element, ...tokens: string[]) => void} - One or more class names to add.
    */
   static addClass(el, ...args) {
     TinyHtml._isHtmlElement(el, 'addClass');
@@ -1532,13 +1566,12 @@ class TinyHtml {
    * @type {(...tokens: string[]) => void} - One or more class names to add.
    */
   addClass(...args) {
-    return TinyHtml.addClass(this.getHtmlElement('addClass'), ...args);
+    return TinyHtml.addClass(this.getElement('addClass'), ...args);
   }
 
   /**
    * Removes one or more CSS class names from the element.
-   * @param {HTMLElement} el - Target element.
-   * @type {(el: HTMLElement, ...tokens: string[]) => void} - One or more class names to remove.
+   * @type {(el: Element, ...tokens: string[]) => void} - One or more class names to remove.
    */
   static removeClass(el, ...args) {
     TinyHtml._isHtmlElement(el, 'removeClass');
@@ -1550,12 +1583,12 @@ class TinyHtml {
    * @type {(...tokens: string[]) => void} - One or more class names to remove.
    */
   removeClass(...args) {
-    return TinyHtml.removeClass(this.getHtmlElement('removeClass'), ...args);
+    return TinyHtml.removeClass(this.getElement('removeClass'), ...args);
   }
 
   /**
    * Replaces an existing class name with a new one.
-   * @param {HTMLElement} el - Target element.
+   * @param {Element} el - Target element.
    * @param {string} token - The class name to be replaced.
    * @param {string} newToken - The new class name to apply.
    * @returns {boolean} Whether the replacement was successful.
@@ -1577,12 +1610,12 @@ class TinyHtml {
    * @throws {TypeError} If either argument is not a string.
    */
   replaceClass(token, newToken) {
-    return TinyHtml.replaceClass(this.getHtmlElement('replaceClass'), token, newToken);
+    return TinyHtml.replaceClass(this.getElement('replaceClass'), token, newToken);
   }
 
   /**
    * Returns the class name at the specified index.
-   * @param {HTMLElement} el - Target element.
+   * @param {Element} el - Target element.
    * @param {number} index - The index of the class name.
    * @returns {string|null} The class name at the index or null if not found.
    * @throws {TypeError} If the index is not a number.
@@ -1600,12 +1633,12 @@ class TinyHtml {
    * @throws {TypeError} If the index is not a number.
    */
   classItem(index) {
-    return TinyHtml.classItem(this.getHtmlElement('classItem'), index);
+    return TinyHtml.classItem(this.getElement('classItem'), index);
   }
 
   /**
    * Toggles a class name on the element with an optional force boolean.
-   * @param {HTMLElement} el - Target element.
+   * @param {Element} el - Target element.
    * @param {string} token - The class name to toggle.
    * @param {boolean} force - If true, adds the class; if false, removes it.
    * @returns {boolean} Whether the class is present after the toggle.
@@ -1626,12 +1659,12 @@ class TinyHtml {
    * @throws {TypeError} If token is not a string or force is not a boolean.
    */
   toggleClass(token, force) {
-    return TinyHtml.toggleClass(this.getHtmlElement('toggleClass'), token, force);
+    return TinyHtml.toggleClass(this.getElement('toggleClass'), token, force);
   }
 
   /**
    * Checks if the element contains the given class name.
-   * @param {HTMLElement} el - Target element.
+   * @param {Element} el - Target element.
    * @param {string} token - The class name to check.
    * @returns {boolean} True if the class is present, false otherwise.
    * @throws {TypeError} If token is not a string.
@@ -1649,12 +1682,12 @@ class TinyHtml {
    * @throws {TypeError} If token is not a string.
    */
   hasClass(token) {
-    return TinyHtml.hasClass(this.getHtmlElement('hasClass'), token);
+    return TinyHtml.hasClass(this.getElement('hasClass'), token);
   }
 
   /**
    * Returns the number of classes applied to the element.
-   * @param {HTMLElement} el - Target element.
+   * @param {Element} el - Target element.
    * @returns {number} The number of classes.
    */
   static classLength(el) {
@@ -1667,12 +1700,12 @@ class TinyHtml {
    * @returns {number} The number of classes.
    */
   classLength() {
-    return TinyHtml.classLength(this.getHtmlElement('classLength'));
+    return TinyHtml.classLength(this.getElement('classLength'));
   }
 
   /**
    * Returns all class names as an array of strings.
-   * @param {HTMLElement} el - Target element.
+   * @param {Element} el - Target element.
    * @returns {string[]} An array of class names.
    */
   static classList(el) {
@@ -1685,14 +1718,14 @@ class TinyHtml {
    * @returns {string[]} An array of class names.
    */
   classList() {
-    return TinyHtml.classList(this.getHtmlElement('classList'));
+    return TinyHtml.classList(this.getElement('classList'));
   }
 
   /////////////////////////////////////////
 
   /**
    * Returns the tag name of the element.
-   * @param {HTMLElement} el - Target element.
+   * @param {Element} el - Target element.
    * @returns {string} The tag name in uppercase.
    */
   static tagName(el) {
@@ -1705,12 +1738,12 @@ class TinyHtml {
    * @returns {string} The tag name in uppercase.
    */
   tagName() {
-    return TinyHtml.tagName(this.getHtmlElement('tagName'));
+    return TinyHtml.tagName(this.getElement('tagName'));
   }
 
   /**
    * Returns the ID of the element.
-   * @param {HTMLElement} el - Target element.
+   * @param {Element} el - Target element.
    * @returns {string} The element's ID.
    */
   static id(el) {
@@ -1723,12 +1756,12 @@ class TinyHtml {
    * @returns {string} The element's ID.
    */
   id() {
-    return TinyHtml.id(this.getHtmlElement('id'));
+    return TinyHtml.id(this.getElement('id'));
   }
 
   /**
    * Returns the text content of the element.
-   * @param {HTMLElement} el - Target element.
+   * @param {Element} el - Target element.
    * @returns {string|null} The text content or null if none.
    */
   static text(el) {
@@ -1741,7 +1774,7 @@ class TinyHtml {
    * @returns {string|null} The text content or null if none.
    */
   text() {
-    return TinyHtml.text(this.getHtmlElement('text'));
+    return TinyHtml.text(this.getElement('text'));
   }
 
   /** @readonly */
@@ -2176,13 +2209,13 @@ class TinyHtml {
   /**
    * Registers an event listener on the specified element.
    *
-   * @param {HTMLElement|Window|Document} el - The target to listen on.
+   * @param {ConstructorElValues} el - The target to listen on.
    * @param {string} event - The event type (e.g. 'click', 'keydown').
    * @param {EventRegistryHandle} handler - The callback function to run on event.
    * @param {EventRegistryOptions} [options] - Optional event listener options.
    */
   static on(el, event, handler, options) {
-    TinyHtml._isElement(el, 'on', true, true);
+    TinyHtml._isValidElem(el, 'on', true, true);
     el.addEventListener(event, handler, options);
 
     if (!__eventRegistry.has(el)) __eventRegistry.set(el, {});
@@ -2206,13 +2239,13 @@ class TinyHtml {
   /**
    * Registers an event listener that runs only once, then is removed.
    *
-   * @param {HTMLElement|Window|Document} el - The target to listen on.
+   * @param {ConstructorElValues} el - The target to listen on.
    * @param {string} event - The event type (e.g. 'click', 'keydown').
    * @param {EventRegistryHandle} handler - The callback function to run on event.
    * @param {EventRegistryOptions} [options={}] - Optional event listener options.
    */
   static once(el, event, handler, options = {}) {
-    TinyHtml._isElement(el, 'once', true, true);
+    TinyHtml._isValidElem(el, 'once', true, true);
     /** @type {EventRegistryHandle} e */
     const wrapped = (e) => {
       TinyHtml.off(el, event, wrapped);
@@ -2241,13 +2274,13 @@ class TinyHtml {
   /**
    * Removes a specific event listener from an element.
    *
-   * @param {HTMLElement|Window|Document} el - The target element.
+   * @param {ConstructorElValues} el - The target element.
    * @param {string} event - The event type.
    * @param {EventRegistryHandle} handler - The function originally bound to the event.
    * @param {boolean|EventListenerOptions} [options] - Optional listener options.
    */
   static off(el, event, handler, options) {
-    TinyHtml._isElement(el, 'off', true, true);
+    TinyHtml._isValidElem(el, 'off', true, true);
     el.removeEventListener(event, handler, options);
 
     const events = __eventRegistry.get(el);
@@ -2271,11 +2304,11 @@ class TinyHtml {
   /**
    * Removes all event listeners of a specific type from the element.
    *
-   * @param {HTMLElement|Window|Document} el - The target element.
+   * @param {ConstructorElValues} el - The target element.
    * @param {string} event - The event type to remove (e.g. 'click').
    */
   static offAll(el, event) {
-    TinyHtml._isElement(el, 'offAll', true, true);
+    TinyHtml._isValidElem(el, 'offAll', true, true);
     const events = __eventRegistry.get(el);
     if (events && events[event]) {
       for (const entry of events[event]) {
@@ -2297,12 +2330,12 @@ class TinyHtml {
   /**
    * Removes all event listeners of all types from the element.
    *
-   * @param {HTMLElement|Window|Document} el - The target element.
+   * @param {ConstructorElValues} el - The target element.
    * @param {((handler: EventListenerOrEventListenerObject, event: string) => boolean)|null} [filterFn=null] -
    *        Optional filter function to selectively remove specific handlers.
    */
   static offAllTypes(el, filterFn = null) {
-    TinyHtml._isElement(el, 'offAllTypes', true, true);
+    TinyHtml._isValidElem(el, 'offAllTypes', true, true);
     const events = __eventRegistry.get(el);
     if (!events) return;
 
@@ -2330,7 +2363,7 @@ class TinyHtml {
   /**
    * Triggers all handlers associated with a specific event on the given element.
    *
-   * @param {ConstructorElValues} el - Target element where the event should be triggered.
+   * @param {EventTarget} el - Target element where the event should be triggered.
    * @param {string} event - Name of the event to trigger.
    * @param {Event|CustomEvent|Object} [payload] - Optional event object or data to pass.
    */
@@ -2372,7 +2405,7 @@ class TinyHtml {
 
   /**
    * Get an attribute on an element.
-   * @param {HTMLElement} el
+   * @param {Element} el
    * @param {string} name
    * @returns {string|null}
    */
@@ -2387,12 +2420,12 @@ class TinyHtml {
    * @returns {string|null}
    */
   attr(name) {
-    return TinyHtml.attr(this.getHtmlElement('attr'), name);
+    return TinyHtml.attr(this.getElement('attr'), name);
   }
 
   /**
    * Set an attribute on an element.
-   * @param {HTMLElement} el
+   * @param {Element} el
    * @param {string} name
    * @param {string|null} [value=null]
    */
@@ -2408,12 +2441,12 @@ class TinyHtml {
    * @param {string|null} [value=null]
    */
   setAttr(name, value) {
-    return TinyHtml.setAttr(this.getHtmlElement('setAttr'), name, value);
+    return TinyHtml.setAttr(this.getElement('setAttr'), name, value);
   }
 
   /**
    * Remove attribute(s) from an element.
-   * @param {HTMLElement} el
+   * @param {Element} el
    * @param {string} name Space-separated list of attributes.
    */
   static removeAttr(el, name) {
@@ -2426,12 +2459,12 @@ class TinyHtml {
    * @param {string} name Space-separated list of attributes.
    */
   removeAttr(name) {
-    return TinyHtml.removeAttr(this.getHtmlElement('removeAttr'), name);
+    return TinyHtml.removeAttr(this.getElement('removeAttr'), name);
   }
 
   /**
    * Check if an attribute exists on an element.
-   * @param {HTMLElement} el
+   * @param {Element} el
    * @param {string} name
    * @returns {boolean}
    */
@@ -2446,12 +2479,12 @@ class TinyHtml {
    * @returns {boolean}
    */
   hasAttr(name) {
-    return TinyHtml.hasAttr(this.getHtmlElement('hasAttr'), name);
+    return TinyHtml.hasAttr(this.getElement('hasAttr'), name);
   }
 
   /**
    * Check if a property exists.
-   * @param {HTMLElement} el
+   * @param {Element} el
    * @param {string} name
    * @returns {boolean}
    */
@@ -2469,12 +2502,12 @@ class TinyHtml {
    * @returns {boolean}
    */
   hasProp(name) {
-    return TinyHtml.hasProp(this.getHtmlElement('hasProp'), name);
+    return TinyHtml.hasProp(this.getElement('hasProp'), name);
   }
 
   /**
    * Set a property on an element.
-   * @param {HTMLElement} el
+   * @param {Element} el
    * @param {string} name
    */
   static addProp(el, name) {
@@ -2490,12 +2523,12 @@ class TinyHtml {
    * @param {string} name
    */
   addProp(name) {
-    return TinyHtml.addProp(this.getHtmlElement('addProp'), name);
+    return TinyHtml.addProp(this.getElement('addProp'), name);
   }
 
   /**
    * Remove a property from an element.
-   * @param {HTMLElement} el
+   * @param {Element} el
    * @param {string} name
    */
   static removeProp(el, name) {
@@ -2511,12 +2544,12 @@ class TinyHtml {
    * @param {string} name
    */
   removeProp(name) {
-    return TinyHtml.removeProp(this.getHtmlElement('removeProp'), name);
+    return TinyHtml.removeProp(this.getElement('removeProp'), name);
   }
 
   /**
    * Toggle a boolean property.
-   * @param {HTMLElement} el
+   * @param {Element} el
    * @param {string} name
    * @param {boolean} [force]
    */
@@ -2537,7 +2570,7 @@ class TinyHtml {
    * @param {boolean} [force]
    */
   toggleProp(name, force) {
-    return TinyHtml.toggleProp(this.getHtmlElement('toggleProp'), name, force);
+    return TinyHtml.toggleProp(this.getElement('toggleProp'), name, force);
   }
 
   /////////////////////////////////////////////////////
@@ -2555,13 +2588,13 @@ class TinyHtml {
    * Removes the element from the DOM.
    */
   remove() {
-    return TinyHtml.remove(this.getHtmlElement('remove'));
+    return TinyHtml.remove(this.getElement('remove'));
   }
 
   /**
    * Returns the index of the first element within its parent or relative to a selector/element.
    *
-   * @param {HTMLElement} el - The element target
+   * @param {Element} el - The element target
    * @param {string|Element|null} [elem] - Optional target to compare index against.
    * @returns {number}
    */
@@ -2587,7 +2620,7 @@ class TinyHtml {
    * @returns {number}
    */
   index(elem) {
-    return TinyHtml.index(this.getHtmlElement('index'), elem);
+    return TinyHtml.index(this.getElement('index'), elem);
   }
 }
 
