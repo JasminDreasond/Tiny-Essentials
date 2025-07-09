@@ -210,127 +210,6 @@ class TinyHtml {
   //////////////////////////////////////////////////////////////////
 
   /**
-   * Validates whether the given object is an Element or optionally a Window.
-   * Used internally for argument safety checks.
-   *
-   * @param {*} el - The object to test.
-   * @param {string} where - The context/method name using this validation.
-   * @param {boolean} [needsWindow=false] - If true, allows Window objects as valid.
-   * @param {boolean} [canDocument=false] - If true, allows Document objects as valid.
-   * @throws {TypeError} If `where` is not a string or `needsWindow` is not a boolean.
-   * @readonly
-   */
-  static _isValidElem(el, where, needsWindow = false, canDocument = false) {
-    if (typeof where !== 'string')
-      throw new TypeError('[TinyHtml] "where" in _isValidElem() must be a string.');
-    if (typeof needsWindow !== 'boolean')
-      throw new TypeError('[TinyHtml] "needsWindow" in _isValidElem() must be a boolean.');
-    if (
-      !(el instanceof Element) &&
-      (!needsWindow || !(el instanceof Window)) &&
-      ((!canDocument && el instanceof Document) || (canDocument && !(el instanceof Document)))
-    )
-      throw new Error(`[TinyHtml] Invalid Element in ${where}().`);
-  }
-
-  /**
-   * Validates whether the given object is an Element or optionally a Window.
-   * Used internally for argument safety checks.
-   *
-   * @param {string} where - The context/method name using this validation.
-   * @param {boolean} [needsWindow=false] - If true, allows Window objects as valid.
-   * @param {boolean} [canDocument=false] - If true, allows Document objects as valid.
-   * @throws {TypeError} If `where` is not a string or `needsWindow` is not a boolean.
-   * @readonly
-   */
-  _isValidElem(where, needsWindow, canDocument) {
-    return TinyHtml._isValidElem(this.#el, where, needsWindow, canDocument);
-  }
-
-  /**
-   * Validates whether the given object is an Document.
-   * Used internally for argument safety checks.
-   *
-   * @param {*} el - The object to test.
-   * @param {string} where - The context/method name using this validation.
-   * @throws {TypeError} If `where` is not a string.
-   * @readonly
-   */
-  static _isDocument(el, where) {
-    if (typeof where !== 'string')
-      throw new TypeError('[TinyHtml] "where" in _isDocument() must be a string.');
-    if (!(el instanceof Document)) throw new Error(`[TinyHtml] Invalid Document in ${where}().`);
-  }
-
-  /**
-   * Validates whether the given object is an Document.
-   * Used internally for argument safety checks.
-   *
-   * @param {string} where - The context/method name using this validation.
-   * @throws {TypeError} If `where` is not a string.
-   * @readonly
-   */
-  _isDocument(where) {
-    return TinyHtml._isDocument(this.#el, where);
-  }
-
-  /**
-   * Validates whether the given object is an Element.
-   * Used internally for argument safety checks.
-   *
-   * @param {*} el - The object to test.
-   * @param {string} where - The context/method name using this validation.
-   * @throws {TypeError} If `where` is not a string.
-   * @readonly
-   */
-  static _isElement(el, where) {
-    if (typeof where !== 'string')
-      throw new TypeError('[TinyHtml] "where" in _isElement() must be a string.');
-    if (!(el instanceof Element)) throw new Error(`[TinyHtml] Invalid Element in ${where}().`);
-  }
-
-  /**
-   * Validates whether the given object is an Element.
-   * Used internally for argument safety checks.
-   *
-   * @param {string} where - The context/method name using this validation.
-   * @throws {TypeError} If `where` is not a string.
-   * @readonly
-   */
-  _isElement(where) {
-    return TinyHtml._isElement(this.#el, where);
-  }
-
-  /**
-   * Internal utility to validate if a given element is a valid HTMLElement.
-   * Throws an error if the element is not an instance of HTMLElement.
-   *
-   * @param {*} el - The element to validate.
-   * @param {string} where - The method or context name where validation is being called.
-   * @throws {TypeError} If `where` is not a string.
-   * @throws {Error} If the element is not an HTMLElement.
-   * @readonly
-   */
-  static _isHtmlElement(el, where) {
-    if (typeof where !== 'string')
-      throw new TypeError('[TinyHtml] "where" in _isHtmlElement() must be a string.');
-    if (!(el instanceof HTMLElement)) throw new Error(`[TinyHtml] Invalid Element in ${where}().`);
-  }
-
-  /**
-   * Internal utility to validate if a given element is a valid HTMLElement.
-   * Throws an error if the element is not an instance of HTMLElement.
-   *
-   * @param {string} where - The method or context name where validation is being called.
-   * @throws {TypeError} If `where` is not a string.
-   * @throws {Error} If the element is not an HTMLElement.
-   * @readonly
-   */
-  _isHtmlElement(where) {
-    return TinyHtml._isHtmlElement(this.#el, where);
-  }
-
-  /**
    * Internal helper to validate and return the HTMLElement.
    * Throws an error if the element is invalid.
    *
@@ -339,43 +218,11 @@ class TinyHtml {
    * @throws {TypeError} If `where` is not a string.
    */
   getHtmlElement(where) {
-    this._isHtmlElement(where);
-    return /** @type {HTMLElement} */ (this.#el);
-  }
-
-  /**
-   * Internal utility to validate if a given element is a valid value input element.
-   * Throws an error if the element is not an instance of a supported input type.
-   *
-   * @param {*} el - The element to validate.
-   * @param {string} where - The method or context name where validation is being called.
-   * @throws {TypeError} If `where` is not a string.
-   * @throws {Error} If the element is not a valid value input element.
-   * @readonly
-   */
-  static _isValElement(el, where) {
     if (typeof where !== 'string')
-      throw new TypeError('[TinyHtml] "where" in _isValElement() must be a string.');
-    if (
-      !(el instanceof HTMLInputElement) &&
-      !(el instanceof HTMLSelectElement) &&
-      !(el instanceof HTMLTextAreaElement) &&
-      !(el instanceof HTMLOptionElement)
-    )
-      throw new Error(`[TinyHtml] Invalid Value Element in ${where}().`);
-  }
-
-  /**
-   * Internal utility to validate if a given element is a valid value input element.
-   * Throws an error if the element is not an instance of a supported input type.
-   *
-   * @param {string} where - The method or context name where validation is being called.
-   * @throws {TypeError} If `where` is not a string.
-   * @throws {Error} If the element is not a valid value input element.
-   * @readonly
-   */
-  _isValElement(where) {
-    return TinyHtml._isValElement(this.#el, where);
+      throw new TypeError('[TinyHtml] "where" in getHtmlElement() must be a string.');
+    if (!(this.#el instanceof HTMLElement))
+      throw new Error(`[TinyHtml] Invalid HtmlElement in ${where}().`);
+    return /** @type {HTMLElement} */ (this.#el);
   }
 
   /**
@@ -387,7 +234,15 @@ class TinyHtml {
    * @throws {TypeError} If `where` is not a string.
    */
   getValElement(where) {
-    this._isValElement(where);
+    if (typeof where !== 'string')
+      throw new TypeError('[TinyHtml] "where" in getValElement() must be a string.');
+    if (
+      !(this.#el instanceof HTMLInputElement) &&
+      !(this.#el instanceof HTMLSelectElement) &&
+      !(this.#el instanceof HTMLTextAreaElement) &&
+      !(this.#el instanceof HTMLOptionElement)
+    )
+      throw new Error(`[TinyHtml] Invalid Value Element in ${where}().`);
     return /** @type {InputElement} */ (this.#el);
   }
 
