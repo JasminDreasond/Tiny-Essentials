@@ -378,6 +378,48 @@ class TinyHtml {
   //////////////////////////////////////////////////////
 
   /**
+   * @param {TinyElement|TinyElement[]} elems
+   * @param {string} where
+   * @param {any} TheTinyElement
+   * @param {string} elemName
+   * @returns {Element[]}
+   * @readonly
+   */
+  static _preElemsTemplate(elems, where, TheTinyElement, elemName) {
+    /** @param {TinyElement[]} item */
+    const checkElement = (item) =>
+      item.map((elem) => {
+        const result = elem instanceof TinyHtml ? elem.getElement(where) : elem;
+        if (!(result instanceof TheTinyElement))
+          throw new Error(`[TinyHtml] Invalid ${elemName} in ${where}().`);
+        return result;
+      });
+    if (!Array.isArray(elems)) return checkElement([elems]);
+    return checkElement(elems);
+  }
+
+  /**
+   * @param {TinyElement|TinyElement[]} elems
+   * @param {string} where
+   * @param {any} TheTinyElement
+   * @param {string} elemName
+   * @returns {Element | null}
+   * @readonly
+   */
+  static _preElemTemplate(elems, where, TheTinyElement, elemName) {
+    /** @param {TinyElement[]} item */
+    const checkElement = (item) =>
+      item.map((elem) => {
+        const result = elem instanceof TinyHtml ? elem.getElement(where) : elem;
+        if (!(result instanceof TheTinyElement))
+          throw new Error(`[TinyHtml] Invalid ${elemName} in ${where}().`);
+        return result;
+      })[0] || null;
+    if (!Array.isArray(elems)) return checkElement([elems]);
+    return checkElement(elems);
+  }
+
+  /**
    * Ensures the input is returned as an array.
    * Useful to normalize operations across multiple or single elements.
    *
@@ -387,16 +429,7 @@ class TinyHtml {
    * @readonly
    */
   static _preElems(elems, where) {
-    /** @param {TinyElement[]} item */
-    const checkElement = (item) =>
-      item.map((elem) => {
-        const result = elem instanceof TinyHtml ? elem.getElement(where) : elem;
-        if (!(result instanceof Element))
-          throw new Error(`[TinyHtml] Invalid Element in ${where}().`);
-        return result;
-      });
-    if (!Array.isArray(elems)) return checkElement([elems]);
-    return checkElement(elems);
+    return TinyHtml._preElemsTemplate(elems, where, Element, 'Element');
   }
 
   /**
@@ -409,16 +442,7 @@ class TinyHtml {
    * @readonly
    */
   static _preElem(elems, where) {
-    /** @param {TinyElement[]} item */
-    const checkElement = (item) =>
-      item.map((elem) => {
-        const result = elem instanceof TinyHtml ? elem.getElement(where) : elem;
-        if (!(result instanceof Element))
-          throw new Error(`[TinyHtml] Invalid Element in ${where}().`);
-        return result;
-      })[0] || null;
-    if (!Array.isArray(elems)) return checkElement([elems]);
-    return checkElement(elems);
+    return TinyHtml._preElemTemplate(elems, where, Element, 'Element');
   }
 
   /**
@@ -1564,7 +1588,7 @@ class TinyHtml {
    * @type {(el: Element, ...tokens: string[]) => void} - One or more class names to add.
    */
   static addClass(el, ...args) {
-    TinyHtml._isHtmlElement(el, 'addClass');
+    TinyHtml._isElement(el, 'addClass');
     el.classList.add(...args);
   }
 
@@ -1581,7 +1605,7 @@ class TinyHtml {
    * @type {(el: Element, ...tokens: string[]) => void} - One or more class names to remove.
    */
   static removeClass(el, ...args) {
-    TinyHtml._isHtmlElement(el, 'removeClass');
+    TinyHtml._isElement(el, 'removeClass');
     el.classList.remove(...args);
   }
 
@@ -1602,7 +1626,7 @@ class TinyHtml {
    * @throws {TypeError} If either argument is not a string.
    */
   static replaceClass(el, token, newToken) {
-    TinyHtml._isHtmlElement(el, 'replaceClass');
+    TinyHtml._isElement(el, 'replaceClass');
     if (typeof token !== 'string') throw new TypeError('The "token" parameter must be a string.');
     if (typeof newToken !== 'string')
       throw new TypeError('The "newToken" parameter must be a string.');
@@ -1628,7 +1652,7 @@ class TinyHtml {
    * @throws {TypeError} If the index is not a number.
    */
   static classItem(el, index) {
-    TinyHtml._isHtmlElement(el, 'classItem');
+    TinyHtml._isElement(el, 'classItem');
     if (typeof index !== 'number') throw new TypeError('The "index" parameter must be a number.');
     return el.classList.item(index);
   }
@@ -1652,7 +1676,7 @@ class TinyHtml {
    * @throws {TypeError} If token is not a string or force is not a boolean.
    */
   static toggleClass(el, token, force) {
-    TinyHtml._isHtmlElement(el, 'toggleClass');
+    TinyHtml._isElement(el, 'toggleClass');
     if (typeof token !== 'string') throw new TypeError('The "token" parameter must be a string.');
     if (typeof force !== 'boolean') throw new TypeError('The "force" parameter must be a boolean.');
     return el.classList.toggle(token, force);
@@ -1677,7 +1701,7 @@ class TinyHtml {
    * @throws {TypeError} If token is not a string.
    */
   static hasClass(el, token) {
-    TinyHtml._isHtmlElement(el, 'hasClass');
+    TinyHtml._isElement(el, 'hasClass');
     if (typeof token !== 'string') throw new TypeError('The "token" parameter must be a string.');
     return el.classList.contains(token);
   }
@@ -1698,7 +1722,7 @@ class TinyHtml {
    * @returns {number} The number of classes.
    */
   static classLength(el) {
-    TinyHtml._isHtmlElement(el, 'classLength');
+    TinyHtml._isElement(el, 'classLength');
     return el.classList.length;
   }
 
@@ -1716,7 +1740,7 @@ class TinyHtml {
    * @returns {string[]} An array of class names.
    */
   static classList(el) {
-    TinyHtml._isHtmlElement(el, 'classList');
+    TinyHtml._isElement(el, 'classList');
     return el.classList.values().toArray();
   }
 
@@ -1736,7 +1760,7 @@ class TinyHtml {
    * @returns {string} The tag name in uppercase.
    */
   static tagName(el) {
-    TinyHtml._isHtmlElement(el, 'tagName');
+    TinyHtml._isElement(el, 'tagName');
     return el.tagName;
   }
 
@@ -1754,7 +1778,7 @@ class TinyHtml {
    * @returns {string} The element's ID.
    */
   static id(el) {
-    TinyHtml._isHtmlElement(el, 'id');
+    TinyHtml._isElement(el, 'id');
     return el.id;
   }
 
@@ -1772,7 +1796,7 @@ class TinyHtml {
    * @returns {string|null} The text content or null if none.
    */
   static text(el) {
-    TinyHtml._isHtmlElement(el, 'text');
+    TinyHtml._isElement(el, 'text');
     return el.textContent;
   }
 
@@ -2417,7 +2441,7 @@ class TinyHtml {
    * @returns {string|null}
    */
   static attr(el, name) {
-    TinyHtml._isHtmlElement(el, 'attr');
+    TinyHtml._isElement(el, 'attr');
     return el.getAttribute(name);
   }
 
@@ -2437,7 +2461,7 @@ class TinyHtml {
    * @param {string|null} [value=null]
    */
   static setAttr(el, name, value = null) {
-    TinyHtml._isHtmlElement(el, 'setAttr');
+    TinyHtml._isElement(el, 'setAttr');
     if (value === null) el.removeAttribute(name);
     else el.setAttribute(name, value);
   }
@@ -2457,7 +2481,7 @@ class TinyHtml {
    * @param {string} name Space-separated list of attributes.
    */
   static removeAttr(el, name) {
-    TinyHtml._isHtmlElement(el, 'removeAttr');
+    TinyHtml._isElement(el, 'removeAttr');
     el.removeAttribute(name);
   }
 
@@ -2476,7 +2500,7 @@ class TinyHtml {
    * @returns {boolean}
    */
   static hasAttr(el, name) {
-    TinyHtml._isHtmlElement(el, 'hasAttr');
+    TinyHtml._isElement(el, 'hasAttr');
     return el.hasAttribute(name);
   }
 
@@ -2496,7 +2520,7 @@ class TinyHtml {
    * @returns {boolean}
    */
   static hasProp(el, name) {
-    TinyHtml._isHtmlElement(el, 'hasProp');
+    TinyHtml._isElement(el, 'hasProp');
     // @ts-ignore
     const propName = TinyHtml._propFix[name] || name;
     // @ts-ignore
@@ -2518,7 +2542,7 @@ class TinyHtml {
    * @param {string} name
    */
   static addProp(el, name) {
-    TinyHtml._isHtmlElement(el, 'addProp');
+    TinyHtml._isElement(el, 'addProp');
     // @ts-ignore
     name = TinyHtml._propFix[name] || name;
     // @ts-ignore
@@ -2539,7 +2563,7 @@ class TinyHtml {
    * @param {string} name
    */
   static removeProp(el, name) {
-    TinyHtml._isHtmlElement(el, 'removeProp');
+    TinyHtml._isElement(el, 'removeProp');
     // @ts-ignore
     name = TinyHtml._propFix[name] || name;
     // @ts-ignore
@@ -2561,7 +2585,7 @@ class TinyHtml {
    * @param {boolean} [force]
    */
   static toggleProp(el, name, force) {
-    TinyHtml._isHtmlElement(el, 'toggleProp');
+    TinyHtml._isElement(el, 'toggleProp');
     // @ts-ignore
     const propName = TinyHtml._propFix[name] || name;
     // @ts-ignore
@@ -2587,7 +2611,7 @@ class TinyHtml {
    * @param {Element} el - The DOM element or selector to remove.
    */
   static remove(el) {
-    TinyHtml._isHtmlElement(el, 'remove');
+    TinyHtml._isElement(el, 'remove');
     el.remove();
   }
 
@@ -2601,20 +2625,22 @@ class TinyHtml {
   /**
    * Returns the index of the first element within its parent or relative to a selector/element.
    *
-   * @param {Element} el - The element target
-   * @param {string|Element|null} [el2] - Optional target to compare index against.
+   * @param {TinyElement} el - The element target
+   * @param {string|TinyElement|null} [el2] - Optional target to compare index against.
    * @returns {number}
    */
   static index(el, el2 = null) {
-    if (!el) return -1;
+    const elem = TinyHtml._preElem(el, 'index');
+    if (!elem) return -1;
 
     if (!el2) {
-      return Array.prototype.indexOf.call(el.parentNode?.children || [], el);
+      return Array.prototype.indexOf.call(elem.parentNode?.children || [], elem);
     }
 
-    if (typeof el2 === 'string') {
-      const matchEls = document.querySelectorAll(el2);
-      return Array.prototype.indexOf.call(matchEls, el);
+    if (el2) {
+      const matchEls =
+        typeof el2 === 'string' ? document.querySelectorAll(el2) : TinyHtml._preElems(el2, 'index');
+      return Array.prototype.indexOf.call(matchEls, elem);
     }
 
     return -1;
@@ -2623,7 +2649,7 @@ class TinyHtml {
   /**
    * Returns the index of the first element within its parent or relative to a selector/element.
    *
-   * @param {string|Element|null} [elem] - Optional target to compare index against.
+   * @param {string|TinyElement|null} [elem] - Optional target to compare index against.
    * @returns {number}
    */
   index(elem) {
