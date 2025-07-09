@@ -812,16 +812,16 @@ class TinyHtml {
   /**
    * Get all sibling elements excluding the given one.
    *
-   * @param {string} where
-   * @param {TinyNode} start
-   * @param {TinyNode} [exclude]
+   * @param {Node|null} start
+   * @param {Node|null} [exclude]
    * @returns {ChildNode[]}
    */
-  static _getSiblings(where, start, exclude) {
-    let st = TinyHtml._preNodeElemWithNull(start, where);
+  static _getSiblings(start, exclude) {
+    /** @type {Node|null} */
+    let st = start;
     const siblings = [];
     for (; st; st = st.nextSibling) {
-      if (st.nodeType === 1 && start !== exclude) {
+      if (st.nodeType === 1 && st !== exclude) {
         siblings.push(st);
       }
     }
@@ -903,11 +903,7 @@ class TinyHtml {
    */
   static siblings(el) {
     const elem = TinyHtml._preNodeElemWithNull(el, 'siblings');
-    return TinyHtml._getSiblings(
-      'siblings',
-      elem && elem.parentNode ? elem.parentNode.firstChild : null,
-      elem instanceof Node ? elem : undefined,
-    );
+    return TinyHtml._getSiblings(elem && elem.parentNode ? elem.parentNode.firstChild : null, elem);
   }
 
   /**
@@ -916,7 +912,7 @@ class TinyHtml {
    */
   static children(el) {
     const elem = TinyHtml._preNodeElemWithNull(el, 'children');
-    return TinyHtml._getSiblings('children', elem ? elem.firstChild : null);
+    return TinyHtml._getSiblings(elem ? elem.firstChild : null);
   }
 
   /**
