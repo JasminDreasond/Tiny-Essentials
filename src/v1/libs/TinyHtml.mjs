@@ -1102,6 +1102,91 @@ class TinyHtml {
     return obj != null && obj === obj.window;
   }
 
+  /////////////////////////////////////////////////////
+
+  /**
+   * Returns the full computed CSS styles for the given element.
+   *
+   * @param {TinyElement} el - The element to retrieve styles from.
+   * @returns {CSSStyleDeclaration} The computed style object for the element.
+   */
+  static css(el) {
+    const elem = TinyHtml._preElem(el, 'css');
+    return window.getComputedStyle(elem);
+  }
+
+  /**
+   * Returns the full computed CSS styles for the given element.
+   *
+   * @returns {CSSStyleDeclaration} The computed style object for the element.
+   */
+  css() {
+    // @ts-ignore
+    return TinyHtml.css(this.#el);
+  }
+
+  /**
+   * Returns the value of a specific computed CSS property from the given element as a string.
+   *
+   * @param {TinyElement} el - The element to retrieve the style property from.
+   * @param {string} prop - The name of the CSS property (camelCase or kebab-case).
+   * @returns {string|null} The value of the CSS property as a string, or null if not found or invalid.
+   */
+  static cssString(el, prop) {
+    const elem = TinyHtml._preElem(el, 'cssString');
+    if (typeof prop !== 'string') throw new TypeError('The prop must be a string.');
+    // @ts-ignore
+    const val = window.getComputedStyle(elem)[prop];
+    return typeof val === 'string' ? val : typeof val === 'number' ? val.toString() : null;
+  }
+
+  /**
+   * Returns the value of a specific computed CSS property from the given element as a string.
+   *
+   * @param {string} prop - The name of the CSS property (camelCase or kebab-case).
+   * @returns {string|null} The value of the CSS property as a string, or null if not found or invalid.
+   */
+  cssString(prop) {
+    // @ts-ignore
+    return TinyHtml.cssString(this.#el, prop);
+  }
+
+  /**
+   * Returns a subset of computed CSS styles based on the given list of properties.
+   *
+   * @param {TinyElement} el - The element to retrieve styles from.
+   * @param {string[]} prop - An array of CSS property names to retrieve.
+   * @returns {Partial<CSSStyleDeclaration>} An object containing the requested styles.
+   */
+  static cssList(el, prop) {
+    const elem = TinyHtml._preElem(el, 'cssList');
+    if (!Array.isArray(prop)) throw new TypeError('The prop must be an array of strings.');
+
+    const css = window.getComputedStyle(elem);
+    /** @type {Partial<CSSStyleDeclaration>} */
+    const result = {};
+
+    for (const p of prop) {
+      if (typeof p !== 'undefined') {
+        // @ts-ignore
+        result[p] = css.getPropertyValue(p);
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Returns a subset of computed CSS styles based on the given list of properties.
+   *
+   * @param {string[]} prop - An array of CSS property names to retrieve.
+   * @returns {Partial<CSSStyleDeclaration>} An object containing the requested styles.
+   */
+  cssList(prop) {
+    // @ts-ignore
+    return TinyHtml.cssList(this.#el, prop);
+  }
+
   /**
    * Returns the computed CSS float value of a property.
    * @param {TinyElement} el - The element to inspect.
@@ -1154,6 +1239,8 @@ class TinyHtml {
     // @ts-ignore
     return TinyHtml.cssFloats(this.#el, prop);
   }
+
+  //////////////////////////////////////////////////////////////////////
 
   /**
    * Sets the vertical scroll position of the window.
