@@ -472,18 +472,21 @@ class TinyHtml {
   /**
    * Filters an array of elements based on a selector, function, element, or array of elements.
    *
-   * @param {Element[]} elems
+   * @param {TinyElement|TinyElement[]} elems
    * @param {WinnowRequest} qualifier
+   * @param {string} where - The context/method name using this validation.
    * @param {boolean} not Whether to invert the result (used for .not())
    * @returns {Element[]}
    */
-  static winnow(elems, qualifier, not = false) {
+  static winnow(elems, qualifier, where, not = false) {
     if (typeof qualifier === 'function') {
-      return elems.filter((el, i) => !!qualifier.call(el, i, el) !== not);
+      return TinyHtml._preElems(elems, where).filter(
+        (el, i) => !!qualifier.call(el, i, el) !== not,
+      );
     }
 
     if (qualifier instanceof Element) {
-      return elems.filter((el) => (el === qualifier) !== not);
+      return TinyHtml._preElems(elems, where).filter((el) => (el === qualifier) !== not);
     }
 
     if (
@@ -492,11 +495,15 @@ class TinyHtml {
         // @ts-ignore
         qualifier.length != null)
     ) {
-      return elems.filter((el) => qualifier.includes(el) !== not);
+      return TinyHtml._preElems(elems, where).filter((el) => qualifier.includes(el) !== not);
     }
 
     // Assume it's a selector string
-    return TinyHtml.filter(elems, qualifier, not);
+    let selector = qualifier;
+    if (not) selector = `:not(${selector})`;
+    return TinyHtml._preElems(elems, where).filter(
+      (el) => el.nodeType === 1 && el.matches(selector),
+    );
   }
 
   /**
@@ -522,7 +529,7 @@ class TinyHtml {
    * @returns {Element[]}
    */
   static filterOnly(elems, selector) {
-    return TinyHtml.winnow(TinyHtml._preElems(elems, 'filterOnly'), selector, false);
+    return TinyHtml.winnow(elems, selector, 'filterOnly', false);
   }
 
   /**
@@ -533,7 +540,7 @@ class TinyHtml {
    * @returns {Element[]}
    */
   static not(elems, selector) {
-    return TinyHtml.winnow(TinyHtml._preElems(elems, 'not'), selector, true);
+    return TinyHtml.winnow(elems, selector, 'not', true);
   }
 
   /**
@@ -579,7 +586,7 @@ class TinyHtml {
    * @returns {boolean}
    */
   static is(elems, selector) {
-    return TinyHtml.winnow(TinyHtml._preElems(elems, 'is'), selector, false).length > 0;
+    return TinyHtml.winnow(elems, selector, 'is', false).length > 0;
   }
 
   /**
