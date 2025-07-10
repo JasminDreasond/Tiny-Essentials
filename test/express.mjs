@@ -173,22 +173,12 @@ const sources = ['src', 'dist'];
 const versions = ['legacy', 'v1'];
 for (const src of sources) {
   for (const v of versions) {
-    app.get(
-      new RegExp(`^\\/${src}\\/${v}\\/(.*)$`),
-      readFileUrl('application/javascript', ['.mjs', '.js'], `./${src}/${v}`, jsLoader),
-    );
-    app.get(
-      new RegExp(`^\\/${src}\\/${v}\\/(.*)$`),
-      readFileUrl('text/css', ['.css'], `./${src}/${v}`),
-    );
-    app.get(
-      new RegExp(`^\\/${src}\\/${v}\\/(.*)$`),
-      readFileUrl('text/css', ['.scss'], `./${src}/${v}/scss`, readScss),
-    );
-    app.get(
-      new RegExp(`^\\/${src}\\/${v}\\/(.*)$`),
-      readFileUrl('text/markdown', ['.md'], `./${src}/${v}`, mdLoader),
-    );
+    const tinyRegex = new RegExp(`^\\/${src}\\/${v}\\/(.*)$`);
+    const where = `./${src}/${v}`;
+    app.get(tinyRegex, readFileUrl('application/javascript', ['.mjs', '.js'], where, jsLoader));
+    app.get(tinyRegex, readFileUrl('text/css', ['.css'], where));
+    app.get(tinyRegex, readFileUrl('text/css', ['.scss'], where, readScss));
+    app.get(tinyRegex, readFileUrl('text/markdown', ['.md'], where, mdLoader));
   }
 }
 
