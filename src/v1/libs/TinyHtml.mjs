@@ -569,6 +569,7 @@ class TinyHtml {
    * @returns {Element[]}
    */
   static winnow(elems, qualifier, where, not = false) {
+    if (typeof not !== 'boolean') throw new TypeError('The "not" must be a boolean.');
     if (typeof qualifier === 'function') {
       return TinyHtml._preElems(elems, where).filter(
         (el, i) => !!qualifier.call(el, i, el) !== not,
@@ -922,6 +923,7 @@ class TinyHtml {
    * @returns {ChildNode[]}
    */
   static domDir(el, direction, until, where = 'domDir') {
+    if (typeof direction !== 'string') throw new TypeError('The "direction" must be a string.');
     let elem = TinyHtml._preNodeElemWithNull(el, where);
     const matched = [];
     // @ts-ignore
@@ -1171,6 +1173,26 @@ class TinyHtml {
    */
   contents() {
     return TinyHtml.contents(this);
+  }
+
+  /**
+   * Clone each element.
+   * @param {TinyNode|TinyNode[]} el
+   * @param {boolean} [deep=true]
+   * @returns {Node[]}
+   */
+  static clone(el, deep = true) {
+    if (typeof deep !== 'boolean') throw new TypeError('The "deep" must be a boolean.');
+    return TinyHtml._preNodeElems(el, 'clone').map((el) => el.cloneNode(deep));
+  }
+
+  /**
+   * Clone the element.
+   * @param {boolean} [deep=true]
+   * @returns {Node}
+   */
+  clone(deep) {
+    return TinyHtml.clone(this, deep)[0];
   }
 
   //////////////////////////////////////////////////////
@@ -1635,6 +1657,8 @@ class TinyHtml {
    * @returns {number}
    */
   static outerHeight(el, includeMargin = false) {
+    if (typeof includeMargin !== 'boolean')
+      throw new TypeError('The "includeMargin" must be a boolean.');
     const elem = TinyHtml._preElemAndWindow(el, 'outerHeight');
     return TinyHtml.getDimension(elem, 'height', includeMargin ? 'margin' : 'border');
   }
@@ -1655,6 +1679,8 @@ class TinyHtml {
    * @returns {number}
    */
   static outerWidth(el, includeMargin = false) {
+    if (typeof includeMargin !== 'boolean')
+      throw new TypeError('The "includeMargin" must be a boolean.');
     const elem = TinyHtml._preElemAndWindow(el, 'outerWidth');
     return TinyHtml.getDimension(elem, 'width', includeMargin ? 'margin' : 'border');
   }
@@ -2484,6 +2510,8 @@ class TinyHtml {
    * @throws {Error} If the element is not an HTMLInputElement or if the type handler is invalid.
    */
   static _getValByType(elem, type, where) {
+    if (typeof type !== 'string') throw new TypeError('The "type" must be a string.');
+    if (typeof where !== 'string') throw new TypeError('The "where" must be a string.');
     if (!(elem instanceof HTMLInputElement))
       throw new Error(`Provided element is not an HTMLInputElement in ${where}().`);
     if (typeof TinyHtml._valTypes[type] !== 'function')
@@ -2705,6 +2733,7 @@ class TinyHtml {
    * @param {EventRegistryOptions} [options] - Optional event listener options.
    */
   static on(el, event, handler, options) {
+    if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
     TinyHtml._preEventTargetElems(el, 'on').forEach((elem) => {
       elem.addEventListener(event, handler, options);
 
@@ -2736,6 +2765,7 @@ class TinyHtml {
    * @param {EventRegistryOptions} [options={}] - Optional event listener options.
    */
   static once(el, event, handler, options = {}) {
+    if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
     TinyHtml._preEventTargetElems(el, 'once').forEach((elem) => {
       /** @type {EventRegistryHandle} e */
       const wrapped = (e) => {
@@ -2772,6 +2802,7 @@ class TinyHtml {
    * @param {boolean|EventListenerOptions} [options] - Optional listener options.
    */
   static off(el, event, handler, options) {
+    if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
     TinyHtml._preEventTargetElems(el, 'off').forEach((elem) => {
       elem.removeEventListener(event, handler, options);
 
@@ -2801,6 +2832,7 @@ class TinyHtml {
    * @param {string} event - The event type to remove (e.g. 'click').
    */
   static offAll(el, event) {
+    if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
     TinyHtml._preEventTargetElems(el, 'offAll').forEach((elem) => {
       const events = __eventRegistry.get(elem);
       if (events && events[event]) {
@@ -2829,6 +2861,8 @@ class TinyHtml {
    *        Optional filter function to selectively remove specific handlers.
    */
   static offAllTypes(el, filterFn = null) {
+    if (filterFn !== null && typeof filterFn !== 'function')
+      throw new TypeError('The "filterFn" must be a function.');
     TinyHtml._preEventTargetElems(el, 'offAllTypes').forEach((elem) => {
       const events = __eventRegistry.get(elem);
       if (!events) return;
@@ -2863,6 +2897,7 @@ class TinyHtml {
    * @param {Event|CustomEvent|CustomEventInit} [payload] - Optional event object or data to pass.
    */
   static trigger(el, event, payload = {}) {
+    if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
     TinyHtml._preEventTargetElems(el, 'trigger').forEach((elem) => {
       const evt =
         payload instanceof Event || payload instanceof CustomEvent
@@ -2905,6 +2940,7 @@ class TinyHtml {
    * @returns {string|null}
    */
   static attr(el, name) {
+    if (typeof name !== 'string') throw new TypeError('The "name" must be a string.');
     const elem = TinyHtml._preElem(el, 'attr');
     return elem.getAttribute(name);
   }
@@ -2925,6 +2961,9 @@ class TinyHtml {
    * @param {string|null} [value=null]
    */
   static setAttr(el, name, value = null) {
+    if (typeof name !== 'string') throw new TypeError('The "name" must be a string.');
+    if (value !== null && typeof value !== 'string')
+      throw new TypeError('The "value" must be a string.');
     TinyHtml._preElems(el, 'setAttr').forEach((elem) => {
       if (value === null) elem.removeAttribute(name);
       else elem.setAttribute(name, value);
@@ -2946,6 +2985,7 @@ class TinyHtml {
    * @param {string} name Space-separated list of attributes.
    */
   static removeAttr(el, name) {
+    if (typeof name !== 'string') throw new TypeError('The "name" must be a string.');
     TinyHtml._preElems(el, 'removeAttr').forEach((elem) => elem.removeAttribute(name));
   }
 
@@ -2964,6 +3004,7 @@ class TinyHtml {
    * @returns {boolean}
    */
   static hasAttr(el, name) {
+    if (typeof name !== 'string') throw new TypeError('The "name" must be a string.');
     const elem = TinyHtml._preElem(el, 'hasAttr');
     return elem.hasAttribute(name);
   }
@@ -2984,6 +3025,7 @@ class TinyHtml {
    * @returns {boolean}
    */
   static hasProp(el, name) {
+    if (typeof name !== 'string') throw new TypeError('The "name" must be a string.');
     const elem = TinyHtml._preElem(el, 'hasProp');
     // @ts-ignore
     const propName = TinyHtml._propFix[name] || name;
@@ -3006,6 +3048,7 @@ class TinyHtml {
    * @param {string} name
    */
   static addProp(el, name) {
+    if (typeof name !== 'string') throw new TypeError('The "name" must be a string.');
     TinyHtml._preElems(el, 'addProp').forEach((elem) => {
       // @ts-ignore
       name = TinyHtml._propFix[name] || name;
@@ -3028,6 +3071,7 @@ class TinyHtml {
    * @param {string} name
    */
   static removeProp(el, name) {
+    if (typeof name !== 'string') throw new TypeError('The "name" must be a string.');
     TinyHtml._preElems(el, 'removeProp').forEach((elem) => {
       // @ts-ignore
       name = TinyHtml._propFix[name] || name;
@@ -3051,6 +3095,9 @@ class TinyHtml {
    * @param {boolean} [force]
    */
   static toggleProp(el, name, force) {
+    if (typeof name !== 'string') throw new TypeError('The "name" must be a string.');
+    if (typeof force !== 'undefined' && typeof force !== 'boolean')
+      throw new TypeError('The "force" must be a boolean.');
     TinyHtml._preElems(el, 'toggleProp').forEach((elem) => {
       // @ts-ignore
       const propName = TinyHtml._propFix[name] || name;
