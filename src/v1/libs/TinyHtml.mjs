@@ -2887,14 +2887,15 @@ class TinyHtml {
 
   /**
    * Set an attribute on an element.
-   * @param {TinyElement} el
+   * @param {TinyElement|TinyElement[]} el
    * @param {string} name
    * @param {string|null} [value=null]
    */
   static setAttr(el, name, value = null) {
-    const elem = TinyHtml._preElem(el, 'setAttr');
-    if (value === null) elem.removeAttribute(name);
-    else elem.setAttribute(name, value);
+    TinyHtml._preElems(el, 'setAttr').forEach((elem) => {
+      if (value === null) elem.removeAttribute(name);
+      else elem.setAttribute(name, value);
+    });
   }
 
   /**
@@ -2908,12 +2909,11 @@ class TinyHtml {
 
   /**
    * Remove attribute(s) from an element.
-   * @param {TinyElement} el
+   * @param {TinyElement|TinyElement[]} el
    * @param {string} name Space-separated list of attributes.
    */
   static removeAttr(el, name) {
-    const elem = TinyHtml._preElem(el, 'removeAttr');
-    elem.removeAttribute(name);
+    TinyHtml._preElems(el, 'removeAttr').forEach((elem) => elem.removeAttribute(name));
   }
 
   /**
@@ -2969,15 +2969,16 @@ class TinyHtml {
 
   /**
    * Set a property on an element.
-   * @param {TinyElement} el
+   * @param {TinyElement|TinyElement[]} el
    * @param {string} name
    */
   static addProp(el, name) {
-    const elem = TinyHtml._preElem(el, 'addProp');
-    // @ts-ignore
-    name = TinyHtml._propFix[name] || name;
-    // @ts-ignore
-    elem[name] = true;
+    TinyHtml._preElems(el, 'addProp').forEach((elem) => {
+      // @ts-ignore
+      name = TinyHtml._propFix[name] || name;
+      // @ts-ignore
+      elem[name] = true;
+    });
   }
 
   /**
@@ -2990,15 +2991,16 @@ class TinyHtml {
 
   /**
    * Remove a property from an element.
-   * @param {TinyElement} el
+   * @param {TinyElement|TinyElement[]} el
    * @param {string} name
    */
   static removeProp(el, name) {
-    const elem = TinyHtml._preElem(el, 'removeProp');
-    // @ts-ignore
-    name = TinyHtml._propFix[name] || name;
-    // @ts-ignore
-    elem[name] = false;
+    TinyHtml._preElems(el, 'removeProp').forEach((elem) => {
+      // @ts-ignore
+      name = TinyHtml._propFix[name] || name;
+      // @ts-ignore
+      elem[name] = false;
+    });
   }
 
   /**
@@ -3011,19 +3013,20 @@ class TinyHtml {
 
   /**
    * Toggle a boolean property.
-   * @param {TinyElement} el
+   * @param {TinyElement|TinyElement[]} el
    * @param {string} name
    * @param {boolean} [force]
    */
   static toggleProp(el, name, force) {
-    const elem = TinyHtml._preElem(el, 'toggleProp');
-    // @ts-ignore
-    const propName = TinyHtml._propFix[name] || name;
-    // @ts-ignore
-    const shouldEnable = force === undefined ? !elem[propName] : force;
-    // @ts-ignore
-    if (shouldEnable) TinyHtml.addProp(elem, name);
-    else TinyHtml.removeProp(elem, name);
+    TinyHtml._preElems(el, 'toggleProp').forEach((elem) => {
+      // @ts-ignore
+      const propName = TinyHtml._propFix[name] || name;
+      // @ts-ignore
+      const shouldEnable = force === undefined ? !elem[propName] : force;
+      // @ts-ignore
+      if (shouldEnable) TinyHtml.addProp(elem, name);
+      else TinyHtml.removeProp(elem, name);
+    });
   }
 
   /**
@@ -3039,11 +3042,10 @@ class TinyHtml {
 
   /**
    * Removes an element from the DOM.
-   * @param {TinyElement} el - The DOM element or selector to remove.
+   * @param {TinyElement|TinyElement[]} el - The DOM element or selector to remove.
    */
   static remove(el) {
-    const elem = TinyHtml._preElem(el, 'remove');
-    elem.remove();
+    TinyHtml._preElems(el, 'remove').forEach((elem) => elem.remove());
   }
 
   /**
