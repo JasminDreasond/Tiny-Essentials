@@ -2666,20 +2666,21 @@ class TinyHtml {
   /**
    * Registers an event listener on the specified element.
    *
-   * @param {TinyEventTarget} el - The target to listen on.
+   * @param {TinyEventTarget|TinyEventTarget[]} el - The target to listen on.
    * @param {string} event - The event type (e.g. 'click', 'keydown').
    * @param {EventRegistryHandle} handler - The callback function to run on event.
    * @param {EventRegistryOptions} [options] - Optional event listener options.
    */
   static on(el, event, handler, options) {
-    const elem = TinyHtml._preEventTargetElem(el, 'on');
-    elem.addEventListener(event, handler, options);
+    TinyHtml._preEventTargetElems(el, 'on').forEach((elem) => {
+      elem.addEventListener(event, handler, options);
 
-    if (!__eventRegistry.has(elem)) __eventRegistry.set(elem, {});
-    const events = __eventRegistry.get(elem);
-    if (!events) return;
-    if (!Array.isArray(events[event])) events[event] = [];
-    events[event].push({ handler, options });
+      if (!__eventRegistry.has(elem)) __eventRegistry.set(elem, {});
+      const events = __eventRegistry.get(elem);
+      if (!events) return;
+      if (!Array.isArray(events[event])) events[event] = [];
+      events[event].push({ handler, options });
+    });
   }
 
   /**
@@ -2696,25 +2697,26 @@ class TinyHtml {
   /**
    * Registers an event listener that runs only once, then is removed.
    *
-   * @param {TinyEventTarget} el - The target to listen on.
+   * @param {TinyEventTarget|TinyEventTarget[]} el - The target to listen on.
    * @param {string} event - The event type (e.g. 'click', 'keydown').
    * @param {EventRegistryHandle} handler - The callback function to run on event.
    * @param {EventRegistryOptions} [options={}] - Optional event listener options.
    */
   static once(el, event, handler, options = {}) {
-    const elem = TinyHtml._preEventTargetElem(el, 'once');
-    /** @type {EventRegistryHandle} e */
-    const wrapped = (e) => {
-      TinyHtml.off(elem, event, wrapped);
-      handler(e);
-    };
+    TinyHtml._preEventTargetElems(el, 'once').forEach((elem) => {
+      /** @type {EventRegistryHandle} e */
+      const wrapped = (e) => {
+        TinyHtml.off(elem, event, wrapped);
+        handler(e);
+      };
 
-    TinyHtml.on(
-      elem,
-      event,
-      wrapped,
-      typeof options === 'boolean' ? options : { ...options, once: true },
-    );
+      TinyHtml.on(
+        elem,
+        event,
+        wrapped,
+        typeof options === 'boolean' ? options : { ...options, once: true },
+      );
+    });
   }
 
   /**
@@ -2731,20 +2733,21 @@ class TinyHtml {
   /**
    * Removes a specific event listener from an element.
    *
-   * @param {TinyEventTarget} el - The target element.
+   * @param {TinyEventTarget|TinyEventTarget[]} el - The target element.
    * @param {string} event - The event type.
    * @param {EventRegistryHandle} handler - The function originally bound to the event.
    * @param {boolean|EventListenerOptions} [options] - Optional listener options.
    */
   static off(el, event, handler, options) {
-    const elem = TinyHtml._preEventTargetElem(el, 'off');
-    elem.removeEventListener(event, handler, options);
+    TinyHtml._preEventTargetElems(el, 'off').forEach((elem) => {
+      elem.removeEventListener(event, handler, options);
 
-    const events = __eventRegistry.get(elem);
-    if (events && events[event]) {
-      events[event] = events[event].filter((entry) => entry.handler !== handler);
-      if (events[event].length === 0) delete events[event];
-    }
+      const events = __eventRegistry.get(elem);
+      if (events && events[event]) {
+        events[event] = events[event].filter((entry) => entry.handler !== handler);
+        if (events[event].length === 0) delete events[event];
+      }
+    });
   }
 
   /**
@@ -2761,18 +2764,19 @@ class TinyHtml {
   /**
    * Removes all event listeners of a specific type from the element.
    *
-   * @param {TinyEventTarget} el - The target element.
+   * @param {TinyEventTarget|TinyEventTarget[]} el - The target element.
    * @param {string} event - The event type to remove (e.g. 'click').
    */
   static offAll(el, event) {
-    const elem = TinyHtml._preEventTargetElem(el, 'offAll');
-    const events = __eventRegistry.get(elem);
-    if (events && events[event]) {
-      for (const entry of events[event]) {
-        elem.removeEventListener(event, entry.handler, entry.options);
+    TinyHtml._preEventTargetElems(el, 'offAll').forEach((elem) => {
+      const events = __eventRegistry.get(elem);
+      if (events && events[event]) {
+        for (const entry of events[event]) {
+          elem.removeEventListener(event, entry.handler, entry.options);
+        }
+        delete events[event];
       }
-      delete events[event];
-    }
+    });
   }
 
   /**
@@ -2787,24 +2791,25 @@ class TinyHtml {
   /**
    * Removes all event listeners of all types from the element.
    *
-   * @param {TinyEventTarget} el - The target element.
+   * @param {TinyEventTarget|TinyEventTarget[]} el - The target element.
    * @param {((handler: EventListenerOrEventListenerObject, event: string) => boolean)|null} [filterFn=null] -
    *        Optional filter function to selectively remove specific handlers.
    */
   static offAllTypes(el, filterFn = null) {
-    const elem = TinyHtml._preEventTargetElem(el, 'offAllTypes');
-    const events = __eventRegistry.get(elem);
-    if (!events) return;
+    TinyHtml._preEventTargetElems(el, 'offAllTypes').forEach((elem) => {
+      const events = __eventRegistry.get(elem);
+      if (!events) return;
 
-    for (const event in events) {
-      for (const entry of events[event]) {
-        if (typeof filterFn !== 'function' || filterFn(entry.handler, event)) {
-          elem.removeEventListener(event, entry.handler, entry.options);
+      for (const event in events) {
+        for (const entry of events[event]) {
+          if (typeof filterFn !== 'function' || filterFn(entry.handler, event)) {
+            elem.removeEventListener(event, entry.handler, entry.options);
+          }
         }
       }
-    }
 
-    __eventRegistry.delete(elem);
+      __eventRegistry.delete(elem);
+    });
   }
 
   /**
@@ -2820,23 +2825,23 @@ class TinyHtml {
   /**
    * Triggers all handlers associated with a specific event on the given element.
    *
-   * @param {TinyEventTarget} el - Target element where the event should be triggered.
+   * @param {TinyEventTarget|TinyEventTarget[]} el - Target element where the event should be triggered.
    * @param {string} event - Name of the event to trigger.
    * @param {Event|CustomEvent|CustomEventInit} [payload] - Optional event object or data to pass.
    */
   static trigger(el, event, payload = {}) {
-    const elem = TinyHtml._preEventTargetElem(el, 'trigger');
+    TinyHtml._preEventTargetElems(el, 'trigger').forEach((elem) => {
+      const evt =
+        payload instanceof Event || payload instanceof CustomEvent
+          ? payload
+          : new CustomEvent(event, {
+              bubbles: true,
+              cancelable: true,
+              detail: payload,
+            });
 
-    const evt =
-      payload instanceof Event || payload instanceof CustomEvent
-        ? payload
-        : new CustomEvent(event, {
-            bubbles: true,
-            cancelable: true,
-            detail: payload,
-          });
-
-    elem.dispatchEvent(evt);
+      elem.dispatchEvent(evt);
+    });
   }
 
   /**
