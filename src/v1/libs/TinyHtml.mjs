@@ -318,6 +318,10 @@ class TinyHtml {
       return result;
     };
     if (!Array.isArray(elems)) return checkElement([elems]);
+    if (elems.length > 1)
+      throw new Error(
+        `[TinyHtml] Invalid element amount in ${where}() (Received ${elems.length}/1).`,
+      );
     return checkElement(elems);
   }
 
@@ -1817,20 +1821,21 @@ class TinyHtml {
 
   /**
    * Sets the vertical scroll position.
-   * @param {TinyElementAndWindow} el - Element or window.
+   * @param {TinyElementAndWindow|TinyElementAndWindow[]} el - Element or window.
    * @param {number} value - Scroll top value.
    */
   static setScrollTop(el, value) {
-    const elem = TinyHtml._preElemAndWindow(el, 'setScrollTop');
     if (typeof value !== 'number') throw new TypeError('ScrollTop value must be a number.');
-    if (TinyHtml.isWindow(elem)) {
-      elem.scrollTo(elem.pageXOffset, value);
-    } else if (elem.nodeType === 9) {
-      // @ts-ignore
-      elem.defaultView.scrollTo(elem.defaultView.pageXOffset, value);
-    } else {
-      elem.scrollTop = value;
-    }
+    TinyHtml._preElemsAndWindow(el, 'setScrollTop').forEach((elem) => {
+      if (TinyHtml.isWindow(elem)) {
+        elem.scrollTo(elem.pageXOffset, value);
+      } else if (elem.nodeType === 9) {
+        // @ts-ignore
+        elem.defaultView.scrollTo(elem.defaultView.pageXOffset, value);
+      } else {
+        elem.scrollTop = value;
+      }
+    });
   }
 
   /**
@@ -1843,20 +1848,21 @@ class TinyHtml {
 
   /**
    * Sets the horizontal scroll position.
-   * @param {TinyElementAndWindow} el - Element or window.
+   * @param {TinyElementAndWindow|TinyElementAndWindow[]} el - Element or window.
    * @param {number} value - Scroll left value.
    */
   static setScrollLeft(el, value) {
-    const elem = TinyHtml._preElemAndWindow(el, 'setScrollLeft');
     if (typeof value !== 'number') throw new TypeError('ScrollLeft value must be a number.');
-    if (TinyHtml.isWindow(elem)) {
-      elem.scrollTo(value, elem.pageYOffset);
-    } else if (elem.nodeType === 9) {
-      // @ts-ignore
-      elem.defaultView.scrollTo(value, elem.defaultView.pageYOffset);
-    } else {
-      elem.scrollLeft = value;
-    }
+    TinyHtml._preElemsAndWindow(el, 'setScrollLeft').forEach((elem) => {
+      if (TinyHtml.isWindow(elem)) {
+        elem.scrollTo(value, elem.pageYOffset);
+      } else if (elem.nodeType === 9) {
+        // @ts-ignore
+        elem.defaultView.scrollTo(value, elem.defaultView.pageYOffset);
+      } else {
+        elem.scrollLeft = value;
+      }
+    });
   }
 
   /**
@@ -1992,11 +1998,10 @@ class TinyHtml {
 
   /**
    * Adds one or more CSS class names to the element.
-   * @type {(el: TinyElement, ...tokens: string[]) => void} - One or more class names to add.
+   * @type {(el: TinyElement|TinyElement[], ...tokens: string[]) => void} - One or more class names to add.
    */
   static addClass(el, ...args) {
-    const elem = TinyHtml._preElem(el, 'addClass');
-    elem.classList.add(...args);
+    TinyHtml._preElems(el, 'addClass').forEach((elem) => elem.classList.add(...args));
   }
 
   /**
@@ -2009,11 +2014,10 @@ class TinyHtml {
 
   /**
    * Removes one or more CSS class names from the element.
-   * @type {(el: TinyElement, ...tokens: string[]) => void} - One or more class names to remove.
+   * @type {(el: TinyElement|TinyElement[], ...tokens: string[]) => void} - One or more class names to remove.
    */
   static removeClass(el, ...args) {
-    const elem = TinyHtml._preElem(el, 'removeClass');
-    elem.classList.remove(...args);
+    TinyHtml._preElems(el, 'removeClass').forEach((elem) => elem.classList.remove(...args));
   }
 
   /**
@@ -2026,18 +2030,22 @@ class TinyHtml {
 
   /**
    * Replaces an existing class name with a new one.
-   * @param {TinyElement} el - Target element.
+   * @param {TinyElement|TinyElement[]} el - Target element.
    * @param {string} token - The class name to be replaced.
    * @param {string} newToken - The new class name to apply.
-   * @returns {boolean} Whether the replacement was successful.
+   * @returns {boolean[]} Whether the replacement was successful.
    * @throws {TypeError} If either argument is not a string.
    */
   static replaceClass(el, token, newToken) {
-    const elem = TinyHtml._preElem(el, 'replaceClass');
     if (typeof token !== 'string') throw new TypeError('The "token" parameter must be a string.');
     if (typeof newToken !== 'string')
       throw new TypeError('The "newToken" parameter must be a string.');
-    return elem.classList.replace(token, newToken);
+    /** @type {boolean[]} */
+    const result = [];
+    TinyHtml._preElems(el, 'replaceClass').forEach((elem) =>
+      result.push(elem.classList.replace(token, newToken)),
+    );
+    return result;
   }
 
   /**
@@ -2048,7 +2056,7 @@ class TinyHtml {
    * @throws {TypeError} If either argument is not a string.
    */
   replaceClass(token, newToken) {
-    return TinyHtml.replaceClass(this, token, newToken);
+    return TinyHtml.replaceClass(this, token, newToken)[0];
   }
 
   /**
@@ -2076,17 +2084,22 @@ class TinyHtml {
 
   /**
    * Toggles a class name on the element with an optional force boolean.
-   * @param {TinyElement} el - Target element.
+   * @param {TinyElement|TinyElement[]} el - Target element.
    * @param {string} token - The class name to toggle.
-   * @param {boolean} force - If true, adds the class; if false, removes it.
-   * @returns {boolean} Whether the class is present after the toggle.
+   * @param {boolean} [force] - If true, adds the class; if false, removes it.
+   * @returns {boolean[]} Whether the class is present after the toggle.
    * @throws {TypeError} If token is not a string or force is not a boolean.
    */
   static toggleClass(el, token, force) {
-    const elem = TinyHtml._preElem(el, 'toggleClass');
     if (typeof token !== 'string') throw new TypeError('The "token" parameter must be a string.');
-    if (typeof force !== 'boolean') throw new TypeError('The "force" parameter must be a boolean.');
-    return elem.classList.toggle(token, force);
+    if (typeof force !== 'undefined' && typeof force !== 'boolean')
+      throw new TypeError('The "force" parameter must be a boolean.');
+    /** @type {boolean[]} */
+    const result = [];
+    TinyHtml._preElems(el, 'toggleClass').forEach((elem) =>
+      result.push(elem.classList.toggle(token, force)),
+    );
+    return result;
   }
 
   /**
@@ -2097,7 +2110,7 @@ class TinyHtml {
    * @throws {TypeError} If token is not a string or force is not a boolean.
    */
   toggleClass(token, force) {
-    return TinyHtml.toggleClass(this, token, force);
+    return TinyHtml.toggleClass(this, token, force)[0];
   }
 
   /**
@@ -2340,48 +2353,48 @@ class TinyHtml {
    * Sets the value of the current HTML value element (input, select, textarea, etc.).
    * Accepts strings, numbers, booleans or arrays of these values, or a callback function that computes them.
    *
-   * @param {TinyInputElement} el - Target element.
+   * @param {TinyInputElement|TinyInputElement[]} el - Target element.
    * @param {SetValValue|((el: InputElement, val: SetValValue) => SetValValue)} value - The value to assign or a function that returns it.
    * @throws {Error} If the computed value is not a valid string or boolean.
    */
   static setVal(el, value) {
-    const elem = TinyHtml._preInputElem(el, 'setVal');
+    TinyHtml._preInputElems(el, 'setVal').forEach((elem) => {
+      /**
+       * @param {SetValValueBase[]} array
+       * @param {(v: SetValValueBase, i: number) => SetValValueBase} callback
+       */
+      const mapArray = (array, callback) => {
+        const result = [];
+        for (let i = 0; i < array.length; i++) {
+          result.push(callback(array[i], i));
+        }
+        return result;
+      };
 
-    /**
-     * @param {SetValValueBase[]} array
-     * @param {(v: SetValValueBase, i: number) => SetValValueBase} callback
-     */
-    const mapArray = (array, callback) => {
-      const result = [];
-      for (let i = 0; i < array.length; i++) {
-        result.push(callback(array[i], i));
+      if (elem.nodeType !== 1) return;
+      /** @type {SetValValue} */
+      let valToSet = typeof value === 'function' ? value(elem, TinyHtml.val(elem)) : value;
+
+      if (valToSet == null) {
+        valToSet = '';
+      } else if (typeof valToSet === 'number') {
+        valToSet = String(valToSet);
+      } else if (Array.isArray(valToSet)) {
+        valToSet = mapArray(valToSet, (v) => (v == null ? '' : String(v)));
       }
-      return result;
-    };
 
-    if (elem.nodeType !== 1) return;
-    /** @type {SetValValue} */
-    let valToSet = typeof value === 'function' ? value(elem, TinyHtml.val(elem)) : value;
-
-    if (valToSet == null) {
-      valToSet = '';
-    } else if (typeof valToSet === 'number') {
-      valToSet = String(valToSet);
-    } else if (Array.isArray(valToSet)) {
-      valToSet = mapArray(valToSet, (v) => (v == null ? '' : String(v)));
-    }
-
-    // @ts-ignore
-    const hook = TinyHtml._valHooks[elem.type] || TinyHtml._valHooks[elem.nodeName.toLowerCase()];
-    if (
-      !hook ||
-      typeof hook.set !== 'function' ||
-      hook.set(elem, valToSet, 'value') === undefined
-    ) {
-      if (typeof valToSet !== 'string' && typeof valToSet !== 'boolean')
-        throw new Error(`Invalid setValue "${typeof valToSet}" value.`);
-      if (typeof valToSet === 'string') elem.value = valToSet;
-    }
+      // @ts-ignore
+      const hook = TinyHtml._valHooks[elem.type] || TinyHtml._valHooks[elem.nodeName.toLowerCase()];
+      if (
+        !hook ||
+        typeof hook.set !== 'function' ||
+        hook.set(elem, valToSet, 'value') === undefined
+      ) {
+        if (typeof valToSet !== 'string' && typeof valToSet !== 'boolean')
+          throw new Error(`Invalid setValue "${typeof valToSet}" value.`);
+        if (typeof valToSet === 'string') elem.value = valToSet;
+      }
+    });
   }
 
   /**
