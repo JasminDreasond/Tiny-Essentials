@@ -108,6 +108,20 @@
 const __eventRegistry = new WeakMap();
 
 /**
+ * A key-value store associated with a specific DOM element.
+ * Keys are strings, and values can be of any type.
+ *
+ * @typedef {Record<string, *>} ElementDataStore
+ */
+
+/**
+ * WeakMap to hold private data for elements
+ *
+ * @type {WeakMap<ConstructorElValues, ElementDataStore>}
+ */
+const __elementDataMap = new WeakMap();
+
+/**
  * @typedef {Object} HtmlElBoxSides
  * @property {number} x - Total horizontal size (left + right)
  * @property {number} y - Total vertical size (top + bottom)
@@ -761,6 +775,97 @@ class TinyHtml {
   isSameDom(elem) {
     // @ts-ignore
     return TinyHtml.isSameDom(this.#el, elem);
+  }
+
+  //////////////////////////////////////////////////////////////////
+
+  /** @type {ElementDataStore} */
+  _data = {};
+
+  /**
+   * Internal data selectors for accessing public or private data stores.
+   *
+   * @type {Record<string, (where: string, elem: TinyElement) => ElementDataStore>}
+   */
+  static _dataSelector = {
+    public: (where, el) => {
+      const elem = TinyHtml._preElem(el, where);
+      let data = __elementDataMap.get(elem);
+      if (!data) {
+        data = {};
+        __elementDataMap.set(elem, data);
+      }
+      return data;
+    },
+    private: (where, el) => {
+      if (!(el instanceof TinyHtml))
+        throw new Error(`Element must be a TinyHtml instance to execute ${where}().`);
+      return el._data;
+    },
+  };
+
+  /**
+   * Retrieves data associated with a DOM element.
+   *
+   * If a `key` is provided, the corresponding value is returned.
+   * If no `key` is given, a shallow copy of all stored data is returned.
+   *
+   * @param {TinyElement} el - The DOM element.
+   * @param {string|null} [key] - The specific key to retrieve from the data store.
+   * @param {boolean} [isPrivate=false] - Whether to access the private data store.
+   * @returns {ElementDataStore|undefined|any} - The stored value, all data, or undefined if the key doesn't exist.
+   */
+  static data(el, key, isPrivate = false) {
+    // Get or initialize the data object
+    const data = TinyHtml._dataSelector[!isPrivate ? 'public' : 'private']('data', el);
+
+    // Getter for all
+    if (key === undefined || key === null) return { ...data };
+
+    // Getter for specific key
+    if (typeof key !== 'string') throw new TypeError('The key must be a string.');
+    return data.hasOwnProperty(key) ? data[key] : undefined;
+  }
+
+  /**
+   * Retrieves data associated with a DOM element.
+   *
+   * If a `key` is provided, the corresponding value is returned.
+   * If no `key` is given, a shallow copy of all stored data is returned.
+   *
+   * @param {string} [key] - The specific key to retrieve from the data store.
+   * @param {boolean} [isPrivate=false] - Whether to access the private data store.
+   * @returns {ElementDataStore|undefined|any} - The stored value, all data, or undefined if the key doesn't exist.
+   */
+  data(key, isPrivate) {
+    return TinyHtml.data(this, key, isPrivate);
+  }
+
+  /**
+   * Stores a value associated with a specific key for a DOM element.
+   *
+   * @param {TinyElement} el - The DOM element.
+   * @param {string} key - The key under which the data will be stored.
+   * @param {any} value - The value to store.
+   * @param {boolean} [isPrivate=false] - Whether to store the data in the private store.
+   * @returns {void}
+   */
+  static setData(el, key, value, isPrivate = false) {
+    const data = TinyHtml._dataSelector[!isPrivate ? 'public' : 'private']('setData', el);
+    if (typeof key !== 'string') throw new TypeError('The key must be a string.');
+    data[key] = value;
+  }
+
+  /**
+   * Stores a value associated with a specific key for a DOM element.
+   *
+   * @param {string} key - The key under which the data will be stored.
+   * @param {any} value - The value to store.
+   * @param {boolean} [isPrivate=false] - Whether to store the data in the private store.
+   * @returns {void}
+   */
+  setData(key, value, isPrivate = false) {
+    return TinyHtml.setData(this, key, value, isPrivate);
   }
 
   //////////////////////////////////////////////////////
