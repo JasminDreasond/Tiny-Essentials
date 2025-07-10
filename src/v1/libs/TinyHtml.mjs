@@ -2292,6 +2292,42 @@ class TinyHtml {
     return TinyHtml.empty(this);
   }
 
+  /**
+   * Get the innerHTML of the element.
+   * @param {TinyElement|TinyElement[]} el
+   * @returns {string}
+   */
+  static html(el) {
+    const elem = TinyHtml._preElem(el, 'html');
+    return elem.innerHTML;
+  }
+
+  /**
+   * Get the innerHTML of the element.
+   * @returns {string}
+   */
+  html() {
+    return TinyHtml.html(this);
+  }
+
+  /**
+   * Set the innerHTML of each element.
+   * @param {TinyElement|TinyElement[]} el
+   * @param {string} value
+   */
+  static setHtml(el, value) {
+    if (typeof value !== 'string') throw new Error('Value is not a valid string.');
+    TinyHtml._preElems(el, 'setHtml').forEach((el) => (el.innerHTML = value));
+  }
+
+  /**
+   * Set the innerHTML of the element.
+   * @param {string} value
+   */
+  setHtml(value) {
+    return TinyHtml.setHtml(this, value);
+  }
+
   /** @readonly */
   static _valHooks = {
     option: {
