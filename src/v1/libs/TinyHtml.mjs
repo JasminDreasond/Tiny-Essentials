@@ -132,11 +132,16 @@ const __elementDataMap = new WeakMap();
  */
 
 /**
- * @typedef {string|number|boolean} SetValValueBase - Primitive types accepted as input values.
+ * @typedef {string | number | Date | boolean | null} SetValueBase - Primitive types accepted as input values.
  */
 
 /**
- * @typedef {SetValValueBase|SetValValueBase[]} SetValValue - A single value or an array of values to be assigned to the input element.
+ * @typedef {'string' | 'date' | 'number'} GetValueTypes
+ * Types of value extractors supported by TinyHtml._valTypes.
+ */
+
+/**
+ * @typedef {SetValueBase|SetValueBase[]} SetValueList - A single value or an array of values to be assigned to the input element.
  */
 
 /**
@@ -2228,6 +2233,39 @@ class TinyHtml {
     return TinyHtml.text(this);
   }
 
+  /**
+   * Set text content of elements.
+   * @param {TinyElement|TinyElement[]} el
+   * @param {string} value
+   */
+  static setText(el, value) {
+    if (typeof value !== 'string') throw new Error('Value is not a valid string.');
+    TinyHtml._preElems(el, 'setText').forEach((el) => (el.textContent = value));
+  }
+
+  /**
+   * Set text content of the element.
+   * @param {string} value
+   */
+  setText(value) {
+    return TinyHtml.setText(this, value);
+  }
+
+  /**
+   * Remove all child nodes from each element.
+   * @param {TinyElement|TinyElement[]} el
+   */
+  static empty(el) {
+    TinyHtml._preElems(el, 'empty').forEach((el) => (el.textContent = ''));
+  }
+
+  /**
+   * Remove all child nodes of the element.
+   */
+  empty() {
+    return TinyHtml.empty(this);
+  }
+
   /** @readonly */
   static _valHooks = {
     option: {
@@ -2354,14 +2392,14 @@ class TinyHtml {
    * Accepts strings, numbers, booleans or arrays of these values, or a callback function that computes them.
    *
    * @param {TinyInputElement|TinyInputElement[]} el - Target element.
-   * @param {SetValValue|((el: InputElement, val: SetValValue) => SetValValue)} value - The value to assign or a function that returns it.
+   * @param {SetValueList|((el: InputElement, val: SetValueList) => SetValueList)} value - The value to assign or a function that returns it.
    * @throws {Error} If the computed value is not a valid string or boolean.
    */
   static setVal(el, value) {
     TinyHtml._preInputElems(el, 'setVal').forEach((elem) => {
       /**
-       * @param {SetValValueBase[]} array
-       * @param {(v: SetValValueBase, i: number) => SetValValueBase} callback
+       * @param {SetValueBase[]} array
+       * @param {(v: SetValueBase, i: number) => SetValueBase} callback
        */
       const mapArray = (array, callback) => {
         const result = [];
@@ -2372,7 +2410,7 @@ class TinyHtml {
       };
 
       if (elem.nodeType !== 1) return;
-      /** @type {SetValValue} */
+      /** @type {SetValueList} */
       let valToSet = typeof value === 'function' ? value(elem, TinyHtml.val(elem)) : value;
 
       if (valToSet == null) {
@@ -2401,7 +2439,7 @@ class TinyHtml {
    * Sets the value of the current HTML value element (input, select, textarea, etc.).
    * Accepts strings, numbers, booleans or arrays of these values, or a callback function that computes them.
    *
-   * @param {SetValValue|((el: InputElement, val: SetValValue) => SetValValue)} value - The value to assign or a function that returns it.
+   * @param {SetValueList|((el: InputElement, val: SetValueList) => SetValueList)} value - The value to assign or a function that returns it.
    * @throws {Error} If the computed value is not a valid string or boolean.
    */
   setVal(value) {
@@ -2409,51 +2447,99 @@ class TinyHtml {
   }
 
   /**
+   * Maps value types to their corresponding getter functions.
+   * Each function extracts a value of a specific type from a compatible HTMLInputElement.
+   */
+  static _valTypes = {
+    /**
+     * Gets the string value from any HTMLInputElement.
+     * @type {(elem: HTMLInputElement) => string}
+     */
+    string: (elem) => elem.value,
+
+    /**
+     * Gets the value as a Date object from supported input types.
+     * Valid only for types: "date", "datetime-local", "month", "time", "week".
+     * Returns `null` if the field is empty or invalid.
+     * @type {(elem: HTMLInputElement & { type: "date" | "datetime-local" | "month" | "time" | "week" }) => Date | null}
+     */
+    date: (elem) => elem.valueAsDate,
+
+    /**
+     * Gets the numeric value from supported input types.
+     * Valid for types: "number", "range", "date", "time".
+     * Returns `NaN` if the value is invalid or empty.
+     * @type {(elem: HTMLInputElement & { type: "number" | "range" | "date" | "time" }) => number}
+     */
+    number: (elem) => elem.valueAsNumber,
+  };
+
+  /**
+   * Gets the value of an input element according to the specified type.
+   *
+   * @param {InputElement} elem - The input element to extract the value from.
+   * @param {GetValueTypes} type - The type of value to retrieve ("string", "date", or "number").
+   * @param {string} where - The context/method name using this validation.
+   * @returns {any} The extracted value, depending on the type.
+   * @throws {Error} If the element is not an HTMLInputElement or if the type handler is invalid.
+   */
+  static _getValByType(elem, type, where) {
+    if (!(elem instanceof HTMLInputElement))
+      throw new Error(`Provided element is not an HTMLInputElement in ${where}().`);
+    if (typeof TinyHtml._valTypes[type] !== 'function')
+      throw new Error(`No handler found for type "${type}" in ${where}().`);
+    // @ts-ignore
+    return TinyHtml._valTypes[type](elem);
+  }
+
+  /**
    * Retrieves the raw value from the HTML input element.
    * If a custom value hook exists, it will be used first.
    *
    * @param {TinyInputElement} el - Target element.
-   * @param {string} where
-   * @returns {SetValValue} The raw value retrieved from the element or hook.
+   * @param {GetValueTypes} type - The type of value to retrieve ("string", "date", or "number").
+   * @param {string} where - The context/method name using this validation.
+   * @returns {any} The raw value retrieved from the element or hook.
    * @readonly
    */
-  static _val(el, where) {
+  static _val(el, where, type) {
     const elem = TinyHtml._preInputElem(el, where);
     // @ts-ignore
     const hook = TinyHtml._valHooks[elem.type] || TinyHtml._valHooks[elem.nodeName.toLowerCase()];
     if (hook && typeof hook.get === 'function') {
-      const ret = hook.get(elem, 'value');
+      const ret = hook.get(elem, 'value', type);
       if (ret !== undefined) return typeof ret === 'string' ? ret.replace(/\r/g, '') : ret;
     }
 
-    return elem.value;
+    return TinyHtml._getValByType(elem, type, where);
   }
 
   /**
    * Retrieves the raw value from the HTML input element.
    * If a custom value hook exists, it will be used first.
    *
-   * @param {string} where
-   * @returns {SetValValue} The raw value retrieved from the element or hook.
+   * @param {GetValueTypes} type - The type of value to retrieve ("string", "date", or "number").
+   * @param {string} where - The context/method name using this validation.
+   * @returns {any} The raw value retrieved from the element or hook.
    */
-  _val(where) {
-    return TinyHtml._val(this, where);
+  _val(where, type) {
+    return TinyHtml._val(this, where, type);
   }
 
   /**
    * Gets the value of the current HTML value element.
    *
    * @param {TinyInputElement} el - Target element.
-   * @returns {SetValValue} The normalized value, with carriage returns removed.
+   * @returns {SetValueList} The normalized value, with carriage returns removed.
    */
   static val(el) {
-    return TinyHtml._val(el, 'val');
+    return /** @type {SetValueList} */ (TinyHtml._val(el, 'val', 'string'));
   }
 
   /**
    * Gets the value of the current HTML value element.
    *
-   * @returns {SetValValue} The normalized value, with carriage returns removed.
+   * @returns {SetValueList} The normalized value, with carriage returns removed.
    */
   val() {
     return TinyHtml.val(this);
@@ -2467,7 +2553,8 @@ class TinyHtml {
    * @throws {Error} If the element is not a string value.
    */
   static valTxt(el) {
-    const ret = TinyHtml._val(el, 'valTxt');
+    /** @type {string} */
+    const ret = TinyHtml._val(el, 'valTxt', 'string');
     if (typeof ret !== 'string' && ret !== null) throw new Error('Value is not a valid string.');
     return ret == null ? '' : typeof ret === 'string' ? ret.replace(/\r/g, '') : ret;
   }
@@ -2487,12 +2574,14 @@ class TinyHtml {
    *
    * @param {TinyInputElement} el - Target element.
    * @param {string} where - The method name or context using this validation (for error reporting).
-   * @returns {SetValValueBase[]} - The validated value as an array.
+   * @param {GetValueTypes} type - The type of value to retrieve ("string", "date", or "number").
+   * @returns {SetValueBase[]} - The validated value as an array.
    * @throws {Error} If the returned value is not an array.
    * @readonly
    */
-  static _valArr(el, where) {
-    const ret = TinyHtml._val(el, where);
+  static _valArr(el, where, type) {
+    /** @type {SetValueBase[]} */
+    const ret = TinyHtml._val(el, where, type);
     if (!Array.isArray(ret)) throw new Error(`Value expected an array but got ${typeof ret}.`);
     return ret;
   }
@@ -2501,116 +2590,33 @@ class TinyHtml {
    * Internal helper to get a value from an input expected to return an array.
    *
    * @param {string} where - The method name or context using this validation (for error reporting).
-   * @returns {SetValValueBase[]} - The validated value as an array.
+   * @param {GetValueTypes} type - The type of value to retrieve ("string", "date", or "number").
+   * @returns {SetValueBase[]} - The validated value as an array.
    * @throws {Error} If the returned value is not an array.
    */
-  _valArr(where) {
-    return TinyHtml._valArr(this, where);
+  _valArr(where, type) {
+    return TinyHtml._valArr(this, where, type);
   }
 
   /**
    * Gets the raw value as a generic array of the current HTML value element (for select).
    *
    * @param {TinyInputElement} el - Target element.
-   * @returns {SetValValueBase[]} - The value cast as a generic array.
+   * @returns {SetValueBase[]} - The value cast as a generic array.
    * @throws {Error} If the value is not a valid array.
    */
   static valArr(el) {
-    return TinyHtml._valArr(el, 'valArr');
+    return TinyHtml._valArr(el, 'valArr', 'string');
   }
 
   /**
    * Gets the raw value as a generic array of the current HTML value element (for select).
    *
-   * @returns {SetValValueBase[]} - The value cast as a generic array.
+   * @returns {SetValueBase[]} - The value cast as a generic array.
    * @throws {Error} If the value is not a valid array.
    */
   valArr() {
     return TinyHtml.valArr(this);
-  }
-
-  /**
-   * Gets the value as an array of strings in the current HTML value element (for select).
-   *
-   * @param {TinyInputElement} el - Target element.
-   * @returns {string[]} - The array of values cast as strings.
-   * @throws {Error} If any value in the array is not a string.
-   */
-  static valArrSt(el) {
-    const arr = TinyHtml._valArr(el, 'valArrSt');
-    for (let i = 0; i < arr.length; i++) {
-      if (typeof arr[i] !== 'string')
-        throw new Error(`The valArrSt() expected string at index ${i}, got ${typeof arr[i]}.`);
-    }
-    return /** @type {string[]} */ (arr);
-  }
-
-  /**
-   * Gets the value as an array of strings in the current HTML value element (for select).
-   *
-   * @returns {string[]} - The array of values cast as strings.
-   * @throws {Error} If any value in the array is not a string.
-   */
-  valArrSt() {
-    return TinyHtml.valArrSt(this);
-  }
-
-  /**
-   * Gets the value as an array of numbers in the current HTML value element (for ???).
-   *
-   * @param {TinyInputElement} el - Target element.
-   * @returns {number[]} - The array of values cast as numbers.
-   * @throws {Error} If any value in the array is not a valid number.
-   */
-  static valArrNb(el) {
-    const arr = TinyHtml._valArr(el, 'valArrNb');
-    const result = [];
-    for (let i = 0; i < arr.length; i++) {
-      let val = arr[i];
-      if (typeof val !== 'string' && typeof val !== 'number')
-        throw new Error(`The valArrNb() expected number at index ${i}, got ${arr[i]}.`);
-      if (typeof val === 'string') val = parseFloat(val);
-      if (Number.isNaN(val))
-        throw new Error(`The valArrNb() expected number at index ${i}, got ${arr[i]}.`);
-      result.push(val);
-    }
-    return result;
-  }
-
-  /**
-   * Gets the value as an array of numbers in the current HTML value element (for ???).
-   *
-   * @returns {number[]} - The array of values cast as numbers.
-   * @throws {Error} If any value in the array is not a valid number.
-   */
-  valArrNb() {
-    return TinyHtml.valArrNb(this);
-  }
-
-  /**
-   * Gets the value as an array of booleans in the current HTML value element (for ???).
-   *
-   * @param {TinyInputElement} el - Target element.
-   * @returns {boolean[]} - The array of values cast as booleans.
-   * @throws {Error} If any value in the array is not a boolean or castable to one.
-   */
-  static valArrBool(el) {
-    const arr = TinyHtml._valArr(el, 'valArrBool');
-    for (let i = 0; i < arr.length; i++) {
-      if (typeof arr[i] !== 'boolean')
-        throw new Error(`The valArrBool() expected boolean at index ${i}, got ${typeof arr[i]}.`);
-    }
-    return /** @type {boolean[]} */ (arr);
-  }
-
-  /**
-   * Gets the value as an array of booleans in the current HTML value element (for ???).
-   *
-   * @returns {boolean[]} - The array of values cast as booleans.
-   * @throws {Error} If any value in the array is not a boolean or castable to one.
-   */
-  valArrBool() {
-    return TinyHtml.valArrBool(this);
   }
 
   /**
@@ -2623,7 +2629,8 @@ class TinyHtml {
   static valNb(el) {
     const elem = TinyHtml._preInputElem(el, 'valNb');
     if (!(elem instanceof HTMLInputElement)) throw new Error('Element must be an input element.');
-    const result = parseFloat(TinyHtml.valTxt(elem).trim() || '0');
+    /** @type {number} */
+    const result = TinyHtml._val(el, 'valNb', 'number');
     if (Number.isNaN(result)) throw new Error('Value is not a valid number.');
     return result;
   }
@@ -2636,6 +2643,32 @@ class TinyHtml {
    */
   valNb() {
     return TinyHtml.valNb(this);
+  }
+
+  /**
+   * Gets the current value parsed as a Date (for time/date).
+   *
+   * @param {TinyInputElement} el - Target element.
+   * @returns {Date} The date value.
+   * @throws {Error} If the element is not a date-compatible input.
+   */
+  static valDate(el) {
+    const elem = TinyHtml._preInputElem(el, 'valDate');
+    if (!(elem instanceof HTMLInputElement)) throw new Error('Element must be an input element.');
+    /** @type {Date} */
+    const result = TinyHtml._val(el, 'valDate', 'date');
+    if (!(result instanceof Date)) throw new Error('Value is not a valid date.');
+    return result;
+  }
+
+  /**
+   * Gets the current value parsed as a Date (for time/date).
+   *
+   * @returns {Date} The date value.
+   * @throws {Error} If the element is not a date-compatible input.
+   */
+  valDate() {
+    return TinyHtml.valDate(this);
   }
 
   /**
