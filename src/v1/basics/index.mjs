@@ -3,20 +3,22 @@ import asyncReplace from '../../legacy/libs/replaceAsync.mjs';
 import { shuffleArray } from './array.mjs';
 import { formatCustomTimer, formatDayTimer, formatTimer, getTimeDuration } from './clock.mjs';
 import {
-  areHtmlElsColliding,
   readJsonBlob,
   saveJsonFile,
   fetchJson,
-  getHtmlElBorders,
-  getHtmlElBordersWidth,
-  getHtmlElMargin,
-  getHtmlElPadding,
   installWindowHiddenScript,
   readFileBlob,
   readBase64Blob,
   isInViewport,
   isScrolledIntoView,
 } from './html.mjs';
+import {
+  areHtmlElsColliding,
+  getHtmlElBorders,
+  getHtmlElBordersWidth,
+  getHtmlElMargin,
+  getHtmlElPadding,
+} from './html_deprecated.mjs';
 import {
   countObj,
   extendObjType,

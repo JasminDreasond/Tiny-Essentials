@@ -1,4 +1,6 @@
-import { areElsColliding, areElsPerfColliding } from '../basics/collision.mjs';
+import * as TinyCollision from '../basics/collision.mjs';
+
+const { areElsColliding, areElsPerfColliding } = TinyCollision;
 
 /**
  * Represents a raw Node element or an instance of TinyHtml.
@@ -165,6 +167,8 @@ const __elementDataMap = new WeakMap();
  */
 class TinyHtml {
   /** @typedef {import('../basics/collision.mjs').ObjRect} ObjRect */
+
+  static Utils = { ...TinyCollision };
 
   /**
    * Queries the document for the first element matching the CSS selector and wraps it in a TinyHtml instance.

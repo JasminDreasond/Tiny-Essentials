@@ -1,4 +1,5 @@
-import { getHtmlElBordersWidth } from '../basics/html.mjs';
+import TinyHtml from './TinyHtml.mjs';
+import * as TinyCollision from '../basics/collision.mjs';
 import { isJsonObject } from '../basics/objFilter.mjs';
 
 /**
@@ -15,6 +16,8 @@ import { isJsonObject } from '../basics/objFilter.mjs';
  * automatic reverting, proxy dragging, and event dispatching.
  */
 class TinyDragger {
+  static Utils = { ...TinyCollision, TinyHtml };
+
   #enabled = true;
   #destroyed = false;
 
@@ -43,6 +46,7 @@ class TinyDragger {
   /** @type {HTMLElement|null} */
   #jail = null;
 
+  /** @type {HTMLElement} */
   #target;
 
   #dragHiddenClass = 'drag-hidden';
@@ -55,7 +59,7 @@ class TinyDragger {
   /** @typedef {(event: TouchEvent) => void} TouchDragEvent */
 
   /**
-   * @param {HTMLElement} targetElement - The element to make draggable.
+   * @param {HTMLElement|TinyHtml} targetElement - The element to make draggable.
    * @param {Object} [options={}] - Configuration options.
    * @param {HTMLElement} [options.jail] - Optional container to restrict dragging within.
    * @param {boolean} [options.collisionByMouse=false] - Use mouse position for collision instead of element rect.
@@ -73,10 +77,11 @@ class TinyDragger {
    * @throws {Error} If any option has an invalid type.
    */
   constructor(targetElement, options = {}) {
-    if (!(targetElement instanceof HTMLElement))
+    const targetElem = !(targetElement instanceof TinyHtml) ? targetElement : targetElement.get();
+    if (!(targetElem instanceof HTMLElement))
       throw new Error('TinyDragger requires a valid target HTMLElement to initialize.');
 
-    this.#target = targetElement;
+    this.#target = targetElem;
 
     // === Validations ===
     if (options.jail !== undefined && !(options.jail instanceof HTMLElement))
@@ -281,7 +286,7 @@ class TinyDragger {
       throw new Error('getOffset expects an event with valid clientX and clientY coordinates.');
 
     const targetRect = this.#target.getBoundingClientRect();
-    const { left: borderLeft, top: borderTop } = getHtmlElBordersWidth(this.#target);
+    const { left: borderLeft, top: borderTop } = TinyHtml.borderWidth(this.#target);
     return {
       x: event.clientX - targetRect.left + borderLeft,
       y: event.clientY - targetRect.top + borderTop,
@@ -423,7 +428,7 @@ class TinyDragger {
       const jailLeft = jailRect.left - parentRect.left;
       const jailTop = jailRect.top - parentRect.top;
 
-      const { x: borderX, y: borderY } = getHtmlElBordersWidth(this.#jail);
+      const { x: borderX, y: borderY } = TinyHtml.borderWidth(this.#jail);
       const maxX = jailLeft + jailRect.width - targetRect.width - borderY;
       const maxY = jailTop + jailRect.height - targetRect.height - borderX;
 

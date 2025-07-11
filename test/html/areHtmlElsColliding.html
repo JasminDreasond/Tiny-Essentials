@@ -65,6 +65,9 @@
       const fixed = TinyHtml.getById('fixed');
       const colliding = TinyHtml.getById('colliding');
 
+      window.tinyFixed = fixed;
+      window.tinyColliding = colliding;
+
       let isDragging = false;
       let offsetX = 0;
       let offsetY = 0;

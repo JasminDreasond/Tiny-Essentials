@@ -45,20 +45,22 @@ import TinyRateLimiter from './libs/TinyRateLimiter.mjs';
 import TinyNotifyCenter from './libs/TinyNotifyCenter.mjs';
 import TinyToastNotify from './libs/TinyToastNotify.mjs';
 import {
-  areHtmlElsColliding,
   readJsonBlob,
   saveJsonFile,
   fetchJson,
-  getHtmlElBorders,
-  getHtmlElBordersWidth,
-  getHtmlElMargin,
-  getHtmlElPadding,
   installWindowHiddenScript,
   readFileBlob,
   readBase64Blob,
   isInViewport,
   isScrolledIntoView,
 } from './basics/html.mjs';
+import {
+  getHtmlElBorders,
+  getHtmlElBordersWidth,
+  getHtmlElMargin,
+  getHtmlElPadding,
+  areHtmlElsColliding,
+} from './basics/html_deprecated.mjs';
 import TinyDragDropDetector from './libs/TinyDragDropDetector.mjs';
 
 import {
