@@ -55,8 +55,6 @@
       let isDragging = false;
       let moveStep = 1; // velocidade em px
 
-      const stateMap = new WeakMap();
-
       box.addEventListener('mousedown', (e) => {
         isDragging = true;
         offsetX = e.clientX - box.offsetLeft;
@@ -102,7 +100,7 @@
         box.style.left = `${x}px`;
         box.style.top = `${y}px`;
 
-        const colliding = areHtmlElsCollidingWithLock(box, wall, 'bottom', stateMap); // change 'right' if needed
+        const colliding = areHtmlElsCollidingWithLock(box, wall, 'bottom'); // change 'right' if needed
         box.classList.toggle('colliding', colliding);
 
         const rect1 = box.getBoundingClientRect();

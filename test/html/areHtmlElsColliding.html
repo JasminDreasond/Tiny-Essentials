@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <title>Collision Test</title>
     <script src="/__buffer.js"></script>
+    <script type="module">
+      import * as tinyHtml from './src/v1/basics/html.mjs';
+      import * as tinyCollisions from './src/v1/basics/collision.mjs';
+      Object.assign(window, tinyCollisions);
+      Object.assign(window, tinyHtml);
+    </script>
     <style>
       body {
         margin: 0;
@@ -56,25 +62,23 @@
     </div>
 
     <script type="module">
-      import { areHtmlElsColliding } from './src/v1/basics/html.mjs';
-
-      const fixed = document.getElementById('fixed');
-      const colliding = document.getElementById('colliding');
+      const fixed = TinyHtml.getById('fixed');
+      const colliding = TinyHtml.getById('colliding');
 
       let isDragging = false;
       let offsetX = 0;
       let offsetY = 0;
 
-      colliding.addEventListener('mousedown', (e) => {
+      colliding.on('mousedown', (e) => {
         isDragging = true;
         offsetX = e.offsetX;
         offsetY = e.offsetY;
-        colliding.style.cursor = 'grabbing';
+        colliding.get().style.cursor = 'grabbing';
       });
 
       document.addEventListener('mouseup', () => {
         isDragging = false;
-        colliding.style.cursor = 'grab';
+        colliding.get().style.cursor = 'grab';
       });
 
       document.addEventListener('mousemove', (e) => {
@@ -84,11 +88,12 @@
         let x = e.clientX - containerRect.left - offsetX;
         let y = e.clientY - containerRect.top - offsetY;
 
-        colliding.style.left = `${x}px`;
-        colliding.style.top = `${y}px`;
+        const collStyle = colliding.get().style;
+        collStyle.left = `${x}px`;
+        collStyle.top = `${y}px`;
 
-        const collided = areHtmlElsColliding(colliding, fixed);
-        colliding.classList.toggle('colliding', collided);
+        const collided = colliding.isCollWith(fixed);
+        colliding.toggleClass('colliding', collided);
       });
     </script>
   </body>

@@ -248,7 +248,10 @@ const installNodeModules = (modNames, globalNames, globalResults) => async (req,
 };
 
 // Serve buffer global para o navegador
-app.get('/__buffer.js', installNodeModules('buffer', 'Buffer', 'window.Buffer = Buffer.Buffer;'));
+app.get(
+  '/__buffer.js',
+  installNodeModules(['buffer'], ['Buffer'], ['window.Buffer = Buffer.Buffer;']),
+);
 app.get(
   '/__jquery.js',
   installNodeModules(['jquery'], ['jQuery'], ['window.jQuery = jQuery; window.$ = jQuery;']),

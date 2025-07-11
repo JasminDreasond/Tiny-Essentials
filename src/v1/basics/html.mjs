@@ -11,6 +11,8 @@ import {
 
 export { TinyHtml };
 
+const __elemCollision = new WeakMap();
+
 ////////////////////////////////////////////////////
 
 /**
@@ -19,11 +21,10 @@ export { TinyHtml };
  * @param {Element} elem1 - First DOM element.
  * @param {Element} elem2 - Second DOM element.
  * @returns {boolean} - Returns true if the elements are colliding.
+ * @deprecated - Use TinyHtml.isCollWith instead.
  */
 export function areHtmlElsColliding(elem1, elem2) {
-  const rect1 = elem1.getBoundingClientRect();
-  const rect2 = elem2.getBoundingClientRect();
-  return areElsColliding(rect1, rect2);
+  return TinyHtml.isCollWith(elem1, elem2);
 }
 
 /**
@@ -32,11 +33,10 @@ export function areHtmlElsColliding(elem1, elem2) {
  * @param {Element} elem1 - First DOM element.
  * @param {Element} elem2 - Second DOM element.
  * @returns {boolean} - Returns true if the elements are colliding.
+ * @deprecated - Use TinyHtml.isCollPerfWith instead.
  */
 export function areHtmlElsPerfColliding(elem1, elem2) {
-  const rect1 = elem1.getBoundingClientRect();
-  const rect2 = elem2.getBoundingClientRect();
-  return areElsPerfColliding(rect1, rect2);
+  return TinyHtml.isCollPerfWith(elem1, elem2);
 }
 
 /**
@@ -45,45 +45,37 @@ export function areHtmlElsPerfColliding(elem1, elem2) {
  * @param {DOMRect} rect2
  * @param {Element} elem1
  * @param {'top'|'bottom'|'left'|'right'} lockDirection
- * @param {WeakMap<Element, string>} stateMap
  * @returns {boolean}
  */
-function areHtmlElscollidingWithLockBase(
-  isColliding,
-  rect1,
-  rect2,
-  elem1,
-  lockDirection,
-  stateMap,
-) {
+function areHtmlElscollidingWithLockBase(isColliding, rect1, rect2, elem1, lockDirection) {
   if (isColliding) {
     // Save entry direction
-    if (!stateMap.has(elem1)) {
-      stateMap.set(elem1, lockDirection);
+    if (!__elemCollision.has(elem1)) {
+      __elemCollision.set(elem1, lockDirection);
     }
     return true;
   }
 
   // Handle unlock logic
-  if (stateMap.has(elem1)) {
-    const lastDirection = stateMap.get(elem1);
+  if (__elemCollision.has(elem1)) {
+    const lastDirection = __elemCollision.get(elem1);
 
     switch (lastDirection) {
       case 'top':
-        if (areElsCollTop(rect1, rect2)) stateMap.delete(elem1); // exited from top
+        if (areElsCollTop(rect1, rect2)) __elemCollision.delete(elem1); // exited from top
         break;
       case 'bottom':
-        if (areElsCollBottom(rect1, rect2)) stateMap.delete(elem1); // exited from bottom
+        if (areElsCollBottom(rect1, rect2)) __elemCollision.delete(elem1); // exited from bottom
         break;
       case 'left':
-        if (areElsCollLeft(rect1, rect2)) stateMap.delete(elem1); // exited from left
+        if (areElsCollLeft(rect1, rect2)) __elemCollision.delete(elem1); // exited from left
         break;
       case 'right':
-        if (areElsCollRight(rect1, rect2)) stateMap.delete(elem1); // exited from right
+        if (areElsCollRight(rect1, rect2)) __elemCollision.delete(elem1); // exited from right
         break;
     }
 
-    return stateMap.has(elem1); // still colliding (locked)
+    return __elemCollision.has(elem1); // still colliding (locked)
   }
 
   return false;
@@ -96,14 +88,13 @@ function areHtmlElscollidingWithLockBase(
  * @param {Element} elem1 - First DOM element (e.g. draggable or moving element).
  * @param {Element} elem2 - Second DOM element (e.g. a container or boundary element).
  * @param {'top'|'bottom'|'left'|'right'} lockDirection - Direction that must be respected to unlock the collision.
- * @param {WeakMap<Element, string>} stateMap - A shared WeakMap to track persistent entry direction per element.
  * @returns {boolean} True if collision is still active.
  */
-export function areHtmlElsCollidingWithLock(elem1, elem2, lockDirection, stateMap) {
+export function areHtmlElsCollidingWithLock(elem1, elem2, lockDirection) {
   const rect1 = elem1.getBoundingClientRect();
   const rect2 = elem2.getBoundingClientRect();
   const isColliding = areElsColliding(rect1, rect2);
-  return areHtmlElscollidingWithLockBase(isColliding, rect1, rect2, elem1, lockDirection, stateMap);
+  return areHtmlElscollidingWithLockBase(isColliding, rect1, rect2, elem1, lockDirection);
 }
 
 /**
@@ -113,14 +104,13 @@ export function areHtmlElsCollidingWithLock(elem1, elem2, lockDirection, stateMa
  * @param {Element} elem1 - First DOM element (e.g. draggable or moving element).
  * @param {Element} elem2 - Second DOM element (e.g. a container or boundary element).
  * @param {'top'|'bottom'|'left'|'right'} lockDirection - Direction that must be respected to unlock the collision.
- * @param {WeakMap<Element, string>} stateMap - A shared WeakMap to track persistent entry direction per element.
  * @returns {boolean} True if collision is still active.
  */
-export function areHtmlElsPerfCollidingWithLock(elem1, elem2, lockDirection, stateMap) {
+export function areHtmlElsPerfCollidingWithLock(elem1, elem2, lockDirection) {
   const rect1 = elem1.getBoundingClientRect();
   const rect2 = elem2.getBoundingClientRect();
   const isColliding = areElsPerfColliding(rect1, rect2);
-  return areHtmlElscollidingWithLockBase(isColliding, rect1, rect2, elem1, lockDirection, stateMap);
+  return areHtmlElscollidingWithLockBase(isColliding, rect1, rect2, elem1, lockDirection);
 }
 
 /////////////////////////////////////////////////////////////////

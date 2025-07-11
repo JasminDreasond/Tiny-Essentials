@@ -1,3 +1,5 @@
+import { areElsColliding, areElsPerfColliding } from '../basics/collision.mjs';
+
 /**
  * Represents a raw Node element or an instance of TinyHtml.
  * This type is used to abstract interactions with both plain elements
@@ -162,6 +164,8 @@ const __elementDataMap = new WeakMap();
  * @class
  */
 class TinyHtml {
+  /** @typedef {import('../basics/collision.mjs').ObjRect} ObjRect */
+
   /**
    * Queries the document for the first element matching the CSS selector and wraps it in a TinyHtml instance.
    *
@@ -3453,6 +3457,118 @@ class TinyHtml {
    */
   index(elem) {
     return TinyHtml.index(this, elem);
+  }
+
+  ////////////////////////////////////////////////////////////////////
+
+  /**
+   * Creates a new DOMRect object by copying the base rect and applying optional additional dimensions.
+   *
+   * @param {DOMRect} rect - The base rectangle to be cloned and extended.
+   * @param {Partial<DOMRect>} extraRect - Additional dimensions to apply to the base rect (e.g., extra padding or offset).
+   * @returns {DOMRect} - A new DOMRect object with the combined dimensions.
+   */
+  static _getCustomRect(rect, extraRect) {
+    /** @type {DOMRect} */
+    const result = {
+      height: 0,
+      width: 0,
+      x: 0,
+      y: 0,
+      bottom: 0,
+      left: 0,
+      right: 0,
+      top: 0,
+      toJSON: function () {
+        throw new Error('Function not implemented.');
+      },
+    };
+    for (const name in rect) {
+      // @ts-ignore
+      if (typeof rect[name] === 'number')
+        // @ts-ignore
+        result[name] = rect[name];
+    }
+
+    if (typeof extraRect !== 'object' || extraRect === null || Array.isArray(extraRect))
+      throw new Error('');
+    const { height = 0, width = 0, top = 0, bottom = 0, left = 0, right = 0 } = extraRect;
+    if (typeof height !== 'number') throw new Error('');
+    if (typeof width !== 'number') throw new Error('');
+    if (typeof top !== 'number') throw new Error('');
+    if (typeof bottom !== 'number') throw new Error('');
+    if (typeof left !== 'number') throw new Error('');
+    if (typeof right !== 'number') throw new Error('');
+
+    // @ts-ignore
+    result.height += height;
+    // @ts-ignore
+    result.width += width;
+    // @ts-ignore
+    result.top += top;
+    // @ts-ignore
+    result.bottom += bottom;
+    // @ts-ignore
+    result.left += left;
+    // @ts-ignore
+    result.right += right;
+    return result;
+  }
+
+  /**
+   * Determines if two HTML elements are colliding, using a simple bounding box comparison.
+   *
+   * @param {TinyElement} el1 - The first element to compare.
+   * @param {TinyElement} el2 - The second element to compare.
+   * @param {Partial<ObjRect>} [extraRect] - Optional values to expand the size of the first element's rect.
+   * @returns {boolean} - `true` if the elements are colliding, `false` otherwise.
+   */
+  static isCollWith(el1, el2, extraRect = {}) {
+    const rect1 = TinyHtml._getCustomRect(
+      TinyHtml._preElem(el1, 'isCollWith').getBoundingClientRect(),
+      extraRect,
+    );
+    const rect2 = TinyHtml._preElem(el2, 'isCollWith').getBoundingClientRect();
+    return areElsColliding(rect1, rect2);
+  }
+
+  /**
+   * Determines if two HTML elements are colliding, using a simple bounding box comparison.
+   *
+   * @param {TinyElement} el2 - The second element to compare.
+   * @param {Partial<ObjRect>} [extraRect] - Optional values to expand the size of the first element's rect.
+   * @returns {boolean} - `true` if the elements are colliding, `false` otherwise.
+   */
+  isCollWith(el2, extraRect) {
+    return TinyHtml.isCollWith(this, el2, extraRect);
+  }
+
+  /**
+   * Determines if two HTML elements are colliding using a pixel-perfect collision algorithm.
+   *
+   * @param {TinyElement} el1 - The first element to compare.
+   * @param {TinyElement} el2 - The second element to compare.
+   * @param {Partial<ObjRect>} [extraRect] - Optional values to expand the size of the first element's rect.
+   * @returns {boolean} - `true` if the elements are colliding with higher precision, `false` otherwise.
+   */
+  static isCollPerfWith(el1, el2, extraRect = {}) {
+    const rect1 = TinyHtml._getCustomRect(
+      TinyHtml._preElem(el1, 'isCollPerfWith').getBoundingClientRect(),
+      extraRect,
+    );
+    const rect2 = TinyHtml._preElem(el2, 'isCollPerfWith').getBoundingClientRect();
+    return areElsPerfColliding(rect1, rect2);
+  }
+
+  /**
+   * Determines if two HTML elements are colliding using a pixel-perfect collision algorithm.
+   *
+   * @param {TinyElement} el2 - The second element to compare.
+   * @param {Partial<ObjRect>} [extraRect] - Optional values to expand the size of the first element's rect.
+   * @returns {boolean} - `true` if the elements are colliding with higher precision, `false` otherwise.
+   */
+  isCollPerfWith(el2, extraRect) {
+    return TinyHtml.isCollPerfWith(this, el2, extraRect);
   }
 }
 
