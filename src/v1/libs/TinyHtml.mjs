@@ -1361,8 +1361,7 @@ class TinyHtml {
    * @param {TinyNode | TinyNode[] | null} [child] - Optional child node to insert before.
    */
   static insertBefore(el, target, child = null) {
-    const elem = TinyHtml._preNodeElem(el, 'insertBefore');
-    elem.insertBefore(
+    TinyHtml._preNodeElem(el, 'insertBefore').insertBefore(
       TinyHtml._preNodeElem(target, 'insertBefore'),
       TinyHtml._preNodeElemWithNull(child, 'insertBefore'),
     );
@@ -1383,19 +1382,11 @@ class TinyHtml {
    * If `child` is not specified, inserts after the target itself.
    * @param {TinyNode|TinyNode[]} el - Element(s) to insert.
    * @param {TinyNode | TinyNode[]} target - Target element(s) used for placement reference.
-   * @param {TinyNode | TinyNode[] | null} [child] - Optional child node to insert after.
    */
-  static insertAfter(el, target, child = null) {
+  static insertAfter(el, target) {
     const elem = TinyHtml._preNodeElem(el, 'insertAfter');
-    const tgt = TinyHtml._preNodeElem(target, 'insertAfter');
-    const childRef = TinyHtml._preNodeElemWithNull(child, 'insertAfter');
-
-    // If a child is passed, enter after it, otherwise after the target
-    const refNode = childRef ?? tgt;
-    const next = refNode.nextSibling;
-
-    // next can be null — in this case inserts in the end
-    if (refNode.parentNode) refNode.parentNode.insertBefore(elem, next);
+    if (!elem.parentNode) throw new Error('');
+    elem.parentNode.insertBefore(TinyHtml._preNodeElem(target, 'insertBefore'), elem.nextSibling);
   }
 
   /**
@@ -1405,7 +1396,7 @@ class TinyHtml {
    * @param {TinyNode | TinyNode[] | null} [child] - Optional child node to insert after.
    */
   insertAfter(target, child) {
-    return TinyHtml.insertAfter(this, target, child);
+    return TinyHtml.insertAfter(this, target);
   }
 
   /**
@@ -1449,6 +1440,10 @@ class TinyHtml {
    * @param {ConstructorElValues} el - The element to wrap and manipulate.
    */
   constructor(el) {
+    if (el instanceof TinyHtml)
+      throw new Error(
+        `[TinyHtml] You are trying to put a TinyHtml inside another TinyHtml in constructor.`,
+      );
     if (!(el instanceof Element) && !(el instanceof Window) && !(el instanceof Document))
       throw new Error(`[TinyHtml] Invalid Target in constructor.`);
     this.#el = el;
