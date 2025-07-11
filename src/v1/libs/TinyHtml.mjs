@@ -1335,11 +1335,7 @@ class TinyHtml {
         .slice()
         .reverse()
         .forEach((elem) =>
-          TinyHtml.insertBefore(
-            target,
-            i === tars.length - 1 ? elem : elem.cloneNode(true),
-            target.firstChild,
-          ),
+          target.prepend(i === tars.length - 1 ? elem : elem.cloneNode(true)),
         );
     });
   }
@@ -1361,10 +1357,11 @@ class TinyHtml {
    * @param {TinyNode | TinyNode[] | null} [child] - Optional child node to insert before.
    */
   static insertBefore(el, target, child = null) {
-    TinyHtml._preNodeElem(el, 'insertBefore').insertBefore(
-      TinyHtml._preNodeElem(target, 'insertBefore'),
-      TinyHtml._preNodeElemWithNull(child, 'insertBefore'),
-    );
+    const elem = TinyHtml._preNodeElem(el, 'insertBefore');
+    const targ = TinyHtml._preNodeElem(target, 'insertBefore');
+    const childNode = TinyHtml._preNodeElemWithNull(child, 'insertBefore');
+    if (!targ.parentNode) throw new Error('');
+    targ.parentNode.insertBefore(elem, childNode || targ);
   }
 
   /**
@@ -1382,12 +1379,14 @@ class TinyHtml {
    * If `child` is not specified, inserts after the target itself.
    * @param {TinyNode|TinyNode[]} el - Element(s) to insert.
    * @param {TinyNode | TinyNode[]} target - Target element(s) used for placement reference.
+   * @param {TinyNode | TinyNode[] | null} [child] - Optional child node to insert after.
    */
-  static insertAfter(el, target) {
+  static insertAfter(el, target, child = null) {
     const elem = TinyHtml._preNodeElem(el, 'insertAfter');
-    const targ = TinyHtml._preNodeElem(target, 'insertBefore');
+    const targ = TinyHtml._preNodeElem(target, 'insertBefore')
+    const childNode = TinyHtml._preNodeElemWithNull(child, 'insertBefore');;
     if (!targ.parentNode) throw new Error('');
-    targ.parentNode.insertBefore(elem, targ.nextSibling);
+    targ.parentNode.insertBefore(elem, childNode || targ.nextSibling);
   }
 
   /**
@@ -1397,7 +1396,7 @@ class TinyHtml {
    * @param {TinyNode | TinyNode[] | null} [child] - Optional child node to insert after.
    */
   insertAfter(target, child) {
-    return TinyHtml.insertAfter(this, target);
+    return TinyHtml.insertAfter(this, target, child);
   }
 
   /**
