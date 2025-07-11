@@ -1195,6 +1195,159 @@ class TinyHtml {
     return TinyHtml.clone(this, deep)[0];
   }
 
+  /**
+   * Normalize and validate nodes before DOM insertion.
+   * Converts TinyNode-like structures or strings into DOM-compatible nodes.
+   * @type {(where: string, ...nodes: (TinyNode | TinyNode[] | string)[]) => (Node | string)[]}
+   */
+  static _appendChecker(where, ...nodes) {
+    const results = [];
+    const nds = [...nodes];
+    for (const index in nds) {
+      if (typeof nds[index] !== 'string') {
+        results.push(TinyHtml._preNodeElem(nds[index], where));
+      } else results.push(nds[index]);
+    }
+    return results;
+  }
+
+  /**
+   * Appends children to the end of an target element.
+   * @type {(el: TinyElement|TinyElement[], ...children: (TinyNode | TinyNode[] | string)[]) => void}
+   */
+  static append(el, ...children) {
+    const elem = TinyHtml._preElem(el, 'append');
+    elem.append(...TinyHtml._appendChecker('append', ...children));
+  }
+
+  /**
+   * Prepends children to the beginning of an target element.
+   * @type {(el: TinyElement|TinyElement[], ...children: (TinyNode | TinyNode[] | string)[]) => void}
+   */
+  static prepend(el, ...children) {
+    const elem = TinyHtml._preElem(el, 'prepend');
+    elem.prepend(...TinyHtml._appendChecker('prepend', ...children));
+  }
+
+  /**
+   * Inserts node before an target element in the DOM.
+   * @type {(el: TinyElement|TinyElement[], ...children: (TinyNode | TinyNode[] | string)[]) => void}
+   */
+  static before(el, ...children) {
+    const elem = TinyHtml._preElem(el, 'before');
+    elem.before(...TinyHtml._appendChecker('before', ...children));
+  }
+
+  /**
+   * Inserts node immediately after an target element in the DOM.
+   * @type {(el: TinyElement|TinyElement[], ...children: (TinyNode | TinyNode[] | string)[]) => void}
+   */
+  static after(el, ...children) {
+    const elem = TinyHtml._preElem(el, 'after');
+    elem.after(...TinyHtml._appendChecker('after', ...children));
+  }
+
+  /**
+   * Replaces an target element with the specified nodes.
+   * @type {(el: TinyElement|TinyElement[], ...newNodes: (TinyNode | TinyNode[] | string)[]) => void}
+   */
+  static replaceWith(el, ...newNodes) {
+    const elem = TinyHtml._preElem(el, 'replaceWith');
+    elem.replaceWith(...TinyHtml._appendChecker('replaceWith', ...newNodes));
+  }
+
+  /**
+   * Appends an current element to each specified target element.
+   * If multiple targets are provided, the element is cloned accordingly.
+   * @param {TinyNode|TinyNode[]} el - Elements to append.
+   * @param {TinyNode|TinyNode[]} targets - Target elements to receive the appended elements.
+   */
+  static appendTo(el, targets) {
+    const elems = TinyHtml._preNodeElems(el, 'appendTo');
+    const tars = TinyHtml._preNodeElems(targets, 'appendTo');
+    tars.forEach((target, i) => {
+      elems.forEach((elem) =>
+        target.appendChild(i === tars.length - 1 ? elem : elem.cloneNode(true)),
+      );
+    });
+  }
+
+  /**
+   * Prepends an current element to each specified target element.
+   * If multiple targets are provided, the element is cloned accordingly.
+   * @param {TinyElement|TinyElement[]} el - Elements to prepend.
+   * @param {TinyElement|TinyElement[]} targets - Target elements to receive the prepended elements.
+   */
+  static prependTo(el, targets) {
+    const elems = TinyHtml._preElems(el, 'prependTo');
+    const tars = TinyHtml._preElems(targets, 'prependTo');
+    tars.forEach((target, i) => {
+      elems
+        .slice()
+        .reverse()
+        .forEach((elem) =>
+          TinyHtml.insertBefore(
+            target,
+            i === tars.length - 1 ? elem : elem.cloneNode(true),
+            target.firstChild,
+          ),
+        );
+    });
+  }
+
+  /**
+   * Inserts the current element(s) before the given child of the target.
+   * If `child` is not specified, inserts before the target itself.
+   * @param {TinyNode|TinyNode[]} el - Element(s) to insert.
+   * @param {TinyNode | TinyNode[]} target - Target element(s) used for placement reference.
+   * @param {TinyNode | TinyNode[] | null} [child] - Optional child node to insert before.
+   */
+  static insertBefore(el, target, child = null) {
+    const elem = TinyHtml._preNodeElem(el, 'insertBefore');
+    elem.insertBefore(
+      TinyHtml._preNodeElem(target, 'insertBefore'),
+      TinyHtml._preNodeElemWithNull(child, 'insertBefore'),
+    );
+  }
+
+  /**
+   * Inserts the current element(s) after the given child of the target.
+   * If `child` is not specified, inserts after the target itself.
+   * @param {TinyNode|TinyNode[]} el - Element(s) to insert.
+   * @param {TinyNode | TinyNode[]} target - Target element(s) used for placement reference.
+   * @param {TinyNode | TinyNode[] | null} [child] - Optional child node to insert after.
+   */
+  static insertAfter(el, target, child = null) {
+    const elem = TinyHtml._preNodeElem(el, 'insertAfter');
+    const tgt = TinyHtml._preNodeElem(target, 'insertAfter');
+    const childRef = TinyHtml._preNodeElemWithNull(child, 'insertAfter');
+
+    // If a child is passed, enter after it, otherwise after the target
+    const refNode = childRef ?? tgt;
+    const next = refNode.nextSibling;
+
+    // next can be null — in this case inserts in the end
+    if (refNode.parentNode) refNode.parentNode.insertBefore(elem, next);
+  }
+
+  /**
+   * Replaces all specified targets with the current element(s).
+   * If multiple targets are provided, the element is cloned accordingly.
+   * @param {TinyNode|TinyNode[]} el - New content to replace the targets.
+   * @param {TinyNode|TinyNode[]} targets - Elements to be replaced.
+   */
+  static replaceAll(el, targets) {
+    const elems = TinyHtml._preNodeElems(el, 'replaceAll');
+    const tars = TinyHtml._preNodeElems(targets, 'replaceAll');
+    tars.forEach((target, i) => {
+      const parent = target.parentNode;
+      elems.forEach((elem) => {
+        if (parent)
+          parent.replaceChild(i === tars.length - 1 ? elem : elem.cloneNode(true), target);
+      });
+    });
+  }
+
   //////////////////////////////////////////////////////
 
   /**
