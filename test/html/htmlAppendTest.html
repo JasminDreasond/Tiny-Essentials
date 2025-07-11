@@ -182,7 +182,7 @@
       // appendTo and prependTo
 
       document.getElementById('btnAppendTo').addEventListener('click', () => {
-        const el = new TinyHtml(createNode('Appended to B'));
+        const el = new TinyHtml(createNode('AppendedTo to B'));
         const el2 = $(createNode('AppendedTo to B'));
         el.appendTo(tB);
         el2.appendTo(tqB.get(0));
