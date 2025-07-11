@@ -9,8 +9,6 @@ import {
   areElsPerfColliding,
 } from './collision.mjs';
 
-export { TinyHtml };
-
 const __elemCollision = new WeakMap();
 
 ////////////////////////////////////////////////////
