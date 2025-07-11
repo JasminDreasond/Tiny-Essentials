@@ -1385,8 +1385,9 @@ class TinyHtml {
    */
   static insertAfter(el, target) {
     const elem = TinyHtml._preNodeElem(el, 'insertAfter');
-    if (!elem.parentNode) throw new Error('');
-    elem.parentNode.insertBefore(TinyHtml._preNodeElem(target, 'insertBefore'), elem.nextSibling);
+    const targ = TinyHtml._preNodeElem(target, 'insertBefore');
+    if (!targ.parentNode) throw new Error('');
+    targ.parentNode.insertBefore(elem, targ.nextSibling);
   }
 
   /**

@@ -157,8 +157,8 @@
       document.getElementById('btnInsertAfter').addEventListener('click', () => {
         const el = new TinyHtml(createNode('Inserted after B'));
         const el2 = $(createNode('Inserted after B'));
-        tB.insertAfter(el);
-        tqB.insertAfter(el2);
+        el.insertAfter(tB);
+        el2.insertAfter(tqB);
       });
 
       ////////////////////////////////////////////////////
