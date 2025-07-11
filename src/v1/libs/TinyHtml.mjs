@@ -1212,8 +1212,10 @@ class TinyHtml {
   }
 
   /**
-   * Appends children to the end of an target element.
-   * @type {(el: TinyElement|TinyElement[], ...children: (TinyNode | TinyNode[] | string)[]) => void}
+   * Appends child elements or strings to the end of the target element(s).
+   *
+   * @param {TinyElement | TinyElement[]} el - The target element(s) to receive children.
+   * @param {...(TinyNode | TinyNode[] | string)} children - The child elements or text to append.
    */
   static append(el, ...children) {
     const elem = TinyHtml._preElem(el, 'append');
@@ -1221,16 +1223,19 @@ class TinyHtml {
   }
 
   /**
-   * Appends children to the end of an target element.
-   * @type {(...children: (TinyNode | TinyNode[] | string)[]) => void}
+   * Appends child elements or strings to the end of the target element(s).
+   *
+   * @param {...(TinyNode | TinyNode[] | string)} children - The child elements or text to append.
    */
   append(...children) {
     return TinyHtml.append(this, ...children);
   }
 
   /**
-   * Prepends children to the beginning of an target element.
-   * @type {(el: TinyElement|TinyElement[], ...children: (TinyNode | TinyNode[] | string)[]) => void}
+   * Prepends child elements or strings to the beginning of the target element(s).
+   *
+   * @param {TinyElement | TinyElement[]} el - The target element(s) to receive children.
+   * @param {...(TinyNode | TinyNode[] | string)} children - The child elements or text to prepend.
    */
   static prepend(el, ...children) {
     const elem = TinyHtml._preElem(el, 'prepend');
@@ -1238,16 +1243,19 @@ class TinyHtml {
   }
 
   /**
-   * Prepends children to the beginning of an target element.
-   * @type {(...children: (TinyNode | TinyNode[] | string)[]) => void}
+   * Prepends child elements or strings to the beginning of the target element(s).
+   *
+   * @param {...(TinyNode | TinyNode[] | string)} children - The child elements or text to prepend.
    */
   prepend(...children) {
     return TinyHtml.prepend(this, ...children);
   }
 
   /**
-   * Inserts node before an target element in the DOM.
-   * @type {(el: TinyElement|TinyElement[], ...children: (TinyNode | TinyNode[] | string)[]) => void}
+   * Inserts elements or strings immediately before the target element(s) in the DOM.
+   *
+   * @param {TinyElement | TinyElement[]} el - The target element(s) before which new content is inserted.
+   * @param {...(TinyNode | TinyNode[] | string)} children - Elements or text to insert before the target.
    */
   static before(el, ...children) {
     const elem = TinyHtml._preElem(el, 'before');
@@ -1255,16 +1263,19 @@ class TinyHtml {
   }
 
   /**
-   * Inserts node before an target element in the DOM.
-   * @type {(...children: (TinyNode | TinyNode[] | string)[]) => void}
+   * Inserts elements or strings immediately before the target element(s) in the DOM.
+   *
+   * @param {...(TinyNode | TinyNode[] | string)} children - Elements or text to insert before the target.
    */
   before(...children) {
     return TinyHtml.before(this, ...children);
   }
 
   /**
-   * Inserts node immediately after an target element in the DOM.
-   * @type {(el: TinyElement|TinyElement[], ...children: (TinyNode | TinyNode[] | string)[]) => void}
+   * Inserts elements or strings immediately after the target element(s) in the DOM.
+   *
+   * @param {TinyElement | TinyElement[]} el - The target element(s) after which new content is inserted.
+   * @param {...(TinyNode | TinyNode[] | string)} children - Elements or text to insert after the target.
    */
   static after(el, ...children) {
     const elem = TinyHtml._preElem(el, 'after');
@@ -1272,16 +1283,19 @@ class TinyHtml {
   }
 
   /**
-   * Inserts node immediately after an target element in the DOM.
-   * @type {(...children: (TinyNode | TinyNode[] | string)[]) => void}
+   * Inserts elements or strings immediately after the target element(s) in the DOM.
+   *
+   * @param {...(TinyNode | TinyNode[] | string)} children - Elements or text to insert after the target.
    */
   after(...children) {
     return TinyHtml.after(this, ...children);
   }
 
   /**
-   * Replaces an target element with the specified nodes.
-   * @type {(el: TinyElement|TinyElement[], ...newNodes: (TinyNode | TinyNode[] | string)[]) => void}
+   * Replaces the target element(s) in the DOM with new elements or text.
+   *
+   * @param {TinyElement | TinyElement[]} el - The element(s) to be replaced.
+   * @param {...(TinyNode | TinyNode[] | string)} newNodes - New elements or text to replace the target.
    */
   static replaceWith(el, ...newNodes) {
     const elem = TinyHtml._preElem(el, 'replaceWith');
@@ -1289,18 +1303,19 @@ class TinyHtml {
   }
 
   /**
-   * Replaces an target element with the specified nodes.
-   * @type {(...newNodes: (TinyNode | TinyNode[] | string)[]) => void}
+   * Replaces the target element(s) in the DOM with new elements or text.
+   *
+   * @param {...(TinyNode | TinyNode[] | string)} newNodes - New elements or text to replace the target.
    */
   replaceWith(...newNodes) {
     return TinyHtml.replaceWith(this, ...newNodes);
   }
 
   /**
-   * Appends an current element to each specified target element.
-   * If multiple targets are provided, the element is cloned accordingly.
-   * @param {TinyNode|TinyNode[]} el - Elements to append.
-   * @param {TinyNode|TinyNode[]} targets - Target elements to receive the appended elements.
+   * Appends the given element(s) to each target element in sequence.
+   *
+   * @param {TinyNode | TinyNode[]} el - The element(s) to append.
+   * @param {TinyNode | TinyNode[]} targets - Target element(s) where content will be appended.
    */
   static appendTo(el, targets) {
     const elems = TinyHtml._preNodeElems(el, 'appendTo');
@@ -1313,19 +1328,19 @@ class TinyHtml {
   }
 
   /**
-   * Appends an current element to each specified target element.
-   * If multiple targets are provided, the element is cloned accordingly.
-   * @param {TinyNode|TinyNode[]} targets - Target elements to receive the appended elements.
+   * Appends the given element(s) to each target element in sequence.
+   *
+   * @param {TinyNode | TinyNode[]} targets - Target element(s) where content will be appended.
    */
   appendTo(targets) {
     return TinyHtml.appendTo(this, targets);
   }
 
   /**
-   * Prepends an current element to each specified target element.
-   * If multiple targets are provided, the element is cloned accordingly.
-   * @param {TinyElement|TinyElement[]} el - Elements to prepend.
-   * @param {TinyElement|TinyElement[]} targets - Target elements to receive the prepended elements.
+   * Prepends the given element(s) to each target element in sequence.
+   *
+   * @param {TinyElement | TinyElement[]} el - The element(s) to prepend.
+   * @param {TinyElement | TinyElement[]} targets - Target element(s) where content will be prepended.
    */
   static prependTo(el, targets) {
     const elems = TinyHtml._preElems(el, 'prependTo');
@@ -1334,27 +1349,25 @@ class TinyHtml {
       elems
         .slice()
         .reverse()
-        .forEach((elem) =>
-          target.prepend(i === tars.length - 1 ? elem : elem.cloneNode(true)),
-        );
+        .forEach((elem) => target.prepend(i === tars.length - 1 ? elem : elem.cloneNode(true)));
     });
   }
 
   /**
-   * Prepends an current element to each specified target element.
-   * If multiple targets are provided, the element is cloned accordingly.
-   * @param {TinyElement|TinyElement[]} targets - Target elements to receive the prepended elements.
+   * Prepends the given element(s) to each target element in sequence.
+   *
+   * @param {TinyElement | TinyElement[]} targets - Target element(s) where content will be prepended.
    */
   prependTo(targets) {
     return TinyHtml.prependTo(this, targets);
   }
 
   /**
-   * Inserts the current element(s) before the given child of the target.
-   * If `child` is not specified, inserts before the target itself.
-   * @param {TinyNode|TinyNode[]} el - Element(s) to insert.
-   * @param {TinyNode | TinyNode[]} target - Target element(s) used for placement reference.
-   * @param {TinyNode | TinyNode[] | null} [child] - Optional child node to insert before.
+   * Inserts the element before a child of a given target, or before the target itself.
+   *
+   * @param {TinyNode | TinyNode[]} el - The element(s) to insert.
+   * @param {TinyNode | TinyNode[]} target - The reference element where insertion happens.
+   * @param {TinyNode | TinyNode[] | null} [child=null] - Optional child to insert before, defaults to target.
    */
   static insertBefore(el, target, child = null) {
     const elem = TinyHtml._preNodeElem(el, 'insertBefore');
@@ -1365,45 +1378,46 @@ class TinyHtml {
   }
 
   /**
-   * Inserts the current element(s) before the given child of the target.
-   * If `child` is not specified, inserts before the target itself.
-   * @param {TinyNode | TinyNode[]} target - Target element(s) used for placement reference.
-   * @param {TinyNode | TinyNode[] | null} [child] - Optional child node to insert before.
+   * Inserts the element before a child of a given target, or before the target itself.
+   *
+   * @param {TinyNode | TinyNode[]} target - The reference element where insertion happens.
+   * @param {TinyNode | TinyNode[] | null} [child=null] - Optional child to insert before, defaults to target.
    */
   insertBefore(target, child) {
     return TinyHtml.insertBefore(this, target, child);
   }
 
   /**
-   * Inserts the current element(s) after the given child of the target.
-   * If `child` is not specified, inserts after the target itself.
-   * @param {TinyNode|TinyNode[]} el - Element(s) to insert.
-   * @param {TinyNode | TinyNode[]} target - Target element(s) used for placement reference.
-   * @param {TinyNode | TinyNode[] | null} [child] - Optional child node to insert after.
+   * Inserts the element after a child of a given target, or after the target itself.
+   *
+   * @param {TinyNode | TinyNode[]} el - The element(s) to insert.
+   * @param {TinyNode | TinyNode[]} target - The reference element where insertion happens.
+   * @param {TinyNode | TinyNode[] | null} [child=null] - Optional child to insert after, defaults to target.
    */
   static insertAfter(el, target, child = null) {
     const elem = TinyHtml._preNodeElem(el, 'insertAfter');
-    const targ = TinyHtml._preNodeElem(target, 'insertBefore')
-    const childNode = TinyHtml._preNodeElemWithNull(child, 'insertBefore');;
+    const targ = TinyHtml._preNodeElem(target, 'insertBefore');
+    const childNode = TinyHtml._preNodeElemWithNull(child, 'insertBefore');
     if (!targ.parentNode) throw new Error('');
     targ.parentNode.insertBefore(elem, childNode || targ.nextSibling);
   }
 
   /**
-   * Inserts the current element(s) after the given child of the target.
-   * If `child` is not specified, inserts after the target itself.
-   * @param {TinyNode | TinyNode[]} target - Target element(s) used for placement reference.
-   * @param {TinyNode | TinyNode[] | null} [child] - Optional child node to insert after.
+   * Inserts the element after a child of a given target, or after the target itself.
+   *
+   * @param {TinyNode | TinyNode[]} target - The reference element where insertion happens.
+   * @param {TinyNode | TinyNode[] | null} [child=null] - Optional child to insert after, defaults to target.
    */
   insertAfter(target, child) {
     return TinyHtml.insertAfter(this, target, child);
   }
 
   /**
-   * Replaces all specified targets with the current element(s).
-   * If multiple targets are provided, the element is cloned accordingly.
-   * @param {TinyNode|TinyNode[]} el - New content to replace the targets.
-   * @param {TinyNode|TinyNode[]} targets - Elements to be replaced.
+   * Replaces all target elements with the provided element(s).
+   * If multiple targets exist, the inserted elements are cloned accordingly.
+   *
+   * @param {TinyNode | TinyNode[]} el - The new element(s) to insert.
+   * @param {TinyNode | TinyNode[]} targets - The elements to be replaced.
    */
   static replaceAll(el, targets) {
     const elems = TinyHtml._preNodeElems(el, 'replaceAll');
@@ -1418,9 +1432,10 @@ class TinyHtml {
   }
 
   /**
-   * Replaces all specified targets with the current element(s).
-   * If multiple targets are provided, the element is cloned accordingly.
-   * @param {TinyNode|TinyNode[]} targets - Elements to be replaced.
+   * Replaces all target elements with the provided element(s).
+   * If multiple targets exist, the inserted elements are cloned accordingly.
+   *
+   * @param {TinyNode | TinyNode[]} targets - The elements to be replaced.
    */
   replaceAll(targets) {
     return TinyHtml.replaceAll(this, targets);
