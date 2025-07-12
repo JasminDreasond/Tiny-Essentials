@@ -354,15 +354,15 @@ Each method below ensures type and returns raw DOM objects:
 | `_preElem(...)`               | `Element`        | `Element`      |
 | `_preNodeElems(...)`          | `Node[]`         | `Node[]`       |
 | `_preNodeElem(...)`           | `Node`           | `Node`         |
-| `_preNodeElemWithNull(...)`   | `Node|null`      | `Node|null`    |
+| `_preNodeElemWithNull(...)`   | `Node\|null`      | `Node\|null`    |
 | `_preHtmlElems(...)`          | `HTMLElement[]`  | `HTMLElement[]`|
 | `_preHtmlElem(...)`           | `HTMLElement`    | `HTMLElement`  |
 | `_preInputElems(...)`         | `InputElement[]` | `InputElement[]` |
 | `_preInputElem(...)`          | `InputElement`   | `InputElement` |
 | `_preEventTargetElems(...)`   | `EventTarget[]`  | `EventTarget[]`|
 | `_preEventTargetElem(...)`    | `EventTarget`    | `EventTarget`  |
-| `_preElemsAndWindow(...)`     | `Element|Window` | `ElementAndWindow[]` |
-| `_preElemAndWindow(...)`      | `Element|Window` | `ElementAndWindow` |
+| `_preElemsAndWindow(...)`     | `Element\|Window` | `ElementAndWindow[]` |
+| `_preElemAndWindow(...)`      | `Element\|Window` | `ElementAndWindow` |
 
 ---
 
