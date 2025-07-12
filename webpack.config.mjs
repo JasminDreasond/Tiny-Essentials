@@ -72,5 +72,6 @@ addModule(1, './src/v1/build/TinyUploadClicker.mjs', 'TinyUploadClicker', true);
 addModule(1, './src/v1/build/TinyDomReadyManager.mjs', 'TinyDomReadyManager', true);
 addModule(1, './src/v1/build/TinyDragger.mjs', 'TinyDragger', true);
 addModule(1, './src/v1/build/TinyNotifications.mjs', 'TinyNotifications', true);
+addModule(1, './src/v1/build/TinyHtml.mjs', 'TinyHtml', true);
 
 export default modules;
