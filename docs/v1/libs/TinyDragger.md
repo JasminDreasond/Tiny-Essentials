@@ -42,21 +42,23 @@ new TinyDragger(targetElement, options?)
 
 ### Options:
 
-| Option                  | Type                           | Default                | Description                                              |
-| ----------------------- | ------------------------------ | ---------------------- | -------------------------------------------------------- |
-| `jail`                  | `HTMLElement`                  | `null`                 | Optional container that restricts movement               |
-| `collisionByMouse`      | `boolean`                      | `false`                | Use mouse position instead of bounding box for collision |
-| `classDragging`         | `string`                       | `'dragging'`           | Class applied to the clone element                       |
-| `classBodyDragging`     | `string`                       | `'drag-active'`        | Class applied to the `<body>` during dragging            |
-| `classJailDragging`     | `string`                       | `'jail-drag-active'`   | Class applied to jail while dragging                     |
-| `classJailDragDisabled` | `string`                       | `'jail-drag-disabled'` | Class applied to jail when dragging is disabled          |
-| `classDragCollision`    | `string`                       | `'dragging-collision'` | Class applied to elements when collision is detected     |
-| `classHidden`           | `string`                       | `'drag-hidden'`        | Class used to hide the original element while dragging   |
-| `lockInsideJail`        | `boolean`                      | `false`                | Prevent drag from exceeding jail bounds                  |
-| `dropInJailOnly`        | `boolean`                      | `false`                | Prevent drop outside the jail area                       |
-| `multiCollision`        | `boolean`                      | `false`                | Enables returning multiple collided elements             |
-| `vibration`             | `VibrationPatterns` or `false` | `false`                | Vibration feedback configuration                         |
-| `revertOnDrop`          | `boolean`                      | `false`                | Return to original position after dropping               |
+| Option                  | Type                           | Default                | Description                                                 |
+| ----------------------- | ------------------------------ | ---------------------- | ----------------------------------------------------------- |
+| `jail`                  | `HTMLElement`                  | `null`                 | Optional container that restricts movement                  |
+| `collisionByMouse`      | `boolean`                      | `false`                | Use mouse position instead of bounding box for collision    |
+| `classDragging`         | `string`                       | `'dragging'`           | Class applied to the clone element                          |
+| `classBodyDragging`     | `string`                       | `'drag-active'`        | Class applied to the `<body>` during dragging               |
+| `classJailDragging`     | `string`                       | `'jail-drag-active'`   | Class applied to jail while dragging                        |
+| `classJailDragDisabled` | `string`                       | `'jail-drag-disabled'` | Class applied to jail when dragging is disabled             |
+| `classDragCollision`    | `string`                       | `'dragging-collision'` | Class applied to elements when collision is detected        |
+| `classHidden`           | `string`                       | `'drag-hidden'`        | Class used to hide the original element while dragging      |
+| `lockInsideJail`        | `boolean`                      | `false`                | Prevent drag from exceeding jail bounds                     |
+| `dropInJailOnly`        | `boolean`                      | `false`                | Prevent drop outside the jail area                          |
+| `multiCollision`        | `boolean`                      | `false`                | Enables returning multiple collided elements                |
+| `vibration`             | `VibrationPatterns` or `false` | `false`                | Vibration feedback configuration                            |
+| `revertOnDrop`          | `boolean`                      | `false`                | Return to original position after dropping                  |
+| `mirrorElem`            | `boolean`                      | `true`                 | Use a visual clone instead of dragging the original element |
+| `defaultZIndex`         | `number`                       | `9999`                 | Sets the z-index value applied when dragging starts         |
 
 ---
 
@@ -331,6 +333,34 @@ Returns `null` if no proxy is active.
 ### `isEnabled(): boolean`
 
 ✅ Returns whether the drag-and-drop functionality is currently enabled.
+
+---
+
+### `getDefaultZIndex(): number`
+
+🎯 Returns the current default `z-index` used when a draggable item is picked up.
+
+---
+
+### `setDefaultZIndex(newZIndex: number): void`
+
+🛠️ Sets a new default `z-index` to be used during drag operations.
+
+> Throws `TypeError` if `newZIndex` is not a finite number.
+
+---
+
+### `isMirrorEnabled(): boolean`
+
+🎯 Returns whether the draggable element uses a **mirror** (`true`) or the **original element** (`false`) during dragging.
+
+---
+
+### `setMirrorEnabled(useMirror: boolean): void`
+
+🛠️ Defines whether the draggable element should use a **mirror clone** or move the **original element**.
+
+> Throws `TypeError` if `useMirror` is not a boolean.
 
 ---
 

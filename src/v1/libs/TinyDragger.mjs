@@ -24,6 +24,7 @@ class TinyDragger {
   #offsetY = 0;
   #offsetX = 0;
 
+  #mirrorElem = true;
   #multiCollision = false;
   #lockInsideJail = false;
   #revertOnDrop = false;
@@ -55,6 +56,7 @@ class TinyDragger {
   #classJailDragging = 'jail-drag-active';
   #classJailDragDisabled = 'jail-drag-disabled';
   #classDragCollision = 'dragging-collision';
+  #defaultZIndex = 9999;
 
   /** @typedef {(event: TouchEvent) => void} TouchDragEvent */
 
@@ -62,6 +64,8 @@ class TinyDragger {
    * @param {HTMLElement|TinyHtml} targetElement - The element to make draggable.
    * @param {Object} [options={}] - Configuration options.
    * @param {HTMLElement} [options.jail] - Optional container to restrict dragging within.
+   * @param {boolean} [options.mirrorElem=true] - Use a visual clone instead of dragging the original element.
+   * @param {number} [options.defaultZIndex] - Sets the z-index value applied when dragging starts.
    * @param {boolean} [options.collisionByMouse=false] - Use mouse position for collision instead of element rect.
    * @param {string} [options.classDragging='dragging'] - CSS class applied to the clone during dragging.
    * @param {string} [options.classBodyDragging='drag-active'] - CSS class applied to <body> during dragging.
@@ -86,6 +90,7 @@ class TinyDragger {
     // === Validations ===
     if (options.jail !== undefined && !(options.jail instanceof HTMLElement))
       throw new Error('The "jail" option must be an HTMLElement if provided.');
+    if (options.defaultZIndex !== undefined) this.setDefaultZIndex(options.defaultZIndex);
 
     if (
       options.vibration !== undefined &&
@@ -114,6 +119,7 @@ class TinyDragger {
       }
     };
 
+    validateBoolean(options.mirrorElem, 'mirrorElem');
     validateBoolean(options.collisionByMouse, 'collisionByMouse');
     validateBoolean(options.lockInsideJail, 'lockInsideJail');
     validateBoolean(options.dropInJailOnly, 'dropInJailOnly');
@@ -149,6 +155,7 @@ class TinyDragger {
 
     if (typeof options.collisionByMouse === 'boolean')
       this.#collisionByMouse = options.collisionByMouse;
+    if (typeof options.mirrorElem === 'boolean') this.#mirrorElem = options.mirrorElem;
     if (typeof options.revertOnDrop === 'boolean') this.#revertOnDrop = options.revertOnDrop;
     if (typeof options.lockInsideJail === 'boolean') this.#lockInsideJail = options.lockInsideJail;
     if (typeof options.dropInJailOnly === 'boolean') this.#dropInJailOnly = options.dropInJailOnly;
@@ -301,9 +308,12 @@ class TinyDragger {
     if (event instanceof MouseEvent) event.preventDefault();
     if (this.#destroyed || !this.#enabled || !this.#target.parentElement) return;
 
-    const dragProxy = this.#target.cloneNode(true);
-    if (!(dragProxy instanceof HTMLElement)) return;
-    this.#dragProxy = dragProxy;
+    if (this.#mirrorElem) {
+      const dragProxy = this.#target.cloneNode(true);
+      if (!(dragProxy instanceof HTMLElement))
+        throw new Error('[TinyDragger] INVALID DRAG ELEMENT!');
+      this.#dragProxy = dragProxy;
+    } else this.#dragProxy = this.#target;
 
     this.#dragging = true;
 
@@ -316,11 +326,13 @@ class TinyDragger {
       top: `${this.#target.offsetTop}px`,
       width: `${rect.width}px`,
       height: `${rect.height}px`,
-      zIndex: 9999,
+      zIndex: this.#defaultZIndex,
     });
 
-    this.#target.classList.add(this.#dragHiddenClass);
-    this.#target.parentElement.appendChild(this.#dragProxy);
+    if (this.#mirrorElem) {
+      this.#target.classList.add(this.#dragHiddenClass);
+      this.#target.parentElement.appendChild(this.#dragProxy);
+    }
 
     const { x: offsetX, y: offsetY } = this.getOffset(event);
     this.#offsetX = offsetX;
@@ -524,14 +536,25 @@ class TinyDragger {
     const newX = this.#dragProxy.style.left;
     const newY = this.#dragProxy.style.top;
     if (this.#dragProxy) {
-      this.#dragProxy.remove();
+      if (this.#mirrorElem) this.#dragProxy.remove();
+      else
+        Object.assign(this.#dragProxy.style, {
+          position: '',
+          pointerEvents: '',
+          left: '',
+          top: '',
+          width: '',
+          height: '',
+          zIndex: '',
+        });
+
       this.#dragProxy = null;
     }
 
     if (this.#lastCollision) this.#removeCollision();
     this.#lastCollision = null;
 
-    this.#target.classList.remove(this.#dragHiddenClass);
+    if (this.#mirrorElem) this.#target.classList.remove(this.#dragHiddenClass);
     if (!this.#revertOnDrop) {
       this.#target.style.left = newX;
       this.#target.style.top = newY;
@@ -726,6 +749,42 @@ class TinyDragger {
   }
 
   /**
+   * Returns the current default z-index used for draggable items.
+   * @returns {number}
+   */
+  getDefaultZIndex() {
+    return this.#defaultZIndex;
+  }
+
+  /**
+   * Sets a new default z-index for draggable items.
+   * @param {number} newZIndex
+   */
+  setDefaultZIndex(newZIndex) {
+    if (typeof newZIndex !== 'number' || !Number.isFinite(newZIndex))
+      throw new TypeError('Z-index must be a finite number.');
+    this.#defaultZIndex = newZIndex;
+  }
+
+  /**
+   * Returns whether the draggable element is mirrored or the original.
+   * @returns {boolean}
+   */
+  isMirrorEnabled() {
+    return this.#mirrorElem;
+  }
+
+  /**
+   * Sets whether the draggable element should be a mirror or the original.
+   * @param {boolean} useMirror
+   */
+  setMirrorEnabled(useMirror) {
+    if (typeof useMirror !== 'boolean') throw new TypeError('Mirror setting must be a boolean.');
+
+    this.#mirrorElem = useMirror;
+  }
+
+  /**
    * Returns the original target element being dragged.
    * @returns {HTMLElement}
    */
@@ -889,7 +948,17 @@ class TinyDragger {
 
     if (this.#lastCollision) this.#removeCollision();
     if (this.#dragProxy) {
-      this.#dragProxy.remove();
+      if (this.#mirrorElem) this.#dragProxy.remove();
+      else
+        Object.assign(this.#dragProxy.style, {
+          position: '',
+          pointerEvents: '',
+          left: '',
+          top: '',
+          width: '',
+          height: '',
+          zIndex: '',
+        });
       this.#dragProxy = null;
     }
 
@@ -897,7 +966,8 @@ class TinyDragger {
     this.#dragging = false;
     this.#lastCollision = null;
 
-    this.#target.classList.remove(this.#dragHiddenClass, this.#classDragging);
+    if (this.#mirrorElem) this.#target.classList.remove(this.#dragHiddenClass);
+    this.#target.classList.remove(this.#classDragging);
     document.body.classList.remove(this.#classBodyDragging);
     if (this.#jail)
       this.#jail.classList.remove(this.#classJailDragging, this.#classJailDragDisabled);

@@ -3660,12 +3660,13 @@ class TinyHtml {
    * @param {TinyElement} el1 - First DOM element (e.g. draggable or moving element).
    * @param {TinyElement} el2 - Second DOM element (e.g. a container or boundary element).
    * @param {CollisionDirLock} lockDirection - Direction that must be respected to unlock the collision.
+   * @param {Partial<ObjRect>} [extraRect] - Optional values to expand the size of the first element's rect.
    * @returns {boolean} True if collision is still active.
    */
-  static isCollWithLock(el1, el2, lockDirection) {
+  static isCollWithLock(el1, el2, lockDirection, extraRect = {}) {
     const elem1 = TinyHtml._preElem(el1, 'isCollWithLock');
     const elem2 = TinyHtml._preElem(el2, 'isCollWithLock');
-    const rect1 = elem1.getBoundingClientRect();
+    const rect1 = TinyHtml._getCustomRect(elem1.getBoundingClientRect(), extraRect);
     const rect2 = elem2.getBoundingClientRect();
     const isColliding = areElsColliding(rect1, rect2);
     return TinyHtml._isCollWithLock(isColliding, rect1, rect2, elem1, lockDirection);
@@ -3677,10 +3678,11 @@ class TinyHtml {
    *
    * @param {TinyElement} el2 - Second DOM element (e.g. a container or boundary element).
    * @param {CollisionDirLock} lockDirection - Direction that must be respected to unlock the collision.
+   * @param {Partial<ObjRect>} [extraRect] - Optional values to expand the size of the first element's rect.
    * @returns {boolean} True if collision is still active.
    */
-  isCollWithLock(el2, lockDirection) {
-    return TinyHtml.isCollWithLock(this, el2, lockDirection);
+  isCollWithLock(el2, lockDirection, extraRect) {
+    return TinyHtml.isCollWithLock(this, el2, lockDirection, extraRect);
   }
 
   /**
@@ -3690,12 +3692,13 @@ class TinyHtml {
    * @param {TinyElement} el1 - First DOM element (e.g. draggable or moving element).
    * @param {TinyElement} el2 - Second DOM element (e.g. a container or boundary element).
    * @param {CollisionDirLock} lockDirection - Direction that must be respected to unlock the collision.
+   * @param {Partial<ObjRect>} [extraRect] - Optional values to expand the size of the first element's rect.
    * @returns {boolean} True if collision is still active.
    */
-  static isCollPerfWithLock(el1, el2, lockDirection) {
+  static isCollPerfWithLock(el1, el2, lockDirection, extraRect = {}) {
     const elem1 = TinyHtml._preElem(el1, 'isCollPerfWithLock');
     const elem2 = TinyHtml._preElem(el2, 'isCollPerfWithLock');
-    const rect1 = elem1.getBoundingClientRect();
+    const rect1 = TinyHtml._getCustomRect(elem1.getBoundingClientRect(), extraRect);
     const rect2 = elem2.getBoundingClientRect();
     const isColliding = areElsPerfColliding(rect1, rect2);
     return TinyHtml._isCollWithLock(isColliding, rect1, rect2, elem1, lockDirection);
@@ -3707,10 +3710,11 @@ class TinyHtml {
    *
    * @param {TinyElement} el2 - Second DOM element (e.g. a container or boundary element).
    * @param {CollisionDirLock} lockDirection - Direction that must be respected to unlock the collision.
+   * @param {Partial<ObjRect>} [extraRect] - Optional values to expand the size of the first element's rect.
    * @returns {boolean} True if collision is still active.
    */
-  isCollPerfWithLock(el2, lockDirection) {
-    return TinyHtml.isCollPerfWithLock(this, el2, lockDirection);
+  isCollPerfWithLock(el2, lockDirection, extraRect) {
+    return TinyHtml.isCollPerfWithLock(this, el2, lockDirection, extraRect);
   }
 
   //////////////////////////////////////////////////////////////////////////////

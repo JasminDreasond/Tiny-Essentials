@@ -5,12 +5,12 @@
     <title>Collision Test</title>
     <script src="/__buffer.js"></script>
     <script type="module">
-      import * as tinyHtml from './src/v1/basics/html.mjs';
       import { TinyHtml } from './src/v1/libs/TinyHtml.mjs';
+      import { TinyDragger } from './src/v1/libs/TinyDragger.mjs';
       import * as tinyCollisions from './src/v1/basics/collision.mjs';
       Object.assign(window, tinyCollisions);
-      Object.assign(window, tinyHtml);
       window.TinyHtml = TinyHtml;
+      window.TinyDragger = TinyDragger;
     </script>
     <style>
       body {
@@ -19,6 +19,11 @@
         overflow: hidden;
         background: #f0f0f0;
         font-family: sans-serif;
+      }
+
+      .drag-hidden {
+        opacity: 0;
+        pointer-events: 0;
       }
 
       #wall {
@@ -50,69 +55,28 @@
     <div id="wall"></div>
     <div id="box"></div>
 
-    <script>
-      const box = document.getElementById('box');
-      const wall = document.getElementById('wall');
-      let offsetX, offsetY;
-      let isDragging = false;
-      let moveStep = 1; // velocidade em px
+    <script type="module">
+      const box = TinyHtml.getById('box');
+      const wall = TinyHtml.getById('wall');
+      const dragger = new TinyDragger(box.get(), { jail: document.body, mirrorElem: false });
+      dragger.addCollidable(wall.get());
 
-      box.addEventListener('mousedown', (e) => {
-        isDragging = true;
-        offsetX = e.clientX - box.offsetLeft;
-        offsetY = e.clientY - box.offsetTop;
-        box.style.cursor = 'grabbing';
-      });
+      const dragging = () => {
+        const colliding = box.isCollWithLock(wall, 'bottom'); // change 'right' if needed
+        box.toggleClass('colliding', colliding);
 
-      document.addEventListener('mouseup', () => {
-        isDragging = false;
-        box.style.cursor = 'grab';
-      });
-
-      document.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
-        moveBoxTo(e.clientX - offsetX, e.clientY - offsetY);
-      });
-
-      document.addEventListener('keydown', (e) => {
-        const left = box.offsetLeft;
-        const top = box.offsetTop;
-
-        switch (e.key) {
-          case 'ArrowLeft':
-          case 'a':
-            moveBoxTo(left - moveStep, top);
-            break;
-          case 'ArrowRight':
-          case 'd':
-            moveBoxTo(left + moveStep, top);
-            break;
-          case 'ArrowUp':
-          case 'w':
-            moveBoxTo(left, top - moveStep);
-            break;
-          case 'ArrowDown':
-          case 's':
-            moveBoxTo(left, top + moveStep);
-            break;
-        }
-      });
-
-      function moveBoxTo(x, y) {
-        box.style.left = `${x}px`;
-        box.style.top = `${y}px`;
-
-        const colliding = TinyHtml.isCollWithLock(box, wall, 'bottom'); // change 'right' if needed
-        box.classList.toggle('colliding', colliding);
-
-        const rect1 = box.getBoundingClientRect();
-        const rect2 = wall.getBoundingClientRect();
+        const rect1 = box.get().getBoundingClientRect();
+        const rect2 = wall.get().getBoundingClientRect();
 
         const details = getElsCollDetails(rect1, rect2);
         console.log('DETAILS', details.depth, details.dirs, details.isNeg);
         // console.log('CENTER', getElsRelativeCenterOffset(rect1, rect2));
         // console.log('DEPTH', getElsCollDirDepth(rect1, rect2));
-      }
+      };
+
+      box.on('drag', dragging);
+      box.on('dragging', dragging);
+      box.on('drop', dragging);
     </script>
   </body>
 </html>
