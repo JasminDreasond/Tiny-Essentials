@@ -1,6 +1,13 @@
 import * as TinyCollision from '../basics/collision.mjs';
 
-const { areElsColliding, areElsPerfColliding } = TinyCollision;
+const {
+  areElsColliding,
+  areElsPerfColliding,
+  areElsCollTop,
+  areElsCollBottom,
+  areElsCollLeft,
+  areElsCollRight,
+} = TinyCollision;
 
 /**
  * Represents a raw Node element or an instance of TinyHtml.
@@ -124,6 +131,20 @@ const __eventRegistry = new WeakMap();
  * @type {WeakMap<ConstructorElValues, ElementDataStore>}
  */
 const __elementDataMap = new WeakMap();
+
+/**
+ * Stores the current collision direction lock for each tracked element.
+ * Used internally by `_isCollWithLock`.
+ *
+ * @type {WeakMap<Node, CollisionDirLock>}
+ */
+const __elemCollision = new WeakMap();
+
+/**
+ * Possible directions from which a collision was detected and locked.
+ *
+ * @typedef {'top'|'bottom'|'left'|'right'} CollisionDirLock
+ */
 
 /**
  * @typedef {Object} HtmlElBoxSides
@@ -800,6 +821,7 @@ class TinyHtml {
    * Internal data selectors for accessing public or private data stores.
    *
    * @type {Record<string, (where: string, elem: TinyElement) => ElementDataStore>}
+   * @readonly
    */
   static _dataSelector = {
     public: (where, el) => {
@@ -1207,6 +1229,7 @@ class TinyHtml {
    * Normalize and validate nodes before DOM insertion.
    * Converts TinyNode-like structures or strings into DOM-compatible nodes.
    * @type {(where: string, ...nodes: (TinyNode | TinyNode[] | string)[]) => (Node | string)[]}
+   * @readonly
    */
   static _appendChecker(where, ...nodes) {
     const results = [];
@@ -2769,6 +2792,7 @@ class TinyHtml {
   /**
    * Maps value types to their corresponding getter functions.
    * Each function extracts a value of a specific type from a compatible HTMLInputElement.
+   * @readonly
    */
   static _valTypes = {
     /**
@@ -2802,6 +2826,7 @@ class TinyHtml {
    * @param {string} where - The context/method name using this validation.
    * @returns {any} The extracted value, depending on the type.
    * @throws {Error} If the element is not an HTMLInputElement or if the type handler is invalid.
+   * @readonly
    */
   static _getValByType(elem, type, where) {
     if (typeof type !== 'string') throw new TypeError('The "type" must be a string.');
@@ -3471,6 +3496,7 @@ class TinyHtml {
    * @param {DOMRect} rect - The base rectangle to be cloned and extended.
    * @param {Partial<DOMRect>} extraRect - Additional dimensions to apply to the base rect (e.g., extra padding or offset).
    * @returns {DOMRect} - A new DOMRect object with the combined dimensions.
+   * @readonly
    */
   static _getCustomRect(rect, extraRect) {
     /** @type {DOMRect} */
@@ -3573,6 +3599,172 @@ class TinyHtml {
    */
   isCollPerfWith(el2, extraRect) {
     return TinyHtml.isCollPerfWith(this, el2, extraRect);
+  }
+
+  /**
+   * Determines whether two elements are colliding with a directional lock mechanism.
+   *
+   * This function tracks the direction from which an element (`elem1`) initially collided with another,
+   * and keeps the collision "locked" until the element exits the collision from the same direction.
+   *
+   * - If `isColliding` is true and no lock is stored yet, it saves the direction of entry.
+   * - If `isColliding` is false but a previous lock exists, it checks if the element has exited
+   *   in the same direction it entered to remove the lock.
+   *
+   * @param {boolean} isColliding - Indicates whether `rect1` and `rect2` are currently colliding.
+   * @param {DOMRect} rect1 - The bounding box of the first element.
+   * @param {DOMRect} rect2 - The bounding box of the second element.
+   * @param {Element} elem1 - The element to track collision state for.
+   * @param {CollisionDirLock} lockDirection - The direction from which the collision was first detected.
+   * @returns {boolean} Returns `true` if the element is still considered colliding (locked), otherwise `false`.
+   * @readonly
+   */
+  static _isCollWithLock(isColliding, rect1, rect2, elem1, lockDirection) {
+    if (isColliding) {
+      // Save entry direction
+      if (!__elemCollision.has(elem1)) {
+        __elemCollision.set(elem1, lockDirection);
+      }
+      return true;
+    }
+
+    // Handle unlock logic
+    if (__elemCollision.has(elem1)) {
+      const lastDirection = __elemCollision.get(elem1);
+
+      switch (lastDirection) {
+        case 'top':
+          if (areElsCollTop(rect1, rect2)) __elemCollision.delete(elem1); // exited from top
+          break;
+        case 'bottom':
+          if (areElsCollBottom(rect1, rect2)) __elemCollision.delete(elem1); // exited from bottom
+          break;
+        case 'left':
+          if (areElsCollLeft(rect1, rect2)) __elemCollision.delete(elem1); // exited from left
+          break;
+        case 'right':
+          if (areElsCollRight(rect1, rect2)) __elemCollision.delete(elem1); // exited from right
+          break;
+      }
+
+      return __elemCollision.has(elem1); // still colliding (locked)
+    }
+
+    return false;
+  }
+
+  /**
+   * Checks if two DOM elements are colliding on the screen, and locks the collision
+   * until the element exits through the same side it entered.
+   *
+   * @param {TinyElement} el1 - First DOM element (e.g. draggable or moving element).
+   * @param {TinyElement} el2 - Second DOM element (e.g. a container or boundary element).
+   * @param {CollisionDirLock} lockDirection - Direction that must be respected to unlock the collision.
+   * @returns {boolean} True if collision is still active.
+   */
+  static isCollWithLock(el1, el2, lockDirection) {
+    const elem1 = TinyHtml._preElem(el1, 'isCollWithLock');
+    const elem2 = TinyHtml._preElem(el2, 'isCollWithLock');
+    const rect1 = elem1.getBoundingClientRect();
+    const rect2 = elem2.getBoundingClientRect();
+    const isColliding = areElsColliding(rect1, rect2);
+    return TinyHtml._isCollWithLock(isColliding, rect1, rect2, elem1, lockDirection);
+  }
+
+  /**
+   * Checks if two DOM elements are colliding on the screen, and locks the collision
+   * until the element exits through the same side it entered.
+   *
+   * @param {TinyElement} el2 - Second DOM element (e.g. a container or boundary element).
+   * @param {CollisionDirLock} lockDirection - Direction that must be respected to unlock the collision.
+   * @returns {boolean} True if collision is still active.
+   */
+  isCollWithLock(el2, lockDirection) {
+    return TinyHtml.isCollWithLock(this, el2, lockDirection);
+  }
+
+  /**
+   * Checks if two DOM elements are colliding on the screen, and locks the collision
+   * until the element exits through the same side it entered.
+   *
+   * @param {TinyElement} el1 - First DOM element (e.g. draggable or moving element).
+   * @param {TinyElement} el2 - Second DOM element (e.g. a container or boundary element).
+   * @param {CollisionDirLock} lockDirection - Direction that must be respected to unlock the collision.
+   * @returns {boolean} True if collision is still active.
+   */
+  static isCollPerfWithLock(el1, el2, lockDirection) {
+    const elem1 = TinyHtml._preElem(el1, 'isCollPerfWithLock');
+    const elem2 = TinyHtml._preElem(el2, 'isCollPerfWithLock');
+    const rect1 = elem1.getBoundingClientRect();
+    const rect2 = elem2.getBoundingClientRect();
+    const isColliding = areElsPerfColliding(rect1, rect2);
+    return TinyHtml._isCollWithLock(isColliding, rect1, rect2, elem1, lockDirection);
+  }
+
+  /**
+   * Checks if two DOM elements are colliding on the screen, and locks the collision
+   * until the element exits through the same side it entered.
+   *
+   * @param {TinyElement} el2 - Second DOM element (e.g. a container or boundary element).
+   * @param {CollisionDirLock} lockDirection - Direction that must be respected to unlock the collision.
+   * @returns {boolean} True if collision is still active.
+   */
+  isCollPerfWithLock(el2, lockDirection) {
+    return TinyHtml.isCollPerfWithLock(this, el2, lockDirection);
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * Checks if the given element is at least partially visible in the viewport.
+   *
+   * @param {TinyHtmlElement} el - The DOM element to check.
+   * @returns {boolean} True if the element is partially in the viewport, false otherwise.
+   */
+  static isInViewport(el) {
+    const element = TinyHtml._preHtmlElem(el, 'isInViewport');
+    const elementTop = element.offsetTop;
+    const elementBottom = elementTop + element.offsetHeight;
+
+    const viewportTop = TinyHtml.winScrollTop();
+    const viewportBottom = viewportTop + TinyHtml.winInnerHeight();
+
+    return elementBottom > viewportTop && elementTop < viewportBottom;
+  }
+
+  /**
+   * Checks if the given element is at least partially visible in the viewport.
+   *
+   * @returns {boolean} True if the element is partially in the viewport, false otherwise.
+   */
+  isInViewport() {
+    return TinyHtml.isInViewport(this);
+  }
+
+  /**
+   * Checks if the given element is fully visible in the viewport (top and bottom).
+   *
+   * @param {TinyHtmlElement} el - The DOM element to check.
+   * @returns {boolean} True if the element is fully visible in the viewport, false otherwise.
+   */
+  static isScrolledIntoView(el) {
+    const element = TinyHtml._preHtmlElem(el, 'isScrolledIntoView');
+    const viewportTop = TinyHtml.winScrollTop();
+    const viewportBottom = viewportTop + TinyHtml.winInnerHeight();
+
+    const elemTop = element.offsetTop;
+    const elemBottom = elemTop + element.offsetHeight;
+
+    return elemBottom <= viewportBottom && elemTop >= viewportTop;
+  }
+
+  /**
+   * Checks if the given element is fully visible in the viewport (top and bottom).
+   *
+   * @returns {boolean} True if the element is fully visible in the viewport, false otherwise.
+   */
+  isScrolledIntoView() {
+    return TinyHtml.isScrolledIntoView(this);
   }
 }
 

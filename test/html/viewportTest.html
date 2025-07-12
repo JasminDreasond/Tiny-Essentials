@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>TinyHtml Viewport Test</title>
+    <script src="/__buffer.js"></script>
+    <script type="module">
+      import { TinyHtml } from './src/v1/libs/TinyHtml.mjs';
+      window.TinyHtml = TinyHtml;
+    </script>
+    <style>
+      body {
+        margin: 0;
+        font-family: sans-serif;
+      }
+
+      .spacer {
+        height: 1200px;
+        background: #eee;
+      }
+
+      .test-element {
+        margin: 50px auto;
+        width: 80%;
+        height: 150px;
+        background: lightcoral;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: white;
+        transition: background 0.3s;
+      }
+
+      .visible-partial {
+        background: orange !important;
+      }
+
+      .visible-full {
+        background: green !important;
+      }
+
+      #results {
+        position: fixed;
+        top: 0;
+        left: 0;
+        background: black;
+        color: white;
+        padding: 5px 10px;
+        font-size: 14px;
+        z-index: 100;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="results">Scroll to test visibility...</div>
+
+    <div class="spacer"></div>
+
+    <div id="target" class="test-element">I'm the target element!</div>
+
+    <div class="spacer"></div>
+
+    <script>
+      const target = document.getElementById('target');
+      const resultDisplay = document.getElementById('results');
+
+      function update() {
+        const isPartial = TinyHtml.isInViewport(target);
+        const isFull = TinyHtml.isScrolledIntoView(target);
+
+        target.classList.remove('visible-partial', 'visible-full');
+
+        if (isFull) {
+          target.classList.add('visible-full');
+          resultDisplay.textContent = 'Fully Visible in Viewport';
+        } else if (isPartial) {
+          target.classList.add('visible-partial');
+          resultDisplay.textContent = 'Partially Visible in Viewport';
+        } else {
+          resultDisplay.textContent = 'Not Visible in Viewport';
+        }
+      }
+
+      window.addEventListener('scroll', update);
+      window.addEventListener('resize', update);
+      window.addEventListener('load', update);
+    </script>
+  </body>
+</html>

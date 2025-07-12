@@ -214,32 +214,6 @@ A common return format used to describe the box model dimensions (borders, paddi
 
 ---
 
-### 👁️ `isInViewport(element)`
-
-🔍 Checks if an element is **partially visible** in the current viewport.
-
-```js
-isInViewport(element: HTMLElement): boolean
-```
-
-* `element`: The DOM element to check.
-* **Returns**: `true` if the element is at least partially visible; `false` otherwise.
-
----
-
-### ✅ `isScrolledIntoView(element)`
-
-📦 Checks if an element is **fully visible** (top and bottom) within the viewport.
-
-```js
-isScrolledIntoView(element: HTMLElement): boolean
-```
-
-* `element`: The DOM element to check.
-* **Returns**: `true` if the entire element is within the viewport; `false` otherwise.
-
----
-
 ### 📄 `installWindowHiddenScript`
 
 Automatically toggles CSS classes on a given element based on the browser window or tab **visibility** and **focus** state.

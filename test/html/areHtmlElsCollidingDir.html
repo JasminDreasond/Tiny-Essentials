@@ -102,7 +102,7 @@
         box.style.left = `${x}px`;
         box.style.top = `${y}px`;
 
-        const colliding = areHtmlElsCollidingWithLock(box, wall, 'bottom'); // change 'right' if needed
+        const colliding = TinyHtml.isCollWithLock(box, wall, 'bottom'); // change 'right' if needed
         box.classList.toggle('colliding', colliding);
 
         const rect1 = box.getBoundingClientRect();
