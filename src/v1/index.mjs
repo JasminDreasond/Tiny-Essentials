@@ -51,8 +51,6 @@ import {
   installWindowHiddenScript,
   readFileBlob,
   readBase64Blob,
-  isInViewport,
-  isScrolledIntoView,
 } from './basics/html.mjs';
 import {
   getHtmlElBorders,
@@ -60,6 +58,8 @@ import {
   getHtmlElMargin,
   getHtmlElPadding,
   areHtmlElsColliding,
+  isInViewport,
+  isScrolledIntoView,
 } from './basics/html_deprecated.mjs';
 import TinyDragDropDetector from './libs/TinyDragDropDetector.mjs';
 

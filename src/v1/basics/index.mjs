@@ -9,8 +9,6 @@ import {
   installWindowHiddenScript,
   readFileBlob,
   readBase64Blob,
-  isInViewport,
-  isScrolledIntoView,
 } from './html.mjs';
 import {
   areHtmlElsColliding,
@@ -18,6 +16,8 @@ import {
   getHtmlElBordersWidth,
   getHtmlElMargin,
   getHtmlElPadding,
+  isInViewport,
+  isScrolledIntoView,
 } from './html_deprecated.mjs';
 import {
   countObj,

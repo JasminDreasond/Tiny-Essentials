@@ -81,15 +81,10 @@ export const getHtmlElPadding = (el) => {
  *
  * @param {HTMLElement} element - The DOM element to check.
  * @returns {boolean} True if the element is partially in the viewport, false otherwise.
+ * @deprecated - Use TinyHtml.isInViewport instead.
  */
 export function isInViewport(element) {
-  const elementTop = element.offsetTop;
-  const elementBottom = elementTop + element.offsetHeight;
-
-  const viewportTop = TinyHtml.winScrollTop();
-  const viewportBottom = viewportTop + TinyHtml.winInnerHeight();
-
-  return elementBottom > viewportTop && elementTop < viewportBottom;
+  return TinyHtml.isInViewport(element);
 }
 
 /**
@@ -97,13 +92,8 @@ export function isInViewport(element) {
  *
  * @param {HTMLElement} element - The DOM element to check.
  * @returns {boolean} True if the element is fully visible in the viewport, false otherwise.
+ * @deprecated - Use TinyHtml.isScrolledIntoView instead.
  */
 export function isScrolledIntoView(element) {
-  const viewportTop = TinyHtml.winScrollTop();
-  const viewportBottom = viewportTop + TinyHtml.winInnerHeight();
-
-  const elemTop = element.offsetTop;
-  const elemBottom = elemTop + element.offsetHeight;
-
-  return elemBottom <= viewportBottom && elemTop >= viewportTop;
+  return TinyHtml.isScrolledIntoView(element);
 }
