@@ -61,24 +61,24 @@
 
     <div class="spacer"></div>
 
-    <script>
-      const target = document.getElementById('target');
-      const resultDisplay = document.getElementById('results');
+    <script type="module">
+      const target = TinyHtml.getById('target');
+      const resultDisplay = TinyHtml.getById('results');
 
       function update() {
-        const isPartial = TinyHtml.isInViewport(target);
-        const isFull = TinyHtml.isScrolledIntoView(target);
+        const isPartial = target.isInViewport();
+        const isFull = target.isScrolledIntoView();
 
-        target.classList.remove('visible-partial', 'visible-full');
+        target.removeClass('visible-partial', 'visible-full');
 
         if (isFull) {
-          target.classList.add('visible-full');
-          resultDisplay.textContent = 'Fully Visible in Viewport';
+          target.addClass('visible-full');
+          resultDisplay.setText('Fully Visible in Viewport');
         } else if (isPartial) {
-          target.classList.add('visible-partial');
-          resultDisplay.textContent = 'Partially Visible in Viewport';
+          target.addClass('visible-partial');
+          resultDisplay.setText('Partially Visible in Viewport');
         } else {
-          resultDisplay.textContent = 'Not Visible in Viewport';
+          resultDisplay.setText('Not Visible in Viewport');
         }
       }
 
