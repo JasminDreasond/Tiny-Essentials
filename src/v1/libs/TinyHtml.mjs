@@ -288,10 +288,15 @@ class TinyHtml {
    * Returns the current Element held by this instance.
    *
    * @param {string} where - The method name or context calling this.
-   * @returns {Element} - The instance's element.
+   * @returns {ConstructorElValues} - The instance's element.
+   * @readonly
    */
   _getElement(where) {
-    if (!(this.#el instanceof Element))
+    if (
+      !(this.#el instanceof Element) &&
+      !(this.#el instanceof Window) &&
+      !(this.#el instanceof Document)
+    )
       throw new Error(`[TinyHtml] Invalid Element in ${where}().`);
     return this.#el;
   }
@@ -2878,6 +2883,7 @@ class TinyHtml {
    * @param {GetValueTypes} type - The type of value to retrieve ("string", "date", or "number").
    * @param {string} where - The context/method name using this validation.
    * @returns {any} The raw value retrieved from the element or hook.
+   * @readonly
    */
   _val(where, type) {
     return TinyHtml._val(this, where, type);
@@ -2950,6 +2956,7 @@ class TinyHtml {
    * @param {GetValueTypes} type - The type of value to retrieve ("string", "date", or "number").
    * @returns {SetValueBase[]} - The validated value as an array.
    * @throws {Error} If the returned value is not an array.
+   * @readonly
    */
   _valArr(where, type) {
     return TinyHtml._valArr(this, where, type);
@@ -3797,16 +3804,16 @@ class TinyHtml {
   /**
    * Checks if the given element is at least partially visible in the viewport.
    *
-   * @param {TinyHtmlElement} el - The DOM element to check.
+   * @param {TinyElement} el - The DOM element to check.
    * @returns {boolean} True if the element is partially in the viewport, false otherwise.
    */
   static isInViewport(el) {
-    const element = TinyHtml._preHtmlElem(el, 'isInViewport');
-    const elementTop = element.offsetTop;
-    const elementBottom = elementTop + element.offsetHeight;
+    const elem = TinyHtml._preElem(el, 'isInViewport');
+    const elementTop = TinyHtml.offset(elem).top;
+    const elementBottom = elementTop + TinyHtml.outerHeight(elem);
 
-    const viewportTop = TinyHtml.winScrollTop();
-    const viewportBottom = viewportTop + TinyHtml.winInnerHeight();
+    const viewportTop = TinyHtml.scrollTop(window);
+    const viewportBottom = viewportTop + TinyHtml.height(window);
 
     return elementBottom > viewportTop && elementTop < viewportBottom;
   }
@@ -3823,18 +3830,18 @@ class TinyHtml {
   /**
    * Checks if the given element is fully visible in the viewport (top and bottom).
    *
-   * @param {TinyHtmlElement} el - The DOM element to check.
+   * @param {TinyElement} el - The DOM element to check.
    * @returns {boolean} True if the element is fully visible in the viewport, false otherwise.
    */
   static isScrolledIntoView(el) {
-    const element = TinyHtml._preHtmlElem(el, 'isScrolledIntoView');
-    const viewportTop = TinyHtml.winScrollTop();
-    const viewportBottom = viewportTop + TinyHtml.winInnerHeight();
+    const elem = TinyHtml._preElem(el, 'isScrolledIntoView');
+    const docViewTop = TinyHtml.scrollTop(window);
+    const docViewBottom = docViewTop + TinyHtml.height(window);
 
-    const elemTop = element.offsetTop;
-    const elemBottom = elemTop + element.offsetHeight;
+    const elemTop = TinyHtml.offset(elem).top;
+    const elemBottom = elemTop + TinyHtml.height(elem);
 
-    return elemBottom <= viewportBottom && elemTop >= viewportTop;
+    return elemBottom <= docViewBottom && elemTop >= docViewTop;
   }
 
   /**
