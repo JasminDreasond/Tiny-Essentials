@@ -133,12 +133,22 @@ const __eventRegistry = new WeakMap();
 const __elementDataMap = new WeakMap();
 
 /**
- * Stores the current collision direction lock for each tracked element.
- * Used internally by `_isCollWithLock`.
+ * Stores directional collision locks separately.
+ * Each direction has its own WeakMap to allow independent locking.
  *
- * @type {WeakMap<Node, CollisionDirLock>}
+ * @type {{
+ *   top: WeakMap<Element, true>,
+ *   bottom: WeakMap<Element, true>,
+ *   left: WeakMap<Element, true>,
+ *   right: WeakMap<Element, true>
+ * }}
  */
-const __elemCollision = new WeakMap();
+const __elemCollision = {
+  top: new WeakMap(),
+  bottom: new WeakMap(),
+  left: new WeakMap(),
+  right: new WeakMap(),
+};
 
 /**
  * Possible directions from which a collision was detected and locked.
@@ -3620,34 +3630,38 @@ class TinyHtml {
    * @readonly
    */
   static _isCollWithLock(isColliding, rect1, rect2, elem1, lockDirection) {
+    const lockMap = __elemCollision[lockDirection];
+
     if (isColliding) {
       // Save entry direction
-      if (!__elemCollision.has(elem1)) {
-        __elemCollision.set(elem1, lockDirection);
+      if (!lockMap.has(elem1)) {
+        lockMap.set(elem1, true);
       }
       return true;
     }
 
     // Handle unlock logic
-    if (__elemCollision.has(elem1)) {
-      const lastDirection = __elemCollision.get(elem1);
+    if (lockMap.has(elem1)) {
+      let shouldUnlock = false;
 
-      switch (lastDirection) {
+      switch (lockDirection) {
         case 'top':
-          if (areElsCollTop(rect1, rect2)) __elemCollision.delete(elem1); // exited from top
+          shouldUnlock = areElsCollTop(rect1, rect2);
           break;
         case 'bottom':
-          if (areElsCollBottom(rect1, rect2)) __elemCollision.delete(elem1); // exited from bottom
+          shouldUnlock = areElsCollBottom(rect1, rect2);
           break;
         case 'left':
-          if (areElsCollLeft(rect1, rect2)) __elemCollision.delete(elem1); // exited from left
+          shouldUnlock = areElsCollLeft(rect1, rect2);
           break;
         case 'right':
-          if (areElsCollRight(rect1, rect2)) __elemCollision.delete(elem1); // exited from right
+          shouldUnlock = areElsCollRight(rect1, rect2);
           break;
       }
 
-      return __elemCollision.has(elem1); // still colliding (locked)
+      if (shouldUnlock) lockMap.delete(elem1);
+
+      return lockMap.has(elem1); // still colliding (locked)
     }
 
     return false;
@@ -3715,6 +3729,67 @@ class TinyHtml {
    */
   isCollPerfWithLock(el2, lockDirection, extraRect) {
     return TinyHtml.isCollPerfWithLock(this, el2, lockDirection, extraRect);
+  }
+
+  /**
+   * Resets all collision locks for a specific element (for all directions).
+   *
+   * @param {TinyElement} el - The element whose locks should be removed.
+   * @returns {boolean} True if at least one lock was removed.
+   */
+  static resetCollLock(el) {
+    const elem = TinyHtml._preElem(el, 'resetCollLock');
+    let removed = false;
+
+    for (const dir of /** @type {CollisionDirLock[]} */ (['top', 'bottom', 'left', 'right'])) {
+      if (__elemCollision[dir].has(elem)) {
+        __elemCollision[dir].delete(elem);
+        removed = true;
+      }
+    }
+
+    return removed;
+  }
+
+  /**
+   * Resets the collision lock for a specific element.
+   *
+   * This removes any previously stored collision direction for the given element,
+   * effectively unlocking its collision state.
+   *
+   * @returns {boolean} Returns `true` if a lock was removed, `false` if no lock was present.
+   */
+  resetCollLock() {
+    return TinyHtml.resetCollLock(this);
+  }
+
+  /**
+   * Resets the collision lock for a specific element and direction.
+   *
+   * @param {TinyElement} el - The element whose lock should be removed.
+   * @param {CollisionDirLock} direction - The direction to clear the lock from.
+   * @returns {boolean} True if the lock was removed.
+   */
+  static resetCollLockDir(el, direction) {
+    const elem = TinyHtml._preElem(el, 'resetCollLockDir');
+    const lockMap = __elemCollision[direction];
+
+    if (lockMap.has(elem)) {
+      lockMap.delete(elem);
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Resets the collision lock for a specific element and direction.
+   *
+   * @param {CollisionDirLock} direction - The direction to clear the lock from.
+   * @returns {boolean} True if the lock was removed.
+   */
+  resetCollLockDir(direction) {
+    return TinyHtml.resetCollLockDir(this, direction);
   }
 
   //////////////////////////////////////////////////////////////////////////////
