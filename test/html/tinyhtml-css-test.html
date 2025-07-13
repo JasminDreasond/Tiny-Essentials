@@ -30,6 +30,7 @@
     <div>
       <button id="set-style">Set Style</button>
       <button id="get-style">Get Style</button>
+      <button id="get-styles">Get Styles</button>
       <button id="remove-style">Remove Style</button>
       <button id="toggle-style">Toggle Color</button>
       <button id="clear-style">Clear All Inline Styles</button>
@@ -39,7 +40,12 @@
       const box = TinyHtml.getById('box');
       window.box = box;
       document.getElementById('set-style').addEventListener('click', () => {
-        box.setStyle({ backgroundColor: 'tomato', borderRadius: '10px' });
+        box.setStyle({ backgroundColor: 'tomato', borderRadius: '10px', borderStyle: 'dashed' });
+      });
+
+      document.getElementById('get-styles').addEventListener('click', () => {
+        const val = box.style();
+        alert(JSON.stringify(val));
       });
 
       document.getElementById('get-style').addEventListener('click', () => {
