@@ -47,20 +47,22 @@
       // Watcher for the whole window
       const windowWatcher = new TinyAfterScrollWatcher(window);
       window.windowWatcher = windowWatcher;
-      windowWatcher.doAfterScroll(() => {
-        console.log('[window] Scroll stopped!');
-      });
+      windowWatcher.onScroll(() =>
+        windowWatcher.doAfterScroll(() => {
+          console.log('[window] Scroll stopped!');
+        }),
+      );
 
       // Watcher for the scrollable div
       const customBox = document.getElementById('customBox');
       const boxWatcher = new TinyAfterScrollWatcher(customBox);
       window.boxWatcher = boxWatcher;
 
-      boxWatcher.onScroll(() => {
+      boxWatcher.onScroll(() =>
         boxWatcher.doAfterScroll(() => {
           console.log('[customBox] Scroll stopped!');
-        });
-      });
+        }),
+      );
     </script>
   </body>
 </html>
