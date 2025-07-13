@@ -17,8 +17,8 @@ class TinyAfterScrollWatcher {
   /** @type {Element|Window} */
   #scrollTarget;
 
-  /** @type {number} */
-  lastScrollTime = 0;
+  /** @type {null|NodeJS.Timeout} */
+  #lastScrollTime = null;
 
   /** @type {FnData[]} */
   #afterScrollQueue = [];
@@ -28,6 +28,9 @@ class TinyAfterScrollWatcher {
 
   /** @type {Set<OnScrollFunc>} */
   #externalScrollListeners = new Set();
+
+  /** @type {Set<FnData>} */
+  #onStopListeners = new Set();
 
   /** @type {boolean} */
   #destroyed = false;
@@ -42,15 +45,19 @@ class TinyAfterScrollWatcher {
     if (!(scrollTarget instanceof Element) && !(scrollTarget instanceof Window))
       throw new TypeError('scrollTarget must be an Element or the Window object.');
     this.#scrollTarget = scrollTarget;
+    this._checkTimer = this._checkTimer.bind(this);
 
-    this._onScroll = this._onScroll.bind(this);
-    this._checkQueue = this._checkQueue.bind(this);
-
-    this.#scrollTarget.addEventListener('scroll', this._onScroll);
+    this.#scrollTarget.addEventListener('scroll', this._checkTimer);
     this.#inactivityTime = inactivityTime;
-
-    requestAnimationFrame(this._checkQueue);
   }
+
+  _checkTimer = () => {
+    if (this.#lastScrollTime) clearTimeout(this.#lastScrollTime);
+    this.#lastScrollTime = setTimeout(() => {
+      this.#lastScrollTime = null;
+      this.#checkQueue();
+    }, this.#inactivityTime);
+  };
 
   /**
    * Gets the current inactivity time in milliseconds.
@@ -73,28 +80,20 @@ class TinyAfterScrollWatcher {
   }
 
   /**
-   * Internal handler for scroll events.
-   * Updates the last scroll timestamp.
-   * @private
-   */
-  _onScroll() {
-    this.lastScrollTime = Date.now();
-  }
-
-  /**
    * Continuously checks whether the user has stopped scrolling,
    * and if so, runs all queued functions.
-   * @private
    */
-  _checkQueue() {
+  #checkQueue() {
     if (this.#destroyed) return;
-    requestAnimationFrame(this._checkQueue);
+    // Runs all onStop first listeners
+    for (const fn of this.#onStopListeners) {
+      if (typeof fn === 'function') fn();
+    }
 
-    if (Date.now() - this.lastScrollTime > this.#inactivityTime) {
-      while (this.#afterScrollQueue.length) {
-        const fn = this.#afterScrollQueue.pop();
-        if (typeof fn === 'function') fn();
-      }
+    // Then execute the queue afterScrollQueue
+    while (this.#afterScrollQueue.length) {
+      const fn = this.#afterScrollQueue.pop();
+      if (typeof fn === 'function') fn();
     }
   }
 
@@ -109,6 +108,29 @@ class TinyAfterScrollWatcher {
     if (typeof fn !== 'function') throw new TypeError('Argument must be a function.');
     this.lastScrollTime = Date.now();
     this.#afterScrollQueue.push(fn);
+  }
+
+  /**
+   * Registers a function to run once after scrolling has stopped,
+   * before any afterScrollQueue functions.
+   *
+   * @param {FnData} fn - A function to execute after scroll stop.
+   * @throws {TypeError} If the argument is not a function.
+   */
+  onStop(fn) {
+    if (typeof fn !== 'function') throw new TypeError('Argument must be a function.');
+    this.#onStopListeners.add(fn);
+  }
+
+  /**
+   * Removes a previously registered onStop function.
+   *
+   * @param {FnData} fn - The function to remove.
+   * @throws {TypeError} If the argument is not a function.
+   */
+  offStop(fn) {
+    if (typeof fn !== 'function') throw new TypeError('Argument must be a function.');
+    this.#onStopListeners.delete(fn);
   }
 
   /**
@@ -144,11 +166,12 @@ class TinyAfterScrollWatcher {
     if (this.#destroyed) return;
     this.#destroyed = true;
 
-    this.#scrollTarget.removeEventListener('scroll', this._onScroll);
+    this.#scrollTarget.removeEventListener('scroll', this._checkTimer);
     for (const fn of this.#externalScrollListeners)
       this.#scrollTarget.removeEventListener('scroll', fn);
 
     this.#externalScrollListeners.clear();
+    this.#onStopListeners.clear();
   }
 }
 

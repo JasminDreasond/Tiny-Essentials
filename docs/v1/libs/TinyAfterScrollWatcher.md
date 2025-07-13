@@ -10,7 +10,8 @@ Perfect for optimizing logic that should only run **after** the user has finishe
 * ✅ Works on any scrollable element or the window
 * ⏱️ Customizable "inactivity timeout" (default: `100ms`)
 * 🧠 Executes queued callbacks after scroll ends
-* 🧩 Add/remove your own scroll listeners easily (`onScroll` / `offScroll`)
+* 🧷 Add/remove scroll listeners easily (`onScroll` / `offScroll`)
+* 🛑 Execute logic right before after-scroll queue (`onStop`)
 * 🧹 Cleanly destroy the instance when no longer needed
 
 ---
@@ -36,12 +37,20 @@ watcher.doAfterScroll(() => {
   console.log('Scroll has stopped for 300ms!');
 });
 
+// Add a function to run immediately when scroll stops
+watcher.onStop(() => {
+  console.log('User just stopped scrolling!');
+});
+
 // Add a custom scroll listener
 const myScrollHandler = () => console.log('Scrolling...');
 watcher.onScroll(myScrollHandler);
 
 // Remove it later
 watcher.offScroll(myScrollHandler);
+
+// Also remove onStop listener
+watcher.offStop(myStopFunction);
 
 // Fully destroy the watcher
 watcher.destroy();
@@ -99,6 +108,46 @@ doAfterScroll(fn: FnData): void
 | Name | Type     | Description                          |
 | ---- | -------- | ------------------------------------ |
 | `fn` | `FnData` | Function to run after scrolling ends |
+
+#### Throws:
+
+* `TypeError` if the argument is not a function.
+
+---
+
+### 🛑 Method: `onStop(fn)`
+
+Registers a function to be called **immediately after scrolling stops**, but **before** the `doAfterScroll` queue is executed.
+
+```ts
+onStop(fn: FnData): void
+```
+
+#### Parameters:
+
+| Name | Type     | Description                                     |
+| ---- | -------- | ----------------------------------------------- |
+| `fn` | `FnData` | Function to call as soon as scroll has stopped. |
+
+#### Throws:
+
+* `TypeError` if the argument is not a function.
+
+---
+
+### 🔁 Method: `offStop(fn)`
+
+Removes a function previously registered with `onStop`.
+
+```ts
+offStop(fn: FnData): void
+```
+
+#### Parameters:
+
+| Name | Type     | Description                        |
+| ---- | -------- | ---------------------------------- |
+| `fn` | `FnData` | Function to remove from onStop set |
 
 #### Throws:
 
@@ -176,6 +225,7 @@ type OnScrollFunc = (ev: Event) => void;
 
 ## 📝 Notes
 
-* The scroll queue is **LIFO** (last-in, first-out)
-* The internal check loop uses `requestAnimationFrame`, so it's efficient
-* Setting `inactivityTime` to a lower value makes it more sensitive
+* `onStop` functions are called **before** the `doAfterScroll` queue.
+* The `doAfterScroll` queue runs in **LIFO** order (last-in, first-out).
+* `requestAnimationFrame` is used for efficient polling.
+* Lower `inactivityTime` makes scroll-stop detection more responsive.
