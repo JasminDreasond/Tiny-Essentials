@@ -2013,19 +2013,41 @@ class TinyHtml {
    * Returns an object with all property-value pairs in kebab-case format.
    *
    * @param {TinyHtmlElement|TinyHtmlElement[]} el - A single element to inspect.
-   * @param {boolean} [camelCase=false] - If `true`, the property names will be converted to camelCase.
+   * @param {Object} [settings={}] - Optional configuration settings.
+   * @param {boolean} [settings.camelCase=false] - If `true`, the property names will be converted to camelCase.
+   * @param {boolean} [settings.rawAttr=false] - If `true`, reads the style string from the `style` attribute instead of using the style object.
    * @returns {Record<string, string>} All inline styles as an object.
+   *
+   * @throws {TypeError} If `camelCase` or `rawAttr` is not a boolean.
    */
-  static style(el, camelCase = false) {
+  static style(el, { camelCase = false, rawAttr = false } = {}) {
+    if (typeof camelCase !== 'boolean')
+      throw new TypeError(`"camelCase" must be a boolean. Received: ${typeof camelCase}`);
+    if (typeof rawAttr !== 'boolean')
+      throw new TypeError(`"rawAttr" must be a boolean. Received: ${typeof rawAttr}`);
+
     const elem = TinyHtml._preHtmlElem(el, 'style');
-    const styles = elem.style;
     /** @type {Record<string, string>} */
     const result = {};
 
-    for (let i = 0; i < styles.length; i++) {
-      const prop = styles[i]; // Already in kebab-case
-      const value = styles.getPropertyValue(prop);
-      result[camelCase ? TinyHtml.toStyleCc(prop) : prop] = value;
+    if (rawAttr) {
+      const raw = elem.getAttribute('style') || '';
+      const entries = raw.split(';');
+      for (const entry of entries) {
+        const [rawProp, rawVal] = entry.split(':');
+        if (!rawProp || !rawVal) continue;
+
+        const prop = rawProp.trim();
+        const value = rawVal.trim();
+        result[camelCase ? TinyHtml.toStyleCc(prop) : prop] = value;
+      }
+    } else {
+      const styles = elem.style;
+      for (let i = 0; i < styles.length; i++) {
+        const prop = styles[i]; // Already in kebab-case
+        const value = styles.getPropertyValue(prop);
+        result[camelCase ? TinyHtml.toStyleCc(prop) : prop] = value;
+      }
     }
 
     return result;
@@ -2036,11 +2058,13 @@ class TinyHtml {
    *
    * Returns an object with all property-value pairs in kebab-case format.
    *
-   * @param {boolean} [camelCase=false] - If `true`, the property names will be converted to camelCase.
+   * @param {Object} [settings={}] - Optional configuration settings.
+   * @param {boolean} [settings.camelCase=false] - If `true`, the property names will be converted to camelCase.
+   * @param {boolean} [settings.rawAttr=false] - If `true`, reads the style string from the `style` attribute instead of using the style object.
    * @returns {Record<string, string>} All inline styles as an object.
    */
-  style(camelCase) {
-    return TinyHtml.style(this, camelCase);
+  style(settings) {
+    return TinyHtml.style(this, settings);
   }
 
   /**

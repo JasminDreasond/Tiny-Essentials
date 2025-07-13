@@ -1413,24 +1413,41 @@ TinyHtml.getStyle(element, 'backgroundColor'); // "blue"
 
 ---
 
-### 🧾 `TinyHtml.style(el, camelCase = false)`
+### 🧾 `TinyHtml.style(el, settings = {})`
 
 Returns all inline styles defined directly on the element (`style` attribute), as an object.
 
-* If `camelCase` is `true`, the property names will be converted to camelCase.
-* If `false` (default), they will remain in kebab-case.
+You can customize the output by passing an optional settings object:
+
+* `camelCase` (`boolean`, default `false`) – If `true`, property names will be returned in camelCase format.
+* `rawAttr` (`boolean`, default `false`) – If `true`, the raw `style` attribute string will be parsed manually instead of using the element's `style` object.
+
+#### ✅ Examples
 
 ```js
-TinyHtml.style(element);
+TinyHtml.style(element, { rawAttr: true, camelCase: false });
 // {
 //   "background-color": "tomato",
 //   "border-radius": "10px"
 // }
 
-TinyHtml.style(element, true);
+TinyHtml.style(element, { rawAttr: true, camelCase: true });
 // {
 //   backgroundColor: "tomato",
 //   borderRadius: "10px"
+// }
+
+TinyHtml.style(element, { rawAttr: false, camelCase: true });
+// {
+//   "backgroundColor":"tomato",
+//   "borderTopLeftRadius":"10px",
+//   "borderTopRightRadius":"10px",
+//   "borderBottomRightRadius":"10px",
+//   "borderBottomLeftRadius":"10px",
+//   "borderTopStyle":"dashed",
+//   "borderRightStyle":"dashed",
+//   "borderBottomStyle":"dashed",
+//   "borderLeftStyle":"dashed"
 // }
 ```
 
