@@ -1331,3 +1331,288 @@ Checks if the element is **fully inside** the viewport — meaning:
 ```js
 TinyHtml.isScrolledIntoView(element);
 ```
+
+---
+
+## 🎨 CSS Property Aliases (`cssPropAliases`)
+
+TinyHtml provides automatic conversion between `camelCase` and `kebab-case` style properties to simplify working with inline styles in HTML elements.
+
+This is useful for working with both JavaScript style names and the raw `style=""` attribute.
+
+### 🔁 Alias Mapping
+
+The object `cssPropAliases` maps JavaScript-style property names (`camelCase`) to their CSS equivalents (`kebab-case`), for example:
+
+```js
+TinyHtml.cssPropAliases.backgroundColor; // "background-color"
+```
+
+⚠️ Do not modify the internal `#cssPropAliases` object directly. Instead, use the `TinyHtml.cssPropAliases` proxy.
+
+### ✍️ Adding a New Alias
+
+To add a new alias and automatically generate the reverse mapping:
+
+```js
+TinyHtml.cssPropAliases.tinyPudding = 'tiny-pudding';
+```
+
+This will automatically make this available:
+
+```js
+TinyHtml.cssPropRevAliases['tiny-pudding']; // "tinyPudding"
+```
+
+---
+
+## ✂️ Utility Functions
+
+### 🔡 `TinyHtml.toStyleKc(str)`
+
+Converts a camelCase property to kebab-case if it exists in the alias list.
+
+```js
+TinyHtml.toStyleKc('marginLeft'); // "margin-left"
+```
+
+### 🔡 `TinyHtml.toStyleCc(str)`
+
+Converts a kebab-case property to camelCase if it exists in the reverse alias list.
+
+```js
+TinyHtml.toStyleCc('font-weight'); // "fontWeight"
+```
+
+---
+
+## 🧩 Style Methods
+
+### 🎯 `TinyHtml.setStyle(el, prop, value)`
+
+Sets one or more inline CSS properties on an element or a list of elements.
+
+```js
+TinyHtml.setStyle(element, 'backgroundColor', 'blue');
+
+TinyHtml.setStyle(element, {
+  fontSize: '14px',
+  color: 'white',
+});
+```
+
+---
+
+### 🔍 `TinyHtml.getStyle(el, prop)`
+
+Returns the value of an inline style property (not computed).
+
+```js
+TinyHtml.getStyle(element, 'backgroundColor'); // "blue"
+```
+
+---
+
+### ❌ `TinyHtml.removeStyle(el, prop)`
+
+Removes one or more properties from an element’s inline styles.
+
+```js
+TinyHtml.removeStyle(element, 'color');
+
+TinyHtml.removeStyle(element, ['fontSize', 'padding']);
+```
+
+---
+
+### 🔁 `TinyHtml.toggleStyle(el, prop, val1, val2)`
+
+Toggles a CSS inline property between two values.
+
+```js
+TinyHtml.toggleStyle(element, 'backgroundColor', 'blue', 'red');
+```
+
+---
+
+### 🧼 `TinyHtml.clearStyle(el)`
+
+Removes all inline styles (`style=""`) from the element(s).
+
+```js
+TinyHtml.clearStyle(element);
+```
+
+---
+
+## 🧪 Reading Computed Styles
+
+TinyHtml provides multiple utilities for reading CSS styles from elements, both individually and in groups, using computed values (via `window.getComputedStyle`).
+
+---
+
+### 🧬 `TinyHtml.css(el)` / `el.css()`
+
+Returns the full computed style object for a given element.
+
+```js
+const style = TinyHtml.css(element);
+
+// or using instance:
+const style = myTinyElem.css();
+```
+
+**Returns:**
+`CSSStyleDeclaration` – all computed styles from the browser.
+
+---
+
+### 🔍 `TinyHtml.cssString(el, prop)` / `el.cssString(prop)`
+
+Returns a specific **computed CSS value as a string**.
+
+```js
+myTinyElem.cssString('marginTop');        // "10px"
+```
+
+**Returns:**
+`string | null` – The computed value of the property, or `null` if invalid.
+
+---
+
+### 📑 `TinyHtml.cssList(el, props[])` / `el.cssList(props[])`
+
+Returns a **subset of computed styles** based on a list of property names.
+
+```js
+TinyHtml.cssList(element, ['width', 'height']);
+// { width: "120px", height: "40px" }
+```
+
+**Returns:**
+`Partial<CSSStyleDeclaration>` – only the requested properties.
+
+---
+
+### 🔢 `TinyHtml.cssFloat(el, prop)` / `el.cssFloat(prop)`
+
+Returns the **computed value parsed as a float number**.
+
+```js
+myTinyElem.cssFloat('width');  // 120
+```
+
+This is useful when working with dimensions or numeric spacing.
+
+**Returns:**
+`number` – A parsed float, or `0` if invalid.
+
+---
+
+### 🔢🔢 `TinyHtml.cssFloats(el, props[])` / `el.cssFloats(props[])`
+
+Gets multiple computed CSS float values at once.
+
+```js
+myTinyElem.cssFloats(['paddingTop', 'paddingBottom']);
+// { paddingTop: 10, paddingBottom: 5 }
+```
+
+**Returns:**
+`Record<string, number>` – A mapping of property names to their float values.
+
+---
+
+## 🖱️ Focus & Blur
+
+TinyHtml provides utility methods to programmatically focus or blur HTML elements.
+
+### ✨ `TinyHtml.focus(el)` / `el.focus()`
+
+Focuses the specified element.
+
+```js
+TinyHtml.focus(element);
+// or
+tinyElem.focus();
+```
+
+---
+
+### 🌫️ `TinyHtml.blur(el)` / `el.blur()`
+
+Removes focus from the specified element.
+
+```js
+TinyHtml.blur(element);
+// or
+tinyElem.blur();
+```
+
+---
+
+## 🌐 Window Scroll & Viewport Helpers
+
+These methods let you control and query scroll positions and viewport size with simple, readable functions.
+
+---
+
+### 🔽 `TinyHtml.setWinScrollTop(value)`
+
+Scrolls the window vertically to the given pixel value.
+
+```js
+TinyHtml.setWinScrollTop(500);
+```
+
+---
+
+### ⬅️ `TinyHtml.setWinScrollLeft(value)`
+
+Scrolls the window horizontally to the given pixel value.
+
+```js
+TinyHtml.setWinScrollLeft(200);
+```
+
+---
+
+### 📏 `TinyHtml.winScrollTop()`
+
+Returns the current vertical scroll position.
+
+```js
+const y = TinyHtml.winScrollTop(); // e.g., 512
+```
+
+---
+
+### 📐 `TinyHtml.winScrollLeft()`
+
+Returns the current horizontal scroll position.
+
+```js
+const x = TinyHtml.winScrollLeft(); // e.g., 100
+```
+
+---
+
+### 🪟 `TinyHtml.winInnerHeight()`
+
+Returns the height of the visible viewport in pixels.
+
+```js
+const height = TinyHtml.winInnerHeight(); // e.g., 1080
+```
+
+---
+
+### 🪟 `TinyHtml.winInnerWidth()`
+
+Returns the width of the visible viewport in pixels.
+
+```js
+const width = TinyHtml.winInnerWidth(); // e.g., 2560
+```
+
+---
