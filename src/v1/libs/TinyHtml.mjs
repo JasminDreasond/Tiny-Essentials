@@ -1764,14 +1764,16 @@ class TinyHtml {
   }
 
   /**
-   * Retrieves the computed style value of a given CSS property.
+   * Gets the value of a specific inline style property.
+   *
+   * Returns only the value set directly via the `style` attribute.
    *
    * @param {TinyHtmlElement|TinyHtmlElement[]} el - A single element to inspect.
-   * @param {string} prop - The CSS property name to retrieve.
-   * @returns {string} The computed value of the specified property.
+   * @param {string} prop - The style property name to retrieve.
+   * @returns {string} The style value of the specified property.
    */
   static getStyle(el, prop) {
-    return getComputedStyle(TinyHtml._preHtmlElem(el, 'getStyle')).getPropertyValue(
+    return TinyHtml._preHtmlElem(el, 'getStyle').style.getPropertyValue(
       TinyHtml.toStyleKc(prop),
     );
   }
