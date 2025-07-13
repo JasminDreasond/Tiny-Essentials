@@ -1773,9 +1773,30 @@ class TinyHtml {
    * @returns {string} The style value of the specified property.
    */
   static getStyle(el, prop) {
-    return TinyHtml._preHtmlElem(el, 'getStyle').style.getPropertyValue(
-      TinyHtml.toStyleKc(prop),
-    );
+    return TinyHtml._preHtmlElem(el, 'getStyle').style.getPropertyValue(TinyHtml.toStyleKc(prop));
+  }
+
+  /**
+   * Gets all inline styles defined directly on the element (`style` attribute).
+   *
+   * Returns an object with all property-value pairs in kebab-case format.
+   *
+   * @param {TinyHtmlElement|TinyHtmlElement[]} el - A single element to inspect.
+   * @returns {Record<string, string>} All inline styles as an object.
+   */
+  static style(el, camelCase = false) {
+    const elem = TinyHtml._preHtmlElem(el, 'style');
+    const styles = elem.style;
+    /** @type {Record<string, string>} */
+    const result = {};
+
+    for (let i = 0; i < styles.length; i++) {
+      const prop = styles[i]; // Already in kebab-case
+      const value = styles.getPropertyValue(prop);
+      result[camelCase ? TinyHtml.toStyleCc(prop) : prop] = value;
+    }
+
+    return result;
   }
 
   /**
