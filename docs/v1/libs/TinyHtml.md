@@ -1413,6 +1413,29 @@ TinyHtml.getStyle(element, 'backgroundColor'); // "blue"
 
 ---
 
+### 🧾 `TinyHtml.style(el, camelCase = false)`
+
+Returns all inline styles defined directly on the element (`style` attribute), as an object.
+
+* If `camelCase` is `true`, the property names will be converted to camelCase.
+* If `false` (default), they will remain in kebab-case.
+
+```js
+TinyHtml.style('#box');
+// {
+//   "background-color": "tomato",
+//   "border-radius": "10px"
+// }
+
+TinyHtml.style('#box', true);
+// {
+//   backgroundColor: "tomato",
+//   borderRadius: "10px"
+// }
+```
+
+---
+
 ### ❌ `TinyHtml.removeStyle(el, prop)`
 
 Removes one or more properties from an element’s inline styles.
