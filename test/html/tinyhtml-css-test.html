@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>TinyHtml Css Test</title>
+    <script type="module">
+      import { TinyHtml } from './src/v1/libs/TinyHtml.mjs';
+      window.TinyHtml = TinyHtml;
+    </script>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 2rem;
+      }
+      #box {
+        width: 150px;
+        height: 150px;
+        background-color: lightgray;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+      }
+      button {
+        margin: 0.25rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="box">Box</div>
+
+    <div>
+      <button id="set-style">Set Style</button>
+      <button id="get-style">Get Style</button>
+      <button id="remove-style">Remove Style</button>
+      <button id="toggle-style">Toggle Color</button>
+      <button id="clear-style">Clear All Inline Styles</button>
+    </div>
+
+    <script type="module">
+      const box = TinyHtml.getById('box');
+      window.box = box;
+      document.getElementById('set-style').addEventListener('click', () => {
+        TinyHtml.setStyle(box, { backgroundColor: 'tomato', borderRadius: '10px' });
+      });
+
+      document.getElementById('get-style').addEventListener('click', () => {
+        const val = TinyHtml.getStyle(box, 'background-color');
+        alert('background-color: ' + val);
+      });
+
+      document.getElementById('remove-style').addEventListener('click', () => {
+        TinyHtml.removeStyle(box, ['background-color', 'border-radius']);
+      });
+
+      document.getElementById('toggle-style').addEventListener('click', () => {
+        TinyHtml.toggleStyle(box, 'background-color', 'tomato', 'skyblue');
+      });
+
+      document.getElementById('clear-style').addEventListener('click', () => {
+        TinyHtml.clearStyle(box);
+      });
+    </script>
+  </body>
+</html>

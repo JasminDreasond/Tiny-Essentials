@@ -1655,6 +1655,173 @@ class TinyHtml {
   //////////////////////////////////////////////////////////////////////
 
   /**
+   * Stores camelCase to kebab-case CSS property aliases.
+   *
+   * Used to normalize property names when interacting with `element.style` or `getComputedStyle`.
+   *
+   * ⚠️ This object should not be modified directly. Use `TinyHtml.cssPropAliases` instead to ensure reverse mappings stay in sync.
+   *
+   * Example of how to add a new alias:
+   *
+   * ```js
+   * TinyHtml.cssPropAliases.tinyPudding = 'tiny-pudding';
+   * ```
+   *
+   * This will automatically update `TinyHtml.cssPropRevAliases['tiny-pudding']` with `'tinyPudding'`.
+   *
+   * @type {Record<string | symbol, string>}
+   */
+  static #cssPropAliases = {
+    backgroundColor: 'background-color',
+    borderTopLeftRadius: 'border-top-left-radius',
+    borderTopRightRadius: 'border-top-right-radius',
+    borderBottomLeftRadius: 'border-bottom-left-radius',
+    borderBottomRightRadius: 'border-bottom-right-radius',
+    borderColor: 'border-color',
+    borderWidth: 'border-width',
+    borderStyle: 'border-style',
+    flexDirection: 'flex-direction',
+    fontFamily: 'font-family',
+    fontSize: 'font-size',
+    fontWeight: 'font-weight',
+    justifyContent: 'justify-content',
+    lineHeight: 'line-height',
+    marginTop: 'margin-top',
+    marginBottom: 'margin-bottom',
+    marginLeft: 'margin-left',
+    marginRight: 'margin-right',
+    maxHeight: 'max-height',
+    maxWidth: 'max-width',
+    minHeight: 'min-height',
+    minWidth: 'min-width',
+    overflowX: 'overflow-x',
+    overflowY: 'overflow-y',
+    paddingTop: 'padding-top',
+    paddingBottom: 'padding-bottom',
+    paddingLeft: 'padding-left',
+    paddingRight: 'padding-right',
+    textAlign: 'text-align',
+    textDecoration: 'text-decoration',
+    zIndex: 'z-index',
+  };
+
+  /** @type {Record<string | symbol, string>} */
+  static cssPropAliases = new Proxy(TinyHtml.#cssPropAliases, {
+    set(target, camelCaseKey, kebabValue) {
+      target[camelCaseKey] = kebabValue;
+      // @ts-ignore
+      TinyHtml.cssPropRevAliases[kebabValue] = camelCaseKey;
+      return true;
+    },
+  });
+
+  /** @type {Record<string | symbol, string>} */
+  static cssPropRevAliases = Object.fromEntries(
+    Object.entries(TinyHtml.#cssPropAliases).map(([camel, kebab]) => [kebab, camel]),
+  );
+
+  /**
+   * Converts a camelCase string to kebab-case
+   * @param {string} str
+   * @returns {string}
+   */
+  static toStyleKc(str) {
+    if (typeof TinyHtml.cssPropAliases[str] === 'string') return TinyHtml.cssPropAliases[str];
+    return str;
+  }
+
+  /**
+   * Converts a kebab-case string to camelCase
+   * @param {string} str
+   * @returns {string}
+   */
+  static toStyleCc(str) {
+    if (typeof TinyHtml.cssPropRevAliases[str] === 'string') return TinyHtml.cssPropRevAliases[str];
+    return str;
+  }
+
+  /**
+   * Sets one or more CSS inline style properties on the given element(s).
+   *
+   * - If `prop` is a string, the `value` will be applied to that property.
+   * - If `prop` is an object, each key-value pair will be applied as a CSS property and value.
+   *
+   * @param {TinyHtmlElement|TinyHtmlElement[]} el - The element to inspect.
+   * @param {string|Object} prop - The property name or an object with key-value pairs
+   * @param {string|null} [value=null] - The value to set (if `prop` is a string)
+   */
+  static setStyle(el, prop, value = null) {
+    TinyHtml._preHtmlElems(el, 'setStyle').forEach((elem) => {
+      if (typeof prop === 'object') {
+        for (const [k, v] of Object.entries(prop)) {
+          elem.style.setProperty(
+            TinyHtml.toStyleKc(k),
+            typeof v === 'string' ? v : typeof v === 'number' ? `${v}px` : String(v),
+          );
+        }
+      } else elem.style.setProperty(TinyHtml.toStyleKc(prop), value);
+    });
+  }
+
+  /**
+   * Retrieves the computed style value of a given CSS property.
+   *
+   * @param {TinyHtmlElement|TinyHtmlElement[]} el - A single element to inspect.
+   * @param {string} prop - The CSS property name to retrieve.
+   * @returns {string} The computed value of the specified property.
+   */
+  static getStyle(el, prop) {
+    return getComputedStyle(TinyHtml._preHtmlElem(el, 'getStyle')).getPropertyValue(
+      TinyHtml.toStyleKc(prop),
+    );
+  }
+
+  /**
+   * Removes one or more inline CSS properties from the given element(s).
+   *
+   * @param {TinyHtmlElement|TinyHtmlElement[]} el - A single element or an array of elements.
+   * @param {string|string[]} prop - A property name or an array of property names to remove.
+   */
+  static removeStyle(el, prop) {
+    TinyHtml._preHtmlElems(el, 'removeStyle').forEach((elem) => {
+      if (Array.isArray(prop)) {
+        for (const p of prop) {
+          elem.style.removeProperty(TinyHtml.toStyleKc(p));
+        }
+      } else elem.style.removeProperty(TinyHtml.toStyleKc(prop));
+    });
+  }
+
+  /**
+   * Toggles a CSS property value between two given values.
+   *
+   * The current computed value is compared to `val1`. If it matches, the property is set to `val2`. Otherwise, it is set to `val1`.
+   *
+   * @param {TinyHtmlElement|TinyHtmlElement[]} el - A single element or an array of elements.
+   * @param {string} prop - The CSS property to toggle.
+   * @param {string} val1 - The first value (used as "current" check).
+   * @param {string} val2 - The second value (used as the "alternative").
+   */
+  static toggleStyle(el, prop, val1, val2) {
+    TinyHtml._preHtmlElems(el, 'toggleStyle').forEach((elem) => {
+      const current = TinyHtml.getStyle(elem, prop).trim();
+      const newVal = current === TinyHtml.toStyleKc(val1) ? val2 : val1;
+      TinyHtml.setStyle(elem, prop, newVal);
+    });
+  }
+
+  /**
+   * Removes all inline styles (`style` attribute) from the given element(s).
+   *
+   * @param {TinyElement|TinyElement[]} el - A single element or an array of elements.
+   */
+  static clearStyle(el) {
+    TinyHtml._preElems(el, 'clearStyle').forEach((elem) => elem.removeAttribute('style'));
+  }
+
+  //////////////////////////////////////////////////////////////////////
+
+  /**
    * Focus the element.
    *
    * @param {TinyHtmlElement} el - The element or a selector string.
