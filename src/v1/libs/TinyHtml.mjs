@@ -1764,6 +1764,19 @@ class TinyHtml {
   }
 
   /**
+   * Sets one or more CSS inline style properties on the given element(s).
+   *
+   * - If `prop` is a string, the `value` will be applied to that property.
+   * - If `prop` is an object, each key-value pair will be applied as a CSS property and value.
+   *
+   * @param {string|Object} prop - The property name or an object with key-value pairs
+   * @param {string|null} [value=null] - The value to set (if `prop` is a string)
+   */
+  setStyle(prop, value) {
+    return TinyHtml.setStyle(this, prop, value);
+  }
+
+  /**
    * Gets the value of a specific inline style property.
    *
    * Returns only the value set directly via the `style` attribute.
@@ -1777,11 +1790,24 @@ class TinyHtml {
   }
 
   /**
+   * Gets the value of a specific inline style property.
+   *
+   * Returns only the value set directly via the `style` attribute.
+   *
+   * @param {string} prop - The style property name to retrieve.
+   * @returns {string} The style value of the specified property.
+   */
+  getStyle(prop) {
+    return TinyHtml.getStyle(this, prop);
+  }
+
+  /**
    * Gets all inline styles defined directly on the element (`style` attribute).
    *
    * Returns an object with all property-value pairs in kebab-case format.
    *
    * @param {TinyHtmlElement|TinyHtmlElement[]} el - A single element to inspect.
+   * @param {boolean} [camelCase=false] - If `true`, the property names will be converted to camelCase.
    * @returns {Record<string, string>} All inline styles as an object.
    */
   static style(el, camelCase = false) {
@@ -1800,6 +1826,18 @@ class TinyHtml {
   }
 
   /**
+   * Gets all inline styles defined directly on the element (`style` attribute).
+   *
+   * Returns an object with all property-value pairs in kebab-case format.
+   *
+   * @param {boolean} [camelCase=false] - If `true`, the property names will be converted to camelCase.
+   * @returns {Record<string, string>} All inline styles as an object.
+   */
+  style(camelCase) {
+    return TinyHtml.style(this, camelCase);
+  }
+
+  /**
    * Removes one or more inline CSS properties from the given element(s).
    *
    * @param {TinyHtmlElement|TinyHtmlElement[]} el - A single element or an array of elements.
@@ -1813,6 +1851,15 @@ class TinyHtml {
         }
       } else elem.style.removeProperty(TinyHtml.toStyleKc(prop));
     });
+  }
+
+  /**
+   * Removes one or more inline CSS properties from the given element(s).
+   *
+   * @param {string|string[]} prop - A property name or an array of property names to remove.
+   */
+  removeStyle(prop) {
+    return TinyHtml.removeStyle(this, prop);
   }
 
   /**
@@ -1834,12 +1881,33 @@ class TinyHtml {
   }
 
   /**
+   * Toggles a CSS property value between two given values.
+   *
+   * The current computed value is compared to `val1`. If it matches, the property is set to `val2`. Otherwise, it is set to `val1`.
+   *
+   * @param {string} prop - The CSS property to toggle.
+   * @param {string} val1 - The first value (used as "current" check).
+   * @param {string} val2 - The second value (used as the "alternative").
+   */
+  toggleStyle(prop, val1, val2) {
+    return TinyHtml.toggleStyle(this, prop, val1, val2);
+  }
+
+  /**
    * Removes all inline styles (`style` attribute) from the given element(s).
    *
    * @param {TinyElement|TinyElement[]} el - A single element or an array of elements.
    */
   static clearStyle(el) {
     TinyHtml._preElems(el, 'clearStyle').forEach((elem) => elem.removeAttribute('style'));
+  }
+
+  /**
+   * Removes all inline styles (`style` attribute) from the given element(s).
+   *
+   */
+  clearStyle() {
+    return TinyHtml.clearStyle(this);
   }
 
   //////////////////////////////////////////////////////////////////////

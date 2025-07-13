@@ -39,24 +39,24 @@
       const box = TinyHtml.getById('box');
       window.box = box;
       document.getElementById('set-style').addEventListener('click', () => {
-        TinyHtml.setStyle(box, { backgroundColor: 'tomato', borderRadius: '10px' });
+        box.setStyle({ backgroundColor: 'tomato', borderRadius: '10px' });
       });
 
       document.getElementById('get-style').addEventListener('click', () => {
-        const val = TinyHtml.getStyle(box, 'background-color');
+        const val = box.getStyle('background-color');
         alert('background-color: ' + val);
       });
 
       document.getElementById('remove-style').addEventListener('click', () => {
-        TinyHtml.removeStyle(box, ['background-color', 'border-radius']);
+        box.removeStyle(['background-color', 'border-radius']);
       });
 
       document.getElementById('toggle-style').addEventListener('click', () => {
-        TinyHtml.toggleStyle(box, 'background-color', 'tomato', 'skyblue');
+        box.toggleStyle('background-color', 'tomato', 'skyblue');
       });
 
       document.getElementById('clear-style').addEventListener('click', () => {
-        TinyHtml.clearStyle(box);
+        box.clearStyle();
       });
     </script>
   </body>

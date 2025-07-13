@@ -1421,13 +1421,13 @@ Returns all inline styles defined directly on the element (`style` attribute), a
 * If `false` (default), they will remain in kebab-case.
 
 ```js
-TinyHtml.style('#box');
+TinyHtml.style(element);
 // {
 //   "background-color": "tomato",
 //   "border-radius": "10px"
 // }
 
-TinyHtml.style('#box', true);
+TinyHtml.style(element, true);
 // {
 //   backgroundColor: "tomato",
 //   borderRadius: "10px"
