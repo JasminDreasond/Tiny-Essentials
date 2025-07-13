@@ -12,15 +12,15 @@ Here, you can navigate through different sections of the project. Below are the 
 
 This folder contains the core scripts we have worked on so far. Each file is a module focused on specific functionality.
 
-- 📦 **[array](./basics/array.md)** — A tiny utility for shuffling arrays using the Fisher–Yates algorithm.
-- ⏰ **[clock](./basics/clock.md)** — A versatile time utility module for calculating and formatting time durations.
-- 🧠 **[objFilter](./basics/objFilter.md)** — Type detection, extension, and analysis made easy with simple and extensible type validation.
-- 🔢 **[simpleMath](./basics/simpleMath.md)** — A collection of simple math utilities for calculations like the Rule of Three and percentages.
-- ✍️ **[text](./basics/text.md)** — A utility for transforming text into title case formats, with multiple options for capitalization.
-- 🔄 **[asyncReplace](./basics/asyncReplace.md)** — Asynchronously replaces matches in a string using a regex and an async function.
-- 🖼️ **[html](./basics/html.md)** — Utilities for handling DOM element interactions like collision detection and basic element manipulation.
-- 📺 **[fullScreen](./basics/fullScreen.md)** — A complete fullscreen API manager with detection, event handling, and cross-browser compatibility.
-- 🧱 **[collision](./basics/collision.md)** — Full-featured rectangle collision detection system with directional analysis, depth calculation, and center offset metrics.
+- 📦 **[Array](./basics/array.md)** — A tiny utility for shuffling arrays using the Fisher–Yates algorithm.
+- ⏰ **[Clock](./basics/clock.md)** — A versatile time utility module for calculating and formatting time durations.
+- 🧠 **[ObjFilter](./basics/objFilter.md)** — Type detection, extension, and analysis made easy with simple and extensible type validation.
+- 🔢 **[SimpleMath](./basics/simpleMath.md)** — A collection of simple math utilities for calculations like the Rule of Three and percentages.
+- ✍️ **[Text](./basics/text.md)** — A utility for transforming text into title case formats, with multiple options for capitalization.
+- 🔄 **[AsyncReplace](./basics/asyncReplace.md)** — Asynchronously replaces matches in a string using a regex and an async function.
+- 🖼️ **[Html](./basics/html.md)** — Utilities for handling DOM element interactions like collision detection and basic element manipulation.
+- 📺 **[FullScreen](./basics/fullScreen.md)** — A complete fullscreen API manager with detection, event handling, and cross-browser compatibility.
+- 🧱 **[Collision](./basics/collision.md)** — Full-featured rectangle collision detection system with directional analysis, depth calculation, and center offset metrics.
 
 ### 2. **`libs/`**
 - 🗂️ **[TinyPromiseQueue](./libs/TinyPromiseQueue.md)** — A class that allows sequential execution of asynchronous tasks, supporting task delays, cancellation, and queue management.
@@ -37,7 +37,7 @@ This folder contains the core scripts we have worked on so far. Each file is a m
 - 🧱 **[TinyHtml](./libs/TinyHtml.md)** — A minimalist DOM utility class that offers jQuery-like methods in pure JavaScript for querying, styling, traversing, event handling, collision detection, and visibility logic — all in a lightweight and chainable interface.
 
 ### 3. **`fileManager/`**
-* 📁 **[main](./fileManager/main.md)** — A Node.js file/directory utility module with support for JSON, backups, renaming, size analysis, and more.
+* 📁 **[Main](./fileManager/main.md)** — A Node.js file/directory utility module with support for JSON, backups, renaming, size analysis, and more.
 
 ---
 
