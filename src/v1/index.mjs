@@ -121,8 +121,10 @@ import {
   getElsCollDetails,
 } from './basics/collision.mjs';
 import TinyHtml from './libs/TinyHtml.mjs';
+import TinyAfterScrollWatcher from './libs/TinyAfterScrollWatcher.mjs';
 
 export {
+  TinyAfterScrollWatcher,
   TinyHtml,
   TinyNotifications,
   TinyDomReadyManager,
