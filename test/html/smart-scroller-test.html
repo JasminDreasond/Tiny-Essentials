@@ -146,10 +146,14 @@
         mode: 'readable',
       });
 
-      let scroller = new TinySmartScroller(chat, {
+      const scroller = new TinySmartScroller(chat, {
         autoScrollBottom: toggleAutoScroll.checked,
         observeMutations: true,
         debounceTime: 80,
+      });
+
+      scroller.onSize((elem, oldSize, newSize) => {
+        console.log(elem, oldSize, newSize);
       });
 
       const log = (msg) => {

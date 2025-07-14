@@ -1,7 +1,7 @@
 class TinySmartScroller {
-  /** @type {WeakMap<Node, { height: number; width: number; }>} */
+  /** @type {WeakMap<Node, NodeSizes>} */
   #oldSizes = new WeakMap();
-  /** @type {WeakMap<Node, { height: number; width: number; }>} */
+  /** @type {WeakMap<Node, NodeSizes>} */
   #newSizes = new WeakMap();
 
   /** @type {Record<string, Function[]>} */
@@ -12,13 +12,28 @@ class TinySmartScroller {
   /** @type {MutationObserver|null} */
   mutationObserver = null;
 
-  /** @type {Element} */
-  target;
+  /** @type {Set<string>} */
+  #loadTags = new Set(['IMG', 'IFRAME', 'VIDEO']);
 
+  #querySelector = '';
   scrollPaused = false;
   isAtBottom = false;
   isAtTop = false;
   lastKnownScrollBottomOffset = 0;
+
+  /** @type {Element} */
+  target;
+
+  /**
+   * @typedef {{ height: number; width: number; }} NodeSizes
+   */
+
+  /**
+   * @typedef {(node: Node, oldSize: NodeSizes, newSize: NodeSizes) => (NodeSizes|undefined)} NodeSizesEvent
+   */
+
+  /** @type {Set<NodeSizesEvent>} */
+  #sizeFilter = new Set();
 
   /**
    * @param {Element|Window} target
@@ -27,16 +42,33 @@ class TinySmartScroller {
    * @param {boolean} [options.observeMutations=true]
    * @param {boolean} [options.preserveScrollOnLayoutShift=true]
    * @param {number} [options.debounceTime=100]
+   * @param {string|null} [options.querySelector=null]
    */
-  constructor(target, options = {}) {
+  constructor(
+    target,
+    {
+      autoScrollBottom = true,
+      observeMutations = true,
+      preserveScrollOnLayoutShift = true,
+      debounceTime = 100,
+      querySelector = null,
+    } = {},
+  ) {
     this.target = target instanceof Window ? document.documentElement : target;
     this.useWindow = target instanceof Window;
-    this.autoScrollBottom = options.autoScrollBottom ?? true;
-    this.observeMutations = options.observeMutations ?? true;
-    this.preserveScrollOnLayoutShift = options.preserveScrollOnLayoutShift ?? true;
-    this.debounceTime = options.debounceTime ?? 100;
-
+    this.autoScrollBottom = autoScrollBottom;
+    this.observeMutations = observeMutations;
+    this.preserveScrollOnLayoutShift = preserveScrollOnLayoutShift;
+    this.debounceTime = debounceTime;
+    this.#querySelector = querySelector || '';
     this._init();
+  }
+
+  /**
+   * @param {NodeSizesEvent} handler
+   */
+  onSize(handler) {
+    this.#sizeFilter.add(handler);
   }
 
   /**
@@ -112,19 +144,40 @@ class TinySmartScroller {
    * @param {Node[]} [targets=[]]
    */
   _fixScroll(prevScrollTop, prevScrollHeight, prevBottomOffset, targets = []) {
-    for (const target of targets) {
-    }
-
+    // Get new size
     const newScrollHeight = this.target.scrollHeight;
     const heightDelta = newScrollHeight - prevScrollHeight;
 
+    // Fix scroll size
     if (this.autoScrollBottom && this.preserveScrollOnLayoutShift && !this.isAtBottom) {
-      console.log('yay 1');
-      this.target.scrollTop = prevScrollTop + heightDelta;
-    } else if (!this.scrollPaused && this.autoScrollBottom) {
+      // Run size getter
+      const scrollSize = { height: 0, width: 0 };
+      for (const target of targets) {
+        const tgOs = this.#oldSizes.get(target) || { height: 0, width: 0 };
+        const tgNs = this.#newSizes.get(target) || { height: 0, width: 0 };
+        this.#sizeFilter.forEach((fn) => {
+          /** @type {NodeSizes| undefined} */
+          const sizes = fn(target, tgOs, tgNs);
+          if (typeof sizes !== 'undefined' && typeof sizes !== 'object') throw new Error('');
+          if (typeof sizes === 'undefined') return;
+          scrollSize.height = sizes.height;
+          scrollSize.width = sizes.width;
+        });
+      }
+
+      // Checker
+      if (typeof scrollSize.height !== 'number' && scrollSize.height < 0) throw new Error('');
+      if (typeof scrollSize.width !== 'number' && scrollSize.width < 0) throw new Error('');
+
+      // Complete
+      this.target.scrollTop = prevScrollTop + heightDelta + scrollSize.height;
+      if (scrollSize.width > 0) this.target.scrollLeft = this.target.scrollLeft + scrollSize.width;
+    }
+
+    // Normal stuff
+    else if (!this.scrollPaused && this.autoScrollBottom) {
       this.scrollToBottom();
     } else if (!this.autoScrollBottom && !this.isAtBottom) {
-      console.log('yay 3');
       this.target.scrollTop =
         this.target.scrollHeight - this.target.clientHeight - prevBottomOffset;
     }
@@ -144,9 +197,11 @@ class TinySmartScroller {
           this._observeResizes([node]);
           this._listenLoadEvents(node);
 
-          const children = node.querySelectorAll('*');
-          this._observeResizes(children);
-          this._listenLoadEvents(children);
+          if (this.#querySelector) {
+            const children = node.querySelectorAll(this.#querySelector);
+            this._observeResizes(children);
+            this._listenLoadEvents(children);
+          }
         });
       });
 
@@ -217,7 +272,7 @@ class TinySmartScroller {
     const list = elements instanceof NodeList ? Array.from(elements) : [elements];
 
     list.forEach((el) => {
-      if (el.tagName === 'IMG' || el.tagName === 'IFRAME' || el.tagName === 'VIDEO') {
+      if (this.#loadTags.has(el.tagName)) {
         // @ts-ignore
         if (!el.complete) {
           el.addEventListener('load', () => {
