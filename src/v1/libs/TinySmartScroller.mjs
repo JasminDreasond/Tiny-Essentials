@@ -15,7 +15,11 @@ class TinySmartScroller {
   /** @type {Set<string>} */
   #loadTags = new Set(['IMG', 'IFRAME', 'VIDEO']);
 
+  /** @type {null|EventListenerOrEventListenerObject} */
+  #handler = null;
+
   #querySelector = '';
+  #destroyed = false;
   #scrollPaused = false;
   #isAtBottom = false;
   #isAtTop = false;
@@ -72,6 +76,7 @@ class TinySmartScroller {
    * @param {NodeSizesEvent} handler
    */
   onSize(handler) {
+    if (this.#destroyed) return;
     this.#sizeFilter.add(handler);
   }
 
@@ -80,6 +85,7 @@ class TinySmartScroller {
    * @param {Function} handler
    */
   on(event, handler) {
+    if (this.#destroyed) return;
     if (!this.#scrollListeners[event]) this.#scrollListeners[event] = [];
     this.#scrollListeners[event].push(handler);
   }
@@ -89,28 +95,31 @@ class TinySmartScroller {
    * @param {*} [payload]
    */
   _emit(event, payload) {
+    if (this.#destroyed) return;
     (this.#scrollListeners[event] || []).forEach((fn) => fn(payload));
   }
 
   _init() {
-    this._bindScroll();
+    // Bind scroll
+    /** @type {NodeJS.Timeout} */
+    let timeout;
+    this.#handler = () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => this._onScroll(), this.#debounceTime);
+    };
+    (this.useWindow ? window : this.#target).addEventListener('scroll', this.#handler, {
+      passive: true,
+    });
+
+    // Mutations
     if (this.#observeMutations) {
       this._observeMutations();
       this._observeResizes(this.#target.children);
     }
   }
 
-  _bindScroll() {
-    /** @type {NodeJS.Timeout} */
-    let timeout;
-    const handler = () => {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => this._onScroll(), this.#debounceTime);
-    };
-    (this.useWindow ? window : this.#target).addEventListener('scroll', handler, { passive: true });
-  }
-
   _onScroll() {
+    if (this.#destroyed) return;
     const el = this.#target;
     const scrollTop = el.scrollTop;
     const scrollHeight = el.scrollHeight;
@@ -148,6 +157,7 @@ class TinySmartScroller {
    * @param {Node[]} [targets=[]]
    */
   _fixScroll(prevScrollTop, prevScrollHeight, prevBottomOffset, targets = []) {
+    if (this.#destroyed) return;
     // Get new size
     const newScrollHeight = this.#target.scrollHeight;
     const heightDelta = newScrollHeight - prevScrollHeight;
@@ -190,6 +200,7 @@ class TinySmartScroller {
 
   _observeMutations() {
     this.#mutationObserver = new MutationObserver((mutations) => {
+      if (this.#destroyed) return;
       const prevScrollHeight = this.#target.scrollHeight;
       const prevScrollTop = this.#target.scrollTop;
       const prevBottomOffset =
@@ -234,6 +245,7 @@ class TinySmartScroller {
     // Add resize observer
     if (!this.#resizeObserver) {
       this.#resizeObserver = new ResizeObserver((entries) => {
+        if (this.#destroyed) return;
         /** @type {Node[]} */
         const targets = [];
         for (const entry of entries) {
@@ -274,6 +286,7 @@ class TinySmartScroller {
    * @param {NodeListOf<Element>|Element} elements
    */
   _listenLoadEvents(elements) {
+    if (this.#destroyed) return;
     const list = elements instanceof NodeList ? Array.from(elements) : [elements];
 
     list.forEach((el) => {
@@ -308,6 +321,35 @@ class TinySmartScroller {
 
   isScrollPaused() {
     return this.#scrollPaused;
+  }
+
+  destroy() {
+    if (this.#destroyed) return;
+    this.#destroyed = true;
+
+    // Disconnects MutationObserver
+    if (this.#mutationObserver) {
+      this.#mutationObserver.disconnect();
+      this.#mutationObserver = null;
+    }
+
+    // Disconnect ResizeObserver
+    if (this.#resizeObserver) {
+      this.#resizeObserver.disconnect();
+      this.#resizeObserver = null;
+    }
+
+    // Removes scroll listener
+    const target = this.useWindow ? window : this.#target;
+    if (this.#handler) target.removeEventListener('scroll', this.#handler);
+
+    // Clean the WeakMaps
+    this.#oldSizes = new WeakMap();
+    this.#newSizes = new WeakMap();
+
+    // Cleans listeners and filters
+    this.#scrollListeners = {};
+    this.#sizeFilter.clear();
   }
 }
 
