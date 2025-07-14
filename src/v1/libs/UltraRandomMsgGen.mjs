@@ -510,65 +510,131 @@ class UltraRandomMsgGen {
     };
   }
 
+  /**
+   * Replaces the entire list of grammar templates.
+   * @param {...string[]} templates - One or more arrays or strings containing sentence templates.
+   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   */
   setGrammarTemplates(...templates) {
     this.config.grammar.templates = templates.flat();
     return this;
   }
 
+  /**
+   * Adds new grammar templates to the existing list.
+   * @param {...string[]} templates - One or more arrays or strings containing sentence templates.
+   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   */
   addGrammarTemplates(...templates) {
     this.config.grammar.templates.push(...templates.flat());
     return this;
   }
 
+  /**
+   * Replaces the list of noun words used in grammar templates.
+   * @param {...string[]} nouns - One or more arrays or strings of nouns.
+   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   */
   setGrammarNouns(...nouns) {
     this.config.grammar.nouns = nouns.flat();
     return this;
   }
 
+  /**
+   * Adds noun words to the existing list used in grammar templates.
+   * @param {...string[]} nouns - One or more arrays or strings of nouns.
+   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   */
   addGrammarNouns(...nouns) {
     this.config.grammar.nouns.push(...nouns.flat());
     return this;
   }
 
+  /**
+   * Replaces the list of verb words used in grammar templates.
+   * @param {...string[]} verbs - One or more arrays or strings of verbs.
+   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   */
   setGrammarVerbs(...verbs) {
     this.config.grammar.verbs = verbs.flat();
     return this;
   }
 
+  /**
+   * Adds verb words to the existing list used in grammar templates.
+   * @param {...string[]} verbs - One or more arrays or strings of verbs.
+   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   */
   addGrammarVerbs(...verbs) {
     this.config.grammar.verbs.push(...verbs.flat());
     return this;
   }
 
+  /**
+   * Replaces the list of adjective words used in grammar templates.
+   * @param {...string[]} adjectives - One or more arrays or strings of adjectives.
+   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   */
   setGrammarAdjectives(...adjectives) {
     this.config.grammar.adjectives = adjectives.flat();
     return this;
   }
 
+  /**
+   * Adds adjective words to the existing list used in grammar templates.
+   * @param {...string[]} adjectives - One or more arrays or strings of adjectives.
+   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   */
   addGrammarAdjectives(...adjectives) {
     this.config.grammar.adjectives.push(...adjectives.flat());
     return this;
   }
 
+  /**
+   * Merges new configuration values into the current instance.
+   * @param {Object} newConfig - Object with one or more configuration overrides.
+   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   */
   configure(newConfig = {}) {
     Object.assign(this.config, newConfig);
     return this;
   }
 
+  /**
+   * Adds new words to the word set used in readable/mixed modes.
+   * @param {...string[]} words - One or more arrays or strings of words.
+   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   */
   addWords(...words) {
     this.config.wordSet.push(...words.flat());
     return this;
   }
 
+  /**
+   * Replaces the emoji set used in generated output.
+   * @param {...string[]} emojis - One or more arrays or strings of emojis.
+   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   */
   setEmojis(...emojis) {
     this.config.emojiSet = emojis.flat();
     return this;
   }
 
+  /**
+   * Returns a random item from an array.
+   * @private
+   * @param {string[]} array - Array to pick from.
+   * @returns {string} - Random item from array.
+   */
   _getRandomItem(array) {
     return array[Math.floor(Math.random() * array.length)];
   }
 
+  /**
+   * Generates a single random content chunk based on the mode and settings.
+   * @private
+   * @returns {string} - A chunk (word, emoji, symbol, number, etc.).
+   */
   _generateChunk() {
     const {
       wordSet,
@@ -610,6 +676,11 @@ class UltraRandomMsgGen {
     return this._getRandomItem(pools);
   }
 
+  /**
+   * Generates a natural sentence by replacing placeholders in a template.
+   * @private
+   * @returns {string} - A generated sentence.
+   */
   _generateNaturalSentence() {
     const { templates, nouns, verbs, adjectives } = this.config.grammar;
 
@@ -621,6 +692,13 @@ class UltraRandomMsgGen {
       .replace(/{adj}/g, () => this._getRandomItem(adjectives));
   }
 
+  /**
+   * Generates a single line of text with target length and rules.
+   * @private
+   * @param {number} targetLength - Target character length for the line.
+   * @param {Set<string>} [seenWords] - Set of already used words (for avoiding repeats).
+   * @returns {string} - A generated line.
+   */
   _generateLine(targetLength, seenWords) {
     const { allowWeirdSpacing, repeatWords, readable, emojiSet, useEmojis, emojiPlacement, line } =
       this.config;
@@ -657,6 +735,12 @@ class UltraRandomMsgGen {
     return lineText;
   }
 
+  /**
+   * Generates lines to form a paragraph based on total length.
+   * @private
+   * @param {number} totalLength - Total target character count for the paragraph.
+   * @returns {string[]} - Array of lines that form the paragraph.
+   */
   _generateParagraphLines(totalLength) {
     const { line } = this.config;
     const lines = [];
@@ -677,6 +761,11 @@ class UltraRandomMsgGen {
     return lines;
   }
 
+  /**
+   * Generates the final random message, which can be a paragraph or block of lines.
+   * Uses full configuration rules (grammar, symbols, emojis, etc).
+   * @returns {string} - A full generated message.
+   */
   generate() {
     const { minLength, maxLength, paragraphs } = this.config;
 
@@ -696,7 +785,6 @@ class UltraRandomMsgGen {
       return paragraphsArray.join('\n\n');
     }
 
-    // Caso sem parágrafos definidos
     return this._generateParagraphLines(totalLength).join('\n');
   }
 }
