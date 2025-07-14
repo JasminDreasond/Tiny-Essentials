@@ -154,8 +154,16 @@
 
       window.scroller = scroller;
 
-      scroller.onSize((elem, oldSize, newSize) => {
-        console.log(elem, oldSize, newSize);
+      scroller.onSize((elem, sizes, amounts) => {
+        console.log(amounts);
+        if (amounts.now !== amounts.old) return;
+        const oldSize = sizes.old;
+        const newSize = sizes.now;
+        const height = newSize.height - oldSize.height;
+        const width = newSize.width - oldSize.width;
+
+        console.log(elem, { height, width });
+        return { height, width: 0 };
       });
 
       const log = (msg) => {

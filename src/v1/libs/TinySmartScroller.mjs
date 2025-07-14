@@ -28,6 +28,8 @@ class TinySmartScroller {
   #observeMutations = false;
   #preserveScrollOnLayoutShift = false;
   #debounceTime = 0;
+  #elemAmount = 0;
+  #elemOldAmount = 0;
   #lastKnownScrollBottomOffset = 0;
 
   /** @type {Element} */
@@ -38,7 +40,7 @@ class TinySmartScroller {
    */
 
   /**
-   * @typedef {(node: Node, oldSize: NodeSizes, newSize: NodeSizes) => (NodeSizes|undefined)} NodeSizesEvent
+   * @typedef {(node: Node, sizes: { old: NodeSizes; now: NodeSizes }, elemAmount: { old: number; now: number; }) => (NodeSizes|undefined)} NodeSizesEvent
    */
 
   /** @type {Set<NodeSizesEvent>} */
@@ -172,7 +174,12 @@ class TinySmartScroller {
         const tgNs = this.#newSizes.get(target) || { height: 0, width: 0 };
         this.#sizeFilter.forEach((fn) => {
           /** @type {NodeSizes| undefined} */
-          const sizes = fn(target, tgOs, tgNs);
+          const sizes = fn(
+            target,
+            { old: tgOs, now: tgNs },
+            { old: this.#elemOldAmount, now: this.#elemAmount },
+          );
+
           if (typeof sizes !== 'undefined' && typeof sizes !== 'object') throw new Error('');
           if (typeof sizes === 'undefined') return;
           scrollSize.height = sizes.height;
@@ -202,6 +209,8 @@ class TinySmartScroller {
   _observeMutations() {
     this.#mutationObserver = new MutationObserver((mutations) => {
       if (this.#destroyed) return;
+      this.#elemOldAmount = this.#elemAmount;
+      this.#elemAmount = this.#target.childElementCount;
       const prevScrollHeight = this.#target.scrollHeight;
       const prevScrollTop = this.#target.scrollTop;
       const prevBottomOffset =
@@ -222,12 +231,7 @@ class TinySmartScroller {
         });
       });
 
-      requestAnimationFrame(
-        () =>
-          // setTimeout(() => {
-          this._fixScroll(prevScrollTop, prevScrollHeight, prevBottomOffset),
-        // }, 60);
-      );
+      this._fixScroll(prevScrollTop, prevScrollHeight, prevBottomOffset);
     });
 
     // Install observer
@@ -270,9 +274,7 @@ class TinySmartScroller {
           this.#target.scrollHeight - this.#target.scrollTop - this.#target.clientHeight;
 
         // Animation frame
-        requestAnimationFrame(() =>
-          this._fixScroll(prevScrollTop, prevScrollHeight, prevBottomOffset, targets),
-        );
+        this._fixScroll(prevScrollTop, prevScrollHeight, prevBottomOffset, targets);
       });
     }
 
