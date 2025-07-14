@@ -1,29 +1,57 @@
 class TinySmartScroller {
+  /** @type {WeakMap<Node, { height: number; width: number; }>} */
+  #oldSizes = new WeakMap();
+  /** @type {WeakMap<Node, { height: number; width: number; }>} */
+  #newSizes = new WeakMap();
+
+  /** @type {Record<string, Function[]>} */
+  scrollListeners = {};
+
+  /** @type {ResizeObserver|null} */
+  resizeObserver = null;
+  /** @type {MutationObserver|null} */
+  mutationObserver = null;
+
+  /** @type {Element} */
+  target;
+
+  scrollPaused = false;
+  isAtBottom = false;
+  isAtTop = false;
+  lastKnownScrollBottomOffset = 0;
+
+  /**
+   * @param {Element|Window} target
+   * @param {Object} [options={}]
+   * @param {boolean} [options.autoScrollBottom=true]
+   * @param {boolean} [options.observeMutations=true]
+   * @param {boolean} [options.preserveScrollOnLayoutShift=true]
+   * @param {number} [options.debounceTime=100]
+   */
   constructor(target, options = {}) {
-    this.target = target === window ? document.documentElement : target;
-    this.useWindow = target === window;
+    this.target = target instanceof Window ? document.documentElement : target;
+    this.useWindow = target instanceof Window;
     this.autoScrollBottom = options.autoScrollBottom ?? true;
     this.observeMutations = options.observeMutations ?? true;
     this.preserveScrollOnLayoutShift = options.preserveScrollOnLayoutShift ?? true;
     this.debounceTime = options.debounceTime ?? 100;
 
-    this.scrollListeners = {};
-    this.scrollPaused = false;
-    this.isAtBottom = false;
-    this.isAtTop = false;
-    this.lastKnownScrollBottomOffset = 0;
-
-    this.resizeObserver = null;
-    this.mutationObserver = null;
-
     this._init();
   }
 
+  /**
+   * @param {string} event
+   * @param {Function} handler
+   */
   on(event, handler) {
     if (!this.scrollListeners[event]) this.scrollListeners[event] = [];
     this.scrollListeners[event].push(handler);
   }
 
+  /**
+   * @param {string} event
+   * @param {*} [payload]
+   */
   _emit(event, payload) {
     (this.scrollListeners[event] || []).forEach((fn) => fn(payload));
   }
@@ -37,6 +65,7 @@ class TinySmartScroller {
   }
 
   _bindScroll() {
+    /** @type {NodeJS.Timeout} */
     let timeout;
     const handler = () => {
       clearTimeout(timeout);
@@ -76,15 +105,26 @@ class TinySmartScroller {
     }
   }
 
-  _fixScroll(prevScrollTop, prevScrollHeight, prevBottomOffset) {
+  /**
+   * @param {number} prevScrollTop
+   * @param {number} prevScrollHeight
+   * @param {number} prevBottomOffset
+   * @param {Node[]} [targets=[]]
+   */
+  _fixScroll(prevScrollTop, prevScrollHeight, prevBottomOffset, targets = []) {
+    for (const target of targets) {
+    }
+
     const newScrollHeight = this.target.scrollHeight;
     const heightDelta = newScrollHeight - prevScrollHeight;
 
-    if (!this.autoScrollBottom && this.preserveScrollOnLayoutShift) {
+    if (this.autoScrollBottom && this.preserveScrollOnLayoutShift && !this.isAtBottom) {
+      console.log('yay 1');
       this.target.scrollTop = prevScrollTop + heightDelta;
     } else if (!this.scrollPaused && this.autoScrollBottom) {
       this.scrollToBottom();
     } else if (!this.autoScrollBottom && !this.isAtBottom) {
+      console.log('yay 3');
       this.target.scrollTop =
         this.target.scrollHeight - this.target.clientHeight - prevBottomOffset;
     }
@@ -99,16 +139,14 @@ class TinySmartScroller {
 
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach((node) => {
-          if (node.nodeType !== 1) return;
+          if (!(node instanceof Element) || node.nodeType !== 1) return;
 
           this._observeResizes([node]);
           this._listenLoadEvents(node);
 
-          if (node.querySelectorAll) {
-            const children = node.querySelectorAll('*');
-            this._observeResizes(children);
-            this._listenLoadEvents(children);
-          }
+          const children = node.querySelectorAll('*');
+          this._observeResizes(children);
+          this._listenLoadEvents(children);
         });
       });
 
@@ -120,6 +158,7 @@ class TinySmartScroller {
       );
     });
 
+    // Install observer
     this.mutationObserver.observe(this.target, {
       childList: true,
       subtree: true,
@@ -128,34 +167,58 @@ class TinySmartScroller {
     });
   }
 
+  /**
+   * @param {NodeListOf<Element>|Element[]|HTMLCollection} elements
+   */
   _observeResizes(elements) {
+    // Add resize observer
     if (!this.resizeObserver) {
-      this.resizeObserver = new ResizeObserver(() => {
+      this.resizeObserver = new ResizeObserver((entries) => {
+        /** @type {Node[]} */
+        const targets = [];
+        for (const entry of entries) {
+          // Target
+          const target = entry.target;
+
+          // Update old size
+          const oldSize = this.#newSizes.get(target);
+          if (oldSize) this.#oldSizes.set(target, oldSize);
+
+          // Set new size
+          const { width, height } = entry.contentRect;
+          this.#newSizes.set(target, { width, height });
+          targets.push(target);
+        }
+
+        // Get Scroll data
         const prevScrollHeight = this.target.scrollHeight;
         const prevScrollTop = this.target.scrollTop;
         const prevBottomOffset =
           this.target.scrollHeight - this.target.scrollTop - this.target.clientHeight;
 
+        // Animation frame
         requestAnimationFrame(() =>
-          this._fixScroll(prevScrollTop, prevScrollHeight, prevBottomOffset),
+          this._fixScroll(prevScrollTop, prevScrollHeight, prevBottomOffset, targets),
         );
       });
     }
 
+    // Execute observer
     Array.from(elements).forEach((el) => {
-      try {
-        this.resizeObserver.observe(el);
-      } catch (e) {
-        console.error(e);
-      }
+      if (!this.resizeObserver) throw new Error('');
+      this.resizeObserver.observe(el);
     });
   }
 
+  /**
+   * @param {NodeListOf<Element>|Element} elements
+   */
   _listenLoadEvents(elements) {
     const list = elements instanceof NodeList ? Array.from(elements) : [elements];
 
     list.forEach((el) => {
       if (el.tagName === 'IMG' || el.tagName === 'IFRAME' || el.tagName === 'VIDEO') {
+        // @ts-ignore
         if (!el.complete) {
           el.addEventListener('load', () => {
             if (!this.scrollPaused && this.autoScrollBottom) {
