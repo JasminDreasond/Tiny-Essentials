@@ -16,13 +16,13 @@ class TinySmartScroller {
   #loadTags = new Set(['IMG', 'IFRAME', 'VIDEO']);
 
   #querySelector = '';
-  scrollPaused = false;
-  isAtBottom = false;
-  isAtTop = false;
-  lastKnownScrollBottomOffset = 0;
+  #scrollPaused = false;
+  #isAtBottom = false;
+  #isAtTop = false;
+  #lastKnownScrollBottomOffset = 0;
 
   /** @type {Element} */
-  target;
+  #target;
 
   /**
    * @typedef {{ height: number; width: number; }} NodeSizes
@@ -54,7 +54,7 @@ class TinySmartScroller {
       querySelector = null,
     } = {},
   ) {
-    this.target = target instanceof Window ? document.documentElement : target;
+    this.#target = target instanceof Window ? document.documentElement : target;
     this.useWindow = target instanceof Window;
     this.autoScrollBottom = autoScrollBottom;
     this.observeMutations = observeMutations;
@@ -92,7 +92,7 @@ class TinySmartScroller {
     this._bindScroll();
     if (this.observeMutations) {
       this._observeMutations();
-      this._observeResizes(this.target.children);
+      this._observeResizes(this.#target.children);
     }
   }
 
@@ -103,11 +103,11 @@ class TinySmartScroller {
       clearTimeout(timeout);
       timeout = setTimeout(() => this._onScroll(), this.debounceTime);
     };
-    (this.useWindow ? window : this.target).addEventListener('scroll', handler, { passive: true });
+    (this.useWindow ? window : this.#target).addEventListener('scroll', handler, { passive: true });
   }
 
   _onScroll() {
-    const el = this.target;
+    const el = this.#target;
     const scrollTop = el.scrollTop;
     const scrollHeight = el.scrollHeight;
     const clientHeight = el.clientHeight;
@@ -115,22 +115,22 @@ class TinySmartScroller {
     const atTop = scrollTop === 0;
     const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
 
-    if (atTop && !this.isAtTop) {
+    if (atTop && !this.#isAtTop) {
       this._emit('onScrollBoundary', 'top');
     }
 
-    if (atBottom && !this.isAtBottom) {
+    if (atBottom && !this.#isAtBottom) {
       this._emit('onScrollBoundary', 'bottom');
     }
 
-    this.isAtTop = atTop;
-    this.isAtBottom = atBottom;
+    this.#isAtTop = atTop;
+    this.#isAtBottom = atBottom;
 
-    this.scrollPaused = !(this.autoScrollBottom && this.isAtBottom);
+    this.#scrollPaused = !(this.autoScrollBottom && this.#isAtBottom);
 
-    this.lastKnownScrollBottomOffset = scrollHeight - scrollTop - clientHeight;
+    this.#lastKnownScrollBottomOffset = scrollHeight - scrollTop - clientHeight;
 
-    if (!this.scrollPaused) {
+    if (!this.#scrollPaused) {
       this._emit('onAutoScroll');
     } else {
       this._emit('onScrollPause');
@@ -145,11 +145,11 @@ class TinySmartScroller {
    */
   _fixScroll(prevScrollTop, prevScrollHeight, prevBottomOffset, targets = []) {
     // Get new size
-    const newScrollHeight = this.target.scrollHeight;
+    const newScrollHeight = this.#target.scrollHeight;
     const heightDelta = newScrollHeight - prevScrollHeight;
 
     // Fix scroll size
-    if (this.autoScrollBottom && this.preserveScrollOnLayoutShift && !this.isAtBottom) {
+    if (this.autoScrollBottom && this.preserveScrollOnLayoutShift && !this.#isAtBottom) {
       // Run size getter
       const scrollSize = { height: 0, width: 0 };
       for (const target of targets) {
@@ -170,25 +170,26 @@ class TinySmartScroller {
       if (typeof scrollSize.width !== 'number' && scrollSize.width < 0) throw new Error('');
 
       // Complete
-      this.target.scrollTop = prevScrollTop + heightDelta + scrollSize.height;
-      if (scrollSize.width > 0) this.target.scrollLeft = this.target.scrollLeft + scrollSize.width;
+      this.#target.scrollTop = prevScrollTop + heightDelta + scrollSize.height;
+      if (scrollSize.width > 0)
+        this.#target.scrollLeft = this.#target.scrollLeft + scrollSize.width;
     }
 
     // Normal stuff
-    else if (!this.scrollPaused && this.autoScrollBottom) {
+    else if (!this.#scrollPaused && this.autoScrollBottom) {
       this.scrollToBottom();
-    } else if (!this.autoScrollBottom && !this.isAtBottom) {
-      this.target.scrollTop =
-        this.target.scrollHeight - this.target.clientHeight - prevBottomOffset;
+    } else if (!this.autoScrollBottom && !this.#isAtBottom) {
+      this.#target.scrollTop =
+        this.#target.scrollHeight - this.#target.clientHeight - prevBottomOffset;
     }
   }
 
   _observeMutations() {
     this.mutationObserver = new MutationObserver((mutations) => {
-      const prevScrollHeight = this.target.scrollHeight;
-      const prevScrollTop = this.target.scrollTop;
+      const prevScrollHeight = this.#target.scrollHeight;
+      const prevScrollTop = this.#target.scrollTop;
       const prevBottomOffset =
-        this.target.scrollHeight - this.target.scrollTop - this.target.clientHeight;
+        this.#target.scrollHeight - this.#target.scrollTop - this.#target.clientHeight;
 
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach((node) => {
@@ -214,7 +215,7 @@ class TinySmartScroller {
     });
 
     // Install observer
-    this.mutationObserver.observe(this.target, {
+    this.mutationObserver.observe(this.#target, {
       childList: true,
       subtree: true,
       attributes: true,
@@ -246,10 +247,10 @@ class TinySmartScroller {
         }
 
         // Get Scroll data
-        const prevScrollHeight = this.target.scrollHeight;
-        const prevScrollTop = this.target.scrollTop;
+        const prevScrollHeight = this.#target.scrollHeight;
+        const prevScrollTop = this.#target.scrollTop;
         const prevBottomOffset =
-          this.target.scrollHeight - this.target.scrollTop - this.target.clientHeight;
+          this.#target.scrollHeight - this.#target.scrollTop - this.#target.clientHeight;
 
         // Animation frame
         requestAnimationFrame(() =>
@@ -276,7 +277,7 @@ class TinySmartScroller {
         // @ts-ignore
         if (!el.complete) {
           el.addEventListener('load', () => {
-            if (!this.scrollPaused && this.autoScrollBottom) {
+            if (!this.#scrollPaused && this.autoScrollBottom) {
               this.scrollToBottom();
             }
           });
@@ -286,19 +287,19 @@ class TinySmartScroller {
   }
 
   scrollToBottom() {
-    this.target.scrollTop = this.target.scrollHeight;
+    this.#target.scrollTop = this.#target.scrollHeight;
   }
 
   scrollToTop() {
-    this.target.scrollTop = 0;
+    this.#target.scrollTop = 0;
   }
 
   isUserAtBottom() {
-    return this.isAtBottom;
+    return this.#isAtBottom;
   }
 
   isUserAtTop() {
-    return this.isAtTop;
+    return this.#isAtTop;
   }
 }
 
