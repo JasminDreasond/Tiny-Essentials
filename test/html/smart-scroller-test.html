@@ -152,6 +152,8 @@
         debounceTime: 80,
       });
 
+      window.scroller = scroller;
+
       scroller.onSize((elem, oldSize, newSize) => {
         console.log(elem, oldSize, newSize);
       });

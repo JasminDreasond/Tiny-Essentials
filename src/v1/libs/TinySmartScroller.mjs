@@ -19,6 +19,7 @@ class TinySmartScroller {
   #handler = null;
 
   #querySelector = '';
+  #useWindow = false;
   #destroyed = false;
   #scrollPaused = false;
   #isAtBottom = false;
@@ -63,7 +64,7 @@ class TinySmartScroller {
     } = {},
   ) {
     this.#target = target instanceof Window ? document.documentElement : target;
-    this.useWindow = target instanceof Window;
+    this.#useWindow = target instanceof Window;
     this.#autoScrollBottom = autoScrollBottom;
     this.#observeMutations = observeMutations;
     this.#preserveScrollOnLayoutShift = preserveScrollOnLayoutShift;
@@ -107,7 +108,7 @@ class TinySmartScroller {
       clearTimeout(timeout);
       timeout = setTimeout(() => this._onScroll(), this.#debounceTime);
     };
-    (this.useWindow ? window : this.#target).addEventListener('scroll', this.#handler, {
+    (this.#useWindow ? window : this.#target).addEventListener('scroll', this.#handler, {
       passive: true,
     });
 
@@ -340,7 +341,7 @@ class TinySmartScroller {
     }
 
     // Removes scroll listener
-    const target = this.useWindow ? window : this.#target;
+    const target = this.#useWindow ? window : this.#target;
     if (this.#handler) target.removeEventListener('scroll', this.#handler);
 
     // Clean the WeakMaps
