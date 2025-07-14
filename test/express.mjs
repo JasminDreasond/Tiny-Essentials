@@ -17,6 +17,7 @@ const __dirname = path.dirname(__filename);
 
 // Define a pasta pública
 const publicDir = path.join(__dirname, './html');
+const imgDir = path.join(__dirname, './img');
 const projectRoot = path.join(__dirname, '../');
 
 app.use(
@@ -259,6 +260,7 @@ app.get(
 
 // Middleware para servir arquivos estáticos
 app.use(express.static(publicDir));
+app.use(express.static(imgDir));
 
 // Inicia o servidor
 app.listen(port, '127.0.0.1', () => {

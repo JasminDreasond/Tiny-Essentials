@@ -74,5 +74,6 @@ addModule(1, './src/v1/build/TinyDragger.mjs', 'TinyDragger', true);
 addModule(1, './src/v1/build/TinyNotifications.mjs', 'TinyNotifications', true);
 addModule(1, './src/v1/build/TinyHtml.mjs', 'TinyHtml', true);
 addModule(1, './src/v1/build/TinyAfterScrollWatcher.mjs', 'TinyAfterScrollWatcher', true);
+addModule(1, './src/v1/build/UltraRandomMsgGen.mjs', 'UltraRandomMsgGen', true);
 
 export default modules;
