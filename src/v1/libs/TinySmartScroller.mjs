@@ -76,11 +76,26 @@ class TinySmartScroller {
     }
   }
 
+  _fixScroll(prevScrollTop, prevScrollHeight, prevBottomOffset) {
+    const newScrollHeight = this.target.scrollHeight;
+    const heightDelta = newScrollHeight - prevScrollHeight;
+
+    if (!this.autoScrollBottom && this.preserveScrollOnLayoutShift) {
+      this.target.scrollTop = prevScrollTop + heightDelta;
+    } else if (!this.scrollPaused && this.autoScrollBottom) {
+      this.scrollToBottom();
+    } else if (!this.autoScrollBottom && !this.isAtBottom) {
+      this.target.scrollTop =
+        this.target.scrollHeight - this.target.clientHeight - prevBottomOffset;
+    }
+  }
+
   _observeMutations() {
     this.mutationObserver = new MutationObserver((mutations) => {
       const prevScrollHeight = this.target.scrollHeight;
       const prevScrollTop = this.target.scrollTop;
-      const prevBottomOffset = this.target.scrollHeight - this.target.scrollTop - this.target.clientHeight;
+      const prevBottomOffset =
+        this.target.scrollHeight - this.target.scrollTop - this.target.clientHeight;
 
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach((node) => {
@@ -97,20 +112,12 @@ class TinySmartScroller {
         });
       });
 
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          const newScrollHeight = this.target.scrollHeight;
-          const heightDelta = newScrollHeight - prevScrollHeight;
-
-          if (!this.autoScrollBottom && this.preserveScrollOnLayoutShift) {
-            this.target.scrollTop = prevScrollTop + heightDelta;
-          } else if (!this.scrollPaused && this.autoScrollBottom) {
-            this.scrollToBottom();
-          } else if (!this.autoScrollBottom && !this.isAtBottom) {
-            this.target.scrollTop = this.target.scrollHeight - this.target.clientHeight - prevBottomOffset;
-          }
-        }, 60);
-      });
+      requestAnimationFrame(
+        () =>
+          // setTimeout(() => {
+          this._fixScroll(prevScrollTop, prevScrollHeight, prevBottomOffset),
+        // }, 60);
+      );
     });
 
     this.mutationObserver.observe(this.target, {
@@ -126,20 +133,12 @@ class TinySmartScroller {
       this.resizeObserver = new ResizeObserver(() => {
         const prevScrollHeight = this.target.scrollHeight;
         const prevScrollTop = this.target.scrollTop;
-        const prevBottomOffset = this.target.scrollHeight - this.target.scrollTop - this.target.clientHeight;
+        const prevBottomOffset =
+          this.target.scrollHeight - this.target.scrollTop - this.target.clientHeight;
 
-        requestAnimationFrame(() => {
-          const newScrollHeight = this.target.scrollHeight;
-          const heightDelta = newScrollHeight - prevScrollHeight;
-
-          if (!this.autoScrollBottom && this.preserveScrollOnLayoutShift) {
-            this.target.scrollTop = prevScrollTop + heightDelta;
-          } else if (!this.scrollPaused && this.autoScrollBottom) {
-            this.scrollToBottom();
-          } else if (!this.autoScrollBottom && !this.isAtBottom) {
-            this.target.scrollTop = this.target.scrollHeight - this.target.clientHeight - prevBottomOffset;
-          }
-        });
+        requestAnimationFrame(() =>
+          this._fixScroll(prevScrollTop, prevScrollHeight, prevBottomOffset),
+        );
       });
     }
 
