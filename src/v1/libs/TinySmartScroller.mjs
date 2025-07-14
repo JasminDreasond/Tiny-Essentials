@@ -32,6 +32,9 @@ class TinySmartScroller {
   #elemOldAmount = 0;
   #lastKnownScrollBottomOffset = 0;
 
+  /** @type {Set<string>} */
+  #attributeFilter;
+
   /** @type {Element} */
   #target;
 
@@ -54,6 +57,7 @@ class TinySmartScroller {
    * @param {boolean} [options.preserveScrollOnLayoutShift=true]
    * @param {number} [options.debounceTime=100]
    * @param {string|null} [options.querySelector=null]
+   * @param {string[]|Set<string>|null} [options.attributeFilter=['class', 'style', 'src', 'data-*']]
    */
   constructor(
     target,
@@ -63,8 +67,10 @@ class TinySmartScroller {
       preserveScrollOnLayoutShift = true,
       debounceTime = 100,
       querySelector = null,
+      attributeFilter = ['class', 'style', 'src', 'data-*'],
     } = {},
   ) {
+    // Start values
     this.#target = target instanceof Window ? document.documentElement : target;
     this.#useWindow = target instanceof Window;
     this.#autoScrollBottom = autoScrollBottom;
@@ -72,7 +78,24 @@ class TinySmartScroller {
     this.#preserveScrollOnLayoutShift = preserveScrollOnLayoutShift;
     this.#debounceTime = debounceTime;
     this.#querySelector = querySelector || '';
-    this._init();
+    if (attributeFilter) this.#attributeFilter = new Set(attributeFilter);
+
+    // Bind scroll
+    /** @type {NodeJS.Timeout} */
+    let timeout;
+    this.#handler = () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => this._onScroll(), this.#debounceTime);
+    };
+    (this.#useWindow ? window : this.#target).addEventListener('scroll', this.#handler, {
+      passive: true,
+    });
+
+    // Mutations
+    if (this.#observeMutations) {
+      this._observeMutations();
+      this._observeResizes(this.#target.children);
+    }
   }
 
   /**
@@ -100,25 +123,6 @@ class TinySmartScroller {
   _emit(event, payload) {
     if (this.#destroyed) return;
     (this.#scrollListeners[event] || []).forEach((fn) => fn(payload));
-  }
-
-  _init() {
-    // Bind scroll
-    /** @type {NodeJS.Timeout} */
-    let timeout;
-    this.#handler = () => {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => this._onScroll(), this.#debounceTime);
-    };
-    (this.#useWindow ? window : this.#target).addEventListener('scroll', this.#handler, {
-      passive: true,
-    });
-
-    // Mutations
-    if (this.#observeMutations) {
-      this._observeMutations();
-      this._observeResizes(this.#target.children);
-    }
   }
 
   _onScroll() {
@@ -239,7 +243,8 @@ class TinySmartScroller {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ['class', 'style', 'src', 'data-*'],
+      attributeFilter:
+        this.#attributeFilter.size > 0 ? Array.from(this.#attributeFilter) : undefined,
     });
   }
 
