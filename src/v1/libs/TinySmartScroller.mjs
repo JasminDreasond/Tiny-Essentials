@@ -78,7 +78,7 @@ class TinySmartScroller {
     this.#preserveScrollOnLayoutShift = preserveScrollOnLayoutShift;
     this.#debounceTime = debounceTime;
     this.#querySelector = querySelector || '';
-    if (attributeFilter) this.#attributeFilter = new Set(attributeFilter);
+    this.#attributeFilter = new Set(attributeFilter || undefined);
 
     // Bind scroll
     /** @type {NodeJS.Timeout} */

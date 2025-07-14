@@ -1,11 +1,485 @@
+const defaultWords = [
+  'lorem',
+  'ipsum',
+  'dolor',
+  'sit',
+  'amet',
+  'consectetur',
+  'adipiscing',
+  'elit',
+  'sed',
+  'do',
+  'eiusmod',
+  'tempor',
+  'incididunt',
+  'ut',
+  'labore',
+  'et',
+  'dolore',
+  'magna',
+  'aliqua',
+];
+const defaultEmojis = [
+  '😂',
+  '🌈',
+  '🤖',
+  '💥',
+  '🐸',
+  '🍕',
+  '🦄',
+  '🧠',
+  '🧬',
+  '🚀',
+  '🫠',
+  '💫',
+  '🍩',
+  '👾',
+  '🎉',
+  '🥴',
+  '🐙',
+  '🧃',
+  '🪐',
+  '🎈',
+  '🧸',
+  '👻',
+  '🥳',
+  '🍭',
+  '💖',
+  '😺',
+  '🌮',
+  '🪅',
+  '🎮',
+  '🥓',
+  '🍮',
+];
+
+const defaultNouns = [
+  'pudding',
+  'bean',
+  'snuggle',
+  'bloop',
+  'jelly',
+  'unicorn',
+  'floof',
+  'giggle',
+  'bubble',
+  'muffin',
+  'puff',
+  'pickle',
+  'goblin',
+  'waffle',
+  'sprinkle',
+  'cupcake',
+  'fizzle',
+  'marshmallow',
+  'duckling',
+  'sock',
+  'cloud',
+  'teacup',
+  'nugget',
+  'gnome',
+  'hug',
+  'moonbean',
+  'crayon',
+  'jiggle',
+  'glitter',
+  'carrot',
+  'goober',
+];
+
+const defaultVerbs = [
+  'wiggles',
+  'bounces',
+  'flies',
+  'splats',
+  'scoots',
+  'giggles',
+  'wigglesnacks',
+  'twirls',
+  'boops',
+  'pops',
+  'sings',
+  'hugs',
+  'floats',
+  'glows',
+  'flaps',
+  'mlems',
+  'dances',
+  'puddles',
+  'nomnoms',
+  'wigglejumps',
+  'sniffs',
+  'tumbles',
+  'slides',
+  'chirps',
+  'burps',
+  'sparkles',
+  'waddles',
+  'rambles',
+  'blinks',
+  'mews',
+];
+
+const defaultAdjectives = [
+  'fluffy',
+  'silly',
+  'yummy',
+  'squishy',
+  'wobbly',
+  'magical',
+  'tiny',
+  'sleepy',
+  'wiggly',
+  'bubbly',
+  'glittery',
+  'fuzzy',
+  'jiggly',
+  'sparkly',
+  'giggly',
+  'crunchy',
+  'goofy',
+  'soft',
+  'mushy',
+  'sweet',
+  'loopy',
+  'floaty',
+  'bonkers',
+  'chewy',
+  'ticklish',
+  'dreamy',
+  'pastel',
+  'cozy',
+  'teensy',
+  'grumbly',
+];
+
+const defaultTemplates = [
+  // 🧁 Tiny
+  'Boop!',
+  'Wiggle achieved.',
+  'Oops, {noun} everywhere!',
+  'Tiny {adj} {noun}, big {adj} {noun}.',
+  'Snuggle initiated with a {adj} {noun}.',
+  '{adj} vibes only, powered by {noun}.',
+  'No {noun}, no {noun}.',
+  'Bounce first, {verb} later.',
+  'Mlem. {verb}. {noun}.',
+  '{noun} go brrr and {verb}.',
+  'Why not? {noun} did. Then {noun} followed.',
+
+  // 🍬 Simple
+  'A {adj} {noun} just {verb} near the {adj} window.',
+  'That {adj} {noun} stole my {noun}!',
+  'Look, a {adj} {noun} trying to {verb} again!',
+  'Every {noun} deserves a {adj} nap.',
+  'The {adj} {noun} is my {adj} spirit animal.',
+  'Someone call the {noun}, it’s {verb}ing and {verb}ing again!',
+  'Don’t touch the {adj} {noun}. It {verb}s loudly.',
+  '{noun} forgot how {noun}s work and just {verb}ed.',
+
+  // 🍩 Averages
+  'There once was a {adj} {noun} who loved to {verb} with a {adj} {noun} all day.',
+  'Apparently, {noun}s are banned from {verb}ing and {verb}ing in the {noun} library.',
+  'That {adj} noise? Just a {noun} learning to {verb} on a {adj} {noun}.',
+  'I saw a {adj} {noun} {verb} so hard, it became a {adj} muffin.',
+  'The {adj} {noun} met a {adj} pickle and everything {verb}ed.',
+  '{noun}s are like {noun}: {adj}, unpredictable, and wiggly.',
+  'Don’t judge a {adj} {noun} by its ability to {verb}, or by its {adj} hat.',
+  'All I wanted was peace, but a {adj} {noun} with a {adj} {noun} had other plans.',
+
+  // 🍓 Giants
+  'One {adj} morning, a {adj} {noun} decided it was finally time to {verb}, but halfway through, it tripped on a {noun} and turned into a {adj} marshmallow.',
+  'I tried to be {adj} today, but then a {noun} {verb}ed across my {noun} and typed “asdfgh{noun}” repeatedly.',
+  'If you think you’ve seen everything, wait until a {adj} {noun} {verb}s on a {noun} wearing {adj} socks with tiny {noun}s.',
+  'No one ever believed the stories about the ancient {adj} {noun} who could {verb} with such {adj} grace that entire {noun}s turned pink out of embarrassment.',
+  'A curious {adj} {noun} wandered into a {noun} shop, not knowing that its destiny involved twelve {adj} {noun}s, one rubber {noun}, and a suspiciously quiet {adj} llama.',
+
+  // 🍒 Giants and narratives
+  'In a land where every {adj} {noun} was made of pudding and the sky was {adj} whipped cream, one brave {adj} {noun} set out to discover the legendary Spoon of {noun}s, facing obstacles like bouncing {noun}s, sassy {noun}s, and the Great Wobble of the {noun}.',
+  'Once upon a {adj} time, long before the {noun}s learned to {verb}, there existed a tiny {adj} {noun} who dreamed of swimming in a pool made entirely of {adj} glitter pudding while {verb}ing off-key lullabies to passing {noun}s with monocles.',
+  'The Council of {noun}s gathered in {adj} secret when the sacred {adj} {noun} started to {verb} uncontrollably, threatening the entire {adj} dessert-based civilization with spontaneous {noun} jiggles and uncontainable {noun} fits across the {noun}.',
+
+  // ☎️ Chats and chats
+  'Hey... do you ever wonder if {noun}s dream of {noun}s?',
+  'Okay but hear me out: what if the {adj} {noun} could actually {verb} backwards?',
+  'Can we talk about the {noun} that just {verb}ed and vanished?',
+  'So I was talking to a {noun}, and it told me to stop being {adj}. Rude.',
+  'Not to alarm you, but there’s a {adj} {noun} behind you doing the {verb}.',
+  'Why does this {noun} keep staring at me like I owe it pudding?',
+  'Is this a safe space to admit I accidentally {verb}ed a {noun}?',
+  'I just walked into the room and someone shouted “{adj} {noun}!” — what did I miss?',
+  'Wait... we were supposed to bring a {noun}? No one told me!',
+  'Okay but what if the {adj} {noun} has feelings too?',
+  'Be honest, do I look like a {noun} that forgot how to {verb}?',
+  'If I say "oops", do I still have to explain why the {noun} is glowing?',
+  'I don’t know what’s going on but I brought snacks and a confused {noun}.',
+  'Do you think pudding knows it’s pudding? Just a thought.',
+  'Is this about the time I {verb}ed the {adj} {noun} by accident? Because I can explain.',
+
+  // 🌀 Confusions, unexpected entrances, lost people
+  'Wait, are we talking about {noun}s or am I on the wrong chat again?',
+  'What is this group even about? I just saw "pudding" and joined.',
+  'Hi! I have no idea what’s happening but I’m here and I brought a {noun}.',
+  'I blinked and now there’s a {adj} {noun} in charge of everything.',
+  'Can someone please explain why the {noun} is floating and chanting?',
+  'Okay who gave the {noun} access to glitter and emotional support pickles?',
+  'I came for a calm discussion and now there’s a {adj} battle between {noun}s.',
+  'Not sure if I’m early, late, or inside a {noun} dream.',
+  'I was gone for 3 minutes and now someone’s riding a {noun} into the pudding realm.',
+  'This isn’t the pudding appreciation group, is it? ...oh no.',
+  'So... who summoned the {adj} {noun} this time? Be honest.',
+  'I came here for vibes and stayed for the {noun}s.',
+  'Does anyone else hear faint giggling or is that just the {adj} {noun} again?',
+  'I feel like I missed step one, two, and also three of this conversation.',
+  'All I asked was “what’s up?” and now I’m emotionally attached to a {noun}.',
+
+  // 💬 More interactive chat style
+  'Me: "I’ll be normal today." Also me: *{verb}s into a meeting riding a {adj} {noun}*',
+  '"It’s just pudding," they said. "It can’t hurt you," they said. They were wrong.',
+  'I said one nice thing to a {noun} and now it follows me everywhere.',
+  'Can we take a moment to appreciate how the {adj} {noun} is just vibing?',
+  'Who put a tiny hat on the {noun}? Because that’s adorable.',
+  'My life has been different ever since the {noun} started {verb}ing.',
+  'Raise your hand if you’ve ever been personally attacked by a {adj} {noun}.',
+  '"Don’t be weird," they said. So I became a {noun} instead.',
+  'Do {noun}s have feelings? Asking for a {adj} friend.',
+  'I trusted the {noun} and all I got was a glitter-covered sock.',
+  'Plot twist: the {adj} {noun} was inside us all along.',
+
+  // Mini cute explosions and chaos
+  'The {adj} {noun} {verb} and {verb} all over the {adj} {noun}!',
+  'Oops! {noun}s {verb}ed into the {adj} {noun} while {verb}ing crazily.',
+  '{adj}, {adj}, and more {adj} {noun}s just {verb}ed by!',
+  'Why does the {adj} {noun} keep {verb}ing and {verb}ing without stopping?',
+  'Look! A {adj} {noun}, a {adj} {noun}, and a {noun} all {verb}ing together!',
+  'Sometimes, the {noun} just {verb}s, then {verb}s again, and never stops being {adj}.',
+
+  // Phrases with repetition and multiple spaces for chaos
+  '{noun}, {noun}, and {noun} — all {verb}ing and {verb}ing in a {adj} {noun}.',
+  'I saw a {adj} {noun} {verb}, then another {noun} {verb}ing with a {adj} {noun}.',
+  'The {noun} {verb}s {verb} while the {adj} {noun} {verb}s and the {noun} just {verb}s.',
+  'Can a {adj} {noun} {verb} {verb} without a {adj} {noun} watching?',
+
+  // Phrases with interactions and breaks for fun
+  'Whoa! The {adj} {noun} just {verb}ed... and then {verb}ed again!',
+  'Hey... did you see that {adj} {noun} {verb} over there?',
+  'Umm, the {noun} is {verb}ing but also {verb}ing and {verb}ing!',
+  'Lol! {noun}s {verb} so {adj}ly, it’s impossible not to giggle.',
+
+  // Mini exaggerated and cute dialogues
+  '"Hey! What’s up?" asked the {adj} {noun}, who {verb}ed loudly.',
+  '"I’m just a {adj} {noun} trying to {verb}, you know?"',
+  '"Did you see the {adj} {noun} that just {verb}ed in the pudding?"',
+  '"No way! The {noun} {verb}s better than me!"',
+  '"Wait, the {adj} {noun} said it would {verb}, but it {verb}ed instead!"',
+
+  // Extensive, crazy and fun narrative phrases
+  'Once upon a {adj} {noun}, a group of {adj} {noun}s {verb}ed through the {adj} forest, singing {adj} songs and eating {noun}s made of pudding.',
+  'The legend tells of a {adj} {noun} who could {verb} faster than any {noun} ever seen, leaving trails of {adj} sparkles behind.',
+  'Every day, the {adj} {noun} would {verb} around the {adj} meadow, trying to convince the {noun}s to join the grand pudding party.',
+  'No one knows why the {adj} {noun} suddenly {verb}ed and then {verb}ed again, but everyone agrees it was the cutest thing they ever saw.',
+  'In the kingdom of {adj} {noun}s, only the bravest {noun} dared to {verb} the giant pudding monster, armed with nothing but {adj} smiles and jellybeans.',
+
+  // Total cases with many placeholders
+  '{adj} {noun} {verb} {verb} {verb} {noun} {verb} {adj} {noun} {verb} {noun}!',
+  '{noun} {noun} {verb} {adj} {noun} and then {verb} {verb} the {adj} {noun}.',
+  '{verb} the {adj} {noun}, then {verb} the {noun} while {verb}ing {adj}ly.',
+  'Can the {adj} {noun} {verb} and {verb} the {adj} {noun} at the same time?',
+  '{noun} {verb} {noun} {verb}, but the {adj} {noun} {verb}s better.',
+
+  // Frases with cute interjections and silly sounds
+  'Boop! The {adj} {noun} just {verb}ed in the pudding.',
+  'Bloop bloop, the {noun} is {verb}ing all over again!',
+  'Mlem mlem, a {adj} {noun} {verb}s quietly in the corner.',
+  'Splat! {noun} {verb}ed right on the {adj} {noun}.',
+  'Yum! A {adj} {noun} just {verb}ed in my mouth.',
+
+  // Phrases with silly questions
+  'Do {noun}s really {verb} when nobody’s watching?',
+  'Why does the {adj} {noun} always {verb} at midnight?',
+  'Can a {noun} be too {adj} to {verb} properly?',
+  'Is it normal for a {adj} {noun} to {verb} three times in a row?',
+  'Who taught the {noun} to {verb} like that?',
+
+  // Frases of confusion and fun surprises
+  'Wait, did the {adj} {noun} just {verb} itself?',
+  'I can’t believe the {noun} {verb}ed into a {adj} {noun}!',
+  'Suddenly, a {adj} {noun} appeared and started to {verb} wildly.',
+  'That {noun} was {verb}ing so {adj}ly it broke the pudding meter.',
+  'Everyone’s talking about the {adj} {noun} that {verb}ed out of nowhere.',
+];
+
+/**
+ * UltraRandomMsgGen - Phrase templates and word lists
+ *
+ * Portions of the templates, word sets, and phrase structures
+ * were generated and expanded by ChatGPT (OpenAI).
+ *
+ * This content was crafted to produce innocent, playful, and diverse
+ * random messages focused on a pudding-themed, whimsical style.
+ *
+ * @class
+ */
 class UltraRandomMsgGen {
+  /**
+   * Creates an instance of UltraRandomMsgGen.
+   *
+   * @param {Object} [config={}] - Configuration object to customize the generator.
+   * @param {number} [config.minLength=10] - Minimum total length (in characters) of generated text.
+   * @param {number} [config.maxLength=300] - Maximum total length (in characters) of generated text.
+   * @param {boolean} [config.readable=true] - Whether to generate readable words or random strings.
+   * @param {boolean} [config.useEmojis=true] - Whether to include emojis in the generated text.
+   * @param {boolean} [config.includeNumbers=true] - Whether to include numbers randomly.
+   * @param {boolean} [config.includeSymbols=true] - Whether to include symbols randomly.
+   * @param {boolean} [config.allowWeirdSpacing=false] - Whether to allow weird spacing (newlines, extra spaces, uppercase).
+   * @param {string[]} [config.emojiSet] - Array of emojis to use (defaults to internal emoji set).
+   * @param {string[]} [config.wordSet] - Array of words to use (defaults to internal word set).
+   * @param {'mixed'|'readable'|'chaotic'|'natural'} [config.mode='mixed'] - Mode of text generation.
+   * @param {Object} [config.grammar] - Grammar configuration with templates and word categories.
+   * @param {string[]} [config.grammar.templates] - Array of string templates with placeholders for generating sentences.
+   * @param {string[]} [config.grammar.nouns] - Array of noun strings for template substitution.
+   * @param {string[]} [config.grammar.verbs] - Array of verb strings for template substitution.
+   * @param {string[]} [config.grammar.adjectives] - Array of adjective strings for template substitution.
+   * @param {boolean} [config.repeatWords=true] - Whether to allow repeating words in the output.
+   * @param {'inline'|'end'|'none'} [config.emojiPlacement='inline'] - Placement mode for emojis in generated text.
+   * @param {Object} [config.paragraphs] - Paragraph configuration object or null for single block text.
+   * @param {number} [config.paragraphs.min] - Minimum number of paragraphs to generate.
+   * @param {number} [config.paragraphs.max] - Maximum number of paragraphs to generate.
+   * @param {Object} [config.line] - Line configuration for generated text.
+   * @param {number} [config.line.minLength=20] - Minimum length (characters) per line.
+   * @param {number} [config.line.maxLength=120] - Maximum length (characters) per line.
+   * @param {number} [config.line.emojiChance=0.3] - Probability (0–1) of placing emoji per line.
+   */
   constructor(config = {}) {
-    this.defaultWords =
-      'lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua'.split(
-        ' ',
-      );
     this.symbols = '!@#$%^&*()-_=+[]{}|;:,.<>?/\\~'.split('');
-    this.defaultEmojis = ['😂', '🌈', '🤖', '💥', '🐸', '🍕', '🦄', '🧠', '🧬', '🚀'];
+
+    const {
+      minLength,
+      maxLength,
+      readable,
+      useEmojis,
+      includeNumbers,
+      includeSymbols,
+      allowWeirdSpacing,
+      emojiSet,
+      wordSet,
+      mode,
+      grammar,
+      repeatWords,
+      emojiPlacement,
+      paragraphs,
+      line,
+    } = config;
+
+    // Validations
+    if (minLength !== undefined && (!Number.isInteger(minLength) || minLength < 1)) {
+      throw new TypeError('config.minLength must be an integer >= 1');
+    }
+
+    if (maxLength !== undefined && (!Number.isInteger(maxLength) || maxLength < 1)) {
+      throw new TypeError('config.maxLength must be an integer >= 1');
+    }
+
+    if (minLength !== undefined && maxLength !== undefined && minLength > maxLength) {
+      throw new RangeError('config.minLength cannot be greater than config.maxLength');
+    }
+
+    if (readable !== undefined && typeof readable !== 'boolean') {
+      throw new TypeError('config.readable must be a boolean');
+    }
+
+    if (useEmojis !== undefined && typeof useEmojis !== 'boolean') {
+      throw new TypeError('config.useEmojis must be a boolean');
+    }
+
+    if (includeNumbers !== undefined && typeof includeNumbers !== 'boolean') {
+      throw new TypeError('config.includeNumbers must be a boolean');
+    }
+
+    if (includeSymbols !== undefined && typeof includeSymbols !== 'boolean') {
+      throw new TypeError('config.includeSymbols must be a boolean');
+    }
+
+    if (allowWeirdSpacing !== undefined && typeof allowWeirdSpacing !== 'boolean') {
+      throw new TypeError('config.allowWeirdSpacing must be a boolean');
+    }
+
+    if (emojiSet !== undefined && !Array.isArray(emojiSet)) {
+      throw new TypeError('config.emojiSet must be an array of strings');
+    }
+
+    if (wordSet !== undefined && !Array.isArray(wordSet)) {
+      throw new TypeError('config.wordSet must be an array of strings');
+    }
+
+    if (mode !== undefined && !['mixed', 'readable', 'chaotic', 'natural'].includes(mode)) {
+      throw new RangeError('config.mode must be one of: "mixed", "readable", "chaotic", "natural');
+    }
+
+    if (grammar !== undefined) {
+      if (typeof grammar !== 'object' || grammar === null) {
+        throw new TypeError('config.grammar must be an object');
+      }
+      const { templates, nouns, verbs, adjectives } = grammar;
+      if (templates !== undefined && !Array.isArray(templates)) {
+        throw new TypeError('config.grammar.templates must be an array of strings');
+      }
+      if (nouns !== undefined && !Array.isArray(nouns)) {
+        throw new TypeError('config.grammar.nouns must be an array of strings');
+      }
+      if (verbs !== undefined && !Array.isArray(verbs)) {
+        throw new TypeError('config.grammar.verbs must be an array of strings');
+      }
+      if (adjectives !== undefined && !Array.isArray(adjectives)) {
+        throw new TypeError('config.grammar.adjectives must be an array of strings');
+      }
+    }
+
+    if (repeatWords !== undefined && typeof repeatWords !== 'boolean') {
+      throw new TypeError('config.repeatWords must be a boolean');
+    }
+
+    if (emojiPlacement !== undefined && !['inline', 'end', 'none'].includes(emojiPlacement)) {
+      throw new RangeError('config.emojiPlacement must be one of: "inline", "end", "none"');
+    }
+
+    if (paragraphs !== undefined) {
+      if (typeof paragraphs !== 'object') {
+        throw new TypeError('config.paragraphs must be an object or null');
+      }
+      const { min, max } = paragraphs;
+      if (min !== undefined && (!Number.isInteger(min) || min < 1)) {
+        throw new TypeError('config.paragraphs.min must be an integer >= 1');
+      }
+      if (max !== undefined && (!Number.isInteger(max) || max < 1)) {
+        throw new TypeError('config.paragraphs.max must be an integer >= 1');
+      }
+      if (min !== undefined && max !== undefined && min > max) {
+        throw new RangeError('config.paragraphs.min cannot be greater than config.paragraphs.max');
+      }
+    }
+
+    if (line !== undefined) {
+      if (typeof line !== 'object' || line === null) {
+        throw new TypeError('config.line must be an object');
+      }
+      const { minLength: lineMin, maxLength: lineMax, emojiChance } = line;
+      if (lineMin !== undefined && (!Number.isInteger(lineMin) || lineMin < 1)) {
+        throw new TypeError('config.line.minLength must be an integer >= 1');
+      }
+      if (lineMax !== undefined && (!Number.isInteger(lineMax) || lineMax < 1)) {
+        throw new TypeError('config.line.maxLength must be an integer >= 1');
+      }
+      if (lineMin !== undefined && lineMax !== undefined && lineMin > lineMax) {
+        throw new RangeError('config.line.minLength cannot be greater than config.line.maxLength');
+      }
+      if (
+        emojiChance !== undefined &&
+        (typeof emojiChance !== 'number' || emojiChance < 0 || emojiChance > 1)
+      ) {
+        throw new RangeError('config.line.emojiChance must be a number between 0 and 1');
+      }
+    }
 
     this.config = {
       minLength: 10,
@@ -15,9 +489,15 @@ class UltraRandomMsgGen {
       includeNumbers: true,
       includeSymbols: true,
       allowWeirdSpacing: false,
-      emojiSet: [...this.defaultEmojis],
-      wordSet: [...this.defaultWords],
+      emojiSet: [...defaultEmojis],
+      wordSet: [...defaultWords],
       mode: 'mixed', // 'mixed', 'readable', 'chaotic'
+      grammar: {
+        templates: [...defaultTemplates],
+        nouns: [...defaultNouns],
+        verbs: [...defaultVerbs],
+        adjectives: [...defaultAdjectives],
+      },
       repeatWords: true,
       emojiPlacement: 'inline', // 'inline' | 'end' | 'none'
       paragraphs: null, // { min: 1, max: 3 } ou null
@@ -28,6 +508,46 @@ class UltraRandomMsgGen {
       },
       ...config,
     };
+  }
+
+  setGrammarTemplates(...templates) {
+    this.config.grammar.templates = templates.flat();
+    return this;
+  }
+
+  addGrammarTemplates(...templates) {
+    this.config.grammar.templates.push(...templates.flat());
+    return this;
+  }
+
+  setGrammarNouns(...nouns) {
+    this.config.grammar.nouns = nouns.flat();
+    return this;
+  }
+
+  addGrammarNouns(...nouns) {
+    this.config.grammar.nouns.push(...nouns.flat());
+    return this;
+  }
+
+  setGrammarVerbs(...verbs) {
+    this.config.grammar.verbs = verbs.flat();
+    return this;
+  }
+
+  addGrammarVerbs(...verbs) {
+    this.config.grammar.verbs.push(...verbs.flat());
+    return this;
+  }
+
+  setGrammarAdjectives(...adjectives) {
+    this.config.grammar.adjectives = adjectives.flat();
+    return this;
+  }
+
+  addGrammarAdjectives(...adjectives) {
+    this.config.grammar.adjectives.push(...adjectives.flat());
+    return this;
   }
 
   configure(newConfig = {}) {
@@ -61,6 +581,10 @@ class UltraRandomMsgGen {
       emojiPlacement,
     } = this.config;
 
+    if (mode === 'natural') {
+      return this._generateNaturalSentence();
+    }
+
     const pools = [];
 
     if (readable || mode === 'readable' || mode === 'mixed') {
@@ -84,6 +608,17 @@ class UltraRandomMsgGen {
     }
 
     return this._getRandomItem(pools);
+  }
+
+  _generateNaturalSentence() {
+    const { templates, nouns, verbs, adjectives } = this.config.grammar;
+
+    let template = this._getRandomItem(templates);
+
+    return template
+      .replace(/{noun}/g, () => this._getRandomItem(nouns))
+      .replace(/{verb}/g, () => this._getRandomItem(verbs))
+      .replace(/{adj}/g, () => this._getRandomItem(adjectives));
   }
 
   _generateLine(targetLength, seenWords) {
