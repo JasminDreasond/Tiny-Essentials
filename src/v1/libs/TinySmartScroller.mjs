@@ -5,12 +5,12 @@ class TinySmartScroller {
   #newSizes = new WeakMap();
 
   /** @type {Record<string, Function[]>} */
-  scrollListeners = {};
+  #scrollListeners = {};
 
   /** @type {ResizeObserver|null} */
-  resizeObserver = null;
+  #resizeObserver = null;
   /** @type {MutationObserver|null} */
-  mutationObserver = null;
+  #mutationObserver = null;
 
   /** @type {Set<string>} */
   #loadTags = new Set(['IMG', 'IFRAME', 'VIDEO']);
@@ -19,6 +19,10 @@ class TinySmartScroller {
   #scrollPaused = false;
   #isAtBottom = false;
   #isAtTop = false;
+  #autoScrollBottom = false;
+  #observeMutations = false;
+  #preserveScrollOnLayoutShift = false;
+  #debounceTime = 0;
   #lastKnownScrollBottomOffset = 0;
 
   /** @type {Element} */
@@ -56,10 +60,10 @@ class TinySmartScroller {
   ) {
     this.#target = target instanceof Window ? document.documentElement : target;
     this.useWindow = target instanceof Window;
-    this.autoScrollBottom = autoScrollBottom;
-    this.observeMutations = observeMutations;
-    this.preserveScrollOnLayoutShift = preserveScrollOnLayoutShift;
-    this.debounceTime = debounceTime;
+    this.#autoScrollBottom = autoScrollBottom;
+    this.#observeMutations = observeMutations;
+    this.#preserveScrollOnLayoutShift = preserveScrollOnLayoutShift;
+    this.#debounceTime = debounceTime;
     this.#querySelector = querySelector || '';
     this._init();
   }
@@ -76,8 +80,8 @@ class TinySmartScroller {
    * @param {Function} handler
    */
   on(event, handler) {
-    if (!this.scrollListeners[event]) this.scrollListeners[event] = [];
-    this.scrollListeners[event].push(handler);
+    if (!this.#scrollListeners[event]) this.#scrollListeners[event] = [];
+    this.#scrollListeners[event].push(handler);
   }
 
   /**
@@ -85,12 +89,12 @@ class TinySmartScroller {
    * @param {*} [payload]
    */
   _emit(event, payload) {
-    (this.scrollListeners[event] || []).forEach((fn) => fn(payload));
+    (this.#scrollListeners[event] || []).forEach((fn) => fn(payload));
   }
 
   _init() {
     this._bindScroll();
-    if (this.observeMutations) {
+    if (this.#observeMutations) {
       this._observeMutations();
       this._observeResizes(this.#target.children);
     }
@@ -101,7 +105,7 @@ class TinySmartScroller {
     let timeout;
     const handler = () => {
       clearTimeout(timeout);
-      timeout = setTimeout(() => this._onScroll(), this.debounceTime);
+      timeout = setTimeout(() => this._onScroll(), this.#debounceTime);
     };
     (this.useWindow ? window : this.#target).addEventListener('scroll', handler, { passive: true });
   }
@@ -126,7 +130,7 @@ class TinySmartScroller {
     this.#isAtTop = atTop;
     this.#isAtBottom = atBottom;
 
-    this.#scrollPaused = !(this.autoScrollBottom && this.#isAtBottom);
+    this.#scrollPaused = !(this.#autoScrollBottom && this.#isAtBottom);
 
     this.#lastKnownScrollBottomOffset = scrollHeight - scrollTop - clientHeight;
 
@@ -149,7 +153,7 @@ class TinySmartScroller {
     const heightDelta = newScrollHeight - prevScrollHeight;
 
     // Fix scroll size
-    if (this.autoScrollBottom && this.preserveScrollOnLayoutShift && !this.#isAtBottom) {
+    if (this.#autoScrollBottom && this.#preserveScrollOnLayoutShift && !this.#isAtBottom) {
       // Run size getter
       const scrollSize = { height: 0, width: 0 };
       for (const target of targets) {
@@ -176,16 +180,16 @@ class TinySmartScroller {
     }
 
     // Normal stuff
-    else if (!this.#scrollPaused && this.autoScrollBottom) {
+    else if (!this.#scrollPaused && this.#autoScrollBottom) {
       this.scrollToBottom();
-    } else if (!this.autoScrollBottom && !this.#isAtBottom) {
+    } else if (!this.#autoScrollBottom && !this.#isAtBottom) {
       this.#target.scrollTop =
         this.#target.scrollHeight - this.#target.clientHeight - prevBottomOffset;
     }
   }
 
   _observeMutations() {
-    this.mutationObserver = new MutationObserver((mutations) => {
+    this.#mutationObserver = new MutationObserver((mutations) => {
       const prevScrollHeight = this.#target.scrollHeight;
       const prevScrollTop = this.#target.scrollTop;
       const prevBottomOffset =
@@ -215,7 +219,7 @@ class TinySmartScroller {
     });
 
     // Install observer
-    this.mutationObserver.observe(this.#target, {
+    this.#mutationObserver.observe(this.#target, {
       childList: true,
       subtree: true,
       attributes: true,
@@ -228,8 +232,8 @@ class TinySmartScroller {
    */
   _observeResizes(elements) {
     // Add resize observer
-    if (!this.resizeObserver) {
-      this.resizeObserver = new ResizeObserver((entries) => {
+    if (!this.#resizeObserver) {
+      this.#resizeObserver = new ResizeObserver((entries) => {
         /** @type {Node[]} */
         const targets = [];
         for (const entry of entries) {
@@ -261,8 +265,8 @@ class TinySmartScroller {
 
     // Execute observer
     Array.from(elements).forEach((el) => {
-      if (!this.resizeObserver) throw new Error('');
-      this.resizeObserver.observe(el);
+      if (!this.#resizeObserver) throw new Error('');
+      this.#resizeObserver.observe(el);
     });
   }
 
@@ -277,7 +281,7 @@ class TinySmartScroller {
         // @ts-ignore
         if (!el.complete) {
           el.addEventListener('load', () => {
-            if (!this.#scrollPaused && this.autoScrollBottom) {
+            if (!this.#scrollPaused && this.#autoScrollBottom) {
               this.scrollToBottom();
             }
           });
@@ -300,6 +304,10 @@ class TinySmartScroller {
 
   isUserAtTop() {
     return this.#isAtTop;
+  }
+
+  isScrollPaused() {
+    return this.#scrollPaused;
   }
 }
 

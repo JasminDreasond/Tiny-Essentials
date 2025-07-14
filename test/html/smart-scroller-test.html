@@ -166,7 +166,7 @@
         const state = [
           scroller.isUserAtTop() ? 'TOP' : '',
           scroller.isUserAtBottom() ? 'BOTTOM' : '',
-          scroller.scrollPaused ? 'PAUSED' : 'AUTO',
+          scroller.isScrollPaused() ? 'PAUSED' : 'AUTO',
         ]
           .filter(Boolean)
           .join(' | ');
