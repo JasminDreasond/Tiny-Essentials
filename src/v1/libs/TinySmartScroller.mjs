@@ -106,6 +106,28 @@ class TinySmartScroller {
   }
 
   /**
+   * @returns {NodeSizesEvent};
+   */
+  getSimpleOnHeight() {
+    return (elem, sizes, amounts) => {
+      if (amounts.now !== amounts.old) return;
+      const oldSize = sizes.old;
+      const newSize = sizes.now;
+      const height = newSize.height - oldSize.height;
+      return { height, width: 0 };
+    };
+  }
+
+  /**
+   * @returns {NodeSizesEvent};
+   */
+  addSimpleOnHeight() {
+    const result = this.getSimpleOnHeight();
+    this.onSize(result);
+    return result;
+  }
+
+  /**
    * @param {NodeSizesEvent} handler
    */
   onSize(handler) {
@@ -410,6 +432,7 @@ class TinySmartScroller {
     // Cleans listeners and filters
     this.#scrollListeners = {};
     this.#sizeFilter.clear();
+    this.#loadTags.clear();
   }
 }
 

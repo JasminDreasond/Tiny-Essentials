@@ -156,18 +156,7 @@
       window.randomText = randomText;
 
       scroller.setExtraScrollBoundary(500);
-
-      scroller.onSize((elem, sizes, amounts) => {
-        console.log(amounts);
-        if (amounts.now !== amounts.old) return;
-        const oldSize = sizes.old;
-        const newSize = sizes.now;
-        const height = newSize.height - oldSize.height;
-        const width = newSize.width - oldSize.width;
-
-        console.log(elem, { height, width });
-        return { height, width: 0 };
-      });
+      scroller.addSimpleOnHeight();
 
       const log = (msg) => {
         const time = new Date().toLocaleTimeString();
@@ -245,7 +234,7 @@
           img.alt = 'Async image';
           img.title = 'Click to expand';
           img.onload = () => (img.style.width = '300px');
-          img.src = '/6d01c26e-e523-4439-8bfc-f656a83cdab0.png';
+          setTimeout(() => (img.src = '/6d01c26e-e523-4439-8bfc-f656a83cdab0.png'), 1000);
           img.style.cursor = 'pointer';
           img.addEventListener('click', () => {
             img.style.width = img.style.width === '300px' ? '100px' : '300px';
