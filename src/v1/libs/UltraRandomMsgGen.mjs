@@ -310,6 +310,59 @@ const defaultTemplates = [
 ];
 
 /**
+ * @typedef {'mixed'|'readable'|'chaotic'|'natural'} RandomMsgModes
+ * Defines how the message content is generated:
+ * - `mixed`: Combines readable words, gibberish, symbols, emojis, etc.
+ * - `readable`: Focuses on human-readable words only.
+ * - `chaotic`: Pure chaos, mostly gibberish and symbols.
+ * - `natural`: Uses structured grammar templates to form silly but proper sentences.
+ */
+
+/**
+ * @typedef {'inline'|'end'|'none'} EmojiPlacement
+ * Controls where emojis are placed:
+ * - `inline`: Emojis may appear throughout the text.
+ * - `end`: Emojis appear at the end of lines.
+ * - `none`: No emojis will be used.
+ */
+
+/**
+ * @typedef {Object} MsgGenConfig
+ * Configuration object for customizing message generation.
+ *
+ * @property {number} minLength - Minimum total length (in characters) of the final generated text.
+ * @property {number} maxLength - Maximum total length (in characters) of the final generated text.
+ * @property {boolean} readable - Whether to favor readable word-like strings.
+ * @property {boolean} useEmojis - Whether emojis are allowed in the generated content.
+ * @property {boolean} includeNumbers - Whether random numbers can appear in the text.
+ * @property {boolean} includeSymbols - Whether random symbols (e.g., !@#) are included.
+ * @property {boolean} allowWeirdSpacing - Enables fun spacing effects (e.g., extra spaces, newlines, uppercase words).
+ *
+ * @property {string[]} emojiSet - List of emojis to choose from. Overrides default set if provided.
+ * @property {string[]} wordSet - List of base words used in readable and mixed modes.
+ *
+ * @property {RandomMsgModes} mode - Determines the overall generation strategy (`mixed`, `readable`, `chaotic`, or `natural`).
+ *
+ * @property {Object} grammar - Grammar configuration used when `mode` is set to `'natural'`.
+ * @property {string[]} grammar.templates - Sentence templates using placeholders (`{noun}`, `{verb}`, `{adj}`).
+ * @property {string[]} grammar.nouns - List of nouns to insert into `{noun}` placeholders.
+ * @property {string[]} grammar.verbs - List of verbs to insert into `{verb}` placeholders.
+ * @property {string[]} grammar.adjectives - List of adjectives to insert into `{adj}` placeholders.
+ *
+ * @property {boolean} repeatWords - If false, avoids repeating the same word within a single generation.
+ * @property {EmojiPlacement} emojiPlacement - Controls how emojis are placed in the text.
+ *
+ * @property {Object} [paragraphs] - Optional paragraph configuration.
+ * @property {number} paragraphs.min - Minimum number of paragraphs to generate.
+ * @property {number} paragraphs.max - Maximum number of paragraphs to generate.
+ *
+ * @property {Object} line - Configuration for line-based generation.
+ * @property {number} line.minLength - Minimum number of characters per line.
+ * @property {number} line.maxLength - Maximum number of characters per line.
+ * @property {number} line.emojiChance - Probability (0 to 1) that a line will end with an emoji when allowed.
+ */
+
+/**
  * UltraRandomMsgGen - Phrase templates and word lists
  *
  * Portions of the templates, word sets, and phrase structures
@@ -321,6 +374,33 @@ const defaultTemplates = [
  * @class
  */
 class UltraRandomMsgGen {
+  /** @type {MsgGenConfig} */
+  config = {
+    minLength: 10,
+    maxLength: 300,
+    readable: true,
+    useEmojis: true,
+    includeNumbers: true,
+    includeSymbols: true,
+    allowWeirdSpacing: false,
+    emojiSet: [],
+    wordSet: [],
+    mode: 'mixed', // 'mixed', 'readable', 'chaotic'
+    grammar: {
+      templates: [],
+      nouns: [],
+      verbs: [],
+      adjectives: [],
+    },
+    repeatWords: true,
+    emojiPlacement: 'inline', // 'inline' | 'end' | 'none'
+    line: {
+      minLength: 20,
+      maxLength: 120,
+      emojiChance: 0.3, // 30% chance per line
+    },
+  };
+
   /**
    * Creates an instance of UltraRandomMsgGen.
    *
@@ -334,14 +414,14 @@ class UltraRandomMsgGen {
    * @param {boolean} [config.allowWeirdSpacing=false] - Whether to allow weird spacing (newlines, extra spaces, uppercase).
    * @param {string[]} [config.emojiSet] - Array of emojis to use (defaults to internal emoji set).
    * @param {string[]} [config.wordSet] - Array of words to use (defaults to internal word set).
-   * @param {'mixed'|'readable'|'chaotic'|'natural'} [config.mode='mixed'] - Mode of text generation.
+   * @param {RandomMsgModes} [config.mode='mixed'] - Mode of text generation.
    * @param {Object} [config.grammar] - Grammar configuration with templates and word categories.
    * @param {string[]} [config.grammar.templates] - Array of string templates with placeholders for generating sentences.
    * @param {string[]} [config.grammar.nouns] - Array of noun strings for template substitution.
    * @param {string[]} [config.grammar.verbs] - Array of verb strings for template substitution.
    * @param {string[]} [config.grammar.adjectives] - Array of adjective strings for template substitution.
    * @param {boolean} [config.repeatWords=true] - Whether to allow repeating words in the output.
-   * @param {'inline'|'end'|'none'} [config.emojiPlacement='inline'] - Placement mode for emojis in generated text.
+   * @param {EmojiPlacement} [config.emojiPlacement='inline'] - Placement mode for emojis in generated text.
    * @param {Object} [config.paragraphs] - Paragraph configuration object or null for single block text.
    * @param {number} [config.paragraphs.min] - Minimum number of paragraphs to generate.
    * @param {number} [config.paragraphs.max] - Maximum number of paragraphs to generate.
@@ -481,33 +561,24 @@ class UltraRandomMsgGen {
       }
     }
 
-    this.config = {
-      minLength: 10,
-      maxLength: 300,
-      readable: true,
-      useEmojis: true,
-      includeNumbers: true,
-      includeSymbols: true,
-      allowWeirdSpacing: false,
-      emojiSet: [...defaultEmojis],
-      wordSet: [...defaultWords],
-      mode: 'mixed', // 'mixed', 'readable', 'chaotic'
-      grammar: {
-        templates: [...defaultTemplates],
-        nouns: [...defaultNouns],
-        verbs: [...defaultVerbs],
-        adjectives: [...defaultAdjectives],
-      },
-      repeatWords: true,
-      emojiPlacement: 'inline', // 'inline' | 'end' | 'none'
-      paragraphs: null, // { min: 1, max: 3 } ou null
-      line: {
-        minLength: 20,
-        maxLength: 120,
-        emojiChance: 0.3, // 30% de chance por linha
-      },
-      ...config,
-    };
+    this.config.emojiSet = [...defaultEmojis];
+    this.config.wordSet = [...defaultWords];
+
+    this.config.grammar.templates = [...defaultTemplates];
+    this.config.grammar.nouns = [...defaultNouns];
+    this.config.grammar.verbs = [...defaultVerbs];
+    this.config.grammar.adjectives = [...defaultAdjectives];
+    Object.assign(this.config, config);
+  }
+
+  /**
+   * Merges new configuration values into the current instance.
+   * @param {Object} newConfig - Object with one or more configuration overrides.
+   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   */
+  configure(newConfig = {}) {
+    Object.assign(this.config, newConfig);
+    return this;
   }
 
   /**
@@ -591,12 +662,58 @@ class UltraRandomMsgGen {
   }
 
   /**
-   * Merges new configuration values into the current instance.
-   * @param {Object} newConfig - Object with one or more configuration overrides.
+   * Removes specific grammar templates from the current list.
+   * @param {...string[]} templates - One or more arrays or strings of templates to remove.
    * @returns {UltraRandomMsgGen} - The instance for chaining.
    */
-  configure(newConfig = {}) {
-    Object.assign(this.config, newConfig);
+  removeGrammarTemplates(...templates) {
+    const removeSet = new Set(templates.flat());
+    this.config.grammar.templates = this.config.grammar.templates.filter((t) => !removeSet.has(t));
+    return this;
+  }
+
+  /**
+   * Removes specific noun words from the grammar noun list.
+   * @param {...string[]} nouns - One or more arrays or strings of nouns to remove.
+   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   */
+  removeGrammarNouns(...nouns) {
+    const removeSet = new Set(nouns.flat());
+    this.config.grammar.nouns = this.config.grammar.nouns.filter((n) => !removeSet.has(n));
+    return this;
+  }
+
+  /**
+   * Removes specific verb words from the grammar verb list.
+   * @param {...string[]} verbs - One or more arrays or strings of verbs to remove.
+   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   */
+  removeGrammarVerbs(...verbs) {
+    const removeSet = new Set(verbs.flat());
+    this.config.grammar.verbs = this.config.grammar.verbs.filter((v) => !removeSet.has(v));
+    return this;
+  }
+
+  /**
+   * Removes specific adjective words from the grammar adjective list.
+   * @param {...string[]} adjectives - One or more arrays or strings of adjectives to remove.
+   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   */
+  removeGrammarAdjectives(...adjectives) {
+    const removeSet = new Set(adjectives.flat());
+    this.config.grammar.adjectives = this.config.grammar.adjectives.filter(
+      (a) => !removeSet.has(a),
+    );
+    return this;
+  }
+
+  /**
+   * Replaces the entire word set used in readable/mixed modes.
+   * @param {...string[]} words - One or more arrays or strings of words.
+   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   */
+  setWords(...words) {
+    this.config.wordSet = words.flat();
     return this;
   }
 
@@ -611,12 +728,44 @@ class UltraRandomMsgGen {
   }
 
   /**
+   * Removes specific words from the word set.
+   * @param {...string[]} words - Words to be removed.
+   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   */
+  removeWords(...words) {
+    const removeSet = new Set(words.flat());
+    this.config.wordSet = this.config.wordSet.filter((word) => !removeSet.has(word));
+    return this;
+  }
+
+  /**
    * Replaces the emoji set used in generated output.
    * @param {...string[]} emojis - One or more arrays or strings of emojis.
    * @returns {UltraRandomMsgGen} - The instance for chaining.
    */
   setEmojis(...emojis) {
     this.config.emojiSet = emojis.flat();
+    return this;
+  }
+
+  /**
+   * Adds new emojis to the emoji set.
+   * @param {...string[]} emojis - One or more arrays or strings of emojis.
+   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   */
+  addEmojis(...emojis) {
+    this.config.emojiSet.push(...emojis.flat());
+    return this;
+  }
+
+  /**
+   * Removes specific emojis from the emoji set.
+   * @param {...string[]} emojis - Emojis to be removed.
+   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   */
+  removeEmojis(...emojis) {
+    const removeSet = new Set(emojis.flat());
+    this.config.emojiSet = this.config.emojiSet.filter((emoji) => !removeSet.has(emoji));
     return this;
   }
 

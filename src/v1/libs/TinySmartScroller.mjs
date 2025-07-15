@@ -311,6 +311,10 @@ class TinySmartScroller {
     });
   }
 
+  getLastKnownScrollBottomOffset() {
+    return this.#lastKnownScrollBottomOffset;
+  }
+
   scrollToBottom() {
     this.#target.scrollTop = this.#target.scrollHeight;
   }
