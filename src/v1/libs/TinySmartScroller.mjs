@@ -170,7 +170,12 @@ class TinySmartScroller {
     const heightDelta = newScrollHeight - prevScrollHeight;
 
     // Fix scroll size
-    if (this.#autoScrollBottom && this.#preserveScrollOnLayoutShift && !this.#isAtBottom) {
+    if (
+      this.#autoScrollBottom &&
+      this.#preserveScrollOnLayoutShift &&
+      !this.#isAtBottom &&
+      !this.#isAtTop
+    ) {
       // Run size getter
       const scrollSize = { height: 0, width: 0 };
       for (const target of targets) {
