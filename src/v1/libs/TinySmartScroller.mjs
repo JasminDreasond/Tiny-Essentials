@@ -18,12 +18,15 @@ class TinySmartScroller {
   /** @type {null|EventListenerOrEventListenerObject} */
   #handler = null;
 
+  #isAtBottom = false;
+  #isAtTop = false;
+  #isAtCustomTop = false;
+  #isAtCustomBottom = false;
+
   #querySelector = '';
   #useWindow = false;
   #destroyed = false;
   #scrollPaused = false;
-  #isAtBottom = false;
-  #isAtTop = false;
   #autoScrollBottom = false;
   #observeMutations = false;
   #preserveScrollOnLayoutShift = false;
@@ -31,6 +34,7 @@ class TinySmartScroller {
   #elemAmount = 0;
   #elemOldAmount = 0;
   #lastKnownScrollBottomOffset = 0;
+  #extraScrollBoundary = 0;
 
   /** @type {Set<string>} */
   #attributeFilter;
@@ -52,6 +56,7 @@ class TinySmartScroller {
   /**
    * @param {Element|Window} target
    * @param {Object} [options={}]
+   * @param {number} [options.extraScrollBoundary=0]
    * @param {boolean} [options.autoScrollBottom=true]
    * @param {boolean} [options.observeMutations=true]
    * @param {boolean} [options.preserveScrollOnLayoutShift=true]
@@ -62,6 +67,7 @@ class TinySmartScroller {
   constructor(
     target,
     {
+      extraScrollBoundary = 0,
       autoScrollBottom = true,
       observeMutations = true,
       preserveScrollOnLayoutShift = true,
@@ -77,6 +83,7 @@ class TinySmartScroller {
     this.#observeMutations = observeMutations;
     this.#preserveScrollOnLayoutShift = preserveScrollOnLayoutShift;
     this.#debounceTime = debounceTime;
+    this.#extraScrollBoundary = extraScrollBoundary;
     this.#querySelector = querySelector || '';
     this.#attributeFilter = new Set(attributeFilter || undefined);
 
@@ -127,33 +134,50 @@ class TinySmartScroller {
 
   _onScroll() {
     if (this.#destroyed) return;
+    // Get values
     const el = this.#target;
     const scrollTop = el.scrollTop;
     const scrollHeight = el.scrollHeight;
     const clientHeight = el.clientHeight;
 
+    // Prepare sroll values
+    const scrollResult = { scrollTop, scrollHeight, clientHeight };
+    let atResult = null;
+    let atCustomResult = null;
+
     const atTop = scrollTop === 0;
     const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
 
-    if (atTop && !this.#isAtTop) {
-      this._emit('onScrollBoundary', 'top');
-    }
+    const atCustomTop = scrollTop <= 0 + this.#extraScrollBoundary;
+    const atCustomBottom = scrollTop + clientHeight >= scrollHeight - 1 - this.#extraScrollBoundary;
 
-    if (atBottom && !this.#isAtBottom) {
-      this._emit('onScrollBoundary', 'bottom');
-    }
+    // Scroll results
+    if (atTop && atBottom) atResult = 'all';
+    else if (atTop) atResult = 'top';
+    else if (atBottom) atResult = 'bottom';
+
+    if (atCustomTop && atCustomBottom) atCustomResult = 'all';
+    else if (atCustomTop) atCustomResult = 'top';
+    else if (atCustomBottom) atCustomResult = 'bottom';
 
     this.#isAtTop = atTop;
     this.#isAtBottom = atBottom;
+
+    this.#isAtCustomTop = atCustomTop;
+    this.#isAtCustomBottom = atCustomBottom;
 
     this.#scrollPaused = !(this.#autoScrollBottom && this.#isAtBottom);
 
     this.#lastKnownScrollBottomOffset = scrollHeight - scrollTop - clientHeight;
 
+    // Send results
+    this._emit('onScrollBoundary', { status: atResult, ...scrollResult });
+    this._emit('onExtraScrollBoundary', { status: atCustomResult, ...scrollResult });
+
     if (!this.#scrollPaused) {
-      this._emit('onAutoScroll');
+      this._emit('onAutoScroll', { ...scrollResult });
     } else {
-      this._emit('onScrollPause');
+      this._emit('onScrollPause', { ...scrollResult });
     }
   }
 
@@ -316,6 +340,17 @@ class TinySmartScroller {
     });
   }
 
+  /**
+   * @param {number} value
+   */
+  setExtraScrollBoundary(value) {
+    this.#extraScrollBoundary = value;
+  }
+
+  getExtraScrollBoundary() {
+    return this.#extraScrollBoundary;
+  }
+
   getLastKnownScrollBottomOffset() {
     return this.#lastKnownScrollBottomOffset;
   }
@@ -326,6 +361,14 @@ class TinySmartScroller {
 
   scrollToTop() {
     this.#target.scrollTop = 0;
+  }
+
+  isUserAtCustomBottom() {
+    return this.#isAtCustomBottom;
+  }
+
+  isUserAtCustomTop() {
+    return this.#isAtCustomTop;
   }
 
   isUserAtBottom() {

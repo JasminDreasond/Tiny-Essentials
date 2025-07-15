@@ -155,6 +155,8 @@
       window.scroller = scroller;
       window.randomText = randomText;
 
+      scroller.setExtraScrollBoundary(500);
+
       scroller.onSize((elem, sizes, amounts) => {
         console.log(amounts);
         if (amounts.now !== amounts.old) return;
@@ -184,19 +186,26 @@
         statusText.textContent = 'Status: ' + state;
       };
 
-      scroller.on('onScrollBoundary', (status) => {
+      scroller.on('onScrollBoundary', ({ status }) => {
+        if (!status) return;
         updateStatus();
         log(`onScrollBoundary: ${status}`);
       });
 
-      scroller.on('onAutoScroll', () => {
+      scroller.on('onExtraScrollBoundary', ({ status }) => {
+        if (!status) return;
         updateStatus();
-        log('AutoScroll triggered');
+        log(`onExtraScrollBoundary: ${status}`);
       });
 
-      scroller.on('onScrollPause', () => {
+      scroller.on('onAutoScroll', (data) => {
         updateStatus();
-        log('AutoScroll paused');
+        log(`AutoScroll triggered --> ${JSON.stringify(data)}`);
+      });
+
+      scroller.on('onScrollPause', (data) => {
+        updateStatus();
+        log(`AutoScroll paused --> ${JSON.stringify(data)}`);
       });
 
       chat.addEventListener('scroll', updateStatus);
