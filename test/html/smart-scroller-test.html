@@ -216,6 +216,7 @@
         }
 
         if (type === 'image') {
+          console.log('image');
           const img = new Image();
           img.className = 'resizable';
           img.src = '/1012b1ff-536b-4134-8bfb-01ba7b87a186.png';
@@ -229,12 +230,13 @@
         }
 
         if (type === 'async-image') {
+          console.log('async-image');
           const img = new Image();
           img.className = 'resizable';
           img.alt = 'Async image';
           img.title = 'Click to expand';
-          img.onload = () => (img.style.width = '300px');
-          setTimeout(() => (img.src = '/6d01c26e-e523-4439-8bfc-f656a83cdab0.png'), 1000);
+          // img.onload = () => (img.style.width = '300px');
+          img.src = '/6d01c26e-e523-4439-8bfc-f656a83cdab0.png';
           img.style.cursor = 'pointer';
           img.addEventListener('click', () => {
             img.style.width = img.style.width === '300px' ? '100px' : '300px';
@@ -292,14 +294,7 @@
       };
 
       window.addAsyncImage = () => {
-        const div = document.createElement('div');
-        div.className = 'message';
-        const img = new Image();
-        img.className = 'resizable';
-        img.onload = () => (img.style.width = '300px');
-        img.src = '/6d01c26e-e523-4439-8bfc-f656a83cdab0.png';
-        div.appendChild(img);
-        chat.appendChild(div);
+        chat.appendChild(createMessageElement('async-image'));
       };
 
       window.addIframeEmbed = () => {

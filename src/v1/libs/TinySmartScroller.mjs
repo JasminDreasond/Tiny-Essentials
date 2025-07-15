@@ -62,7 +62,7 @@ class TinySmartScroller {
    * @param {boolean} [options.preserveScrollOnLayoutShift=true]
    * @param {number} [options.debounceTime=100]
    * @param {string|null} [options.querySelector=null]
-   * @param {string[]|Set<string>|null} [options.attributeFilter=['class', 'style', 'src', 'data-*']]
+   * @param {string[]|Set<string>|null} [options.attributeFilter=['class', 'style', 'src', 'data-*', 'height', 'width']]
    */
   constructor(
     target,
@@ -73,7 +73,7 @@ class TinySmartScroller {
       preserveScrollOnLayoutShift = true,
       debounceTime = 100,
       querySelector = null,
-      attributeFilter = ['class', 'style', 'src', 'data-*'],
+      attributeFilter = ['class', 'style', 'src', 'data-*', 'height', 'width'],
     } = {},
   ) {
     // Start values
