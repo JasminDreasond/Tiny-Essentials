@@ -8,6 +8,7 @@ import getUser from '../firebase/discord/api/getUser.mjs';
  * @param {Record<string, any>} ioCache - The shared cache that stores user data and connections.
  * @param {string} token - The OAuth2 token used to fetch user data from Discord.
  * @returns {Promise<Record<string, any>>} A promise that resolves with the user data and updates the cache.
+ * @deprecated
  */
 export default function discord(socket, ioCache, token) {
   return new Promise((resolve, reject) => {

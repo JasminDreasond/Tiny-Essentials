@@ -28,6 +28,7 @@ import queryUrlJSON from './queryUrlJSON.mjs';
  * @param {string} [extraClass2=''] - Additional class name for individual page links.
  *
  * @returns {PaginationData} Pagination metadata
+ * @deprecated
 
  */
 export default function pagination(

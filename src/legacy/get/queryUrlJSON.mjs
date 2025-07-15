@@ -17,6 +17,7 @@
  *
  * @param {string} [url=location.href] - The full URL to parse.
  * @returns {Object.<string, string|string[]>} A key-value object representing the parsed query.
+ * @deprecated
  */
 export default function queryUrlJSON(url) {
   if (!url) url = location.href;

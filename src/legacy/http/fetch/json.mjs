@@ -15,6 +15,7 @@ import fetch from 'node-fetch';
  * @returns {Promise<any>} A Promise that resolves with the parsed JSON data
  *                         if the request succeeds and the response is valid JSON,
  *                         or rejects with an error if the request or parsing fails.
+ * @deprecated
  *
  * @example
  * getJsonFetch('https://api.example.com/data')

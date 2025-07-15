@@ -37,6 +37,7 @@ const convertBytes = {
    * @param {number} bytes - The number of units to convert.
    * @param {SizeUnit} selected - The unit of the input value.
    * @returns {number} The equivalent size in bytes.
+   * @deprecated
    *
    * @example
    * convertBytes.get(5, 'mb'); // 5242880
@@ -50,6 +51,7 @@ const convertBytes = {
    * @param {number} bytes - The size in bytes.
    * @param {SizeUnit} selected - The target unit.
    * @returns {number} The equivalent size in the selected unit.
+   * @deprecated
    *
    * @example
    * convertBytes.convert(1048576, 'mb'); // 1

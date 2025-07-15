@@ -17,6 +17,7 @@ import byteLength from 'byte-length';
  * @param {string} [data.date] - A date string used for the `Last-Modified` header.
  * @param {string} [data.timezone="Universal"] - Timezone for `moment.tz()`.
  * @param {string} [data.contentType="application/javascript"] - MIME type for the response.
+ * @deprecated
  *
  * @example
  * import fileCache from './fileCache.mjs';

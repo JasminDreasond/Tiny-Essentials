@@ -76,6 +76,7 @@ const http_base = {
    * @param {function(number): import('express').Response} [callback] - Optional callback to handle response body manually.
    *
    * @returns {import('express').Response} The result of `res.send()` or the callback function.
+   * @deprecated
    *
    * @example
    * http_base.send(res, 404); // Sends 404 Not Found with empty body
@@ -114,6 +115,7 @@ const http_base = {
    * @param {function(number): Promise<any>} [callback] - Optional async callback to handle response.
    *
    * @returns {Promise<any>} The result of the async callback or the empty response.
+   * @deprecated
    *
    * @example
    * await http_base.sendAsync(res, 500, async (code) => {

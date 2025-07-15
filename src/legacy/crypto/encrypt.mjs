@@ -33,6 +33,7 @@ const cryptoAction = function (tinyCrypto, key, text) {
  * @param {BufferEncoding} tinyCrypto.stringType - The encoding type used for output (e.g., 'hex', 'base64').
  * @param {string} text - The plain text string to encrypt.
  * @returns {string} The final encrypted string.
+ * @deprecated
  */
 export function encrypt(tinyCrypto, text) {
   // Prepare Result

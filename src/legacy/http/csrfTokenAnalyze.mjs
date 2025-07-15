@@ -11,6 +11,7 @@
  * @param {Function} [callback] - Optional custom callback to execute when CSRF validation fails.
  *
  * @returns {boolean} Returns `true` if the token is invalid and a response was sent, otherwise `false`.
+ * @deprecated
  *
  * @example
  * app.post('/submit', (req, res) => {

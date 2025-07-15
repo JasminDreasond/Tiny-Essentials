@@ -25,6 +25,7 @@ import isEmulator from '../firebase/isEmulator.mjs';
  *   @property {string[]} [cfg.staticPath] - Optional list of static paths to validate.
  *
  * @returns {DomainResult}
+ * @deprecated
  *
  * @example
  * const result = domainValidator(req, {

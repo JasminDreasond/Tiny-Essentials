@@ -21,6 +21,7 @@ const ruleOfThree = {
    * @param {number} val3 - The third value (numerator in direct proportion, denominator in inverse).
    * @param {boolean} inverse - Whether the calculation should use inverse proportion (true for inverse, false for direct).
    * @returns {number} The result of the Rule of Three operation.
+   * @deprecated
    *
    * Rule of Three Formula (Direct Proportion):
    *      val1 / val2 = val3 / result

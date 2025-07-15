@@ -16,6 +16,7 @@
  * @param {string} name - The name of the query parameter to retrieve.
  * @param {string} url - The full URL from which to extract the parameter.
  * @returns {string|null} The decoded value of the parameter, or `null` if not found.
+ * @deprecated
  */
 export default function queryUrlByName(name, url) {
   let newName = name.replace(/[\[\]]/g, '\\$&');

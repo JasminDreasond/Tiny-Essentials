@@ -11,6 +11,7 @@ const custom_module_manager = {
    * @param {Record<string, any>} custom_modules - The object containing module definitions.
    * @param {string} type - The specific type of module to validate.
    * @returns {boolean} Whether the module is valid.
+   * @deprecated
    *
    * @example
    * custom_module_manager.validator(myModules, 'paypal'); // true or false
@@ -35,6 +36,7 @@ const custom_module_manager = {
    * @param {Record<string, any>} [options] - Optional. Object with keys matching types in `custom_modules`.
    *
    * @returns {Promise<void>}
+   * @deprecated
    *
    * @example
    * await custom_module_manager.run(customModules, db, 'after', { paypal: true });

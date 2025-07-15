@@ -22,6 +22,9 @@ const check_domain = {
   validators: [
     {
       type: 'x-forwarded-host',
+      /**
+       * @deprecated
+       */
       callback: function (
         /** @type {import('express').Request} */ req,
         /** @type {string} */ the_domain,
@@ -34,6 +37,9 @@ const check_domain = {
     },
     {
       type: 'hostname',
+      /**
+       * @deprecated
+       */
       callback: function (
         /** @type {import('express').Request} */ req,
         /** @type {string} */ the_domain,
@@ -46,6 +52,9 @@ const check_domain = {
     },
     {
       type: 'hostname',
+      /**
+       * @deprecated
+       */
       callback: function (
         /** @type {import('express').Request} */ req,
         /** @type {string} */ the_domain,
@@ -64,6 +73,7 @@ const check_domain = {
    * @param {import('express').Request} req - The request object from Express.
    * @param {string} the_domain - The domain to validate against.
    * @returns {boolean} True if any validator matches the domain.
+   * @deprecated
    */
   validator: function (req, the_domain) {
     for (const item in check_domain.validators)
@@ -77,6 +87,7 @@ const check_domain = {
    * @function
    * @param {import('express').Request} req - The request object from Express.
    * @returns {string|true|string[]|null} The found domain string or `null` if none matched.
+   * @deprecated
    */
   get: function (req) {
     for (const item in check_domain.validators) {

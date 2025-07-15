@@ -5,6 +5,7 @@
  * @param {Record<string, any>} socket - The socket object representing the connection.
  * @param {Function} sessionModule - The session module function, typically used with Express, that handles session logic.
  * @returns {Promise<Record<string, any>>} A promise that resolves with the session object once the session is processed.
+ * @deprecated
  */
 export default function cookieSession(socket, sessionModule) {
   return new Promise((resolve) => {

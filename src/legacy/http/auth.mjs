@@ -15,6 +15,7 @@
  * @param {Function} [callback] - Optional fallback function `(req, res, next) => {}` executed after customError.
  *
  * @returns {function(import('express').Request, import('express').Response, import('express').NextFunction): void} Express middleware function.
+ * @deprecated
  *
  * @example
  * import express from 'express';

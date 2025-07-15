@@ -13,6 +13,7 @@ import _ from 'lodash';
  * @param {boolean} [options.isFirebase=false] - Enable detection for Firebase environments (e.g., Fastly).
  *
  * @returns {IpResult} An object containing the list of IP addresses and the detection source type.
+ * @deprecated
  *
  * @example
  * const ipInfo = userIp(req);

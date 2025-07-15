@@ -23,6 +23,7 @@ function combineRGB(r, g, b) {
  * @param {string|number} color - The color input (e.g. "#ff6600", "rgb(255, 102, 0)", or a decimal number).
  * @param {function} [errCallback] - Optional callback to handle parsing errors.
  * @returns {number} The decimal representation of the color, or 0 if invalid.
+ * @deprecated
  */
 export default function decimalColor(color, errCallback) {
   let newColor;

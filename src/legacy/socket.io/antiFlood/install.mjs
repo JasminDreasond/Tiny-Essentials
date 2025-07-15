@@ -10,6 +10,7 @@ import userIp from '../../http/userIP.mjs';
  * @param {Object} ioCache - The cache object containing blocked IPs.
  * @param {Array<*>} ioCache.blocklick - The list of blocked IP addresses.
  * @returns {void} This function does not return a value, it just sets the authorization logic for socket connections.
+ * @deprecated
  */
 export default function install(io, ioCache) {
   // @ts-ignore

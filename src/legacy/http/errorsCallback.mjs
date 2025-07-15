@@ -19,6 +19,7 @@
  *   - `info.err`: The original error object.
  *
  * @returns {function(Error, import('express').Request, import('express').Response, import('express').NextFunction): void} Express middleware function: (err, req, res, next)
+ * @deprecated
  *
  * @example
  * import errorsCallback from './errorsCallback.mjs';

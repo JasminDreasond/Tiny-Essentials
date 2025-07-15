@@ -14,6 +14,7 @@ import fetch from 'node-fetch';
  * @returns {Promise<string>} A Promise that resolves with the response text
  *                            if the request is successful and parsing succeeds,
  *                            or rejects with an error if the request or text conversion fails.
+ * @deprecated
  *
  * @example
  * getTextFetch('https://example.com/page')

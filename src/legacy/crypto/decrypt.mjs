@@ -37,6 +37,7 @@ const cryptoAction = function (tinyCrypto, key, text) {
  * @param {BufferEncoding} tinyCrypto.stringType - The encoding type used in the encrypted string (e.g., 'hex', 'base64').
  * @param {string} text - The encrypted string to decrypt.
  * @returns {string} The fully decrypted string.
+ * @deprecated
  */
 export function decrypt(tinyCrypto, text) {
   // Prepare Result

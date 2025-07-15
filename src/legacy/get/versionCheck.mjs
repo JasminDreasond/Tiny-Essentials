@@ -20,6 +20,7 @@ import moment from 'moment';
  * @param {string} pkg.version - The current version of the package.
  *
  * @returns {Promise<VersionCheck>} The result object
+ * @deprecated
 
  */
 export default async function versionCheck(pkg) {

@@ -71,6 +71,7 @@ const markdownManager = {
    * @param {string} markdownText - The input Markdown string.
    * @param {'result' | 'bbcode'} [type='result'] - The desired output type.
    * @returns {string} The converted string.
+   * @deprecated
    *
    * @example
    * markdownManager.parseMarkdown("**bold**"); // <strong>bold</strong>

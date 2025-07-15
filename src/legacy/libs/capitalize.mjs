@@ -3,6 +3,7 @@
  *
  * @param {string} text - The input string to be transformed.
  * @returns {string} The transformed string with each word's first letter capitalized.
+ * @deprecated
  *
  * @example
  * capitalize("hello world"); // "Hello World"

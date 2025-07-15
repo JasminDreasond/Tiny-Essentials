@@ -32,6 +32,7 @@ setInterval(function () {
  * @param {Object} ioCache - The cache object that holds the blocklist and flood panel data.
  * @param {Array<*>} ioCache.blocklick - The list of blocked IPs.
  * @returns {void} This function does not return anything, it modifies the floodPanel and blocklist.
+ * @deprecated
  */
 export default function verify(socket, ioCache) {
   // Get User IP

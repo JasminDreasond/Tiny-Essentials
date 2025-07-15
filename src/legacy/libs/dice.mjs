@@ -8,6 +8,7 @@ const tinyDice = {
    * Generates a random integer between 1 and `obj`, inclusive.
    * @param {number} obj - The maximum value of the dice.
    * @returns {number} The result of the dice roll.
+   * @deprecated
    *
    * @example
    * const result = tinyDice.vanilla(6); // 1 to 6
@@ -21,6 +22,7 @@ const tinyDice = {
    * Useful for injecting the dice logic in client environments.
    * @param {number} obj - Unused in the function body.
    * @returns {string} The function source code of `vanilla`.
+   * @deprecated
    *
    * @example
    * const clientScript = tinyDice.getClientVanilla();

@@ -11,6 +11,7 @@ import checkDomain from './check_domain.mjs';
  * @param {string} [httpResult='https'] - The protocol to use (usually "http" or "https").
  *
  * @returns {string} A fully constructed URL string. Returns an empty string if the domain is invalid.
+ * @deprecated
  *
  * @example
  * getDomainURL('example.com', 443); // "https://example.com"

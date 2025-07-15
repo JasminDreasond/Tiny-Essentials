@@ -23,6 +23,7 @@ import objType from './objType.mjs';
  * @param {string[]} list - The list of strings to filter.
  * @param {(string|Object)[]} validator_list - The list of validators.
  * @returns {string[]} A filtered array of strings that passed at least one validator.
+ * @deprecated
  */
 export default function super_string_filter(list, validator_list) {
   // Result
