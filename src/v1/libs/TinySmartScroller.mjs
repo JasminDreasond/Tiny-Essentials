@@ -14,6 +14,11 @@ class TinySmartScroller {
   /** @type {WeakMap<Element, boolean>} */
   #oldVisibles = new WeakMap();
 
+  /** @type {WeakMap<Element, boolean>} */
+  #newVisiblesByTime = new WeakMap();
+  /** @type {WeakMap<Element, boolean>} */
+  #oldVisiblesByTime = new WeakMap();
+
   /** @type {Record<string, Function[]>} */
   #scrollListeners = {};
 
@@ -238,6 +243,8 @@ class TinySmartScroller {
   }
 
   /**
+   * All scroll position correction occurs exactly here.
+   *
    * @param {number} prevScrollTop
    * @param {number} prevScrollHeight
    * @param {number} prevBottomOffset
@@ -270,7 +277,7 @@ class TinySmartScroller {
           );
 
           // Fix size
-          if (this.#newVisibles.get(target)) {
+          if (this.#newVisibles.get(target) || this.#newVisiblesByTime.get(target)) {
             if (typeof sizes !== 'undefined' && typeof sizes !== 'object') throw new Error('');
             if (typeof sizes === 'undefined') return;
             scrollSize.height = sizes.height;
@@ -282,6 +289,13 @@ class TinySmartScroller {
       // Checker
       if (typeof scrollSize.height !== 'number' && scrollSize.height < 0) throw new Error('');
       if (typeof scrollSize.width !== 'number' && scrollSize.width < 0) throw new Error('');
+
+      if (scrollSize.height !== 0 || scrollSize.width !== 0) {
+        for (const target of targets) {
+          this.#newVisiblesByTime.set(target, this.#newVisibles.get(target) ?? false);
+          this.#oldVisiblesByTime.set(target, this.#oldVisibles.get(target) ?? false);
+        }
+      }
 
       // Complete
       this.#target.scrollTop = prevScrollTop + heightDelta + scrollSize.height;
@@ -470,6 +484,8 @@ class TinySmartScroller {
     this.#newSizes = new WeakMap();
     this.#newVisibles = new WeakMap();
     this.#oldVisibles = new WeakMap();
+    this.#newVisiblesByTime = new WeakMap();
+    this.#oldVisiblesByTime = new WeakMap();
 
     // Cleans listeners and filters
     this.#scrollListeners = {};
