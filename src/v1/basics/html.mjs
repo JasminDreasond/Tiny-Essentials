@@ -125,20 +125,22 @@ export function saveJsonFile(filename, data, spaces = 2) {
 }
 
 /**
- * Loads and parses a JSON from a remote URL using Fetch API.
- *
- * @param {string} url - The full URL to fetch JSON from.
- * @param {Object} [options] - Optional settings.
- * @param {string} [options.method="GET"] - HTTP method to use (GET, POST, etc.).
- * @param {any} [options.body] - Request body (only for methods like POST, PUT).
- * @param {number} [options.timeout=0] - Timeout in milliseconds (ignored if signal is provided).
- * @param {number} [options.retries=0] - Number of retry attempts (ignored if signal is provided).
- * @param {Headers|Record<string, *>} [options.headers={}] - Additional headers.
- * @param {AbortSignal|null} [options.signal] - External AbortSignal; disables timeout and retries.
- * @returns {Promise<*>} Parsed JSON object.
- * @throws {Error} Throws if fetch fails, times out, or returns invalid JSON.
+ * @typedef {Object} FetchTemplateOptions
+ * @property {string} [method="GET"] - HTTP method to use (GET, POST, etc.).
+ * @property {any} [body] - Request body (only for methods like POST, PUT).
+ * @property {number} [timeout=0] - Timeout in milliseconds (ignored if signal is provided).
+ * @property {number} [retries=0] - Number of retry attempts (ignored if signal is provided).
+ * @property {Headers|Record<string, *>} [headers={}] - Additional headers.
+ * @property {AbortSignal|null} [signal] - External AbortSignal; disables timeout and retries.
  */
-export async function fetchJson(
+
+/**
+ * @param {string} url - The full URL to fetch data from.
+ * @param {FetchTemplateOptions} [options] - Optional settings.
+ * @returns {Promise<Response>} Result data.
+ * @throws {Error} Throws if fetch fails, times out.
+ */
+async function fetchTemplate(
   url,
   { method = 'GET', body, timeout = 0, retries = 0, headers = {}, signal = null } = {},
 ) {
@@ -197,17 +199,7 @@ export async function fetchJson(
       if (timer) clearTimeout(timer);
 
       if (!response.ok) throw new Error(`HTTP error: ${response.status} ${response.statusText}`);
-
-      const contentType = response.headers.get('content-type') || '';
-      if (!contentType.includes('application/json'))
-        throw new Error(`Unexpected content-type: ${contentType}`);
-
-      const data = await response.json();
-
-      if (!Array.isArray(data) && !isJsonObject(data))
-        throw new Error('Received invalid data instead of valid JSON.');
-
-      return data;
+      return response;
     } catch (err) {
       lastError = /** @type {Error} */ (err);
       if (signal) break; // if an external signal came, it does not retry
@@ -219,6 +211,63 @@ export async function fetchJson(
   throw new Error(
     `Failed to fetch JSON from "${url}"${lastError ? `: ${lastError.message}` : '.'}`,
   );
+}
+
+/**
+ * Loads and parses a JSON from a remote URL using Fetch API.
+ *
+ * @param {string} url - The full URL to fetch JSON from.
+ * @param {Object} [options] - Optional settings.
+ * @returns {Promise<any[] | Record<string | number | symbol, unknown>>} Parsed JSON object.
+ * @throws {Error} Throws if fetch fails, times out, or returns invalid JSON.
+ */
+export async function fetchJson(url, options) {
+  return new Promise((resolve, reject) => {
+    fetchTemplate(url, options)
+      .then(async (res) => {
+        const contentType = res.headers.get('content-type') || '';
+        if (!contentType.includes('application/json'))
+          throw new Error(`Unexpected content-type: ${contentType}`);
+
+        const data = await res.json();
+
+        if (!Array.isArray(data) && !isJsonObject(data))
+          throw new Error('Received invalid data instead of valid JSON.');
+
+        return resolve(data);
+      })
+      .catch(reject);
+  });
+}
+
+/**
+ * Loads a remote file as a Blob using Fetch API.
+ *
+ * @param {string} url - The full URL to fetch the file from.
+ * @param {Object} [options] - Optional fetch options.
+ * @param {string[]} [allowedMimeTypes] - Optional list of accepted MIME types (e.g., ['image/jpeg']).
+ * @returns {Promise<Blob>} - The fetched file as a Blob.
+ * @throws {Error} Throws if fetch fails, response is not ok, or MIME type is not allowed.
+ */
+export async function fetchBlob(url, allowedMimeTypes, options) {
+  return new Promise((resolve, reject) => {
+    fetchTemplate(url, options)
+      .then(async (res) => {
+        const contentType = res.headers.get('content-type') || '';
+
+        if (
+          Array.isArray(allowedMimeTypes) &&
+          allowedMimeTypes.length > 0 &&
+          !allowedMimeTypes.some((type) => contentType.includes(type))
+        ) {
+          throw new Error(`Blocked MIME type: ${contentType}`);
+        }
+
+        const data = await res.blob();
+        return resolve(data);
+      })
+      .catch(reject);
+  });
 }
 
 ///////////////////////////////////////////////////////////////////////////////

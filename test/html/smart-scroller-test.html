@@ -5,10 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TinySmartScroller Test Page</title>
     <script type="module">
+      import { fetchBlob, fetchJson, readBase64Blob } from './src/v1/basics/html.mjs';
+      import { TinyDomReadyManager } from './src/v1/libs/TinyDomReadyManager.mjs';
       import { TinySmartScroller } from './src/v1/libs/TinySmartScroller.mjs';
       import { UltraRandomMsgGen } from './src/v1/libs/UltraRandomMsgGen.mjs';
       window.TinySmartScroller = TinySmartScroller;
       window.UltraRandomMsgGen = UltraRandomMsgGen;
+      window.TinyDomReadyManager = TinyDomReadyManager;
+      window.fetchBlob = fetchBlob;
+      window.fetchJson = fetchJson;
+      window.readBase64Blob = readBase64Blob;
     </script>
     <style>
       body {
@@ -59,7 +65,9 @@
       }
 
       img.resizable {
+        min-height: 100px;
         width: 100px;
+        display: inline-block;
         /* transition: width 0.5s ease; */
       }
 
@@ -94,6 +102,7 @@
     <div id="controls">
       <button onclick="addTextMessage()">Add text</button>
       <button onclick="addImageMessage()">Add image</button>
+      <button onclick="addImageBase64Message()">Add base64</button>
       <button onclick="addAsyncImage()">Add async image</button>
       <button onclick="addIframeEmbed()">Add iframe</button>
       <button onclick="addManyMessages()">Add many</button>
@@ -122,226 +131,272 @@
     <div id="log" aria-live="polite" role="log" aria-atomic="true"></div>
 
     <script type="module">
-      const chat = document.getElementById('chat');
-      const statusText = document.getElementById('statusText');
-      const logEl = document.getElementById('log');
-      const toggleAutoScroll = document.getElementById('toggleAutoScroll');
-      const selectAnchor = document.getElementById('selectAnchor');
-      const randomText = new UltraRandomMsgGen({
-        minLength: 20,
-        maxLength: 300,
-        repeatWords: true,
-        readable: true,
-        useEmojis: true,
-        includeNumbers: false,
-        includeSymbols: false,
-        allowWeirdSpacing: false,
-        emojiPlacement: 'end',
-        paragraphs: { min: 1, max: 2 },
-        line: {
-          minLength: 10,
-          maxLength: 100,
-          emojiChance: 0.5,
-        },
-        mode: 'natural',
-      });
+      const blackImageBase64 =
+        'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+      let tinyAvatar;
+      window.blackImageBase64 = blackImageBase64;
+      window.tinyAvatar = '';
+      const tinyReady = new TinyDomReadyManager();
+      tinyReady.addPromise(
+        new Promise((resolve, reject) => {
+          fetchBlob('/07ec6d0b-c9d7-482a-9c61-8e25dbe9b7fb.png')
+            .then((blob) =>
+              readBase64Blob(blob, true)
+                .then((data) => {
+                  window.tinyAvatar = data;
+                  tinyAvatar = data;
+                  resolve();
+                })
+                .catch(reject),
+            )
+            .catch(reject);
+        }),
+      );
+      tinyReady.onReady(() => {
+        const chat = document.getElementById('chat');
+        const statusText = document.getElementById('statusText');
+        const logEl = document.getElementById('log');
+        const toggleAutoScroll = document.getElementById('toggleAutoScroll');
+        const selectAnchor = document.getElementById('selectAnchor');
+        const randomText = new UltraRandomMsgGen({
+          minLength: 20,
+          maxLength: 300,
+          repeatWords: true,
+          readable: true,
+          useEmojis: true,
+          includeNumbers: false,
+          includeSymbols: false,
+          allowWeirdSpacing: false,
+          emojiPlacement: 'end',
+          paragraphs: { min: 1, max: 2 },
+          line: {
+            minLength: 10,
+            maxLength: 100,
+            emojiChance: 0.5,
+          },
+          mode: 'natural',
+        });
 
-      const scroller = new TinySmartScroller(chat, {
-        autoScrollBottom: toggleAutoScroll.checked,
-        observeMutations: true,
-        debounceTime: 80,
-      });
+        const scroller = new TinySmartScroller(chat, {
+          // querySelector: 'img',
+          autoScrollBottom: toggleAutoScroll.checked,
+          observeMutations: true,
+          debounceTime: 80,
+        });
 
-      window.scroller = scroller;
-      window.randomText = randomText;
+        window.scroller = scroller;
+        window.randomText = randomText;
 
-      scroller.setExtraScrollBoundary(500);
-      scroller.addSimpleOnHeight();
+        scroller.setExtraScrollBoundary(500);
+        scroller.addSimpleOnHeight([]);
 
-      const log = (msg) => {
-        const time = new Date().toLocaleTimeString();
-        logEl.textContent += `[${time}] ${msg}\n`;
-        logEl.scrollTop = logEl.scrollHeight;
-      };
+        const log = (msg) => {
+          const time = new Date().toLocaleTimeString();
+          logEl.textContent += `[${time}] ${msg}\n`;
+          logEl.scrollTop = logEl.scrollHeight;
+        };
 
-      const updateStatus = () => {
-        const state = [
-          scroller.isUserAtTop() ? 'TOP' : '',
-          scroller.isUserAtBottom() ? 'BOTTOM' : '',
-          scroller.isScrollPaused() ? 'PAUSED' : 'AUTO',
-        ]
-          .filter(Boolean)
-          .join(' | ');
-        statusText.textContent = 'Status: ' + state;
-      };
+        const updateStatus = () => {
+          const state = [
+            scroller.isUserAtTop() ? 'TOP' : '',
+            scroller.isUserAtBottom() ? 'BOTTOM' : '',
+            scroller.isScrollPaused() ? 'PAUSED' : 'AUTO',
+          ]
+            .filter(Boolean)
+            .join(' | ');
+          statusText.textContent = 'Status: ' + state;
+        };
 
-      scroller.on('onScrollBoundary', ({ status }) => {
-        if (!status) return;
-        updateStatus();
-        log(`onScrollBoundary: ${status}`);
-      });
+        scroller.on('onScrollBoundary', ({ status }) => {
+          if (!status) return;
+          updateStatus();
+          log(`onScrollBoundary: ${status}`);
+        });
 
-      scroller.on('onExtraScrollBoundary', ({ status }) => {
-        if (!status) return;
-        updateStatus();
-        log(`onExtraScrollBoundary: ${status}`);
-      });
+        scroller.on('onExtraScrollBoundary', ({ status }) => {
+          if (!status) return;
+          updateStatus();
+          log(`onExtraScrollBoundary: ${status}`);
+        });
 
-      scroller.on('onAutoScroll', (data) => {
-        updateStatus();
-        log(`AutoScroll triggered --> ${JSON.stringify(data)}`);
-      });
+        scroller.on('onAutoScroll', (data) => {
+          updateStatus();
+          log(`AutoScroll triggered --> ${JSON.stringify(data)}`);
+        });
 
-      scroller.on('onScrollPause', (data) => {
-        updateStatus();
-        log(`AutoScroll paused --> ${JSON.stringify(data)}`);
-      });
+        scroller.on('onScrollPause', (data) => {
+          updateStatus();
+          log(`AutoScroll paused --> ${JSON.stringify(data)}`);
+        });
 
-      chat.addEventListener('scroll', updateStatus);
+        chat.addEventListener('scroll', updateStatus);
 
-      let messageCount = 1;
+        let messageCount = 1;
 
-      function createMessageElement(type = 'text', customContent = null) {
-        const div = document.createElement('div');
-        div.className = 'message';
-        div.dataset.id = `msg-${messageCount++}`;
+        function createMessageElement(type = 'text', customContent = null) {
+          const div = document.createElement('div');
+          div.className = 'message';
+          div.dataset.id = `msg-${messageCount++}`;
 
-        // Conteúdo principal
-        const content = document.createElement('div');
-        content.className = 'content';
+          // Conteúdo principal
+          const content = document.createElement('div');
+          content.className = 'content';
 
-        if (type === 'text') {
-          content.textContent =
-            customContent || `Text: ${new Date().toLocaleTimeString()}\n${randomText.generate()}`;
+          if (type === 'text') {
+            content.textContent =
+              customContent || `Text: ${new Date().toLocaleTimeString()}\n${randomText.generate()}`;
+          }
+
+          if (type === 'image') {
+            console.log('image');
+            const img = new Image();
+            img.className = 'resizable';
+            img.src = '/1012b1ff-536b-4134-8bfb-01ba7b87a186.png';
+            img.alt = 'Image';
+            img.title = 'Click to expand';
+            img.style.cursor = 'pointer';
+            img.addEventListener('click', () => {
+              img.style.width = img.style.width === '300px' ? '100px' : '300px';
+            });
+            content.appendChild(img);
+          }
+
+          if (type === 'image-base64') {
+            console.log('image base64');
+            const img = new Image();
+            img.className = 'resizable';
+            img.src = tinyAvatar;
+            img.alt = 'Image Base64';
+            img.title = 'Click to expand';
+            img.style.cursor = 'pointer';
+            img.addEventListener('click', () => {
+              img.style.width = img.style.width === '300px' ? '100px' : '300px';
+            });
+            content.appendChild(img);
+          }
+
+          if (type === 'async-image') {
+            console.log('async-image');
+            const img = new Image();
+            img.className = 'resizable';
+            img.alt = 'Async image';
+            img.title = 'Click to expand';
+            img.onload = () => (img.style.width = '300px');
+            setTimeout(() => (img.src = '/6d01c26e-e523-4439-8bfc-f656a83cdab0.png'), 10000);
+            img.src = blackImageBase64;
+            img.style.cursor = 'pointer';
+            img.addEventListener('click', () => {
+              img.style.width = img.style.width === '300px' ? '100px' : '300px';
+            });
+            content.appendChild(img);
+          }
+
+          if (type === 'iframe') {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'iframe-container';
+            wrapper.innerHTML = `<iframe src="https://example.com"></iframe>`;
+            content.appendChild(wrapper);
+          }
+
+          div.appendChild(content);
+
+          // Controles (editar/remover)
+          const tools = document.createElement('div');
+          tools.style.marginTop = '6px';
+
+          const btnEdit = document.createElement('button');
+          btnEdit.textContent = '✏️ Edit';
+          btnEdit.onclick = () => {
+            const newText = prompt('Edit message content:', content.textContent);
+            if (newText != null) content.textContent = newText;
+          };
+
+          const btnRemove = document.createElement('button');
+          btnRemove.textContent = '🗑 Remove';
+          btnRemove.onclick = () => {
+            div.remove();
+          };
+
+          tools.appendChild(btnEdit);
+          tools.appendChild(btnRemove);
+          div.appendChild(tools);
+
+          return div;
         }
 
-        if (type === 'image') {
-          console.log('image');
-          const img = new Image();
-          img.className = 'resizable';
-          img.src = '/1012b1ff-536b-4134-8bfb-01ba7b87a186.png';
-          img.alt = 'Image';
-          img.title = 'Click to expand';
-          img.style.cursor = 'pointer';
-          img.addEventListener('click', () => {
-            img.style.width = img.style.width === '300px' ? '100px' : '300px';
-          });
-          content.appendChild(img);
-        }
+        window.addTextMessage = () => {
+          chat.appendChild(createMessageElement('text'));
+        };
 
-        if (type === 'async-image') {
-          console.log('async-image');
-          const img = new Image();
-          img.className = 'resizable';
-          img.alt = 'Async image';
-          img.title = 'Click to expand';
-          // img.onload = () => (img.style.width = '300px');
-          img.src = '/6d01c26e-e523-4439-8bfc-f656a83cdab0.png';
-          img.style.cursor = 'pointer';
-          img.addEventListener('click', () => {
-            img.style.width = img.style.width === '300px' ? '100px' : '300px';
-          });
-          content.appendChild(img);
-        }
+        window.addImageBase64Message = () => {
+          chat.appendChild(createMessageElement('image-base64'));
+        };
 
-        if (type === 'iframe') {
+        window.addImageMessage = () => {
+          chat.appendChild(createMessageElement('image'));
+        };
+
+        window.addAsyncImage = () => {
+          chat.appendChild(createMessageElement('async-image'));
+        };
+
+        window.addIframeEmbed = () => {
+          chat.appendChild(createMessageElement('iframe'));
+        };
+
+        window.addAsyncImage = () => {
+          chat.appendChild(createMessageElement('async-image'));
+        };
+
+        window.addIframeEmbed = () => {
+          const div = document.createElement('div');
+          div.className = 'message';
           const wrapper = document.createElement('div');
           wrapper.className = 'iframe-container';
           wrapper.innerHTML = `<iframe src="https://example.com"></iframe>`;
-          content.appendChild(wrapper);
-        }
-
-        div.appendChild(content);
-
-        // Controles (editar/remover)
-        const tools = document.createElement('div');
-        tools.style.marginTop = '6px';
-
-        const btnEdit = document.createElement('button');
-        btnEdit.textContent = '✏️ Edit';
-        btnEdit.onclick = () => {
-          const newText = prompt('Edit message content:', content.textContent);
-          if (newText != null) content.textContent = newText;
+          div.appendChild(wrapper);
+          chat.appendChild(div);
         };
 
-        const btnRemove = document.createElement('button');
-        btnRemove.textContent = '🗑 Remove';
-        btnRemove.onclick = () => {
-          div.remove();
+        window.addManyMessages = () => {
+          for (let i = 0; i < 30; i++) {
+            const type = ['text', 'image', 'async-image', 'image-base64'][
+              Math.floor(Math.random() * 4)
+            ];
+            chat.appendChild(createMessageElement(type));
+          }
         };
 
-        tools.appendChild(btnEdit);
-        tools.appendChild(btnRemove);
-        div.appendChild(tools);
+        window.scrollToTop = () => scroller.scrollToTop();
+        window.scrollToBottom = () => scroller.scrollToBottom();
+        window.forceScrollToAnchor = () => {
+          if (selectAnchor.value === 'top') {
+            scroller.scrollToTop();
+          } else {
+            scroller.scrollToBottom();
+          }
+        };
 
-        return div;
-      }
+        toggleAutoScroll.addEventListener('change', () => {
+          scroller.autoScrollBottom = toggleAutoScroll.checked;
+          log(`autoScrollBottom = ${scroller.autoScrollBottom}`);
+        });
 
-      window.addTextMessage = () => {
-        chat.appendChild(createMessageElement('text'));
-      };
+        selectAnchor.addEventListener('change', () => {
+          const value = selectAnchor.value;
+          log(`Anchor changed to: ${value}`);
+          if (value === 'top') {
+            scroller.scrollToTop();
+          } else {
+            scroller.scrollToBottom();
+          }
+        });
 
-      window.addImageMessage = () => {
-        chat.appendChild(createMessageElement('image'));
-      };
-
-      window.addAsyncImage = () => {
-        chat.appendChild(createMessageElement('async-image'));
-      };
-
-      window.addIframeEmbed = () => {
-        chat.appendChild(createMessageElement('iframe'));
-      };
-
-      window.addAsyncImage = () => {
-        chat.appendChild(createMessageElement('async-image'));
-      };
-
-      window.addIframeEmbed = () => {
-        const div = document.createElement('div');
-        div.className = 'message';
-        const wrapper = document.createElement('div');
-        wrapper.className = 'iframe-container';
-        wrapper.innerHTML = `<iframe src="https://example.com"></iframe>`;
-        div.appendChild(wrapper);
-        chat.appendChild(div);
-      };
-
-      window.addManyMessages = () => {
-        for (let i = 0; i < 30; i++) {
-          const type = ['text', 'image', 'async-image'][Math.floor(Math.random() * 3)];
-          chat.appendChild(createMessageElement(type));
-        }
-      };
-
-      window.scrollToTop = () => scroller.scrollToTop();
-      window.scrollToBottom = () => scroller.scrollToBottom();
-      window.forceScrollToAnchor = () => {
-        if (selectAnchor.value === 'top') {
-          scroller.scrollToTop();
-        } else {
-          scroller.scrollToBottom();
-        }
-      };
-
-      toggleAutoScroll.addEventListener('change', () => {
-        scroller.autoScrollBottom = toggleAutoScroll.checked;
-        log(`autoScrollBottom = ${scroller.autoScrollBottom}`);
+        // Start with 10 messages
+        for (let i = 0; i < 2; i++) addManyMessages();
+        scrollToBottom();
       });
-
-      selectAnchor.addEventListener('change', () => {
-        const value = selectAnchor.value;
-        log(`Anchor changed to: ${value}`);
-        if (value === 'top') {
-          scroller.scrollToTop();
-        } else {
-          scroller.scrollToBottom();
-        }
-      });
-
-      // Start with 10 messages
-      for (let i = 0; i < 2; i++) addManyMessages();
-      scrollToBottom();
+      tinyReady.init();
     </script>
   </body>
 </html>

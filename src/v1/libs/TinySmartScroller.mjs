@@ -1,7 +1,7 @@
 class TinySmartScroller {
-  /** @type {WeakMap<Node, NodeSizes>} */
+  /** @type {WeakMap<Element, NodeSizes>} */
   #oldSizes = new WeakMap();
-  /** @type {WeakMap<Node, NodeSizes>} */
+  /** @type {WeakMap<Element, NodeSizes>} */
   #newSizes = new WeakMap();
 
   /** @type {Record<string, Function[]>} */
@@ -47,7 +47,7 @@ class TinySmartScroller {
    */
 
   /**
-   * @typedef {(node: Node, sizes: { old: NodeSizes; now: NodeSizes }, elemAmount: { old: number; now: number; }) => (NodeSizes|undefined)} NodeSizesEvent
+   * @typedef {(elem: Element, sizes: { old: NodeSizes; now: NodeSizes }, elemAmount: { old: number; now: number; }) => (NodeSizes|undefined)} NodeSizesEvent
    */
 
   /** @type {Set<NodeSizesEvent>} */
@@ -106,11 +106,13 @@ class TinySmartScroller {
   }
 
   /**
+   * @param {string[]} filter
    * @returns {NodeSizesEvent};
    */
-  getSimpleOnHeight() {
+  getSimpleOnHeight(filter = []) {
     return (elem, sizes, amounts) => {
-      if (amounts.now !== amounts.old) return;
+      if ((filter.length > 0 && !filter.includes(elem.tagName)) || amounts.now !== amounts.old)
+        return;
       const oldSize = sizes.old;
       const newSize = sizes.now;
       const height = newSize.height - oldSize.height;
@@ -119,10 +121,11 @@ class TinySmartScroller {
   }
 
   /**
+   * @param {string[]} filter
    * @returns {NodeSizesEvent};
    */
-  addSimpleOnHeight() {
-    const result = this.getSimpleOnHeight();
+  addSimpleOnHeight(filter) {
+    const result = this.getSimpleOnHeight(filter);
     this.onSize(result);
     return result;
   }
@@ -207,7 +210,7 @@ class TinySmartScroller {
    * @param {number} prevScrollTop
    * @param {number} prevScrollHeight
    * @param {number} prevBottomOffset
-   * @param {Node[]} [targets=[]]
+   * @param {Element[]} [targets=[]]
    */
   _fixScroll(prevScrollTop, prevScrollHeight, prevBottomOffset, targets = []) {
     if (this.#destroyed) return;
@@ -307,7 +310,7 @@ class TinySmartScroller {
     if (!this.#resizeObserver) {
       this.#resizeObserver = new ResizeObserver((entries) => {
         if (this.#destroyed) return;
-        /** @type {Node[]} */
+        /** @type {Element[]} */
         const targets = [];
         for (const entry of entries) {
           // Target

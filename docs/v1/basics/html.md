@@ -140,9 +140,9 @@ const data = { name: 'Yasmin', type: 'dev' };
 saveJsonFile('yasmin.json', data);
 ```
 
-### 🌐 `fetchJson(url, options?): Promise<any>`
+### 🌐 `fetchTemplate(...)`
 
-Loads and parses a JSON from a remote URL using the Fetch API, with support for custom HTTP methods, retries, timeouts, headers, and even external abort controllers.
+Loads data from a remote URL using Fetch API, with support for custom HTTP methods, retries, timeouts, headers, and even external abort controllers.
 
 #### 📥 Parameters
 
@@ -155,6 +155,21 @@ Loads and parses a JSON from a remote URL using the Fetch API, with support for 
   * `retries` *(number)*: Number of retry attempts if the request fails. Default is `0`.
   * `headers` *(object)*: Additional headers to include in the request.
   * `body` *(object)*: Request body. If the value is a plain object, it will be automatically stringified as JSON.
+
+#### `fetchJson(url, options?): Promise<any[] | Record<string | number | symbol, unknown>>`
+
+Loads and parses a JSON.
+
+* `url` *(string)*: The full URL to fetch JSON from (must start with `http://`, `https://`, `/`, `./`, or `../`).
+* `options` *(object)* *(optional)*:
+
+#### `fetchBlob(url, options?): Promise<any[] | Record<string | number | symbol, unknown>>`
+
+Loads a remote file as a Blob.
+
+* `url` *(string)*: The full URL to fetch JSON from (must start with `http://`, `https://`, `/`, `./`, or `../`).
+* `allowedMimeTypes` Optional list of accepted MIME types (e.g., ['image/jpeg']).
+* `options` *(object)* *(optional)*:
 
 ##### `signal` (`AbortSignal` | `null`) — *optional*
 
