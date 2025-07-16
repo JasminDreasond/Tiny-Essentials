@@ -271,13 +271,28 @@ HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | HTMLOptionElement
 
 These methods wrap native DOM query methods and return results as `TinyHtml` instances for consistency.
 
+### `TinyHtml.createElement(tagName, ops)`
+
+Creates a new DOM element with the given tag name and optional creation options.
+
+* **Parameters**:
+
+  * `tagName` *(string)* — The tag name of the element to create (e.g., `'div'`, `'span'`).
+  * `ops` *(ElementCreationOptions)* — *(optional)* Options for advanced element creation.
+* **Returns**: `TinyHtml` — A `TinyHtml` instance wrapping the newly created element.
+* **Throws**:
+
+  * `TypeError` — If `tagName` is not a string.
+  * `TypeError` — If `ops` is defined but not an object.
+
+---
+
 ### `TinyHtml.query(selector)`
 Finds the first element by CSS selector.
 
 - **Parameters**:
   - `selector` *(string)* — CSS selector
-- **Returns**: `TinyHtml`
-- **Throws**: If no element is found.
+- **Returns**: `TinyHtml` or `null`
 
 ---
 
@@ -291,7 +306,9 @@ Finds all elements by CSS selector.
 ### `TinyHtml.getById(selector)`
 Selects an element by ID.
 
-- **Throws**: If no element is found.
+- **Parameters**:
+  - `selector` *(string)* — Id selector
+- **Returns**: `TinyHtml` or `null`
 
 ---
 

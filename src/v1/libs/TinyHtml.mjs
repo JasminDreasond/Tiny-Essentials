@@ -202,40 +202,88 @@ class TinyHtml {
   static Utils = { ...TinyCollision };
 
   /**
+   * Creates a new DOM element with the specified tag name and options, then wraps it in a TinyHtml instance.
+   *
+   * @param {string} tagName - The tag name of the element to create (e.g., 'div', 'span').
+   * @param {ElementCreationOptions} ops - Optional settings for creating the element.
+   * @returns {TinyHtml} A TinyHtml instance wrapping the newly created DOM element.
+   * @throws {TypeError} If tagName is not a string or ops is not an object.
+   */
+  static createElement(tagName, ops) {
+    if (typeof tagName !== 'string')
+      throw new TypeError(`[TinyHtml] createElement(): The tagName must be a string.`);
+    if (typeof ops !== 'undefined' && typeof ops !== 'object')
+      throw new TypeError(`[TinyHtml] createElement(): The ops must be a object.`);
+    return new TinyHtml(document.createElement(tagName, ops));
+  }
+
+  /**
    * Queries the document for the first element matching the CSS selector and wraps it in a TinyHtml instance.
    *
    * @param {string} selector - A valid CSS selector string.
-   * @returns {TinyHtml} A TinyHtml instance wrapping the matched element.
-   * @throws {Error} If no element matches the selector.
+   * @param {Document|Element} elem - Target element.
+   * @returns {TinyHtml|null} A TinyHtml instance wrapping the matched element.
    */
-  static query(selector) {
-    const newEl = document.querySelector(selector);
-    if (!newEl) throw new Error(`[TinyHtml] query(): No element found for selector "${selector}".`);
+  static query(selector, elem = document) {
+    const newEl = elem.querySelector(selector);
+    if (!newEl) return null;
     return new TinyHtml(newEl);
+  }
+
+  /**
+   * Queries the element for the first element matching the CSS selector and wraps it in a TinyHtml instance.
+   *
+   * @param {string} selector - A valid CSS selector string.
+   * @returns {TinyHtml|null} A TinyHtml instance wrapping the matched element.
+   */
+  querySelector(selector) {
+    return TinyHtml.query(selector, TinyHtml._preElem(this, 'query'));
   }
 
   /**
    * Queries the document for all elements matching the CSS selector and wraps them in TinyHtml instances.
    *
    * @param {string} selector - A valid CSS selector string.
+   * @param {Document|Element} elem - Target element.
    * @returns {TinyHtml[]} An array of TinyHtml instances wrapping the matched elements.
    */
-  static queryAll(selector) {
-    const newEls = document.querySelectorAll(selector);
+  static queryAll(selector, elem = document) {
+    const newEls = elem.querySelectorAll(selector);
     return TinyHtml.toTinyElm([...newEls]);
+  }
+
+  /**
+   * Queries the element for all elements matching the CSS selector and wraps them in TinyHtml instances.
+   *
+   * @param {string} selector - A valid CSS selector string.
+   * @returns {TinyHtml[]} An array of TinyHtml instances wrapping the matched elements.
+   */
+  querySelectorAll(selector) {
+    return TinyHtml.queryAll(selector, TinyHtml._preElem(this, 'queryAll'));
   }
 
   /**
    * Retrieves an element by its ID and wraps it in a TinyHtml instance.
    *
    * @param {string} selector - The ID of the element to retrieve.
-   * @returns {TinyHtml} A TinyHtml instance wrapping the found element.
-   * @throws {Error} If no element is found with the specified ID.
+   * @returns {TinyHtml|null} A TinyHtml instance wrapping the found element.
    */
   static getById(selector) {
     const newEl = document.getElementById(selector);
-    if (!newEl) throw new Error(`[TinyHtml] getById(): No element found with ID "${selector}".`);
+    if (!newEl) return null;
     return new TinyHtml(newEl);
+  }
+
+  /**
+   * Retrieves all elements with the specified class name and wraps them in TinyHtml instances.
+   *
+   * @param {string} selector - The class name to search for.
+   * @param {Document|Element} elem - Target element.
+   * @returns {TinyHtml[]} An array of TinyHtml instances wrapping the found elements.
+   */
+  static getByClassName(selector, elem = document) {
+    const newEls = elem.getElementsByClassName(selector);
+    return TinyHtml.toTinyElm([...newEls]);
   }
 
   /**
@@ -244,9 +292,8 @@ class TinyHtml {
    * @param {string} selector - The class name to search for.
    * @returns {TinyHtml[]} An array of TinyHtml instances wrapping the found elements.
    */
-  static getByClassName(selector) {
-    const newEls = document.getElementsByClassName(selector);
-    return TinyHtml.toTinyElm([...newEls]);
+  getElementsByClassName(selector) {
+    return TinyHtml.getByClassName(selector, TinyHtml._preElem(this, 'getByClassName'));
   }
 
   /**
@@ -266,11 +313,28 @@ class TinyHtml {
    *
    * @param {string} localName - The local name (tag) of the elements to search for.
    * @param {string|null} [namespaceURI='http://www.w3.org/1999/xhtml'] - The namespace URI to search within.
+   * @param {Document|Element} elem - Target element.
    * @returns {TinyHtml[]} An array of TinyHtml instances wrapping the found elements.
    */
-  static getByTagNameNS(localName, namespaceURI = 'http://www.w3.org/1999/xhtml') {
-    const newEls = document.getElementsByTagNameNS(namespaceURI, localName);
+  static getByTagNameNS(localName, namespaceURI = 'http://www.w3.org/1999/xhtml', elem = document) {
+    const newEls = elem.getElementsByTagNameNS(namespaceURI, localName);
     return TinyHtml.toTinyElm([...newEls]);
+  }
+
+  /**
+   * Retrieves all elements with the specified local tag name within the given namespace URI,
+   * and wraps them in TinyHtml instances.
+   *
+   * @param {string} localName - The local name (tag) of the elements to search for.
+   * @param {string|null} [namespaceURI='http://www.w3.org/1999/xhtml'] - The namespace URI to search within.
+   * @returns {TinyHtml[]} An array of TinyHtml instances wrapping the found elements.
+   */
+  getElementsByTagNameNS(localName, namespaceURI = 'http://www.w3.org/1999/xhtml') {
+    return TinyHtml.getByTagNameNS(
+      localName,
+      namespaceURI,
+      TinyHtml._preElem(this, 'getByTagNameNS'),
+    );
   }
 
   //////////////////////////////////////////////////////////////////

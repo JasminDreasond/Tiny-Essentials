@@ -167,21 +167,21 @@
 
           el.removeClass('visible-full', 'visible-partial', 'invisible');
 
-          const existing = el.get().querySelector('.status-label');
+          const existing = el.querySelector('.status-label');
           if (existing) existing.remove();
 
-          const label = document.createElement('div');
-          label.className = 'status-label';
+          const label = TinyHtml.createElement('div');
+          label.addClass('status-label');
 
           if (isFull) {
             el.addClass('visible-full');
-            label.textContent = 'Fully Visible';
+            label.setText('Fully Visible');
           } else if (isIn) {
             el.addClass('visible-partial');
-            label.textContent = 'Partially Visible';
+            label.setText('Partially Visible');
           } else {
             el.addClass('invisible');
-            label.textContent = 'Not Visible';
+            label.setText('Not Visible');
           }
 
           el.append(label);
