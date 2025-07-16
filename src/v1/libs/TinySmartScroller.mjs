@@ -1,4 +1,9 @@
+import TinyHtml from './TinyHtml.mjs';
+import * as TinyCollision from '../basics/collision.mjs';
+
 class TinySmartScroller {
+  static Utils = { ...TinyCollision, TinyHtml };
+
   /** @type {WeakMap<Element, NodeSizes>} */
   #oldSizes = new WeakMap();
   /** @type {WeakMap<Element, NodeSizes>} */
@@ -225,6 +230,8 @@ class TinySmartScroller {
       !this.#isAtBottom &&
       !this.#isAtTop
     ) {
+      /** @type {{ value: boolean; target: Element }[]} */
+      const isInContainer = [];
       // Run size getter
       const scrollSize = { height: 0, width: 0 };
       for (const target of targets) {
@@ -242,12 +249,15 @@ class TinySmartScroller {
           if (typeof sizes === 'undefined') return;
           scrollSize.height = sizes.height;
           scrollSize.width = sizes.width;
+          // isInContainer.push({ value: TinyHtml.isInContainer(this.#target, target), target });
         });
       }
 
       // Checker
       if (typeof scrollSize.height !== 'number' && scrollSize.height < 0) throw new Error('');
       if (typeof scrollSize.width !== 'number' && scrollSize.width < 0) throw new Error('');
+
+      console.log(isInContainer);
 
       // Complete
       this.#target.scrollTop = prevScrollTop + heightDelta + scrollSize.height;

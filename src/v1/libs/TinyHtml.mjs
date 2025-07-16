@@ -1260,7 +1260,7 @@ class TinyHtml {
   /**
    * Appends child elements or strings to the end of the target element(s).
    *
-   * @param {TinyElement | TinyElement[]} el - The target element(s) to receive children.
+   * @param {TinyElement} el - The target element(s) to receive children.
    * @param {...(TinyNode | TinyNode[] | string)} children - The child elements or text to append.
    */
   static append(el, ...children) {
@@ -1280,7 +1280,7 @@ class TinyHtml {
   /**
    * Prepends child elements or strings to the beginning of the target element(s).
    *
-   * @param {TinyElement | TinyElement[]} el - The target element(s) to receive children.
+   * @param {TinyElement} el - The target element(s) to receive children.
    * @param {...(TinyNode | TinyNode[] | string)} children - The child elements or text to prepend.
    */
   static prepend(el, ...children) {
@@ -1300,7 +1300,7 @@ class TinyHtml {
   /**
    * Inserts elements or strings immediately before the target element(s) in the DOM.
    *
-   * @param {TinyElement | TinyElement[]} el - The target element(s) before which new content is inserted.
+   * @param {TinyElement} el - The target element(s) before which new content is inserted.
    * @param {...(TinyNode | TinyNode[] | string)} children - Elements or text to insert before the target.
    */
   static before(el, ...children) {
@@ -1320,7 +1320,7 @@ class TinyHtml {
   /**
    * Inserts elements or strings immediately after the target element(s) in the DOM.
    *
-   * @param {TinyElement | TinyElement[]} el - The target element(s) after which new content is inserted.
+   * @param {TinyElement} el - The target element(s) after which new content is inserted.
    * @param {...(TinyNode | TinyNode[] | string)} children - Elements or text to insert after the target.
    */
   static after(el, ...children) {
@@ -1340,7 +1340,7 @@ class TinyHtml {
   /**
    * Replaces the target element(s) in the DOM with new elements or text.
    *
-   * @param {TinyElement | TinyElement[]} el - The element(s) to be replaced.
+   * @param {TinyElement} el - The element(s) to be replaced.
    * @param {...(TinyNode | TinyNode[] | string)} newNodes - New elements or text to replace the target.
    */
   static replaceWith(el, ...newNodes) {
@@ -3078,20 +3078,22 @@ class TinyHtml {
 
   /**
    * Get the innerHTML of the element.
-   * @param {TinyElement|TinyElement[]} el
+   * @param {TinyElement} el
+   * @param {GetHTMLOptions} [ops]
    * @returns {string}
    */
-  static html(el) {
+  static html(el, ops) {
     const elem = TinyHtml._preElem(el, 'html');
-    return elem.innerHTML;
+    return elem.getHTML(ops);
   }
 
   /**
    * Get the innerHTML of the element.
+   * @param {GetHTMLOptions} [ops]
    * @returns {string}
    */
-  html() {
-    return TinyHtml.html(this);
+  html(ops) {
+    return TinyHtml.html(this, ops);
   }
 
   /**
@@ -4339,6 +4341,72 @@ class TinyHtml {
    */
   isScrolledIntoView() {
     return TinyHtml.isScrolledIntoView(this);
+  }
+
+  /**
+   * Checks if the given element is at least partially visible within the boundaries of a container.
+   *
+   * @param {TinyElement} el - The DOM element to check.
+   * @param {TinyElement} cont - The container element acting as the viewport.
+   * @returns {boolean} True if the element is partially visible within the container, false otherwise.
+   */
+  static isInContainer(el, cont) {
+    const elem = TinyHtml._preElem(el, 'isInContainer');
+    const container = TinyHtml._preElem(cont, 'isInContainer');
+
+    const elemRect = elem.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+
+    const verticallyVisible =
+      elemRect.bottom > containerRect.top && elemRect.top < containerRect.bottom;
+
+    const horizontallyVisible =
+      elemRect.right > containerRect.left && elemRect.left < containerRect.right;
+
+    return verticallyVisible && horizontallyVisible;
+  }
+
+  /**
+   * Checks if the given element is at least partially visible within the boundaries of a container.
+   *
+   * @param {TinyElement} cont - The container element acting as the viewport.
+   * @returns {boolean} True if the element is partially visible within the container, false otherwise.
+   */
+  isInContainer(cont) {
+    return TinyHtml.isInContainer(this, cont);
+  }
+
+  /**
+   * Checks if the given element is fully visible within the boundaries of a container (top and bottom).
+   *
+   * @param {TinyElement} el - The DOM element to check.
+   * @param {TinyElement} cont - The container element acting as the viewport.
+   * @returns {boolean} True if the element is fully visible within the container, false otherwise.
+   */
+  static isFullyInContainer(el, cont) {
+    const elem = TinyHtml._preElem(el, 'isScrolledIntoView');
+    const container = TinyHtml._preElem(cont, 'isInContainer');
+
+    const elemRect = elem.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+
+    const isFullyVisible =
+      elemRect.top >= containerRect.top &&
+      elemRect.bottom <= containerRect.bottom &&
+      elemRect.left >= containerRect.left &&
+      elemRect.right <= containerRect.right;
+
+    return isFullyVisible;
+  }
+
+  /**
+   * Checks if the given element is fully visible within the boundaries of a container (top and bottom).
+   *
+   * @param {TinyElement} cont - The container element acting as the viewport.
+   * @returns {boolean} True if the element is fully visible within the container, false otherwise.
+   */
+  isFullyInContainer(cont) {
+    return TinyHtml.isFullyInContainer(this, cont);
   }
 }
 

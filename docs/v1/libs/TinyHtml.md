@@ -949,9 +949,11 @@ element.empty();
 
 ---
 
-### 🔍 `.html()` / `TinyHtml.html(el)`
+### 🔍 `.html(ops?)` / `TinyHtml.html(el, ops?)`
 
 Gets the `innerHTML` string of the element.
+
+* `ops?`: GetHTMLOptions from native DOM.
 
 ```js
 element.html(); // → "<p>Some HTML content</p>"
@@ -1330,6 +1332,68 @@ Checks if the element is **fully inside** the viewport — meaning:
 
 ```js
 TinyHtml.isScrolledIntoView(element);
+```
+
+---
+
+### 🫣 `.isInContainer(container)`
+
+Partially Visible in Container
+
+```js
+element.isInContainer(container);
+```
+
+Checks if **any part** of the element is visible **inside the scrollable container** — meaning:
+
+* It **overlaps** the visible area of the container.
+* At least part of it is within the container’s viewport.
+
+#### ✅ Use when:
+
+* You want to detect if an element is **partially scrolled into view**.
+* Useful for triggering **lazy loading**, **animations**, or **UI changes** when something starts to appear.
+
+#### 🔍 Logic:
+
+* It compares the element's `getBoundingClientRect()` with the container’s.
+* Ensures there's **some overlap**, vertically or horizontally.
+
+#### 🔁 Static version:
+
+```js
+TinyHtml.isInContainer(element, container);
+```
+
+---
+
+### ✅ `.isFullyInContainer(container)`
+
+Fully Visible in Container
+
+```js
+element.isFullyInContainer(container);
+```
+
+Checks if the element is **completely visible** inside the scrollable container — meaning:
+
+* **Top and bottom** of the element are within the container.
+* **Left and right** are also inside the container’s boundaries.
+
+#### ✅ Use when:
+
+* You want to detect if an element is **entirely inside** its scrollable container.
+* Useful for triggering **lazy loading**, **animations**, or **UI changes** when something starts to appear.
+
+#### 🔍 Logic:
+
+* It compares the full bounding box of the element to the container's.
+* All four edges must be within bounds to return `true`.
+
+#### 🔁 Static version:
+
+```js
+TinyHtml.isFullyInContainer(element, container);
 ```
 
 ---

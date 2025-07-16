@@ -178,6 +178,7 @@
         });
 
         const scroller = new TinySmartScroller(chat, {
+          // attributeFilter: [],
           // querySelector: 'img',
           autoScrollBottom: toggleAutoScroll.checked,
           observeMutations: true,
@@ -281,12 +282,23 @@
             img.className = 'resizable';
             img.alt = 'Async image';
             img.title = 'Click to expand';
-            img.onload = () => (img.style.width = '300px');
+            img.onload = () => {
+              setTimeout(() => {
+                img.style.width = '300px';
+              }, 5000);
+            };
             setTimeout(() => (img.src = '/6d01c26e-e523-4439-8bfc-f656a83cdab0.png'), 10000);
             img.src = blackImageBase64;
             img.style.cursor = 'pointer';
             img.addEventListener('click', () => {
               img.style.width = img.style.width === '300px' ? '100px' : '300px';
+            });
+            img.addEventListener('contextmenu', (evt) => {
+              evt.preventDefault();
+              setTimeout(
+                () => (img.style.width = img.style.width === '300px' ? '100px' : '300px'),
+                1000,
+              );
             });
             content.appendChild(img);
           }
