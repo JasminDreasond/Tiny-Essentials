@@ -9,6 +9,11 @@ class TinySmartScroller {
   /** @type {WeakMap<Element, NodeSizes>} */
   #newSizes = new WeakMap();
 
+  /** @type {WeakMap<Element, boolean>} */
+  #newVisibles = new WeakMap();
+  /** @type {WeakMap<Element, boolean>} */
+  #oldVisibles = new WeakMap();
+
   /** @type {Record<string, Function[]>} */
   #scrollListeners = {};
 
@@ -96,6 +101,7 @@ class TinySmartScroller {
     /** @type {NodeJS.Timeout} */
     let timeout;
     this.#handler = () => {
+      this._scrollDataUpdater();
       clearTimeout(timeout);
       timeout = setTimeout(() => this._onScroll(), this.#debounceTime);
     };
@@ -108,6 +114,8 @@ class TinySmartScroller {
       this._observeMutations();
       this._observeResizes(this.#target.children);
     }
+
+    this._scrollDataUpdater();
   }
 
   /**
@@ -154,6 +162,23 @@ class TinySmartScroller {
   }
 
   /**
+   * @returns {Map<Element, { oldIsVisible: boolean; isVisible: boolean; }>}
+   */
+  _scrollDataUpdater() {
+    const results = new Map();
+    this.#target.querySelectorAll(this.#querySelector || '*').forEach((target) => {
+      const oldIsVisible = this.#newVisibles.get(target) ?? false;
+      this.#oldVisibles.set(target, oldIsVisible);
+
+      const isVisible = TinyHtml.isInContainer(this.#target, target);
+      this.#newVisibles.set(target, isVisible);
+
+      results.set(target, { oldIsVisible, isVisible });
+    });
+    return results;
+  }
+
+  /**
    * @param {string} event
    * @param {*} [payload]
    */
@@ -165,6 +190,7 @@ class TinySmartScroller {
   _onScroll() {
     if (this.#destroyed) return;
     // Get values
+    const scrollCache = this._scrollDataUpdater();
     const el = this.#target;
     const scrollTop = el.scrollTop;
     const scrollHeight = el.scrollHeight;
@@ -201,13 +227,13 @@ class TinySmartScroller {
     this.#lastKnownScrollBottomOffset = scrollHeight - scrollTop - clientHeight;
 
     // Send results
-    this._emit('onScrollBoundary', { status: atResult, ...scrollResult });
-    this._emit('onExtraScrollBoundary', { status: atCustomResult, ...scrollResult });
+    this._emit('onScrollBoundary', { status: atResult, ...scrollResult, scrollCache });
+    this._emit('onExtraScrollBoundary', { status: atCustomResult, ...scrollResult, scrollCache });
 
     if (!this.#scrollPaused) {
-      this._emit('onAutoScroll', { ...scrollResult });
+      this._emit('onAutoScroll', { ...scrollResult, scrollCache });
     } else {
-      this._emit('onScrollPause', { ...scrollResult });
+      this._emit('onScrollPause', { ...scrollResult, scrollCache });
     }
   }
 
@@ -230,8 +256,6 @@ class TinySmartScroller {
       !this.#isAtBottom &&
       !this.#isAtTop
     ) {
-      /** @type {{ value: boolean; target: Element }[]} */
-      const isInContainer = [];
       // Run size getter
       const scrollSize = { height: 0, width: 0 };
       for (const target of targets) {
@@ -245,19 +269,19 @@ class TinySmartScroller {
             { old: this.#elemOldAmount, now: this.#elemAmount },
           );
 
-          if (typeof sizes !== 'undefined' && typeof sizes !== 'object') throw new Error('');
-          if (typeof sizes === 'undefined') return;
-          scrollSize.height = sizes.height;
-          scrollSize.width = sizes.width;
-          // isInContainer.push({ value: TinyHtml.isInContainer(this.#target, target), target });
+          // Fix size
+          if (this.#newVisibles.get(target)) {
+            if (typeof sizes !== 'undefined' && typeof sizes !== 'object') throw new Error('');
+            if (typeof sizes === 'undefined') return;
+            scrollSize.height = sizes.height;
+            scrollSize.width = sizes.width;
+          }
         });
       }
 
       // Checker
       if (typeof scrollSize.height !== 'number' && scrollSize.height < 0) throw new Error('');
       if (typeof scrollSize.width !== 'number' && scrollSize.width < 0) throw new Error('');
-
-      console.log(isInContainer);
 
       // Complete
       this.#target.scrollTop = prevScrollTop + heightDelta + scrollSize.height;
@@ -277,6 +301,7 @@ class TinySmartScroller {
   _observeMutations() {
     this.#mutationObserver = new MutationObserver((mutations) => {
       if (this.#destroyed) return;
+      this._scrollDataUpdater();
       this.#elemOldAmount = this.#elemAmount;
       this.#elemAmount = this.#target.childElementCount;
       const prevScrollHeight = this.#target.scrollHeight;
@@ -320,6 +345,7 @@ class TinySmartScroller {
     if (!this.#resizeObserver) {
       this.#resizeObserver = new ResizeObserver((entries) => {
         if (this.#destroyed) return;
+        this._scrollDataUpdater();
         /** @type {Element[]} */
         const targets = [];
         for (const entry of entries) {
@@ -366,6 +392,7 @@ class TinySmartScroller {
         // @ts-ignore
         if (!el.complete) {
           el.addEventListener('load', () => {
+            this._scrollDataUpdater();
             if (!this.#scrollPaused && this.#autoScrollBottom) {
               this.scrollToBottom();
             }
@@ -441,6 +468,8 @@ class TinySmartScroller {
     // Clean the WeakMaps
     this.#oldSizes = new WeakMap();
     this.#newSizes = new WeakMap();
+    this.#newVisibles = new WeakMap();
+    this.#oldVisibles = new WeakMap();
 
     // Cleans listeners and filters
     this.#scrollListeners = {};
