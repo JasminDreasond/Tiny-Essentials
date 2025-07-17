@@ -1,6 +1,23 @@
 import TinyHtml from './TinyHtml.mjs';
 import * as TinyCollision from '../basics/collision.mjs';
 
+/**
+ * TinySmartScroller is a utility class designed to enhance and manage scroll behaviors within containers or the window.
+ *
+ * It enables advanced scroll monitoring, auto-scrolling to bottom, preserving scroll position during DOM changes,
+ * and detecting visibility changes of elements. This is particularly useful for dynamic UIs like chat applications,
+ * feed viewers, or live content containers.
+ *
+ * Features:
+ * - Detects when the scroll reaches the top, bottom, or custom boundaries
+ * - Supports automatic scrolling to the bottom unless the user scrolls away
+ * - Observes DOM mutations and resizes, and adapts scroll position accordingly
+ * - Emits scroll-related events such as 'onScrollBoundary', 'onAutoScroll', and 'onScrollPause'
+ * - Includes customizable scroll correction filters for layout shift mitigation
+ * - Handles media element load events (e.g. `<img>`, `<iframe>`, `<video>`) to prevent sudden scroll jumps
+ *
+ * This class is **not framework-dependent** and works with vanilla DOM elements and the window object.
+ */
 class TinySmartScroller {
   static Utils = { ...TinyCollision, TinyHtml };
 
@@ -69,15 +86,19 @@ class TinySmartScroller {
   #sizeFilter = new Set();
 
   /**
-   * @param {Element|Window} target
-   * @param {Object} [options={}]
-   * @param {number} [options.extraScrollBoundary=0]
-   * @param {boolean} [options.autoScrollBottom=true]
-   * @param {boolean} [options.observeMutations=true]
-   * @param {boolean} [options.preserveScrollOnLayoutShift=true]
-   * @param {number} [options.debounceTime=100]
-   * @param {string|null} [options.querySelector=null]
+   * Creates a new instance of TinySmartScroller, attaching scroll and resize observers to manage
+   * automatic scroll behaviors, layout shift correction, and visibility tracking.
+   *
+   * @param {Element|Window} target - The scroll container to monitor. Can be an element or `window`.
+   * @param {Object} [options={}] - Optional settings to configure scroll behavior.
+   * @param {number} [options.extraScrollBoundary=0] - Extra margin in pixels to extend scroll boundary detection.
+   * @param {boolean} [options.autoScrollBottom=true] - Whether to auto-scroll to bottom on layout updates.
+   * @param {boolean} [options.observeMutations=true] - Enables MutationObserver to detect DOM changes.
+   * @param {boolean} [options.preserveScrollOnLayoutShift=true] - Prevents scroll jumps when layout changes.
+   * @param {number} [options.debounceTime=100] - Debounce time in milliseconds for scroll events.
+   * @param {string|null} [options.querySelector=null] - Optional CSS selector to filter observed child nodes.
    * @param {string[]|Set<string>|null} [options.attributeFilter=['class', 'style', 'src', 'data-*', 'height', 'width']]
+   *     - Which attributes to observe for changes.
    */
   constructor(
     target,
@@ -124,8 +145,10 @@ class TinySmartScroller {
   }
 
   /**
-   * @param {string[]} filter
-   * @returns {NodeSizesEvent};
+   * Returns a size difference callback that only reacts when height changes, filtered by tag name.
+   *
+   * @param {string[]} filter - List of tag names to allow. If empty, all tags are accepted.
+   * @returns {NodeSizesEvent} A function that compares previous and current height, returning height delta.
    */
   getSimpleOnHeight(filter = []) {
     return (elem, sizes, amounts) => {
@@ -139,8 +162,10 @@ class TinySmartScroller {
   }
 
   /**
-   * @param {string[]} filter
-   * @returns {NodeSizesEvent};
+   * Adds a height difference callback to the size filter system.
+   *
+   * @param {string[]} filter - List of tag names to allow.
+   * @returns {NodeSizesEvent} The added size difference callback.
    */
   addSimpleOnHeight(filter) {
     const result = this.getSimpleOnHeight(filter);
@@ -149,7 +174,9 @@ class TinySmartScroller {
   }
 
   /**
-   * @param {NodeSizesEvent} handler
+   * Registers a custom node size change handler to the internal size filter set.
+   *
+   * @param {NodeSizesEvent} handler - Function that compares old and new sizes.
    */
   onSize(handler) {
     if (this.#destroyed) return;
@@ -157,8 +184,10 @@ class TinySmartScroller {
   }
 
   /**
-   * @param {string} event
-   * @param {Function} handler
+   * Adds a scroll-related event listener.
+   *
+   * @param {string} event - Event name, such as 'onScrollBoundary' or 'onAutoScroll'.
+   * @param {Function} handler - Callback function to be called when event fires.
    */
   on(event, handler) {
     if (this.#destroyed) return;
@@ -167,7 +196,9 @@ class TinySmartScroller {
   }
 
   /**
-   * @returns {Map<Element, { oldIsVisible: boolean; isVisible: boolean; }>}
+   * Checks which elements inside the target are currently visible and updates internal maps.
+   *
+   * @returns {Map<Element, { oldIsVisible: boolean; isVisible: boolean }>} Visibility comparison results.
    */
   _scrollDataUpdater() {
     const results = new Map();
@@ -184,14 +215,19 @@ class TinySmartScroller {
   }
 
   /**
-   * @param {string} event
-   * @param {*} [payload]
+   * Emits a scroll-related event to all registered listeners.
+   *
+   * @param {string} event - Event name.
+   * @param {*} [payload] - Optional event data payload.
    */
   _emit(event, payload) {
     if (this.#destroyed) return;
     (this.#scrollListeners[event] || []).forEach((fn) => fn(payload));
   }
 
+  /**
+   * Handles scroll events, calculates position-related statuses, and emits appropriate events.
+   */
   _onScroll() {
     if (this.#destroyed) return;
     // Get values
@@ -243,12 +279,12 @@ class TinySmartScroller {
   }
 
   /**
-   * All scroll position correction occurs exactly here.
+   * Attempts to correct the scroll position when layout shifts happen, preserving the user position if needed.
    *
-   * @param {number} prevScrollTop
-   * @param {number} prevScrollHeight
-   * @param {number} prevBottomOffset
-   * @param {Element[]} [targets=[]]
+   * @param {number} prevScrollTop - Previous scrollTop value before change.
+   * @param {number} prevScrollHeight - Previous total scroll height.
+   * @param {number} prevBottomOffset - Distance from bottom before the layout change.
+   * @param {Element[]} [targets=[]] - List of elements involved in the size change.
    */
   _fixScroll(prevScrollTop, prevScrollHeight, prevBottomOffset, targets = []) {
     if (this.#destroyed) return;
@@ -311,7 +347,9 @@ class TinySmartScroller {
         this.#target.scrollHeight - this.#target.clientHeight - prevBottomOffset;
     }
   }
-
+  /**
+   * Sets up a MutationObserver to watch for DOM changes and react accordingly to maintain scroll consistency.
+   */
   _observeMutations() {
     this.#mutationObserver = new MutationObserver((mutations) => {
       if (this.#destroyed) return;
@@ -352,7 +390,9 @@ class TinySmartScroller {
   }
 
   /**
-   * @param {NodeListOf<Element>|Element[]|HTMLCollection} elements
+   * Adds a ResizeObserver to monitor elements' size changes and trigger layout adjustments.
+   *
+   * @param {NodeListOf<Element>|Element[]|HTMLCollection} elements - Elements to observe.
    */
   _observeResizes(elements) {
     // Add resize observer
@@ -395,7 +435,9 @@ class TinySmartScroller {
   }
 
   /**
-   * @param {NodeListOf<Element>|Element} elements
+   * Listens for media/content load events (e.g., images, iframes, videos) to trigger scroll updates.
+   *
+   * @param {NodeListOf<Element>|Element} elements - Target element(s) to listen on.
    */
   _listenLoadEvents(elements) {
     if (this.#destroyed) return;
@@ -417,48 +459,95 @@ class TinySmartScroller {
   }
 
   /**
-   * @param {number} value
+   * Sets the extra scroll boundary margin used when determining if the user is at a "custom" bottom or top.
+   *
+   * @param {number} value - Pixels of additional margin to use.
    */
   setExtraScrollBoundary(value) {
     this.#extraScrollBoundary = value;
   }
 
+  /**
+   * Returns the current extra scroll boundary setting.
+   *
+   * @returns {number}
+   */
   getExtraScrollBoundary() {
     return this.#extraScrollBoundary;
   }
 
+  /**
+   * Returns the last known distance (in pixels) from the bottom of the scroll container.
+   *
+   * @returns {number}
+   */
   getLastKnownScrollBottomOffset() {
     return this.#lastKnownScrollBottomOffset;
   }
 
+  /**
+   * Forces the scroll position to move to the very bottom of the target.
+   */
   scrollToBottom() {
     this.#target.scrollTop = this.#target.scrollHeight;
   }
 
+  /**
+   * Forces the scroll position to move to the very top of the target.
+   */
   scrollToTop() {
     this.#target.scrollTop = 0;
   }
 
+  /**
+   * Checks if the user is within the defined extra scroll boundary from the bottom.
+   *
+   * @returns {boolean}
+   */
   isUserAtCustomBottom() {
     return this.#isAtCustomBottom;
   }
 
+  /**
+   * Checks if the user is within the defined extra scroll boundary from the top.
+   *
+   * @returns {boolean}
+   */
   isUserAtCustomTop() {
     return this.#isAtCustomTop;
   }
 
+  /**
+   * Returns true if the user is currently scrolled to the bottom of the element.
+   *
+   * @returns {boolean}
+   */
   isUserAtBottom() {
     return this.#isAtBottom;
   }
 
+  /**
+   * Returns true if the user is currently scrolled to the top of the element.
+   *
+   * @returns {boolean}
+   */
   isUserAtTop() {
     return this.#isAtTop;
   }
 
+  /**
+   * Returns true if automatic scrolling is currently paused.
+   *
+   * @returns {boolean}
+   */
   isScrollPaused() {
     return this.#scrollPaused;
   }
 
+  /**
+   * Disconnects all listeners, observers, and clears memory structures.
+   * Once destroyed, this instance should no longer be used.
+   */
   destroy() {
     if (this.#destroyed) return;
     this.#destroyed = true;
