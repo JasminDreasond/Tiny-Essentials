@@ -106,9 +106,13 @@
       <button onclick="addAsyncImage()">Add async image</button>
       <button onclick="addIframeEmbed()">Add iframe</button>
       <button onclick="addManyMessages()">Add many</button>
-      <button onclick="scrollToTop()">Scroll to top</button>
+      <!-- 
+            <button onclick="scrollToTop()">Scroll to top</button>
       <button onclick="scrollToBottom()">Scroll to bottom</button>
       <button onclick="forceScrollToAnchor()">Force to Anchor</button>
+      -->
+      <button onclick="startAutoChat()">▶️</button>
+      <button onclick="stopAutoChat()">⏹</button>
 
       <label>
         <input type="checkbox" id="toggleAutoScroll" checked />
@@ -153,6 +157,61 @@
         }),
       );
       tinyReady.onReady(() => {
+        let autoMessageInterval = null;
+        const maxVisibleMessages = 100; // limite de mensagens visíveis
+
+        function trimOldMessages() {
+          const messages = chat.querySelectorAll('.message');
+          const msgCount = messages.length + 1;
+          if (msgCount > maxVisibleMessages) {
+            const excess = msgCount - maxVisibleMessages;
+            for (let i = 0; i < excess; i++) {
+              messages[i].remove();
+            }
+            log(`Cleaned up ${excess} old messages`);
+          }
+        }
+
+        const messageTypeWeights = {
+          text: 85,
+          image: 5,
+          'async-image': 5,
+          'image-base64': 5,
+        };
+
+        function getWeightedRandomType() {
+          const types = Object.entries(messageTypeWeights);
+          const totalWeight = types.reduce((sum, [, weight]) => sum + weight, 0);
+          let rand = Math.random() * totalWeight;
+
+          for (const [type, weight] of types) {
+            if (rand < weight) return type;
+            rand -= weight;
+          }
+
+          return 'text'; // fallback
+        }
+
+        window.startAutoChat = () => {
+          if (autoMessageInterval) return;
+          log(`Start auto chat`);
+          autoMessageInterval = setInterval(
+            () => {
+              const randomType = getWeightedRandomType();
+              chat.appendChild(createMessageElement(randomType));
+            },
+            Math.random() * 10000 + 1500,
+          );
+        };
+
+        window.stopAutoChat = () => {
+          if (autoMessageInterval) {
+            log(`Stop auto chat`);
+            clearInterval(autoMessageInterval);
+            autoMessageInterval = null;
+          }
+        };
+
         const chat = document.getElementById('chat');
         const statusText = document.getElementById('statusText');
         const logEl = document.getElementById('log');
@@ -333,6 +392,7 @@
           tools.appendChild(btnRemove);
           div.appendChild(tools);
 
+          trimOldMessages();
           return div;
         }
 
@@ -372,10 +432,7 @@
 
         window.addManyMessages = () => {
           for (let i = 0; i < 30; i++) {
-            const type = ['text', 'image', 'async-image', 'image-base64'][
-              Math.floor(Math.random() * 4)
-            ];
-            chat.appendChild(createMessageElement(type));
+            chat.appendChild(createMessageElement(getWeightedRandomType()));
           }
         };
 
@@ -407,6 +464,7 @@
         // Start with 10 messages
         for (let i = 0; i < 2; i++) addManyMessages();
         scrollToBottom();
+        startAutoChat();
       });
       tinyReady.init();
     </script>
