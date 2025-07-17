@@ -2,6 +2,32 @@ import TinyHtml from './TinyHtml.mjs';
 import * as TinyCollision from '../basics/collision.mjs';
 
 /**
+ * Represents the dimensions of a DOM element.
+ *
+ * @typedef {Object} NodeSizes
+ * @property {number} height - The height of the element in pixels.
+ * @property {number} width - The width of the element in pixels.
+ */
+
+/**
+ * A callback function that receives node size change data and optionally returns a modified NodeSizes object.
+ *
+ * @callback NodeSizesEvent
+ * @param {Element} elem - The DOM element whose size is being tracked.
+ * @param {{ old: NodeSizes, now: NodeSizes }} sizes - The old and new size measurements of the element.
+ * @param {{ old: number, now: number }} elemAmount - The number of matching elements before and after the update.
+ * @returns {NodeSizes|undefined} A modified NodeSizes object to override the default measurement, or undefined to use the original.
+ */
+
+/**
+ * A generic scroll-related event listener callback function.
+ *
+ * @callback ScrollListenersFunc
+ * @param {any} payload - The data payload passed when the scroll event is triggered. The type may vary depending on the event.
+ * @returns {void}
+ */
+
+/**
  * TinySmartScroller is a utility class designed to enhance and manage scroll behaviors within containers or the window.
  *
  * It enables advanced scroll monitoring, auto-scrolling to bottom, preserving scroll position during DOM changes,
@@ -36,7 +62,7 @@ class TinySmartScroller {
   /** @type {WeakMap<Element, boolean>} */
   #oldVisiblesByTime = new WeakMap();
 
-  /** @type {Record<string, Function[]>} */
+  /** @type {Record<string, ScrollListenersFunc[]>} */
   #scrollListeners = {};
 
   /** @type {ResizeObserver|null} */
@@ -73,14 +99,6 @@ class TinySmartScroller {
 
   /** @type {Element} */
   #target;
-
-  /**
-   * @typedef {{ height: number; width: number; }} NodeSizes
-   */
-
-  /**
-   * @typedef {(elem: Element, sizes: { old: NodeSizes; now: NodeSizes }, elemAmount: { old: number; now: number; }) => (NodeSizes|undefined)} NodeSizesEvent
-   */
 
   /** @type {Set<NodeSizesEvent>} */
   #sizeFilter = new Set();
@@ -221,6 +239,122 @@ class TinySmartScroller {
   }
 
   /**
+   * Returns a list of all currently tracked load tags.
+   *
+   * @returns {string[]} Array of tag names.
+   */
+  getLoadTags() {
+    return Array.from(this.#loadTags);
+  }
+
+  /**
+   * Adds a new tag to the set of load tags.
+   *
+   * @param {string} tag - The tag name to add (e.g., 'IMG').
+   */
+  addLoadTag(tag) {
+    if (typeof tag !== 'string') throw new TypeError('addLoadTag(tag): tag must be a string');
+    this.#loadTags.add(tag.toUpperCase());
+  }
+
+  /**
+   * Removes a tag from the set of load tags.
+   *
+   * @param {string} tag - The tag name to remove.
+   */
+  removeLoadTag(tag) {
+    if (typeof tag !== 'string') throw new TypeError('removeLoadTag(tag): tag must be a string');
+    this.#loadTags.delete(tag.toUpperCase());
+  }
+
+  /**
+   * Checks whether a tag is tracked as a load tag.
+   *
+   * @param {string} tag - The tag name to check.
+   * @returns {boolean} True if the tag is being tracked.
+   */
+  hasLoadTag(tag) {
+    if (typeof tag !== 'string') throw new TypeError('hasLoadTag(tag): tag must be a string');
+    return this.#loadTags.has(tag.toUpperCase());
+  }
+
+  /**
+   * Clears the set of load tags. If `addDefault` is true, it will reset to the default tags: 'IMG', 'IFRAME', and 'VIDEO'.
+   *
+   * @param {boolean} [addDefault=false] - Whether to restore the default tags after clearing.
+   * @throws {TypeError} If `addDefault` is not a boolean.
+   */
+  resetLoadTags(addDefault = false) {
+    if (typeof addDefault !== 'boolean')
+      throw new TypeError('resetLoadTags(addDefault): addDefault must be a boolean');
+    this.#loadTags.clear();
+    if (!addDefault) return;
+    this.#loadTags.add('IMG');
+    this.#loadTags.add('IFRAME');
+    this.#loadTags.add('VIDEO');
+  }
+
+  /**
+   * Returns a list of all currently tracked attribute filters.
+   *
+   * @returns {string[]} Array of attribute names.
+   */
+  getAttributeFilters() {
+    return Array.from(this.#attributeFilter);
+  }
+
+  /**
+   * Adds an attribute to the filter list.
+   *
+   * @param {string} attr - The attribute name to add.
+   */
+  addAttributeFilter(attr) {
+    if (typeof attr !== 'string')
+      throw new TypeError('addAttributeFilter(attr): attr must be a string');
+    this.#attributeFilter.add(attr);
+  }
+
+  /**
+   * Removes an attribute from the filter list.
+   *
+   * @param {string} attr - The attribute name to remove.
+   */
+  removeAttributeFilter(attr) {
+    if (typeof attr !== 'string')
+      throw new TypeError('removeAttributeFilter(attr): attr must be a string');
+    this.#attributeFilter.delete(attr);
+  }
+
+  /**
+   * Checks whether a specific attribute is being filtered.
+   *
+   * @param {string} attr - The attribute name to check.
+   * @returns {boolean} True if the attribute is being filtered.
+   */
+  hasAttributeFilter(attr) {
+    if (typeof attr !== 'string')
+      throw new TypeError('hasAttributeFilter(attr): attr must be a string');
+    return this.#attributeFilter.has(attr);
+  }
+
+  /**
+   * Clears the set of observed attribute filters. If `addDefault` is true, it will reset to the default attributes:
+   * 'class', 'style', 'src', 'data-*', 'height', and 'width'.
+   *
+   * @param {boolean} [addDefault=false] - Whether to restore the default attribute filters after clearing.
+   * @throws {TypeError} If `addDefault` is not a boolean.
+   */
+  resetAttributeFilters(addDefault = false) {
+    if (typeof addDefault !== 'boolean')
+      throw new TypeError('resetAttributeFilters(addDefault): addDefault must be a boolean');
+    this.#attributeFilter.clear();
+    if (!addDefault) return;
+    ['class', 'style', 'src', 'data-*', 'height', 'width'].forEach((attr) =>
+      this.#attributeFilter.add(attr),
+    );
+  }
+
+  /**
    * Registers a custom node size change handler to the internal size filter set.
    *
    * @param {NodeSizesEvent} handler - Function that compares old and new sizes.
@@ -248,7 +382,7 @@ class TinySmartScroller {
    * Adds a scroll-related event listener.
    *
    * @param {string} event - Event name, such as 'onScrollBoundary' or 'onAutoScroll'.
-   * @param {Function} handler - Callback function to be called when event fires.
+   * @param {ScrollListenersFunc} handler - Callback function to be called when event fires.
    */
   on(event, handler) {
     if (this.#destroyed) return;
@@ -265,7 +399,7 @@ class TinySmartScroller {
    * Removes a previously registered scroll-related event listener.
    *
    * @param {string} event - The name of the event to remove the handler from.
-   * @param {Function} handler - The specific callback function to remove.
+   * @param {ScrollListenersFunc} handler - The specific callback function to remove.
    */
   off(event, handler) {
     if (this.#destroyed) return;
@@ -561,6 +695,75 @@ class TinySmartScroller {
         }
       }
     });
+  }
+
+  /**
+   * Returns the internal scroll container element being monitored.
+   *
+   * @returns {Element} The DOM element used as the scroll container target.
+   */
+  get target() {
+    return this.#target;
+  }
+
+  /**
+   * Returns the previous size of a given element, or undefined if not tracked.
+   *
+   * @param {Element} el - The DOM element to query.
+   * @returns {NodeSizes|null} The old size, or undefined.
+   */
+  getOldSize(el) {
+    return this.#oldSizes.get(el) ?? null;
+  }
+
+  /**
+   * Returns the current size of a given element, or undefined if not tracked.
+   *
+   * @param {Element} el - The DOM element to query.
+   * @returns {NodeSizes|null} The new size, or undefined.
+   */
+  getNewSize(el) {
+    return this.#newSizes.get(el) ?? null;
+  }
+
+  /**
+   * Returns whether the given element was visible in the last scroll update.
+   *
+   * @param {Element} el - The DOM element to check.
+   * @returns {boolean} True if visible, false if not, or undefined if not tracked.
+   */
+  wasVisible(el) {
+    return this.#oldVisibles.get(el) ?? false;
+  }
+
+  /**
+   * Returns whether the given element is currently visible.
+   *
+   * @param {Element} el - The DOM element to check.
+   * @returns {boolean} True if visible, false if not, or undefined if not tracked.
+   */
+  isVisible(el) {
+    return this.#newVisibles.get(el) ?? false;
+  }
+
+  /**
+   * Returns whether the element was visible in the last time-based visibility check.
+   *
+   * @param {Element} el - The DOM element to check.
+   * @returns {boolean} Visibility state from the previous timed check.
+   */
+  wasTimedVisible(el) {
+    return this.#oldVisiblesByTime.get(el) ?? false;
+  }
+
+  /**
+   * Returns whether the element is currently visible in the time-based check.
+   *
+   * @param {Element} el - The DOM element to check.
+   * @returns {boolean} Visibility state from the current timed check.
+   */
+  isTimedVisible(el) {
+    return this.#newVisiblesByTime.get(el) ?? false;
   }
 
   /**
