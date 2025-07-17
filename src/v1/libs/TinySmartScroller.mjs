@@ -233,6 +233,18 @@ class TinySmartScroller {
   }
 
   /**
+   * Unregisters a previously registered size handler from the internal filter set.
+   *
+   * @param {NodeSizesEvent} handler - The handler function to remove.
+   */
+  offSize(handler) {
+    if (this.#destroyed) return;
+    if (typeof handler !== 'function')
+      throw new TypeError('offSize(handler): handler must be a function');
+    this.#sizeFilter.delete(handler);
+  }
+
+  /**
    * Adds a scroll-related event listener.
    *
    * @param {string} event - Event name, such as 'onScrollBoundary' or 'onAutoScroll'.
@@ -247,6 +259,29 @@ class TinySmartScroller {
 
     if (!this.#scrollListeners[event]) this.#scrollListeners[event] = [];
     this.#scrollListeners[event].push(handler);
+  }
+
+  /**
+   * Removes a previously registered scroll-related event listener.
+   *
+   * @param {string} event - The name of the event to remove the handler from.
+   * @param {Function} handler - The specific callback function to remove.
+   */
+  off(event, handler) {
+    if (this.#destroyed) return;
+    if (typeof event !== 'string')
+      throw new TypeError('off(event, handler): event name must be a string');
+    if (typeof handler !== 'function')
+      throw new TypeError('off(event, handler): handler must be a function');
+
+    const listeners = this.#scrollListeners[event];
+    if (!Array.isArray(listeners)) return;
+
+    const index = listeners.indexOf(handler);
+    if (index !== -1) listeners.splice(index, 1);
+
+    // Optionally clean up empty arrays (optional)
+    if (listeners.length === 0) delete this.#scrollListeners[event];
   }
 
   /**
@@ -614,6 +649,87 @@ class TinySmartScroller {
    */
   isScrollPaused() {
     return this.#scrollPaused;
+  }
+
+  /**
+   * Returns whether the target is the window object.
+   *
+   * @returns {boolean} True if the scroll target is window, false otherwise.
+   */
+  isWindow() {
+    return this.#useWindow;
+  }
+
+  /**
+   * Returns whether the instance has been destroyed.
+   *
+   * @returns {boolean} True if the instance is destroyed, false otherwise.
+   */
+  isDestroyed() {
+    return this.#destroyed;
+  }
+
+  /**
+   * Returns whether auto-scroll-to-bottom is enabled.
+   *
+   * @returns {boolean} True if auto-scroll is active, false otherwise.
+   */
+  getAutoScrollBottom() {
+    return this.#autoScrollBottom;
+  }
+
+  /**
+   * Returns whether MutationObserver is enabled.
+   *
+   * @returns {boolean} True if mutation observation is active, false otherwise.
+   */
+  getObserveMutations() {
+    return this.#observeMutations;
+  }
+
+  /**
+   * Returns whether layout shift protection is enabled.
+   *
+   * @returns {boolean} True if scroll preservation is active, false otherwise.
+   */
+  getPreserveScrollOnLayoutShift() {
+    return this.#preserveScrollOnLayoutShift;
+  }
+
+  /**
+   * Returns the debounce delay in milliseconds used for scroll events.
+   *
+   * @returns {number} Debounce delay time.
+   */
+  getDebounceTime() {
+    return this.#debounceTime;
+  }
+
+  /**
+   * Returns the current number of matching elements observed inside the scroll target.
+   *
+   * @returns {number} Current count of matching elements.
+   */
+  getElemAmount() {
+    return this.#elemAmount;
+  }
+
+  /**
+   * Returns the previous known count of matching elements from the last update.
+   *
+   * @returns {number} Previous count of matching elements.
+   */
+  getPrevElemAmount() {
+    return this.#elemOldAmount;
+  }
+
+  /**
+   * Returns the query selector string used to filter observed elements.
+   *
+   * @returns {string} The CSS selector string, or an empty string if none was provided.
+   */
+  getQuerySelector() {
+    return this.#querySelector;
   }
 
   /**
