@@ -112,6 +112,49 @@ class TinySmartScroller {
       attributeFilter = ['class', 'style', 'src', 'data-*', 'height', 'width'],
     } = {},
   ) {
+    // === target ===
+    if (!(target instanceof Element || target === window))
+      throw new TypeError(
+        `TinySmartScroller: 'target' must be a DOM Element or 'window', but got ${typeof target}`,
+      );
+    // === extraScrollBoundary ===
+    if (typeof extraScrollBoundary !== 'number' || Number.isNaN(extraScrollBoundary))
+      throw new TypeError(
+        `TinySmartScroller: 'extraScrollBoundary' must be a valid number, received ${extraScrollBoundary}`,
+      );
+    // === autoScrollBottom ===
+    if (typeof autoScrollBottom !== 'boolean')
+      throw new TypeError(
+        `TinySmartScroller: 'autoScrollBottom' must be a boolean, received ${typeof autoScrollBottom}`,
+      );
+    // === observeMutations ===
+    if (typeof observeMutations !== 'boolean')
+      throw new TypeError(
+        `TinySmartScroller: 'observeMutations' must be a boolean, received ${typeof observeMutations}`,
+      );
+    // === preserveScrollOnLayoutShift ===
+    if (typeof preserveScrollOnLayoutShift !== 'boolean')
+      throw new TypeError(
+        `TinySmartScroller: 'preserveScrollOnLayoutShift' must be a boolean, received ${typeof preserveScrollOnLayoutShift}`,
+      );
+    // === debounceTime ===
+    if (typeof debounceTime !== 'number' || debounceTime < 0 || Number.isNaN(debounceTime))
+      throw new TypeError(
+        `TinySmartScroller: 'debounceTime' must be a non-negative number, received ${debounceTime}`,
+      );
+    // === querySelector ===
+    if (querySelector !== null && typeof querySelector !== 'string')
+      throw new TypeError(
+        `TinySmartScroller: 'querySelector' must be a string or null, received ${typeof querySelector}`,
+      );
+    // === attributeFilter ===
+    const isValidAttrList =
+      attributeFilter === null || Array.isArray(attributeFilter) || attributeFilter instanceof Set;
+    if (!isValidAttrList)
+      throw new TypeError(
+        `TinySmartScroller: 'attributeFilter' must be an array, Set, or null. Got ${typeof attributeFilter}`,
+      );
+
     // Start values
     this.#target = target instanceof Window ? document.documentElement : target;
     this.#useWindow = target instanceof Window;
@@ -151,6 +194,8 @@ class TinySmartScroller {
    * @returns {NodeSizesEvent} A function that compares previous and current height, returning height delta.
    */
   getSimpleOnHeight(filter = []) {
+    if (!Array.isArray(filter))
+      throw new TypeError('getSimpleOnHeight(filter): filter must be an array of tag names');
     return (elem, sizes, amounts) => {
       if ((filter.length > 0 && !filter.includes(elem.tagName)) || amounts.now !== amounts.old)
         return;
@@ -168,6 +213,8 @@ class TinySmartScroller {
    * @returns {NodeSizesEvent} The added size difference callback.
    */
   addSimpleOnHeight(filter) {
+    if (!Array.isArray(filter))
+      throw new TypeError('addSimpleOnHeight(filter): filter must be an array of tag names');
     const result = this.getSimpleOnHeight(filter);
     this.onSize(result);
     return result;
@@ -180,6 +227,8 @@ class TinySmartScroller {
    */
   onSize(handler) {
     if (this.#destroyed) return;
+    if (typeof handler !== 'function')
+      throw new TypeError('onSize(handler): handler must be a function');
     this.#sizeFilter.add(handler);
   }
 
@@ -191,6 +240,11 @@ class TinySmartScroller {
    */
   on(event, handler) {
     if (this.#destroyed) return;
+    if (typeof event !== 'string')
+      throw new TypeError('on(event, handler): event name must be a string');
+    if (typeof handler !== 'function')
+      throw new TypeError('on(event, handler): handler must be a function');
+
     if (!this.#scrollListeners[event]) this.#scrollListeners[event] = [];
     this.#scrollListeners[event].push(handler);
   }
@@ -222,6 +276,8 @@ class TinySmartScroller {
    */
   _emit(event, payload) {
     if (this.#destroyed) return;
+    if (typeof event !== 'string')
+      throw new TypeError('_emit(event, payload): event name must be a string');
     (this.#scrollListeners[event] || []).forEach((fn) => fn(payload));
   }
 
@@ -288,6 +344,16 @@ class TinySmartScroller {
    */
   _fixScroll(prevScrollTop, prevScrollHeight, prevBottomOffset, targets = []) {
     if (this.#destroyed) return;
+    // === Validation ===
+    if (typeof prevScrollTop !== 'number' || Number.isNaN(prevScrollTop))
+      throw new TypeError('_fixScroll: prevScrollTop must be a valid number');
+    if (typeof prevScrollHeight !== 'number' || Number.isNaN(prevScrollHeight))
+      throw new TypeError('_fixScroll: prevScrollHeight must be a valid number');
+    if (typeof prevBottomOffset !== 'number' || Number.isNaN(prevBottomOffset))
+      throw new TypeError('_fixScroll: prevBottomOffset must be a valid number');
+    if (!Array.isArray(targets))
+      throw new TypeError('_fixScroll: targets must be an array of Elements');
+
     // Get new size
     const newScrollHeight = this.#target.scrollHeight;
     const heightDelta = newScrollHeight - prevScrollHeight;
@@ -314,7 +380,8 @@ class TinySmartScroller {
 
           // Fix size
           if (this.#newVisibles.get(target) || this.#newVisiblesByTime.get(target)) {
-            if (typeof sizes !== 'undefined' && typeof sizes !== 'object') throw new Error('');
+            if (typeof sizes !== 'undefined' && typeof sizes !== 'object')
+              throw new Error('_fixScroll: size filter must return an object or undefined');
             if (typeof sizes === 'undefined') return;
             scrollSize.height = sizes.height;
             scrollSize.width = sizes.width;
@@ -323,8 +390,10 @@ class TinySmartScroller {
       }
 
       // Checker
-      if (typeof scrollSize.height !== 'number' && scrollSize.height < 0) throw new Error('');
-      if (typeof scrollSize.width !== 'number' && scrollSize.width < 0) throw new Error('');
+      if (typeof scrollSize.height !== 'number' && scrollSize.height < 0)
+        throw new Error('_fixScroll: invalid scrollSize.height value');
+      if (typeof scrollSize.width !== 'number' && scrollSize.width < 0)
+        throw new Error('_fixScroll: invalid scrollSize.width value');
 
       if (scrollSize.height !== 0 || scrollSize.width !== 0) {
         for (const target of targets) {
@@ -429,7 +498,8 @@ class TinySmartScroller {
 
     // Execute observer
     Array.from(elements).forEach((el) => {
-      if (!this.#resizeObserver) throw new Error('');
+      if (!this.#resizeObserver)
+        throw new Error('_observeResizes: ResizeObserver instance is not initialized');
       this.#resizeObserver.observe(el);
     });
   }
@@ -464,6 +534,8 @@ class TinySmartScroller {
    * @param {number} value - Pixels of additional margin to use.
    */
   setExtraScrollBoundary(value) {
+    if (typeof value !== 'number' || Number.isNaN(value))
+      throw new TypeError('setExtraScrollBoundary(value): value must be a valid number');
     this.#extraScrollBoundary = value;
   }
 
