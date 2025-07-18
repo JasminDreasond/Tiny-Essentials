@@ -80,7 +80,27 @@ ElementAndWindow | TinyHtml
 
 ---
 
+#### `TinyElementAndWinAndDoc`
+
+Accepts both raw DOM elements, `document`, and the `window` object.
+
+```ts
+ElementAndWinAndDoc | TinyHtml
+```
+
+---
+
 ### 🔀 Union Types
+
+#### `ElementAndWinAndDoc`
+
+Used for scrollable or measurable targets.
+
+```ts
+Element | Window | Document
+```
+
+---
 
 #### `ElementAndWindow`
 
@@ -426,6 +446,8 @@ Each method below ensures type and returns raw DOM objects:
 | `_preEventTargetElem(...)`    | `EventTarget`    | `EventTarget`  |
 | `_preElemsAndWindow(...)`     | `Element\|Window` | `ElementAndWindow[]` |
 | `_preElemAndWindow(...)`      | `Element\|Window` | `ElementAndWindow` |
+| `_preElemsAndWinAndDoc(...)`     | `Element\|Window\|Document` | `ElementAndWindow[]` |
+| `_preElemAndWinAndDoc(...)`      | `Element\|Window\|Document` | `ElementAndWindow` |
 
 ---
 

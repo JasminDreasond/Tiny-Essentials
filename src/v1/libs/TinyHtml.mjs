@@ -65,6 +65,21 @@ const {
  */
 
 /**
+ * Represents a raw DOM element/window/document or an instance of TinyHtml.
+ * This type is used to abstract interactions with both plain elements
+ * and wrapped elements via the TinyHtml class.
+ *
+ * @typedef {ElementAndWinAndDoc|TinyHtml} TinyElementAndWinAndDoc
+ */
+
+/**
+ * Represents a value that can be either a DOM Element, or the global Window object, or the document object.
+ * Useful for functions that operate generically on scrollable or measurable targets.
+ *
+ * @typedef {Element|Window|Document} ElementAndWinAndDoc
+ */
+
+/**
  * A parameter type used for filtering or matching elements.
  * It can be:
  * - A string (CSS selector),
@@ -653,6 +668,45 @@ class TinyHtml {
    */
   static _preElemAndWindow(elems, where) {
     return TinyHtml._preElemTemplate(elems, where, [Element, Window], ['Element', 'Window']);
+  }
+
+  /**
+   * Ensures the input is returned as an array.
+   * Useful to normalize operations across multiple or single element/window/document elements.
+   *
+   * @param {TinyElementAndWinAndDoc|TinyElementAndWinAndDoc[]} elems - A single element/window element or array of html elements.
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {ElementAndWindow[]} - Always returns an array of element/window elements.
+   * @readonly
+   */
+  static _preElemsAndWinAndDoc(elems, where) {
+    const result = TinyHtml._preElemsTemplate(
+      elems,
+      where,
+      [Element, Window, Document],
+      ['Element', 'Window', 'Document'],
+    );
+    return result.map((elem) => (!(elem instanceof Document) ? elem : elem.documentElement));
+  }
+
+  /**
+   * Ensures the input is returned as an single element/window/document element.
+   * Useful to normalize operations across multiple or single element/window/document elements.
+   *
+   * @param {TinyElementAndWinAndDoc|TinyElementAndWinAndDoc[]} elems - A single element/window element or array of html elements.
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {ElementAndWindow} - Always returns an single element/window element.
+   * @readonly
+   */
+  static _preElemAndWinAndDoc(elems, where) {
+    const result = TinyHtml._preElemTemplate(
+      elems,
+      where,
+      [Element, Window, Document],
+      ['Element', 'Window', 'Document'],
+    );
+    if (result instanceof Document) return result.documentElement;
+    return result;
   }
 
   /**
@@ -2331,6 +2385,30 @@ class TinyHtml {
     return TinyHtml.blur(this);
   }
 
+  /**
+   * Interprets a value as a boolean `true` if it matches a common truthy representation.
+   *
+   * This method checks if the input is any of the common forms used to represent `true`,
+   * such as the string `'true'`, `'1'`, `'on'`, the boolean `true`, or the number `1`.
+   *
+   * @param {string|boolean|number} [value] - The value to interpret as boolean.
+   * @returns {boolean} `true` if the value represents a truthy state, otherwise `false`.
+   */
+  static boolCheck(value) {
+    if (
+      typeof value !== 'undefined' &&
+      (value === 'true' ||
+        value === '1' ||
+        value === true ||
+        value === 'on' ||
+        (typeof value === 'number' && value > 0))
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   //////////////////////////////////////////////////////////////////////
 
   /**
@@ -2384,15 +2462,39 @@ class TinyHtml {
   }
 
   /**
+   * Checks if the page is currently scrolled to the very top.
+   *
+   * This method compares the current vertical scroll position with the total document height.
+   * It's useful for detecting if the user has reached the top of the page.
+   *
+   * @returns {boolean} `true` if the page is scrolled to the top, otherwise `false`.
+   */
+  static isPageTop() {
+    return window.scrollY === 0;
+  }
+
+  /**
+   * Checks if the page is currently scrolled to the very bottom.
+   *
+   * This method uses the `scrollY` and `innerHeight` properties to determine if the
+   * user has reached the end of the document.
+   *
+   * @returns {boolean} `true` if the page is scrolled to the bottom, otherwise `false`.
+   */
+  static isPageBottom() {
+    return window.innerHeight + window.scrollY >= document.body.offsetHeight;
+  }
+
+  /**
    * Gets the width or height of an element based on the box model.
-   * @param {TinyElementAndWindow} el - The element or window.
+   * @param {TinyElementAndWinAndDoc} el - The element or window.
    * @param {"width"|"height"} type - Dimension type.
    * @param {"content"|"padding"|"border"|"margin"} [extra='content'] - Box model context.
    * @returns {number} - Computed dimension.
    * @throws {TypeError} If `type` or `extra` is not a string.
    */
   static getDimension(el, type, extra = 'content') {
-    const elem = TinyHtml._preElemAndWindow(el, 'getDimension');
+    const elem = TinyHtml._preElemAndWinAndDoc(el, 'getDimension');
     if (typeof type !== 'string') throw new TypeError('The type must be a string.');
     if (typeof extra !== 'string') throw new TypeError('The extra must be a string.');
 
@@ -2525,11 +2627,11 @@ class TinyHtml {
 
   /**
    * Returns content box height.
-   * @param {TinyElementAndWindow} el - Target element.
+   * @param {TinyElementAndWinAndDoc} el - Target element.
    * @returns {number}
    */
   static height(el) {
-    const elem = TinyHtml._preElemAndWindow(el, 'height');
+    const elem = TinyHtml._preElemAndWinAndDoc(el, 'height');
     return TinyHtml.getDimension(elem, 'height', 'content');
   }
 
@@ -2543,11 +2645,11 @@ class TinyHtml {
 
   /**
    * Returns content box width.
-   * @param {TinyElementAndWindow} el - Target element.
+   * @param {TinyElementAndWinAndDoc} el - Target element.
    * @returns {number}
    */
   static width(el) {
-    const elem = TinyHtml._preElemAndWindow(el, 'width');
+    const elem = TinyHtml._preElemAndWinAndDoc(el, 'width');
     return TinyHtml.getDimension(elem, 'width', 'content');
   }
 
@@ -2561,11 +2663,11 @@ class TinyHtml {
 
   /**
    * Returns padding box height.
-   * @param {TinyElementAndWindow} el - Target element.
+   * @param {TinyElementAndWinAndDoc} el - Target element.
    * @returns {number}
    */
   static innerHeight(el) {
-    const elem = TinyHtml._preElemAndWindow(el, 'innerHeight');
+    const elem = TinyHtml._preElemAndWinAndDoc(el, 'innerHeight');
     return TinyHtml.getDimension(elem, 'height', 'padding');
   }
 
@@ -2579,11 +2681,11 @@ class TinyHtml {
 
   /**
    * Returns padding box width.
-   * @param {TinyElementAndWindow} el - Target element.
+   * @param {TinyElementAndWinAndDoc} el - Target element.
    * @returns {number}
    */
   static innerWidth(el) {
-    const elem = TinyHtml._preElemAndWindow(el, 'innerWidth');
+    const elem = TinyHtml._preElemAndWinAndDoc(el, 'innerWidth');
     return TinyHtml.getDimension(elem, 'width', 'padding');
   }
 
@@ -2597,14 +2699,14 @@ class TinyHtml {
 
   /**
    * Returns outer height of the element, optionally including margin.
-   * @param {TinyElementAndWindow} el - Target element.
+   * @param {TinyElementAndWinAndDoc} el - Target element.
    * @param {boolean} [includeMargin=false] - Whether to include margin.
    * @returns {number}
    */
   static outerHeight(el, includeMargin = false) {
     if (typeof includeMargin !== 'boolean')
       throw new TypeError('The "includeMargin" must be a boolean.');
-    const elem = TinyHtml._preElemAndWindow(el, 'outerHeight');
+    const elem = TinyHtml._preElemAndWinAndDoc(el, 'outerHeight');
     return TinyHtml.getDimension(elem, 'height', includeMargin ? 'margin' : 'border');
   }
 
@@ -2619,14 +2721,14 @@ class TinyHtml {
 
   /**
    * Returns outer width of the element, optionally including margin.
-   * @param {TinyElementAndWindow} el - Target element.
+   * @param {TinyElementAndWinAndDoc} el - Target element.
    * @param {boolean} [includeMargin=false] - Whether to include margin.
    * @returns {number}
    */
   static outerWidth(el, includeMargin = false) {
     if (typeof includeMargin !== 'boolean')
       throw new TypeError('The "includeMargin" must be a boolean.');
-    const elem = TinyHtml._preElemAndWindow(el, 'outerWidth');
+    const elem = TinyHtml._preElemAndWinAndDoc(el, 'outerWidth');
     return TinyHtml.getDimension(elem, 'width', includeMargin ? 'margin' : 'border');
   }
 
