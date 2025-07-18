@@ -35,6 +35,7 @@ This folder contains the core scripts we have worked on so far. Each file is a m
 - 🕒 **[TinyDomReadyManager](./libs/TinyDomReadyManager.md)** — A readiness manager for DOM and async conditions, supporting prioritized callbacks, custom filters, and event-based or promise-based bootstrapping.
 - 📣 **[TinyNotifications](./libs/TinyNotifications.md)** — A browser notification utility with sound support, permission management, truncation logic, default icons, and enforced validation to ensure safe and predictable usage.
 - 🧱 **[TinyHtml](./libs/TinyHtml.md)** — A minimalist DOM utility class that offers jQuery-like methods in pure JavaScript for querying, styling, traversing, event handling, collision detection, and visibility logic — all in a lightweight and chainable interface.
+- 🌀 **[TinySmartScroller](./libs/TinySmartScroller.md)** — A smart scroll monitor that detects user scroll behavior, visibility changes, element sizes, and automatically handles scroll preservation, bottom detection, debounce, and more.
 
 ### 3. **`fileManager/`**
 * 📁 **[Main](./fileManager/main.md)** — A Node.js file/directory utility module with support for JSON, backups, renaming, size analysis, and more.
