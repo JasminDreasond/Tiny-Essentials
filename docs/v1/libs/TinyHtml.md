@@ -1415,6 +1415,46 @@ TinyHtml.isFullyInContainer(element, container);
 
 ---
 
+### ✅ `.hasScroll()`
+
+Detect Scrollability in Any Direction
+
+```js
+element.hasScroll();
+```
+
+Checks if the element has **scrollable content** in either vertical or horizontal direction.
+
+Returns:
+
+```js
+{ v: true|false, h: true|false }
+```
+
+Where:
+
+* `v` = vertical scroll present
+* `h` = horizontal scroll present
+
+#### ✅ Use when:
+
+* You want to detect **whether an element needs scrollbars**.
+* Useful for adjusting layout, showing scroll indicators, or enabling custom scrolling behaviors.
+
+#### 🔍 Logic:
+
+* It compares the element's `scrollHeight` with `clientHeight` for vertical,
+* And `scrollWidth` with `clientWidth` for horizontal.
+* If content overflows in either direction, it returns `true` for that axis.
+
+#### 🔁 Static version:
+
+```js
+TinyHtml.hasScroll(element);
+```
+
+---
+
 ## 🎨 CSS Property Aliases (`cssPropAliases`)
 
 TinyHtml provides automatic conversion between `camelCase` and `kebab-case` style properties to simplify working with inline styles in HTML elements.

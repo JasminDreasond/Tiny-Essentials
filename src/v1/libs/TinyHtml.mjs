@@ -4363,6 +4363,14 @@ class TinyHtml {
    */
   static isInViewport(el) {
     const elem = TinyHtml._preElem(el, 'isInViewport');
+    if (
+      !elem.checkVisibility({
+        contentVisibilityAuto: false,
+        opacityProperty: false,
+        visibilityProperty: false,
+      })
+    )
+      return false;
     const elementTop = TinyHtml.offset(elem).top;
     const elementBottom = elementTop + TinyHtml.outerHeight(elem);
 
@@ -4389,6 +4397,14 @@ class TinyHtml {
    */
   static isScrolledIntoView(el) {
     const elem = TinyHtml._preElem(el, 'isScrolledIntoView');
+    if (
+      !elem.checkVisibility({
+        contentVisibilityAuto: false,
+        opacityProperty: false,
+        visibilityProperty: false,
+      })
+    )
+      return false;
     const docViewTop = TinyHtml.scrollTop(window);
     const docViewBottom = docViewTop + TinyHtml.height(window);
 
@@ -4418,6 +4434,14 @@ class TinyHtml {
     const elem = TinyHtml._preElem(el, 'isInContainer');
     const container = TinyHtml._preElem(cont, 'isInContainer');
 
+    if (
+      !elem.checkVisibility({
+        contentVisibilityAuto: false,
+        opacityProperty: false,
+        visibilityProperty: false,
+      })
+    )
+      return false;
     const elemRect = elem.getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
 
@@ -4451,6 +4475,14 @@ class TinyHtml {
     const elem = TinyHtml._preElem(el, 'isScrolledIntoView');
     const container = TinyHtml._preElem(cont, 'isInContainer');
 
+    if (
+      !elem.checkVisibility({
+        contentVisibilityAuto: false,
+        opacityProperty: false,
+        visibilityProperty: false,
+      })
+    )
+      return false;
     const elemRect = elem.getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
 
@@ -4471,6 +4503,29 @@ class TinyHtml {
    */
   isFullyInContainer(cont) {
     return TinyHtml.isFullyInContainer(this, cont);
+  }
+
+  /**
+   * Checks if an element has scrollable content.
+   *
+   * @param {TinyElement} el - The DOM element to check.
+   * @returns {{ v: boolean, h: boolean }} - True if scroll is needed in that direction.
+   */
+  static hasScroll(el) {
+    const elem = TinyHtml._preElem(el, 'hasScroll');
+    return {
+      v: elem.scrollHeight > elem.clientHeight,
+      h: elem.scrollWidth > elem.clientWidth,
+    };
+  }
+
+  /**
+   * Checks if an element has scrollable content.
+   *
+   * @returns {{ v: boolean, h: boolean }} - True if scroll is needed in that direction.
+   */
+  hasScroll() {
+    return TinyHtml.hasScroll(this);
   }
 }
 

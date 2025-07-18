@@ -506,34 +506,25 @@ class TinySmartScroller {
   /**
    * Attempts to correct the scroll position when layout shifts happen, preserving the user position if needed.
    *
-   * @param {number} prevScrollTop - Previous scrollTop value before change.
-   * @param {number} prevScrollHeight - Previous total scroll height.
-   * @param {number} prevBottomOffset - Distance from bottom before the layout change.
    * @param {Element[]} [targets=[]] - List of elements involved in the size change.
    */
-  _fixScroll(prevScrollTop, prevScrollHeight, prevBottomOffset, targets = []) {
+  _fixScroll(targets = []) {
     if (this.#destroyed) return;
     // === Validation ===
-    if (typeof prevScrollTop !== 'number' || Number.isNaN(prevScrollTop))
-      throw new TypeError('_fixScroll: prevScrollTop must be a valid number');
-    if (typeof prevScrollHeight !== 'number' || Number.isNaN(prevScrollHeight))
-      throw new TypeError('_fixScroll: prevScrollHeight must be a valid number');
-    if (typeof prevBottomOffset !== 'number' || Number.isNaN(prevBottomOffset))
-      throw new TypeError('_fixScroll: prevBottomOffset must be a valid number');
     if (!Array.isArray(targets))
       throw new TypeError('_fixScroll: targets must be an array of Elements');
+
+    // Get Scroll data
+    const prevScrollHeight = this.#target.scrollHeight;
+    const prevScrollTop = this.#target.scrollTop;
+    const prevBottomOffset =
+      this.#target.scrollHeight - this.#target.scrollTop - this.#target.clientHeight;
 
     // Get new size
     const newScrollHeight = this.#target.scrollHeight;
     const heightDelta = newScrollHeight - prevScrollHeight;
 
-    // Fix scroll size
-    if (
-      this.#autoScrollBottom &&
-      this.#preserveScrollOnLayoutShift &&
-      !this.#isAtBottom &&
-      !this.#isAtTop
-    ) {
+    const calculateScrollSize = () => {
       // Run size getter
       const scrollSize = { height: 0, width: 0 };
       for (const target of targets) {
@@ -571,6 +562,19 @@ class TinySmartScroller {
         }
       }
 
+      return scrollSize;
+    };
+
+    // Fix scroll size
+    if (
+      this.#elemOldAmount > 0 &&
+      TinyHtml.hasScroll(this.#target).v &&
+      this.#autoScrollBottom &&
+      this.#preserveScrollOnLayoutShift &&
+      !this.#isAtBottom &&
+      !this.#isAtTop
+    ) {
+      const scrollSize = calculateScrollSize();
       // Complete
       this.#target.scrollTop = prevScrollTop + heightDelta + scrollSize.height;
       if (scrollSize.width > 0)
@@ -579,8 +583,10 @@ class TinySmartScroller {
 
     // Normal stuff
     else if (!this.#scrollPaused && this.#autoScrollBottom) {
+      calculateScrollSize();
       this.scrollToBottom();
     } else if (!this.#autoScrollBottom && !this.#isAtBottom) {
+      calculateScrollSize();
       this.#target.scrollTop =
         this.#target.scrollHeight - this.#target.clientHeight - prevBottomOffset;
     }
@@ -594,10 +600,6 @@ class TinySmartScroller {
       this._scrollDataUpdater();
       this.#elemOldAmount = this.#elemAmount;
       this.#elemAmount = this.#target.childElementCount;
-      const prevScrollHeight = this.#target.scrollHeight;
-      const prevScrollTop = this.#target.scrollTop;
-      const prevBottomOffset =
-        this.#target.scrollHeight - this.#target.scrollTop - this.#target.clientHeight;
 
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach((node) => {
@@ -614,7 +616,7 @@ class TinySmartScroller {
         });
       });
 
-      this._fixScroll(prevScrollTop, prevScrollHeight, prevBottomOffset);
+      this._fixScroll();
     });
 
     // Install observer
@@ -654,14 +656,8 @@ class TinySmartScroller {
           targets.push(target);
         }
 
-        // Get Scroll data
-        const prevScrollHeight = this.#target.scrollHeight;
-        const prevScrollTop = this.#target.scrollTop;
-        const prevBottomOffset =
-          this.#target.scrollHeight - this.#target.scrollTop - this.#target.clientHeight;
-
         // Animation frame
-        this._fixScroll(prevScrollTop, prevScrollHeight, prevBottomOffset, targets);
+        this._fixScroll(targets);
       });
     }
 

@@ -174,7 +174,8 @@
 
         const messageTypeWeights = {
           text: 85,
-          image: 5,
+          image: 4,
+          image2: 1,
           'async-image': 5,
           'image-base64': 5,
         };
@@ -192,25 +193,39 @@
           return 'text'; // fallback
         }
 
+        let autoMessageRunning = false;
+
         window.startAutoChat = () => {
-          if (autoMessageInterval) return;
+          if (autoMessageRunning) return;
+          autoMessageRunning = true;
           log(`Start auto chat`);
-          autoMessageInterval = setInterval(
-            () => {
-              const randomType = getWeightedRandomType();
-              chat.appendChild(createMessageElement(randomType));
-            },
-            Math.random() * 10000 + 1500,
-          );
+          runAutoMessageCycle();
         };
 
         window.stopAutoChat = () => {
-          if (autoMessageInterval) {
-            log(`Stop auto chat`);
-            clearInterval(autoMessageInterval);
-            autoMessageInterval = null;
-          }
+          if (!autoMessageRunning) return;
+          autoMessageRunning = false;
+          log(`Stop auto chat`);
         };
+
+        function runAutoMessageCycle() {
+          if (!autoMessageRunning) return;
+
+          const type = getWeightedRandomType();
+          const elem = createMessageElement(type);
+          chat.appendChild(elem);
+
+          // Cálculo do delay
+          let delay = Math.random() * 10000 + 1500;
+
+          if (type === 'text') {
+            const textLength = elem.querySelector('.content').textContent.length;
+            const extraTime = Math.min(textLength * 20, 5000); // 20ms por caractere, máximo 5s extra
+            delay += extraTime;
+          }
+
+          setTimeout(runAutoMessageCycle, delay);
+        }
 
         const chat = document.getElementById('chat');
         const statusText = document.getElementById('statusText');
@@ -307,11 +322,11 @@
               customContent || `Text: ${new Date().toLocaleTimeString()}\n${randomText.generate()}`;
           }
 
-          if (type === 'image') {
+          const genMessage = (imgSrc) => {
             console.log('image');
             const img = new Image();
             img.className = 'resizable';
-            img.src = '/1012b1ff-536b-4134-8bfb-01ba7b87a186.png';
+            img.src = imgSrc;
             img.alt = 'Image';
             img.title = 'Click to expand';
             img.style.cursor = 'pointer';
@@ -319,6 +334,14 @@
               img.style.width = img.style.width === '300px' ? '100px' : '300px';
             });
             content.appendChild(img);
+          };
+
+          if (type === 'image') {
+            genMessage('/1012b1ff-536b-4134-8bfb-01ba7b87a186.png');
+          }
+
+          if (type === 'image2') {
+            genMessage('/3da28b7b-69ca-403f-96f3-03735653d39e.png');
           }
 
           if (type === 'image-base64') {
@@ -462,7 +485,7 @@
         });
 
         // Start with 10 messages
-        for (let i = 0; i < 2; i++) addManyMessages();
+        addManyMessages();
         scrollToBottom();
         startAutoChat();
       });
