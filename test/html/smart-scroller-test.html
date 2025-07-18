@@ -7,11 +7,13 @@
     <script type="module">
       import { fetchBlob, fetchJson, readBase64Blob } from './src/v1/basics/html.mjs';
       import { TinyDomReadyManager } from './src/v1/libs/TinyDomReadyManager.mjs';
+      import { TinyHtml } from './src/v1/libs/TinyHtml.mjs';
       import { TinySmartScroller } from './src/v1/libs/TinySmartScroller.mjs';
       import { UltraRandomMsgGen } from './src/v1/libs/UltraRandomMsgGen.mjs';
       window.TinySmartScroller = TinySmartScroller;
       window.UltraRandomMsgGen = UltraRandomMsgGen;
       window.TinyDomReadyManager = TinyDomReadyManager;
+      window.TinyHtml = TinyHtml;
       window.fetchBlob = fetchBlob;
       window.fetchJson = fetchJson;
       window.readBase64Blob = readBase64Blob;
@@ -234,7 +236,7 @@
         const selectAnchor = document.getElementById('selectAnchor');
         const randomText = new UltraRandomMsgGen({
           minLength: 20,
-          maxLength: 300,
+          maxLength: 100,
           repeatWords: true,
           readable: true,
           useEmojis: true,
@@ -309,17 +311,24 @@
         let messageCount = 1;
 
         function createMessageElement(type = 'text', customContent = null) {
-          const div = document.createElement('div');
-          div.className = 'message';
-          div.dataset.id = `msg-${messageCount++}`;
+          const div = TinyHtml.createElement('div');
+          div.addClass('message');
+          div.get().dataset.id = `msg-${messageCount++}`;
 
           // Conteúdo principal
-          const content = document.createElement('div');
-          content.className = 'content';
+          const content = TinyHtml.createElement('div');
+          content.addClass('content');
 
           if (type === 'text') {
-            content.textContent =
-              customContent || `Text: ${new Date().toLocaleTimeString()}\n${randomText.generate()}`;
+            if (customContent) content.append(customContent);
+            else {
+              content.append(
+                TinyHtml.createElementFromHTML(
+                  `<strong>User (${new Date().toLocaleTimeString()}):</strong>`,
+                ),
+              );
+              content.append(`\n${randomText.generate()}`);
+            }
           }
 
           const genMessage = (imgSrc) => {
@@ -333,7 +342,7 @@
             img.addEventListener('click', () => {
               img.style.width = img.style.width === '300px' ? '100px' : '300px';
             });
-            content.appendChild(img);
+            content.append(img);
           };
 
           if (type === 'image') {
@@ -355,7 +364,7 @@
             img.addEventListener('click', () => {
               img.style.width = img.style.width === '300px' ? '100px' : '300px';
             });
-            content.appendChild(img);
+            content.append(img);
           }
 
           if (type === 'async-image') {
@@ -382,41 +391,41 @@
                 1000,
               );
             });
-            content.appendChild(img);
+            content.append(img);
           }
 
           if (type === 'iframe') {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'iframe-container';
-            wrapper.innerHTML = `<iframe src="https://example.com"></iframe>`;
-            content.appendChild(wrapper);
+            const wrapper = TinyHtml.createElement('div');
+            wrapper.addClass('iframe-container');
+            wrapper.setHtml(`<iframe src="https://example.com"></iframe>`);
+            content.append(wrapper);
           }
 
-          div.appendChild(content);
+          div.append(content);
 
           // Controles (editar/remover)
-          const tools = document.createElement('div');
-          tools.style.marginTop = '6px';
+          const tools = TinyHtml.createElement('div');
+          tools.setStyle('marginTop', '6px');
 
-          const btnEdit = document.createElement('button');
-          btnEdit.textContent = '✏️ Edit';
-          btnEdit.onclick = () => {
+          const btnEdit = TinyHtml.createElement('button');
+          btnEdit.setText('✏️ Edit');
+          btnEdit.on('click', () => {
             const newText = prompt('Edit message content:', content.textContent);
             if (newText != null) content.textContent = newText;
-          };
+          });
 
-          const btnRemove = document.createElement('button');
-          btnRemove.textContent = '🗑 Remove';
-          btnRemove.onclick = () => {
+          const btnRemove = TinyHtml.createElement('button');
+          btnRemove.setText('🗑 Remove');
+          btnRemove.on('click', () => {
             div.remove();
-          };
+          });
 
-          tools.appendChild(btnEdit);
-          tools.appendChild(btnRemove);
-          div.appendChild(tools);
+          tools.append(btnEdit);
+          tools.append(btnRemove);
+          div.append(tools);
 
           trimOldMessages();
-          return div;
+          return div.get();
         }
 
         window.addTextMessage = () => {

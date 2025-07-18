@@ -1,10 +1,21 @@
 # 📚 TinyHtml Class
 
-`TinyHtml` is a lightweight utility class that provides DOM element manipulation and querying utilities, inspired by jQuery — but with modern native browser APIs.
+`TinyHtml` is a lightweight utility class that provides DOM element manipulation and querying utilities, inspired by jQuery — but built with modern native browser APIs.
 
-It supports both static and instance-level operations, making it easy to work with elements' dimensions, collisions, and more in a readable, performant way.
+It supports both static and instance-level operations, making it easy to work with elements’ dimensions, collisions, and more in a readable and performant way.
 
----
+Most instance methods that do not return a specific value are designed to return the `TinyHtml` instance itself, enabling **method chaining**.
+This allows you to write fluent and expressive code like:
+
+```js
+TinyHtml.createElement('div')
+  .addClass('box')
+  .setAttr('role', 'dialog')
+  .appendTo(document.body);
+```
+
+This design keeps your code concise while maintaining clarity and control over the DOM structure.
+
 
 ## 🧩 Type Definitions – Core Building Blocks
 
@@ -97,7 +108,7 @@ Flexible type for querying or filtering elements:
 Values accepted by the TinyHtml constructor:
 
 ```ts
-Window | Element | Document
+Window | Element | Document | Text
 ```
 
 ---
@@ -284,6 +295,41 @@ Creates a new DOM element with the given tag name and optional creation options.
 
   * `TypeError` — If `tagName` is not a string.
   * `TypeError` — If `ops` is defined but not an object.
+
+---
+
+### `TinyHtml.createTextNode(value)`
+
+Creates a new `TinyHtml` instance that wraps a DOM `TextNode`.
+
+This method is useful when you want to insert raw text content into the DOM without it being interpreted as HTML. The returned instance behaves like any other `TinyHtml` element and can be appended or manipulated as needed.
+
+* **Parameters**:
+
+  * `value` *(string)* — The plain text content to be wrapped in a `TextNode`.
+
+* **Returns**: `TinyHtml` — A `TinyHtml` instance wrapping the newly created DOM `TextNode`.
+
+* **Throws**:
+
+  * `TypeError` — If the provided `value` is not a string.
+
+---
+
+### `TinyHtml.createElementFromHTML(htmlString)`
+
+Creates an `HTMLElement` or `TextNode` from an HTML string.
+Supports both elements and plain text.
+
+* **Parameters**:
+
+  * `htmlString` *(string)* — The HTML string to convert.
+
+* **Returns**: `TinyHtml` — A `TinyHtml` instance wrapping the resulting `HTMLElement` or `TextNode`.
+
+* **Throws**:
+
+  * `Error` — If the parsed content does not produce a valid `Element` when expecting an HTML structure.
 
 ---
 

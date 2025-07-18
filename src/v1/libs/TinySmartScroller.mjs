@@ -524,6 +524,7 @@ class TinySmartScroller {
     const newScrollHeight = this.#target.scrollHeight;
     const heightDelta = newScrollHeight - prevScrollHeight;
 
+    /** @type {() => NodeSizes} */
     const calculateScrollSize = () => {
       // Run size getter
       const scrollSize = { height: 0, width: 0 };

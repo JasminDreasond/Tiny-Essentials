@@ -80,7 +80,7 @@ const {
  * Elements accepted as constructor values for TinyHtml.
  * These include common DOM elements and root containers.
  *
- * @typedef {Window|Element|Document} ConstructorElValues
+ * @typedef {Window|Element|Document|Text} ConstructorElValues
  */
 
 /**
@@ -215,6 +215,44 @@ class TinyHtml {
     if (typeof ops !== 'undefined' && typeof ops !== 'object')
       throw new TypeError(`[TinyHtml] createElement(): The ops must be a object.`);
     return new TinyHtml(document.createElement(tagName, ops));
+  }
+
+  /**
+   * Creates a new TinyHtml instance that wraps a DOM TextNode.
+   *
+   * This method is useful when you want to insert raw text content into the DOM
+   * without it being interpreted as HTML. The returned instance behaves like any
+   * other TinyHtml element and can be appended or manipulated as needed.
+   *
+   * @param {string} value - The plain text content to be wrapped in a TextNode.
+   * @returns {TinyHtml} A TinyHtml instance wrapping the newly created DOM TextNode.
+   * @throws {TypeError} If the provided value is not a string.
+   */
+  static createTextNode(value) {
+    if (typeof value !== 'string')
+      throw new TypeError(`[TinyHtml] createTextNode(): The value must be a string.`);
+    return new TinyHtml(document.createTextNode(value));
+  }
+
+  /**
+   * Creates an HTMLElement or TextNode from an HTML string.
+   * Supports both elements and plain text.
+   *
+   * @param {string} htmlString - The HTML string to convert.
+   * @returns {TinyHtml} - A single HTMLElement or TextNode.
+   */
+  static createElementFromHTML(htmlString) {
+    const template = document.createElement('template');
+    htmlString = htmlString.trim();
+
+    // If it's only text (e.g., no "<" tag), return a TextNode
+    if (!htmlString.startsWith('<')) {
+      return TinyHtml.createTextNode(htmlString);
+    }
+
+    template.innerHTML = htmlString;
+    if (!(template.content.firstChild instanceof Element)) throw new Error('');
+    return new TinyHtml(template.content.firstChild);
   }
 
   /**
@@ -963,12 +1001,13 @@ class TinyHtml {
    * @param {string} key - The key under which the data will be stored.
    * @param {any} value - The value to store.
    * @param {boolean} [isPrivate=false] - Whether to store the data in the private store.
-   * @returns {void}
+   * @returns {TinyElement}
    */
   static setData(el, key, value, isPrivate = false) {
     const data = TinyHtml._dataSelector[!isPrivate ? 'public' : 'private']('setData', el);
     if (typeof key !== 'string') throw new TypeError('The key must be a string.');
     data[key] = value;
+    return el;
   }
 
   /**
@@ -977,7 +1016,7 @@ class TinyHtml {
    * @param {string} key - The key under which the data will be stored.
    * @param {any} value - The value to store.
    * @param {boolean} [isPrivate=false] - Whether to store the data in the private store.
-   * @returns {void}
+   * @returns {TinyElement}
    */
   setData(key, value, isPrivate = false) {
     return TinyHtml.setData(this, key, value, isPrivate);
@@ -1326,16 +1365,19 @@ class TinyHtml {
    *
    * @param {TinyElement} el - The target element(s) to receive children.
    * @param {...(TinyNode | TinyNode[] | string)} children - The child elements or text to append.
+   * @returns {TinyElement}
    */
   static append(el, ...children) {
     const elem = TinyHtml._preElem(el, 'append');
     elem.append(...TinyHtml._appendChecker('append', ...children));
+    return el;
   }
 
   /**
    * Appends child elements or strings to the end of the target element(s).
    *
    * @param {...(TinyNode | TinyNode[] | string)} children - The child elements or text to append.
+   * @returns {TinyElement}
    */
   append(...children) {
     return TinyHtml.append(this, ...children);
@@ -1346,16 +1388,19 @@ class TinyHtml {
    *
    * @param {TinyElement} el - The target element(s) to receive children.
    * @param {...(TinyNode | TinyNode[] | string)} children - The child elements or text to prepend.
+   * @returns {TinyElement}
    */
   static prepend(el, ...children) {
     const elem = TinyHtml._preElem(el, 'prepend');
     elem.prepend(...TinyHtml._appendChecker('prepend', ...children));
+    return el;
   }
 
   /**
    * Prepends child elements or strings to the beginning of the target element(s).
    *
    * @param {...(TinyNode | TinyNode[] | string)} children - The child elements or text to prepend.
+   * @returns {TinyElement}
    */
   prepend(...children) {
     return TinyHtml.prepend(this, ...children);
@@ -1366,16 +1411,19 @@ class TinyHtml {
    *
    * @param {TinyElement} el - The target element(s) before which new content is inserted.
    * @param {...(TinyNode | TinyNode[] | string)} children - Elements or text to insert before the target.
+   * @returns {TinyElement}
    */
   static before(el, ...children) {
     const elem = TinyHtml._preElem(el, 'before');
     elem.before(...TinyHtml._appendChecker('before', ...children));
+    return el;
   }
 
   /**
    * Inserts elements or strings immediately before the target element(s) in the DOM.
    *
    * @param {...(TinyNode | TinyNode[] | string)} children - Elements or text to insert before the target.
+   * @returns {TinyElement}
    */
   before(...children) {
     return TinyHtml.before(this, ...children);
@@ -1386,16 +1434,19 @@ class TinyHtml {
    *
    * @param {TinyElement} el - The target element(s) after which new content is inserted.
    * @param {...(TinyNode | TinyNode[] | string)} children - Elements or text to insert after the target.
+   * @returns {TinyElement}
    */
   static after(el, ...children) {
     const elem = TinyHtml._preElem(el, 'after');
     elem.after(...TinyHtml._appendChecker('after', ...children));
+    return el;
   }
 
   /**
    * Inserts elements or strings immediately after the target element(s) in the DOM.
    *
    * @param {...(TinyNode | TinyNode[] | string)} children - Elements or text to insert after the target.
+   * @returns {TinyElement}
    */
   after(...children) {
     return TinyHtml.after(this, ...children);
@@ -1406,16 +1457,19 @@ class TinyHtml {
    *
    * @param {TinyElement} el - The element(s) to be replaced.
    * @param {...(TinyNode | TinyNode[] | string)} newNodes - New elements or text to replace the target.
+   * @returns {TinyElement}
    */
   static replaceWith(el, ...newNodes) {
     const elem = TinyHtml._preElem(el, 'replaceWith');
     elem.replaceWith(...TinyHtml._appendChecker('replaceWith', ...newNodes));
+    return el;
   }
 
   /**
    * Replaces the target element(s) in the DOM with new elements or text.
    *
    * @param {...(TinyNode | TinyNode[] | string)} newNodes - New elements or text to replace the target.
+   * @returns {TinyElement}
    */
   replaceWith(...newNodes) {
     return TinyHtml.replaceWith(this, ...newNodes);
@@ -1426,6 +1480,7 @@ class TinyHtml {
    *
    * @param {TinyNode | TinyNode[]} el - The element(s) to append.
    * @param {TinyNode | TinyNode[]} targets - Target element(s) where content will be appended.
+   * @returns {TinyNode|TinyNode[]}
    */
   static appendTo(el, targets) {
     const elems = TinyHtml._preNodeElems(el, 'appendTo');
@@ -1435,12 +1490,14 @@ class TinyHtml {
         target.appendChild(i === tars.length - 1 ? elem : elem.cloneNode(true)),
       );
     });
+    return el;
   }
 
   /**
    * Appends the given element(s) to each target element in sequence.
    *
    * @param {TinyNode | TinyNode[]} targets - Target element(s) where content will be appended.
+   * @returns {TinyNode|TinyNode[]}
    */
   appendTo(targets) {
     return TinyHtml.appendTo(this, targets);
@@ -1451,6 +1508,7 @@ class TinyHtml {
    *
    * @param {TinyElement | TinyElement[]} el - The element(s) to prepend.
    * @param {TinyElement | TinyElement[]} targets - Target element(s) where content will be prepended.
+   * @returns {TinyElement|TinyElement[]}
    */
   static prependTo(el, targets) {
     const elems = TinyHtml._preElems(el, 'prependTo');
@@ -1461,12 +1519,14 @@ class TinyHtml {
         .reverse()
         .forEach((elem) => target.prepend(i === tars.length - 1 ? elem : elem.cloneNode(true)));
     });
+    return el;
   }
 
   /**
    * Prepends the given element(s) to each target element in sequence.
    *
    * @param {TinyElement | TinyElement[]} targets - Target element(s) where content will be prepended.
+   * @returns {TinyElement|TinyElement[]}
    */
   prependTo(targets) {
     return TinyHtml.prependTo(this, targets);
@@ -1478,6 +1538,7 @@ class TinyHtml {
    * @param {TinyNode | TinyNode[]} el - The element(s) to insert.
    * @param {TinyNode | TinyNode[]} target - The reference element where insertion happens.
    * @param {TinyNode | TinyNode[] | null} [child=null] - Optional child to insert before, defaults to target.
+   * @returns {TinyNode|TinyNode[]}
    */
   static insertBefore(el, target, child = null) {
     const elem = TinyHtml._preNodeElem(el, 'insertBefore');
@@ -1485,6 +1546,7 @@ class TinyHtml {
     const childNode = TinyHtml._preNodeElemWithNull(child, 'insertBefore');
     if (!targ.parentNode) throw new Error('');
     targ.parentNode.insertBefore(elem, childNode || targ);
+    return el;
   }
 
   /**
@@ -1492,6 +1554,7 @@ class TinyHtml {
    *
    * @param {TinyNode | TinyNode[]} target - The reference element where insertion happens.
    * @param {TinyNode | TinyNode[] | null} [child=null] - Optional child to insert before, defaults to target.
+   * @returns {TinyNode|TinyNode[]}
    */
   insertBefore(target, child) {
     return TinyHtml.insertBefore(this, target, child);
@@ -1503,6 +1566,7 @@ class TinyHtml {
    * @param {TinyNode | TinyNode[]} el - The element(s) to insert.
    * @param {TinyNode | TinyNode[]} target - The reference element where insertion happens.
    * @param {TinyNode | TinyNode[] | null} [child=null] - Optional child to insert after, defaults to target.
+   * @returns {TinyNode|TinyNode[]}
    */
   static insertAfter(el, target, child = null) {
     const elem = TinyHtml._preNodeElem(el, 'insertAfter');
@@ -1510,6 +1574,7 @@ class TinyHtml {
     const childNode = TinyHtml._preNodeElemWithNull(child, 'insertBefore');
     if (!targ.parentNode) throw new Error('');
     targ.parentNode.insertBefore(elem, childNode || targ.nextSibling);
+    return el;
   }
 
   /**
@@ -1517,6 +1582,7 @@ class TinyHtml {
    *
    * @param {TinyNode | TinyNode[]} target - The reference element where insertion happens.
    * @param {TinyNode | TinyNode[] | null} [child=null] - Optional child to insert after, defaults to target.
+   * @returns {TinyNode|TinyNode[]}
    */
   insertAfter(target, child) {
     return TinyHtml.insertAfter(this, target, child);
@@ -1528,6 +1594,7 @@ class TinyHtml {
    *
    * @param {TinyNode | TinyNode[]} el - The new element(s) to insert.
    * @param {TinyNode | TinyNode[]} targets - The elements to be replaced.
+   * @returns {TinyNode|TinyNode[]}
    */
   static replaceAll(el, targets) {
     const elems = TinyHtml._preNodeElems(el, 'replaceAll');
@@ -1539,6 +1606,7 @@ class TinyHtml {
           parent.replaceChild(i === tars.length - 1 ? elem : elem.cloneNode(true), target);
       });
     });
+    return el;
   }
 
   /**
@@ -1546,6 +1614,7 @@ class TinyHtml {
    * If multiple targets exist, the inserted elements are cloned accordingly.
    *
    * @param {TinyNode | TinyNode[]} targets - The elements to be replaced.
+   * @returns {TinyNode|TinyNode[]}
    */
   replaceAll(targets) {
     return TinyHtml.replaceAll(this, targets);
@@ -1569,7 +1638,12 @@ class TinyHtml {
       throw new Error(
         `[TinyHtml] You are trying to put a TinyHtml inside another TinyHtml in constructor.`,
       );
-    if (!(el instanceof Element) && !(el instanceof Window) && !(el instanceof Document))
+    if (
+      !(el instanceof Element) &&
+      !(el instanceof Window) &&
+      !(el instanceof Document) &&
+      !(el instanceof Text)
+    )
       throw new Error(`[TinyHtml] Invalid Target in constructor.`);
     this.#el = el;
   }
@@ -2019,6 +2093,7 @@ class TinyHtml {
    * @param {TinyHtmlElement|TinyHtmlElement[]} el - The element to inspect.
    * @param {string|Object} prop - The property name or an object with key-value pairs
    * @param {string|null} [value=null] - The value to set (if `prop` is a string)
+   * @returns {TinyHtmlElement|TinyHtmlElement[]}
    */
   static setStyle(el, prop, value = null) {
     TinyHtml._preHtmlElems(el, 'setStyle').forEach((elem) => {
@@ -2031,6 +2106,7 @@ class TinyHtml {
         }
       } else elem.style.setProperty(TinyHtml.toStyleKc(prop), value);
     });
+    return el;
   }
 
   /**
@@ -2041,6 +2117,7 @@ class TinyHtml {
    *
    * @param {string|Object} prop - The property name or an object with key-value pairs
    * @param {string|null} [value=null] - The value to set (if `prop` is a string)
+   * @returns {TinyHtmlElement|TinyHtmlElement[]}
    */
   setStyle(prop, value) {
     return TinyHtml.setStyle(this, prop, value);
@@ -2136,6 +2213,7 @@ class TinyHtml {
    *
    * @param {TinyHtmlElement|TinyHtmlElement[]} el - A single element or an array of elements.
    * @param {string|string[]} prop - A property name or an array of property names to remove.
+   * @returns {TinyHtmlElement|TinyHtmlElement[]}
    */
   static removeStyle(el, prop) {
     TinyHtml._preHtmlElems(el, 'removeStyle').forEach((elem) => {
@@ -2145,12 +2223,14 @@ class TinyHtml {
         }
       } else elem.style.removeProperty(TinyHtml.toStyleKc(prop));
     });
+    return el;
   }
 
   /**
    * Removes one or more inline CSS properties from the given element(s).
    *
    * @param {string|string[]} prop - A property name or an array of property names to remove.
+   * @returns {TinyHtmlElement|TinyHtmlElement[]}
    */
   removeStyle(prop) {
     return TinyHtml.removeStyle(this, prop);
@@ -2165,6 +2245,7 @@ class TinyHtml {
    * @param {string} prop - The CSS property to toggle.
    * @param {string} val1 - The first value (used as "current" check).
    * @param {string} val2 - The second value (used as the "alternative").
+   * @returns {TinyHtmlElement|TinyHtmlElement[]}
    */
   static toggleStyle(el, prop, val1, val2) {
     TinyHtml._preHtmlElems(el, 'toggleStyle').forEach((elem) => {
@@ -2172,6 +2253,7 @@ class TinyHtml {
       const newVal = current === TinyHtml.toStyleKc(val1) ? val2 : val1;
       TinyHtml.setStyle(elem, prop, newVal);
     });
+    return el;
   }
 
   /**
@@ -2182,6 +2264,7 @@ class TinyHtml {
    * @param {string} prop - The CSS property to toggle.
    * @param {string} val1 - The first value (used as "current" check).
    * @param {string} val2 - The second value (used as the "alternative").
+   * @returns {TinyHtmlElement|TinyHtmlElement[]}
    */
   toggleStyle(prop, val1, val2) {
     return TinyHtml.toggleStyle(this, prop, val1, val2);
@@ -2191,14 +2274,16 @@ class TinyHtml {
    * Removes all inline styles (`style` attribute) from the given element(s).
    *
    * @param {TinyElement|TinyElement[]} el - A single element or an array of elements.
+   * @returns {TinyElement|TinyElement[]}
    */
   static clearStyle(el) {
     TinyHtml._preElems(el, 'clearStyle').forEach((elem) => elem.removeAttribute('style'));
+    return el;
   }
 
   /**
    * Removes all inline styles (`style` attribute) from the given element(s).
-   *
+   * @returns {TinyElement|TinyElement[]}
    */
   clearStyle() {
     return TinyHtml.clearStyle(this);
@@ -2210,14 +2295,17 @@ class TinyHtml {
    * Focus the element.
    *
    * @param {TinyHtmlElement} el - The element or a selector string.
+   * @returns {TinyHtmlElement}
    */
   static focus(el) {
     const elem = TinyHtml._preHtmlElem(el, 'focus');
     elem.focus();
+    return el;
   }
 
   /**
    * Focus the element.
+   * @returns {TinyHtmlElement}
    */
   focus() {
     return TinyHtml.focus(this);
@@ -2227,14 +2315,17 @@ class TinyHtml {
    * Blur the element.
    *
    * @param {TinyHtmlElement} el - The element or a selector string.
+   * @returns {TinyHtmlElement}
    */
   static blur(el) {
     const elem = TinyHtml._preHtmlElem(el, 'blur');
     elem.blur();
+    return el;
   }
 
   /**
    * Blur the element.
+   * @returns {TinyHtmlElement}
    */
   blur() {
     return TinyHtml.blur(this);
@@ -2389,17 +2480,20 @@ class TinyHtml {
    * @param {TinyHtmlElement} el - Target element.
    * @param {string|number} value - Height value.
    * @throws {TypeError} If `value` is neither a string nor number.
+   * @returns {TinyHtmlElement}
    */
   static setHeight(el, value) {
     const elem = TinyHtml._preHtmlElem(el, 'setHeight');
     if (typeof value !== 'number' && typeof value !== 'string')
       throw new TypeError('The value must be a string or number.');
     elem.style.height = typeof value === 'number' ? `${value}px` : value;
+    return el;
   }
 
   /**
    * Sets the height of the element.
    * @param {string|number} value - Height value.
+   * @returns {TinyHtmlElement}
    */
   setHeight(value) {
     return TinyHtml.setHeight(this, value);
@@ -2410,17 +2504,20 @@ class TinyHtml {
    * @param {TinyHtmlElement} el - Target element.
    * @param {string|number} value - Width value.
    * @throws {TypeError} If `value` is neither a string nor number.
+   * @returns {TinyHtmlElement}
    */
   static setWidth(el, value) {
     const elem = TinyHtml._preHtmlElem(el, 'setWidth');
     if (typeof value !== 'number' && typeof value !== 'string')
       throw new TypeError('The value must be a string or number.');
     elem.style.width = typeof value === 'number' ? `${value}px` : value;
+    return el;
   }
 
   /**
    * Sets the width of the element.
    * @param {string|number} value - Width value.
+   * @returns {TinyHtmlElement}
    */
   setWidth(value) {
     return TinyHtml.setWidth(this, value);
@@ -2702,6 +2799,7 @@ class TinyHtml {
    * Sets the vertical scroll position.
    * @param {TinyElementAndWindow|TinyElementAndWindow[]} el - Element or window.
    * @param {number} value - Scroll top value.
+   * @returns {TinyElementAndWindow|TinyElementAndWindow[]}
    */
   static setScrollTop(el, value) {
     if (typeof value !== 'number') throw new TypeError('ScrollTop value must be a number.');
@@ -2715,11 +2813,13 @@ class TinyHtml {
         elem.scrollTop = value;
       }
     });
+    return el;
   }
 
   /**
    * Sets the vertical scroll position.
    * @param {number} value - Scroll top value.
+   * @returns {TinyElementAndWindow|TinyElementAndWindow[]}
    */
   setScrollTop(value) {
     return TinyHtml.setScrollTop(this, value);
@@ -2729,6 +2829,7 @@ class TinyHtml {
    * Sets the horizontal scroll position.
    * @param {TinyElementAndWindow|TinyElementAndWindow[]} el - Element or window.
    * @param {number} value - Scroll left value.
+   * @returns {TinyElementAndWindow|TinyElementAndWindow[]}
    */
   static setScrollLeft(el, value) {
     if (typeof value !== 'number') throw new TypeError('ScrollLeft value must be a number.');
@@ -2742,11 +2843,13 @@ class TinyHtml {
         elem.scrollLeft = value;
       }
     });
+    return el;
   }
 
   /**
    * Sets the horizontal scroll position.
    * @param {number} value - Scroll left value.
+   * @returns {TinyElementAndWindow|TinyElementAndWindow[]}
    */
   setScrollLeft(value) {
     return TinyHtml.setScrollLeft(this, value);
@@ -2877,15 +2980,16 @@ class TinyHtml {
 
   /**
    * Adds one or more CSS class names to the element.
-   * @type {(el: TinyElement|TinyElement[], ...tokens: string[]) => void} - One or more class names to add.
+   * @type {(el: TinyElement|TinyElement[], ...tokens: string[]) => (TinyElement|TinyElement[])} - One or more class names to add.
    */
   static addClass(el, ...args) {
     TinyHtml._preElems(el, 'addClass').forEach((elem) => elem.classList.add(...args));
+    return el;
   }
 
   /**
    * Adds one or more CSS class names to the element.
-   * @type {(...tokens: string[]) => void} - One or more class names to add.
+   * @type {(...tokens: string[]) => (TinyElement|TinyElement[])} - One or more class names to add.
    */
   addClass(...args) {
     return TinyHtml.addClass(this, ...args);
@@ -2893,15 +2997,16 @@ class TinyHtml {
 
   /**
    * Removes one or more CSS class names from the element.
-   * @type {(el: TinyElement|TinyElement[], ...tokens: string[]) => void} - One or more class names to remove.
+   * @type {(el: TinyElement|TinyElement[], ...tokens: string[]) => (TinyElement|TinyElement[])} - One or more class names to remove.
    */
   static removeClass(el, ...args) {
     TinyHtml._preElems(el, 'removeClass').forEach((elem) => elem.classList.remove(...args));
+    return el;
   }
 
   /**
    * Removes one or more CSS class names from the element.
-   * @type {(...tokens: string[]) => void} - One or more class names to remove.
+   * @type {(...tokens: string[]) => (TinyElement|TinyElement[])} - One or more class names to remove.
    */
   removeClass(...args) {
     return TinyHtml.removeClass(this, ...args);
@@ -3111,15 +3216,18 @@ class TinyHtml {
    * Set text content of elements.
    * @param {TinyElement|TinyElement[]} el
    * @param {string} value
+   * @returns {TinyElement|TinyElement[]}
    */
   static setText(el, value) {
     if (typeof value !== 'string') throw new Error('Value is not a valid string.');
     TinyHtml._preElems(el, 'setText').forEach((el) => (el.textContent = value));
+    return el;
   }
 
   /**
    * Set text content of the element.
    * @param {string} value
+   * @returns {TinyElement|TinyElement[]}
    */
   setText(value) {
     return TinyHtml.setText(this, value);
@@ -3128,13 +3236,16 @@ class TinyHtml {
   /**
    * Remove all child nodes from each element.
    * @param {TinyElement|TinyElement[]} el
+   * @returns {TinyElement|TinyElement[]}
    */
   static empty(el) {
     TinyHtml._preElems(el, 'empty').forEach((el) => (el.textContent = ''));
+    return el;
   }
 
   /**
    * Remove all child nodes of the element.
+   * @returns {TinyElement|TinyElement[]}
    */
   empty() {
     return TinyHtml.empty(this);
@@ -3164,15 +3275,18 @@ class TinyHtml {
    * Set the innerHTML of each element.
    * @param {TinyElement|TinyElement[]} el
    * @param {string} value
+   * @returns {TinyElement|TinyElement[]}
    */
   static setHtml(el, value) {
     if (typeof value !== 'string') throw new Error('Value is not a valid string.');
     TinyHtml._preElems(el, 'setHtml').forEach((el) => (el.innerHTML = value));
+    return el;
   }
 
   /**
    * Set the innerHTML of the element.
    * @param {string} value
+   * @returns {TinyElement|TinyElement[]}
    */
   setHtml(value) {
     return TinyHtml.setHtml(this, value);
@@ -3306,6 +3420,7 @@ class TinyHtml {
    * @param {TinyInputElement|TinyInputElement[]} el - Target element.
    * @param {SetValueList|((el: InputElement, val: SetValueList) => SetValueList)} value - The value to assign or a function that returns it.
    * @throws {Error} If the computed value is not a valid string or boolean.
+   * @returns {TinyInputElement|TinyInputElement[]}
    */
   static setVal(el, value) {
     TinyHtml._preInputElems(el, 'setVal').forEach((elem) => {
@@ -3345,6 +3460,7 @@ class TinyHtml {
         if (typeof valToSet === 'string') elem.value = valToSet;
       }
     });
+    return el;
   }
 
   /**
@@ -3352,6 +3468,7 @@ class TinyHtml {
    * Accepts strings, numbers, booleans or arrays of these values, or a callback function that computes them.
    *
    * @param {SetValueList|((el: InputElement, val: SetValueList) => SetValueList)} value - The value to assign or a function that returns it.
+   * @returns {TinyInputElement|TinyInputElement[]}
    * @throws {Error} If the computed value is not a valid string or boolean.
    */
   setVal(value) {
@@ -3621,6 +3738,7 @@ class TinyHtml {
    * @param {string} event - The event type (e.g. 'click', 'keydown').
    * @param {EventRegistryHandle} handler - The callback function to run on event.
    * @param {EventRegistryOptions} [options] - Optional event listener options.
+   * @returns {TinyEventTarget|TinyEventTarget[]}
    */
   static on(el, event, handler, options) {
     if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
@@ -3633,6 +3751,7 @@ class TinyHtml {
       if (!Array.isArray(events[event])) events[event] = [];
       events[event].push({ handler, options });
     });
+    return el;
   }
 
   /**
@@ -3641,6 +3760,7 @@ class TinyHtml {
    * @param {string} event - The event type (e.g. 'click', 'keydown').
    * @param {EventRegistryHandle} handler - The callback function to run on event.
    * @param {EventRegistryOptions} [options] - Optional event listener options.
+   * @returns {TinyEventTarget|TinyEventTarget[]}
    */
   on(event, handler, options) {
     return TinyHtml.on(this, event, handler, options);
@@ -3653,6 +3773,7 @@ class TinyHtml {
    * @param {string} event - The event type (e.g. 'click', 'keydown').
    * @param {EventRegistryHandle} handler - The callback function to run on event.
    * @param {EventRegistryOptions} [options={}] - Optional event listener options.
+   * @returns {TinyEventTarget|TinyEventTarget[]}
    */
   static once(el, event, handler, options = {}) {
     if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
@@ -3670,6 +3791,7 @@ class TinyHtml {
         typeof options === 'boolean' ? options : { ...options, once: true },
       );
     });
+    return el;
   }
 
   /**
@@ -3678,6 +3800,7 @@ class TinyHtml {
    * @param {string} event - The event type (e.g. 'click', 'keydown').
    * @param {EventRegistryHandle} handler - The callback function to run on event.
    * @param {EventRegistryOptions} [options={}] - Optional event listener options.
+   * @returns {TinyEventTarget|TinyEventTarget[]}
    */
   once(event, handler, options = {}) {
     return TinyHtml.once(this, event, handler, options);
@@ -3690,6 +3813,7 @@ class TinyHtml {
    * @param {string} event - The event type.
    * @param {EventRegistryHandle} handler - The function originally bound to the event.
    * @param {boolean|EventListenerOptions} [options] - Optional listener options.
+   * @returns {TinyEventTarget|TinyEventTarget[]}
    */
   static off(el, event, handler, options) {
     if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
@@ -3702,6 +3826,7 @@ class TinyHtml {
         if (events[event].length === 0) delete events[event];
       }
     });
+    return el;
   }
 
   /**
@@ -3710,6 +3835,7 @@ class TinyHtml {
    * @param {string} event - The event type.
    * @param {EventRegistryHandle} handler - The function originally bound to the event.
    * @param {boolean|EventListenerOptions} [options] - Optional listener options.
+   * @returns {TinyEventTarget|TinyEventTarget[]}
    */
   off(event, handler, options) {
     return TinyHtml.off(this, event, handler, options);
@@ -3720,6 +3846,7 @@ class TinyHtml {
    *
    * @param {TinyEventTarget|TinyEventTarget[]} el - The target element.
    * @param {string} event - The event type to remove (e.g. 'click').
+   * @returns {TinyEventTarget|TinyEventTarget[]}
    */
   static offAll(el, event) {
     if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
@@ -3732,12 +3859,14 @@ class TinyHtml {
         delete events[event];
       }
     });
+    return el;
   }
 
   /**
    * Removes all event listeners of a specific type from the element.
    *
    * @param {string} event - The event type to remove (e.g. 'click').
+   * @returns {TinyEventTarget|TinyEventTarget[]}
    */
   offAll(event) {
     return TinyHtml.offAll(this, event);
@@ -3749,6 +3878,7 @@ class TinyHtml {
    * @param {TinyEventTarget|TinyEventTarget[]} el - The target element.
    * @param {((handler: EventListenerOrEventListenerObject, event: string) => boolean)|null} [filterFn=null] -
    *        Optional filter function to selectively remove specific handlers.
+   * @returns {TinyEventTarget|TinyEventTarget[]}
    */
   static offAllTypes(el, filterFn = null) {
     if (filterFn !== null && typeof filterFn !== 'function')
@@ -3767,6 +3897,7 @@ class TinyHtml {
 
       __eventRegistry.delete(elem);
     });
+    return el;
   }
 
   /**
@@ -3774,6 +3905,7 @@ class TinyHtml {
    *
    * @param {((handler: EventListenerOrEventListenerObject, event: string) => boolean)|null} [filterFn=null] -
    *        Optional filter function to selectively remove specific handlers.
+   * @returns {TinyEventTarget|TinyEventTarget[]}
    */
   offAllTypes(filterFn = null) {
     return TinyHtml.offAllTypes(this, filterFn);
@@ -3785,6 +3917,7 @@ class TinyHtml {
    * @param {TinyEventTarget|TinyEventTarget[]} el - Target element where the event should be triggered.
    * @param {string} event - Name of the event to trigger.
    * @param {Event|CustomEvent|CustomEventInit} [payload] - Optional event object or data to pass.
+   * @returns {TinyEventTarget|TinyEventTarget[]}
    */
   static trigger(el, event, payload = {}) {
     if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
@@ -3800,6 +3933,7 @@ class TinyHtml {
 
       elem.dispatchEvent(evt);
     });
+    return el;
   }
 
   /**
@@ -3807,6 +3941,7 @@ class TinyHtml {
    *
    * @param {string} event - Name of the event to trigger.
    * @param {Event|CustomEvent|CustomEventInit} [payload] - Optional event object or data to pass.
+   * @returns {TinyEventTarget|TinyEventTarget[]}
    */
   trigger(event, payload = {}) {
     return TinyHtml.trigger(this, event, payload);
@@ -3849,6 +3984,7 @@ class TinyHtml {
    * @param {TinyElement|TinyElement[]} el
    * @param {string} name
    * @param {string|null} [value=null]
+   * @returns {TinyElement|TinyElement[]}
    */
   static setAttr(el, name, value = null) {
     if (typeof name !== 'string') throw new TypeError('The "name" must be a string.');
@@ -3858,12 +3994,14 @@ class TinyHtml {
       if (value === null) elem.removeAttribute(name);
       else elem.setAttribute(name, value);
     });
+    return el;
   }
 
   /**
    * Set an attribute on an element.
    * @param {string} name
    * @param {string|null} [value=null]
+   * @returns {TinyElement|TinyElement[]}
    */
   setAttr(name, value) {
     return TinyHtml.setAttr(this, name, value);
@@ -3873,15 +4011,18 @@ class TinyHtml {
    * Remove attribute(s) from an element.
    * @param {TinyElement|TinyElement[]} el
    * @param {string} name Space-separated list of attributes.
+   * @returns {TinyElement|TinyElement[]}
    */
   static removeAttr(el, name) {
     if (typeof name !== 'string') throw new TypeError('The "name" must be a string.');
     TinyHtml._preElems(el, 'removeAttr').forEach((elem) => elem.removeAttribute(name));
+    return el;
   }
 
   /**
    * Remove attribute(s) from an element.
    * @param {string} name Space-separated list of attributes.
+   * @returns {TinyElement|TinyElement[]}
    */
   removeAttr(name) {
     return TinyHtml.removeAttr(this, name);
@@ -3936,6 +4077,7 @@ class TinyHtml {
    * Set a property on an element.
    * @param {TinyElement|TinyElement[]} el
    * @param {string} name
+   * @returns {TinyElement|TinyElement[]}
    */
   static addProp(el, name) {
     if (typeof name !== 'string') throw new TypeError('The "name" must be a string.');
@@ -3945,11 +4087,13 @@ class TinyHtml {
       // @ts-ignore
       elem[name] = true;
     });
+    return el;
   }
 
   /**
    * Set a property on an element.
    * @param {string} name
+   * @returns {TinyElement|TinyElement[]}
    */
   addProp(name) {
     return TinyHtml.addProp(this, name);
@@ -3959,6 +4103,7 @@ class TinyHtml {
    * Remove a property from an element.
    * @param {TinyElement|TinyElement[]} el
    * @param {string} name
+   * @returns {TinyElement|TinyElement[]}
    */
   static removeProp(el, name) {
     if (typeof name !== 'string') throw new TypeError('The "name" must be a string.');
@@ -3968,11 +4113,13 @@ class TinyHtml {
       // @ts-ignore
       elem[name] = false;
     });
+    return el;
   }
 
   /**
    * Remove a property from an element.
    * @param {string} name
+   * @returns {TinyElement|TinyElement[]}
    */
   removeProp(name) {
     return TinyHtml.removeProp(this, name);
@@ -4013,13 +4160,16 @@ class TinyHtml {
   /**
    * Removes an element from the DOM.
    * @param {TinyElement|TinyElement[]} el - The DOM element or selector to remove.
+   * @returns {TinyElement|TinyElement[]}
    */
   static remove(el) {
     TinyHtml._preElems(el, 'remove').forEach((elem) => elem.remove());
+    return el;
   }
 
   /**
    * Removes the element from the DOM.
+   * @returns {TinyElement|TinyElement[]}
    */
   remove() {
     return TinyHtml.remove(this);
