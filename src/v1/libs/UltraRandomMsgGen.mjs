@@ -374,6 +374,19 @@ const defaultTemplates = [
  * @class
  */
 class UltraRandomMsgGen {
+  /** @type {string[]} */
+  static defaultWords = defaultWords;
+  /** @type {string[]} */
+  static defaultEmojis = defaultEmojis;
+  /** @type {string[]} */
+  static defaultNouns = defaultNouns;
+  /** @type {string[]} */
+  static defaultVerbs = defaultVerbs;
+  /** @type {string[]} */
+  static defaultAdjectives = defaultAdjectives;
+  /** @type {string[]} */
+  static defaultTemplates = defaultTemplates;
+
   /** @type {MsgGenConfig} */
   config = {
     minLength: 10,
