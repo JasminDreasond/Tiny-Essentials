@@ -122,8 +122,12 @@ import {
 } from './basics/collision.mjs';
 import TinyHtml from './libs/TinyHtml.mjs';
 import TinyAfterScrollWatcher from './libs/TinyAfterScrollWatcher.mjs';
+import UltraRandomMsgGen from './libs/UltraRandomMsgGen.mjs';
+import TinySmartScroller from './libs/TinySmartScroller.mjs';
 
 export {
+  TinySmartScroller,
+  UltraRandomMsgGen,
   TinyAfterScrollWatcher,
   TinyHtml,
   TinyNotifications,
