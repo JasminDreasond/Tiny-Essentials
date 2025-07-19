@@ -747,6 +747,102 @@ Normalizes and converts input (elements, arrays, or strings) into appendable DOM
 
 ---
 
+## 🧮 Easing Functions
+
+### `TinyHtml.easings`
+
+A collection of predefined easing functions used for scroll and animation calculations.
+Each easing function takes a normalized time (`t` from 0 to 1) and returns a transformed progress value.
+
+| Name             | Description                           |
+| ---------------- | ------------------------------------- |
+| `linear`         | Constant speed, no easing.            |
+| `easeInQuad`     | Accelerates from zero velocity.       |
+| `easeOutQuad`    | Decelerates to zero velocity.         |
+| `easeInOutQuad`  | Accelerates, then decelerates.        |
+| `easeInCubic`    | Starts slow, speeds up sharply.       |
+| `easeOutCubic`   | Starts fast, slows down gradually.    |
+| `easeInOutCubic` | Smooth acceleration and deceleration. |
+
+```ts
+type Easings =
+  | 'linear'
+  | 'easeInQuad'
+  | 'easeOutQuad'
+  | 'easeInOutQuad'
+  | 'easeInCubic'
+  | 'easeOutCubic'
+  | 'easeInOutCubic';
+```
+
+```ts
+TinyHtml.easings = {
+  linear: (t) => t,
+  easeInQuad: (t) => t * t,
+  easeOutQuad: (t) => t * (2 - t),
+  easeInOutQuad: (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
+  easeInCubic: (t) => t * t * t,
+  easeOutCubic: (t) => --t * t * t + 1,
+  easeInOutCubic: (t) => (t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1),
+};
+```
+
+---
+
+## 🧭 Smooth Scrolling
+
+### `TinyHtml.scrollToXY(el, settings)`
+
+Smoothly scrolls one or more elements (or `window`) to a target position using a custom duration and easing.
+
+If no `duration` or invalid `easing` is provided, the scroll happens instantly.
+
+```ts
+TinyHtml.scrollToXY(el, {
+  targetX?: number,
+  targetY?: number,
+  duration?: number,
+  easing?: Easings,
+});
+```
+
+| Parameter            | Type                                             | Description                                                                                                                                        |
+| -------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `el`                 | `TinyElementAndWindow \| TinyElementAndWindow[]` | One or more elements or the `window` to scroll.                                                                                                    |
+| `settings`           | `Object`                                         | Scroll configuration.                                                                                                                              |
+| `targetX`            | `number` *(optional)*                            | Final horizontal scroll position.                                                                                                                  |
+| `targetY`            | `number` *(optional)*                            | Final vertical scroll position.                                                                                                                    |
+| `duration`           | `number` *(optional)*                            | Duration of the scroll animation in milliseconds.                                                                                                  |
+| `easing`             | `Easings` *(optional)*                           | Name of easing function to control animation curve.                                                                                                |
+| `onAnimation`        | `OnScrollAnimation` *(optional)*                 | Optional callback invoked on each animation frame with the current scroll position, normalized animation time (`0` to `1`), and a completion flag. |
+
+---
+
+## ⚙️ Internal Scroll Mechanism
+
+When called, `scrollToXY()` performs:
+
+1. **Start Position Detection** – Gets current scroll positions.
+2. **Delta Calculation** – Calculates the distance to scroll.
+3. **Easing Evaluation** – Determines the easing curve to use.
+4. **Scroll Loop** – Uses `requestAnimationFrame` to animate over time.
+5. **Instant Scroll Fallback** – If no easing/duration is defined, scrolls instantly.
+
+```ts
+function executeScroll(elem, newX, newY) {
+  if (elem instanceof Window) {
+    window.scrollTo(newX, newY);
+  } else if (elem.nodeType === 9) {
+    elem.defaultView.scrollTo(newX, newY); // For documents
+  } else {
+    if (elem.scrollLeft !== newX) elem.scrollLeft = newX;
+    if (elem.scrollTop !== newY) elem.scrollTop = newY;
+  }
+}
+```
+
+---
+
 ## 📏 Dimensions (Size API)
 
 TinyHtml provides methods to **read** and **set** an element's dimensions, similar to jQuery’s width/height API, with support for box models: `content`, `padding`, `border`, and `margin`.
@@ -822,6 +918,9 @@ This API set focuses on **measuring element offsets**, **scroll positions**, and
 ---
 
 ### 📍 Element Positioning
+
+#### `.animate(keyframes, ops?)` / `TinyHtml.animate(el, keyframes, ops?)`
+Applies an animation to one or more TinyElement instances using the Web Animations API.
 
 #### `.offset()` / `TinyHtml.offset(el)`
 Returns the coordinates `{ top, left }` of the element **relative to the document**.

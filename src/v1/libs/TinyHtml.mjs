@@ -10,6 +10,19 @@ const {
 } = TinyCollision;
 
 /**
+ * Callback invoked on each animation frame with the current scroll position,
+ * normalized animation time (`0` to `1`), and a completion flag.
+ *
+ * @typedef {(progress: { x: number, y: number, isComplete: boolean, time: number }) => void} OnScrollAnimation
+ */
+
+/**
+ * A list of supported easing function names for smooth animations.
+ *
+ * @typedef {'linear' | 'easeInQuad' | 'easeOutQuad' | 'easeInOutQuad' | 'easeInCubic' | 'easeOutCubic' | 'easeInOutCubic'} Easings
+ */
+
+/**
  * Represents a raw Node element or an instance of TinyHtml.
  * This type is used to abstract interactions with both plain elements
  * and wrapped elements via the TinyHtml class.
@@ -2417,7 +2430,7 @@ class TinyHtml {
    */
   static setWinScrollTop(value) {
     if (typeof value !== 'number') throw new TypeError('The value must be a number.');
-    window.scrollTo({ top: value });
+    TinyHtml.setScrollTop(window, value);
   }
 
   /**
@@ -2426,7 +2439,7 @@ class TinyHtml {
    */
   static setWinScrollLeft(value) {
     if (typeof value !== 'number') throw new TypeError('The value must be a number.');
-    window.scrollTo({ left: value });
+    TinyHtml.setScrollLeft(window, value);
   }
 
   /**
@@ -2744,6 +2757,30 @@ class TinyHtml {
   //////////////////////////////////////////////////
 
   /**
+   * Applies an animation to one or multiple TinyElement instances.
+   *
+   * @param {TinyElement|TinyElement[]} el - A single TinyElement or an array of TinyElements to animate.
+   * @param {Keyframe[] | PropertyIndexedKeyframes | null} keyframes - The keyframes used to define the animation.
+   * @param {number | KeyframeAnimationOptions} [ops] - Timing or configuration options for the animation.
+   * @returns {TinyElement|TinyElement[]}
+   */
+  static animate(el, keyframes, ops) {
+    TinyHtml._preElems(el, 'animate').forEach((elem) => elem.animate(keyframes, ops));
+    return el;
+  }
+
+  /**
+   * Applies an animation to one or multiple TinyElement instances.
+   *
+   * @param {Keyframe[] | PropertyIndexedKeyframes | null} keyframes - The keyframes used to define the animation.
+   * @param {number | KeyframeAnimationOptions} [ops] - Timing or configuration options for the animation.
+   * @returns {TinyElement|TinyElement[]}
+   */
+  animate(keyframes, ops) {
+    return TinyHtml.animate(this, keyframes, ops);
+  }
+
+  /**
    * Gets the offset of the element relative to the document.
    * @param {TinyElement} el - Target element.
    * @returns {{top: number, left: number}}
@@ -2898,6 +2935,119 @@ class TinyHtml {
   }
 
   /**
+   * Collection of easing functions used for scroll and animation calculations.
+   * Each function receives a normalized time value (`t` from 0 to 1) and returns the eased progress.
+   *
+   * @type {Record<string, (t: number) => number>}
+   */
+  static easings = {
+    linear: (t) => t,
+    easeInQuad: (t) => t * t,
+    easeOutQuad: (t) => t * (2 - t),
+    easeInOutQuad: (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
+    easeInCubic: (t) => t * t * t,
+    easeOutCubic: (t) => --t * t * t + 1,
+    easeInOutCubic: (t) => (t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1),
+  };
+
+  /**
+   * Smoothly scrolls one or more elements (or the window) to the specified X and Y coordinates
+   * using a custom duration and easing function.
+   *
+   * If `duration` or a valid `easing` is not provided, the scroll will be performed immediately.
+   *
+   * @param {TinyElementAndWindow | TinyElementAndWindow[]} el - A single element, array of elements, or the window to scroll.
+   * @param {Object} [settings={}] - Configuration object for the scroll animation.
+   * @param {number} [settings.targetX] - The horizontal scroll target in pixels.
+   * @param {number} [settings.targetY] - The vertical scroll target in pixels.
+   * @param {number} [settings.duration] - The duration of the animation in milliseconds.
+   * @param {Easings} [settings.easing] - The easing function name to use for the scroll animation.
+   * @param {OnScrollAnimation} [settings.onAnimation] - Optional callback invoked on each animation
+   *   frame with the current scroll position, normalized animation time (`0` to `1`), and a completion flag.
+   * @returns {TinyElementAndWindow|TinyElementAndWindow[]}
+   */
+  static scrollToXY(el, { targetX, targetY, duration, easing, onAnimation } = {}) {
+    /**
+     * Performs an instant scroll to the given coordinates.
+     *
+     * @param {ElementAndWindow} elem - The element or window to scroll.
+     * @param {number} newX - The final horizontal scroll position.
+     * @param {number} newY - The final vertical scroll position.
+     * @param {number} time - Normalized progress value.
+     */
+    const executeScroll = (elem, newX, newY, time) => {
+      if (elem instanceof Window) {
+        window.scrollTo(newX, newY);
+      } else if (elem.nodeType === 9) {
+        // @ts-ignore
+        elem.defaultView.scrollTo(newX, newY);
+      } else {
+        const startX = elem instanceof Window ? window.scrollX : elem.scrollLeft;
+        const startY = elem instanceof Window ? window.scrollY : elem.scrollTop;
+        if (startX !== newX) elem.scrollLeft = newX;
+        if (startY !== newY) elem.scrollTop = newY;
+      }
+      if (typeof onAnimation === 'function')
+        onAnimation({ x: newX, y: newY, isComplete: time >= 1, time });
+    };
+
+    TinyHtml._preElemsAndWindow(el, 'scrollToXY').forEach((elem) => {
+      const startX = elem instanceof Window ? window.scrollX : elem.scrollLeft;
+      const startY = elem instanceof Window ? window.scrollY : elem.scrollTop;
+      const targX = targetX ?? startX;
+      const targY = targetY ?? startY;
+
+      const changeX = targX - startX;
+      const changeY = targY - startY;
+
+      const ease = (typeof easing === 'string' && TinyHtml.easings[easing]) || null;
+      if (typeof duration !== 'number' || typeof ease !== 'function')
+        return executeScroll(elem, targX, targY, 1);
+      const startTime = performance.now();
+      const dur = duration ?? 0;
+
+      /**
+       * Animates the scroll position based on easing and time.
+       *
+       * @param {number} currentTime - Timestamp provided by requestAnimationFrame.
+       */
+      function animateScroll(currentTime) {
+        if (typeof ease !== 'function') return;
+        const time = Math.min(1, (currentTime - startTime) / dur);
+        const easedTime = ease(time);
+
+        const newX = startX + changeX * easedTime;
+        const newY = startY + changeY * easedTime;
+        executeScroll(elem, newX, newY, time);
+
+        if (time < 1) requestAnimationFrame(animateScroll);
+      }
+
+      requestAnimationFrame(animateScroll);
+    });
+    return el;
+  }
+
+  /**
+   * Smoothly scrolls one or more elements (or the window) to the specified X and Y coordinates
+   * using a custom duration and easing function.
+   *
+   * If `duration` or a valid `easing` is not provided, the scroll will be performed immediately.
+   *
+   * @param {Object} [settings={}] - Configuration object for the scroll animation.
+   * @param {number} [settings.targetX] - The horizontal scroll target in pixels.
+   * @param {number} [settings.targetY] - The vertical scroll target in pixels.
+   * @param {number} [settings.duration] - The duration of the animation in milliseconds.
+   * @param {Easings} [settings.easing] - The easing function name to use for the scroll animation.
+   * @param {OnScrollAnimation} [settings.onAnimation] - Optional callback invoked on each animation
+   *   frame with the current scroll position, normalized animation time (`0` to `1`), and a completion flag.
+   * @returns {TinyElementAndWindow|TinyElementAndWindow[]}
+   */
+  scrollToXY({ targetX, targetY, duration, easing, onAnimation } = {}) {
+    return TinyHtml.scrollToXY(this, { targetX, targetY, duration, easing, onAnimation });
+  }
+
+  /**
    * Sets the vertical scroll position.
    * @param {TinyElementAndWindow|TinyElementAndWindow[]} el - Element or window.
    * @param {number} value - Scroll top value.
@@ -2905,17 +3055,7 @@ class TinyHtml {
    */
   static setScrollTop(el, value) {
     if (typeof value !== 'number') throw new TypeError('ScrollTop value must be a number.');
-    TinyHtml._preElemsAndWindow(el, 'setScrollTop').forEach((elem) => {
-      if (TinyHtml.isWindow(elem)) {
-        elem.scrollTo(elem.pageXOffset, value);
-      } else if (elem.nodeType === 9) {
-        // @ts-ignore
-        elem.defaultView.scrollTo(elem.defaultView.pageXOffset, value);
-      } else {
-        elem.scrollTop = value;
-      }
-    });
-    return el;
+    return TinyHtml.scrollToXY(el, { targetY: value });
   }
 
   /**
@@ -2935,17 +3075,7 @@ class TinyHtml {
    */
   static setScrollLeft(el, value) {
     if (typeof value !== 'number') throw new TypeError('ScrollLeft value must be a number.');
-    TinyHtml._preElemsAndWindow(el, 'setScrollLeft').forEach((elem) => {
-      if (TinyHtml.isWindow(elem)) {
-        elem.scrollTo(value, elem.pageYOffset);
-      } else if (elem.nodeType === 9) {
-        // @ts-ignore
-        elem.defaultView.scrollTo(value, elem.defaultView.pageYOffset);
-      } else {
-        elem.scrollLeft = value;
-      }
-    });
-    return el;
+    return TinyHtml.scrollToXY(el, { targetX: value });
   }
 
   /**
