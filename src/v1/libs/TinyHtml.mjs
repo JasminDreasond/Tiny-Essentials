@@ -2965,8 +2965,26 @@ class TinyHtml {
    * @param {OnScrollAnimation} [settings.onAnimation] - Optional callback invoked on each animation
    *   frame with the current scroll position, normalized animation time (`0` to `1`), and a completion flag.
    * @returns {TinyElementAndWindow|TinyElementAndWindow[]}
+   * @throws {TypeError} If `el` is not a valid element, array, or window.
+   * @throws {TypeError} If `targetX` or `targetY` is defined but not a number.
+   * @throws {TypeError} If `duration` is defined but not a number.
+   * @throws {TypeError} If `easing` is defined but not a valid easing function name.
+   * @throws {TypeError} If `onAnimation` is defined but not a function.
    */
   static scrollToXY(el, { targetX, targetY, duration, easing, onAnimation } = {}) {
+    if (targetX !== undefined && typeof targetX !== 'number')
+      throw new TypeError('`targetX` must be a number if provided.');
+    if (targetY !== undefined && typeof targetY !== 'number')
+      throw new TypeError('`targetY` must be a number if provided.');
+    if (duration !== undefined && typeof duration !== 'number')
+      throw new TypeError('`duration` must be a number if provided.');
+    if (easing !== undefined && typeof easing !== 'string')
+      throw new TypeError('`easing` must be a string if provided.');
+    if (easing !== undefined && typeof TinyHtml.easings[easing] !== 'function')
+      throw new TypeError(`Unknown easing function: "${easing}".`);
+    if (onAnimation !== undefined && typeof onAnimation !== 'function')
+      throw new TypeError('`onAnimation` must be a function if provided.');
+
     /**
      * Performs an instant scroll to the given coordinates.
      *
