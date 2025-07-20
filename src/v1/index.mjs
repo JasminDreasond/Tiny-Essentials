@@ -124,8 +124,10 @@ import TinyHtml from './libs/TinyHtml.mjs';
 import TinyAfterScrollWatcher from './libs/TinyAfterScrollWatcher.mjs';
 import UltraRandomMsgGen from './libs/UltraRandomMsgGen.mjs';
 import TinySmartScroller from './libs/TinySmartScroller.mjs';
+import TinyTextRangeEditor from './libs/TinyTextRangeEditor.mjs';
 
 export {
+  TinyTextRangeEditor,
   TinySmartScroller,
   UltraRandomMsgGen,
   TinyAfterScrollWatcher,

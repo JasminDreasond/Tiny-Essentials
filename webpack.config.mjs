@@ -76,5 +76,6 @@ addModule(1, './src/v1/build/TinyHtml.mjs', 'TinyHtml', true);
 addModule(1, './src/v1/build/TinyAfterScrollWatcher.mjs', 'TinyAfterScrollWatcher', true);
 addModule(1, './src/v1/build/UltraRandomMsgGen.mjs', 'UltraRandomMsgGen', true);
 addModule(1, './src/v1/build/TinySmartScroller.mjs', 'TinySmartScroller', true);
+addModule(1, './src/v1/build/TinyTextRangeEditor.mjs', 'TinyTextRangeEditor', true);
 
 export default modules;

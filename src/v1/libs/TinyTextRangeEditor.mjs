@@ -260,6 +260,30 @@ class TinyTextRangeEditor {
   }
 
   /**
+   * Replaces all regex matches within the currently selected text.
+   *
+   * @param {RegExp} regex - Regular expression to match inside selection.
+   * @param {(match: string) => string} replacer - Function to replace each match.
+   * @returns {TinyTextRangeEditor}
+   */
+  replaceInSelection(regex, replacer) {
+    if (!(regex instanceof RegExp)) throw new TypeError('regex must be a RegExp.');
+    if (typeof replacer !== 'function') throw new TypeError('replacer must be a function.');
+
+    const { start, end } = this.getSelectionRange();
+    const original = this.#el.value;
+    const selected = original.slice(start, end);
+
+    const replaced = selected.replace(regex, replacer);
+
+    const updated = original.slice(0, start) + replaced + original.slice(end);
+
+    this.setValue(updated);
+    this.setSelectionRange(start, start + replaced.length);
+    return this;
+  }
+
+  /**
    * Toggles a code around the current selection.
    * If it's already wrapped, unwraps it.
    * @param {string} codeName - The code to toggle.

@@ -65,7 +65,8 @@
       <button id="expandInverseSelection">Back by 3 start side</button>
       <button id="selectAll">Select All</button>
       <button onclick="showSelectedText()">Show Selected</button>
-      <button onclick="replaceAll()">Replace "test" → "TEST"</button>
+      <button onclick="replaceAll()">Replace all "test" → "TEST"</button>
+      <button onclick="replaceTest()">Replace selected "test" → "TEST"</button>
       <button onclick="editor.wrapWithTag('b')">Wrap with [b]</button>
       <button onclick="editor.insertTag('color', 'red text')">Insert [color] Tag</button>
       <button onclick="editor.insertSelfClosingTag('img', { src: 'example.png', width: '100' })">
@@ -96,6 +97,11 @@
       window.replaceAll = () => {
         editor.replaceAll(/test/gi, () => 'TEST');
         output.textContent = 'All occurrences of "test" replaced with "TEST".';
+      };
+
+      window.replaceTest = () => {
+        editor.replaceInSelection(/test/gi, () => 'TEST');
+        output.textContent = 'Expanded Selection of "test" replaced with "TEST".';
       };
 
       // Expand selection with delay
