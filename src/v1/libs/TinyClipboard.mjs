@@ -371,6 +371,46 @@ class TinyClipboard {
     }
     return value;
   }
+
+  /**
+   * Returns whether the legacy `document.execCommand()` API is available.
+   * This can be used to determine if a fallback clipboard method is usable.
+   *
+   * @returns {boolean} True if `document.execCommand` is available.
+   */
+  isExecCommandAvailable() {
+    return this.#existExecCommand;
+  }
+
+  /**
+   * Returns whether the modern Clipboard API (`navigator.clipboard`) is available.
+   * Useful to know if full clipboard features can be accessed.
+   *
+   * @returns {boolean} True if `navigator.clipboard` is available.
+   */
+  isNavigatorClipboardAvailable() {
+    return this.#existNavigator;
+  }
+
+  /**
+   * Returns the function used to copy plain text to the clipboard.
+   * This function may be built-in or set manually via `setCopyText`.
+   *
+   * @returns {((text: string) => Promise<void>) | null} The current text copy function or null if unavailable.
+   */
+  getCopyTextFunc() {
+    return this.#copyText;
+  }
+
+  /**
+   * Returns the function used to copy Blob (binary data) to the clipboard.
+   * This function may be built-in or set manually via `setCopyBlob`.
+   *
+   * @returns {((blob: Blob) => Promise<void>) | null} The current blob copy function or null if unavailable.
+   */
+  getCopyBlobFunc() {
+    return this.#copyBlob;
+  }
 }
 
 export default TinyClipboard;
