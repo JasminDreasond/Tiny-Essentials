@@ -20,9 +20,9 @@ class TinyTextRangeEditor {
    */
   constructor(elem, { openTag = '[', closeTag = ']' } = {}) {
     if (!(elem instanceof HTMLInputElement || elem instanceof HTMLTextAreaElement))
-      throw new Error('Element must be an input or textarea.');
-    if (typeof openTag !== 'string') throw new Error('openTag must be a string.');
-    if (typeof closeTag !== 'string') throw new Error('closeTag must be a string.');
+      throw new TypeError('Element must be an input or textarea.');
+    if (typeof openTag !== 'string') throw new TypeError('openTag must be a string.');
+    if (typeof closeTag !== 'string') throw new TypeError('closeTag must be a string.');
     this.#el = elem;
     this.#openTag = openTag;
     this.#closeTag = closeTag;
@@ -40,13 +40,13 @@ class TinyTextRangeEditor {
 
   /** @param {string} tag - New open tag symbol to use (e.g., `'['`). */
   setOpenTag(tag) {
-    if (typeof tag !== 'string') throw new Error('Open tag must be a string.');
+    if (typeof tag !== 'string') throw new TypeError('Open tag must be a string.');
     this.#openTag = tag;
   }
 
   /** @param {string} tag - New close tag symbol to use (e.g., `']'`). */
   setCloseTag(tag) {
-    if (typeof tag !== 'string') throw new Error('Close tag must be a string.');
+    if (typeof tag !== 'string') throw new TypeError('Close tag must be a string.');
     this.#closeTag = tag;
   }
 
@@ -70,6 +70,10 @@ class TinyTextRangeEditor {
    * @param {boolean} [preserveScroll=true] - Whether to preserve scroll position.
    */
   setSelectionRange(start, end, preserveScroll = true) {
+    if (typeof start !== 'number' || typeof end !== 'number')
+      throw new TypeError('start and end must be numbers.');
+    if (typeof preserveScroll !== 'boolean')
+      throw new TypeError('preserveScroll must be a boolean.');
     const scrollTop = this.#el.scrollTop;
     const scrollLeft = this.#el.scrollLeft;
     this.#el.setSelectionRange(start, end);
@@ -89,6 +93,7 @@ class TinyTextRangeEditor {
    * @param {string} value - The new value to assign.
    */
   setValue(value) {
+    if (typeof value !== 'string') throw new TypeError('Value must be a string.');
     this.#el.value = value;
   }
 
@@ -104,6 +109,10 @@ class TinyTextRangeEditor {
    * @param {'start' | 'end' | 'preserve'} [newCursor='end'] - Controls caret position after insertion.
    */
   insertText(text, newCursor = 'end') {
+    if (typeof text !== 'string') throw new TypeError('Text must be a string.');
+    if (!['start', 'end', 'preserve'].includes(newCursor))
+      throw new TypeError("newCursor must be one of 'start', 'end', or 'preserve'.");
+
     const { start, end } = this.getSelectionRange();
     const value = this.#el.value;
     const newValue = value.slice(0, start) + text + value.slice(end);
@@ -126,6 +135,7 @@ class TinyTextRangeEditor {
    * @param {(selected: string) => string} transformer - Function that modifies the selected text.
    */
   transformSelection(transformer) {
+    if (typeof transformer !== 'function') throw new TypeError('transformer must be a function.');
     const { start } = this.getSelectionRange();
     const selected = this.getSelectedText();
     const transformed = transformer(selected);
@@ -139,6 +149,8 @@ class TinyTextRangeEditor {
    * @param {string} suffix - Text to insert after.
    */
   surroundSelection(prefix, suffix) {
+    if (typeof prefix !== 'string' || typeof suffix !== 'string')
+      throw new TypeError('prefix and suffix must be strings.');
     const selected = this.getSelectedText();
     this.insertText(`${prefix}${selected}${suffix}`);
   }
@@ -148,6 +160,7 @@ class TinyTextRangeEditor {
    * @param {number} offset - Characters to move.
    */
   moveCaret(offset) {
+    if (typeof offset !== 'number') throw new TypeError('offset must be a number.');
     const { start } = this.getSelectionRange();
     const pos = Math.max(0, start + offset);
     this.setSelectionRange(pos, pos);
@@ -164,6 +177,8 @@ class TinyTextRangeEditor {
    * @param {number} after - Characters to expand to the right.
    */
   expandSelection(before, after) {
+    if (typeof before !== 'number' || typeof after !== 'number')
+      throw new TypeError('before and after must be numbers.');
     const { start, end } = this.getSelectionRange();
     const newStart = Math.max(0, start - before);
     const newEnd = Math.min(this.#el.value.length, end + after);
@@ -176,6 +191,8 @@ class TinyTextRangeEditor {
    * @param {(match: string) => string} replacer - Replacement function.
    */
   replaceAll(regex, replacer) {
+    if (!(regex instanceof RegExp)) throw new TypeError('regex must be a RegExp.');
+    if (typeof replacer !== 'function') throw new TypeError('replacer must be a function.');
     const newValue = this.#el.value.replace(regex, replacer);
     this.setValue(newValue);
   }
@@ -185,6 +202,7 @@ class TinyTextRangeEditor {
    * @param {string} tagName - The tag name (e.g., `b`, `color`).
    */
   wrapWithTag(tagName) {
+    if (typeof tagName !== 'string') throw new TypeError('tagName must be a string.');
     this.surroundSelection(
       `${this.#openTag}${tagName}${this.#closeTag}`,
       `${this.#openTag}/${tagName}${this.#closeTag}`,
@@ -197,6 +215,8 @@ class TinyTextRangeEditor {
    * @param {string} [content] - Optional content between tags.
    */
   insertTag(tagName, content = '') {
+    if (typeof tagName !== 'string') throw new TypeError('tagName must be a string.');
+    if (typeof content !== 'string') throw new TypeError('content must be a string.');
     this.insertText(
       `${this.#openTag}${tagName}${this.#closeTag}${content}${this.#openTag}/${tagName}${this.#closeTag}`,
     );
@@ -208,6 +228,10 @@ class TinyTextRangeEditor {
    * @param {Record<string,string>} [attributes={}] - Optional attributes to include.
    */
   insertSelfClosingTag(tagName, attributes = {}) {
+    if (typeof tagName !== 'string') throw new TypeError('tagName must be a string.');
+    if (typeof attributes !== 'object' || Array.isArray(attributes))
+      throw new TypeError('attributes must be an object.');
+
     const attrStr = Object.entries(attributes)
       .map(([key, val]) => `${key}="${val}"`)
       .join(' ');
@@ -223,6 +247,7 @@ class TinyTextRangeEditor {
    * @param {string} tagName - The tag to toggle.
    */
   toggleTag(tagName) {
+    if (typeof tagName !== 'string') throw new TypeError('tagName must be a string.');
     const selected = this.getSelectedText();
     const open = `${this.#openTag}${tagName}${this.#closeTag}`;
     const close = `${this.#openTag}/${tagName}${this.#closeTag}`;
