@@ -50,9 +50,22 @@ class TinyTextRangeEditor {
     this.#closeTag = tag;
   }
 
-  /** Ensures the element has focus. */
+  /**
+   * Ensures the element has focus.
+   * @returns {TinyTextRangeEditor}
+   */
   ensureFocus() {
     if (document.activeElement !== this.#el) this.#el.focus();
+    return this;
+  }
+
+  /**
+   * Focus the element.
+   * @returns {TinyTextRangeEditor}
+   */
+  focus() {
+    this.#el.focus();
+    return this;
   }
 
   /** @returns {{ start: number, end: number }} The current selection range. */
