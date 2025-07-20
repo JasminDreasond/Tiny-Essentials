@@ -309,20 +309,36 @@ class TinyTextRangeEditor {
   /**
    * Inserts a self-closing tag.
    * @param {string} tagName - The tag name.
-   * @param {Record<string,string>} [attributes={}] - Optional attributes to include.
+   * @param {Record<string,string> | string[]} [attributes={}] - Optional attributes or list of empty attributes.
    * @returns {TinyTextRangeEditor}
    */
   insertSelfClosingTag(tagName, attributes = {}) {
     if (typeof tagName !== 'string') throw new TypeError('tagName must be a string.');
-    if (typeof attributes !== 'object' || Array.isArray(attributes))
-      throw new TypeError('attributes must be an object.');
 
-    const attrStr = Object.entries(attributes)
-      .map(([key, val]) => `${key}="${val}"`)
-      .join(' ');
+    let attrStr = '';
+
+    if (Array.isArray(attributes)) {
+      // string[]
+      if (!attributes.every((attr) => typeof attr === 'string'))
+        throw new TypeError('All entries in attributes array must be strings.');
+      attrStr = attributes.map((attr) => `${attr}`).join(' ');
+    } else if (typeof attributes === 'object' && attributes !== null) {
+      // Record<string, string>
+      attrStr = Object.entries(attributes)
+        .map(([key, val]) => {
+          if (typeof val !== 'string')
+            throw new TypeError('All entries in attributes object must be strings.');
+          return `${key}${val.length > 0 ? `="${val}"` : ''}`;
+        })
+        .join(' ');
+    } else {
+      throw new TypeError('attributes must be an object or an array of strings.');
+    }
+
     const tag = attrStr
       ? `${this.#openTag}${tagName} ${attrStr}${this.#closeTag}`
       : `${this.#openTag}${tagName}${this.#closeTag}`;
+
     this.insertText(tag);
     return this;
   }
