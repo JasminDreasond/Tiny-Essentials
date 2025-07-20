@@ -286,7 +286,7 @@ class TinyTextRangeEditor {
    * - Attributes passed as an array will render as boolean attributes (e.g., `disabled autofocus`)
    * - Attributes passed as an object will render as `key="value"` pairs (or just `key` if the value is an empty string)
    *
-   * @param {Record<string, string> | string[]} [attributes={}] - The attributes to serialize into a tag string.
+   * @param {Record<string, string> | string[]} attributes - The attributes to serialize into a tag string.
    *   - If an array: treated as a list of boolean-style attributes.
    *   - If an object: treated as key-value pairs.
    *
@@ -334,16 +334,23 @@ class TinyTextRangeEditor {
   }
 
   /**
-   * Wraps the current selection with a tag.
-   * @param {string} tagName - The tag name (e.g., `b`, `color`).
+   * Wraps the current selection with a tag, optionally including attributes.
+   *
+   * @param {string} tagName - The tag name (e.g., `b`, `color`, etc.).
+   * @param {Record<string,string> | string[]} [attributes={}] - Optional attributes for the opening tag.
+   *   - If an object: key-value pairs (e.g., `{ color: "red" }` → `color="red"`).
+   *   - If an array: boolean attributes (e.g., `["disabled", "readonly"]`).
+   *
    * @returns {TinyTextRangeEditor}
    */
-  wrapWithTag(tagName) {
+  wrapWithTag(tagName, attributes = {}) {
     if (typeof tagName !== 'string') throw new TypeError('tagName must be a string.');
-    this.surroundSelection(
-      `${this.#openTag}${tagName}${this.#closeTag}`,
-      `${this.#openTag}/${tagName}${this.#closeTag}`,
-    );
+    const attrStr = this._attrInsert(attributes);
+    const openTag = attrStr
+      ? `${this.#openTag}${tagName} ${attrStr}${this.#closeTag}`
+      : `${this.#openTag}${tagName}${this.#closeTag}`;
+    const closeTag = `${this.#openTag}/${tagName}${this.#closeTag}`;
+    this.surroundSelection(openTag, closeTag);
     return this;
   }
 
