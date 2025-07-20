@@ -24,7 +24,7 @@
       }
       .controls {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
         gap: 10px;
         margin-bottom: 10px;
       }
@@ -62,9 +62,16 @@
       <button id="moveCaretLeft">Move Caret Left</button>
       <button id="moveCaretRight">Move Caret Right</button>
       <button id="expandSelection">Expand by 3 each side</button>
+      <button id="expandInverseSelection">Back by 3 start side</button>
       <button id="selectAll">Select All</button>
       <button onclick="showSelectedText()">Show Selected</button>
       <button onclick="replaceAll()">Replace "test" → "TEST"</button>
+      <button onclick="editor.wrapWithTag('b')">Wrap with [b]</button>
+      <button onclick="editor.insertTag('color', 'red text')">Insert [color] Tag</button>
+      <button onclick="editor.insertSelfClosingTag('img', { src: 'example.png', width: '100' })">
+        Insert [img]
+      </button>
+      <button onclick="editor.toggleTag('b')">Toggle [b] Tag</button>
     </div>
 
     <h3>🔎 Output:</h3>
@@ -93,6 +100,13 @@
       document.getElementById('expandSelection').addEventListener('click', async () => {
         await delay(3000);
         editor.expandSelection(3, 3);
+        const text = editor.getSelectedText();
+        output.textContent = 'Expanded Selection: "' + text + '"';
+      });
+
+      document.getElementById('expandInverseSelection').addEventListener('click', async () => {
+        await delay(3000);
+        editor.expandSelection(-3, 0);
         const text = editor.getSelectedText();
         output.textContent = 'Expanded Selection: "' + text + '"';
       });
