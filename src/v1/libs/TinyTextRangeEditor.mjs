@@ -295,20 +295,20 @@ class TinyTextRangeEditor {
    *
    * @example
    * // Using object attributes
-   * _attrInsert({ size: "12", color: "red" });
+   * _insertAttr({ size: "12", color: "red" });
    * // Returns: 'size="12" color="red"'
    *
    * @example
    * // Using boolean attributes
-   * _attrInsert(["disabled", "autofocus"]);
+   * _insertAttr(["disabled", "autofocus"]);
    * // Returns: 'disabled autofocus'
    *
    * @example
    * // Using mixed/empty object values
-   * _attrInsert({ checked: "", class: "btn" });
+   * _insertAttr({ checked: "", class: "btn" });
    * // Returns: 'checked class="btn"'
    */
-  _attrInsert(attributes) {
+  _insertAttr(attributes) {
     // Reuse attribute logic
     let attrStr = '';
 
@@ -345,7 +345,7 @@ class TinyTextRangeEditor {
    */
   wrapWithTag(tagName, attributes = {}) {
     if (typeof tagName !== 'string') throw new TypeError('tagName must be a string.');
-    const attrStr = this._attrInsert(attributes);
+    const attrStr = this._insertAttr(attributes);
     const openTag = attrStr
       ? `${this.#openTag}${tagName} ${attrStr}${this.#closeTag}`
       : `${this.#openTag}${tagName}${this.#closeTag}`;
@@ -365,7 +365,7 @@ class TinyTextRangeEditor {
     if (typeof tagName !== 'string') throw new TypeError('tagName must be a string.');
     if (typeof content !== 'string') throw new TypeError('content must be a string.');
 
-    const attrStr = this._attrInsert(attributes);
+    const attrStr = this._insertAttr(attributes);
     const open = attrStr
       ? `${this.#openTag}${tagName} ${attrStr}${this.#closeTag}`
       : `${this.#openTag}${tagName}${this.#closeTag}`;
@@ -384,7 +384,7 @@ class TinyTextRangeEditor {
   insertSelfClosingTag(tagName, attributes = {}) {
     if (typeof tagName !== 'string') throw new TypeError('tagName must be a string.');
 
-    const attrStr = this._attrInsert(attributes);
+    const attrStr = this._insertAttr(attributes);
     const tag = attrStr
       ? `${this.#openTag}${tagName} ${attrStr}${this.#closeTag}`
       : `${this.#openTag}${tagName}${this.#closeTag}`;
@@ -417,7 +417,7 @@ class TinyTextRangeEditor {
         .replace(closeRegex, ''); // remove closing tag
       this.insertText(unwrapped);
     } else {
-      const attrStr = this._attrInsert(attributes);
+      const attrStr = this._insertAttr(attributes);
       const open = attrStr
         ? `${this.#openTag}${tagName} ${attrStr}${this.#closeTag}`
         : `${this.#openTag}${tagName}${this.#closeTag}`;
