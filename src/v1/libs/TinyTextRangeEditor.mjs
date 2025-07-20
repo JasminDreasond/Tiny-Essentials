@@ -2,20 +2,23 @@
  * A full-featured text range editor for <input> and <textarea> elements.
  */
 class TinyTextRangeEditor {
+  /** @type {HTMLInputElement | HTMLTextAreaElement} */
+  #el;
+
   /**
-   * @param {HTMLInputElement | HTMLTextAreaElement} element - The input or textarea element.
+   * @param {HTMLInputElement | HTMLTextAreaElement} elem - The input or textarea element.
    */
-  constructor(element) {
-    if (!(element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement))
+  constructor(elem) {
+    if (!(elem instanceof HTMLInputElement || elem instanceof HTMLTextAreaElement))
       throw new Error('Element must be an input or textarea');
-    this.el = element;
+    this.#el = elem;
   }
 
   /**
    * Ensures the element has focus.
    */
   ensureFocus() {
-    if (document.activeElement !== this.el) this.el.focus();
+    if (document.activeElement !== this.#el) this.#el.focus();
   }
 
   /**
@@ -23,8 +26,8 @@ class TinyTextRangeEditor {
    */
   getSelectionRange() {
     return {
-      start: this.el.selectionStart ?? NaN,
-      end: this.el.selectionEnd ?? NaN,
+      start: this.#el.selectionStart ?? NaN,
+      end: this.#el.selectionEnd ?? NaN,
     };
   }
 
@@ -33,12 +36,12 @@ class TinyTextRangeEditor {
    *  @param {boolean} [preserveScroll]
    */
   setSelectionRange(start, end, preserveScroll = true) {
-    const scrollTop = this.el.scrollTop;
-    const scrollLeft = this.el.scrollLeft;
-    this.el.setSelectionRange(start, end);
+    const scrollTop = this.#el.scrollTop;
+    const scrollLeft = this.#el.scrollLeft;
+    this.#el.setSelectionRange(start, end);
     if (preserveScroll) {
-      this.el.scrollTop = scrollTop;
-      this.el.scrollLeft = scrollLeft;
+      this.#el.scrollTop = scrollTop;
+      this.#el.scrollLeft = scrollLeft;
     }
   }
 
@@ -46,14 +49,14 @@ class TinyTextRangeEditor {
    * @returns {string} The full value of the element.
    */
   getValue() {
-    return this.el.value;
+    return this.#el.value;
   }
 
   /**
    * @param {string} value - Set new value for the element.
    */
   setValue(value) {
-    this.el.value = value;
+    this.#el.value = value;
   }
 
   /**
@@ -61,7 +64,7 @@ class TinyTextRangeEditor {
    */
   getSelectedText() {
     const { start, end } = this.getSelectionRange();
-    return this.el.value.slice(start, end);
+    return this.#el.value.slice(start, end);
   }
 
   /**
@@ -71,7 +74,7 @@ class TinyTextRangeEditor {
    */
   insertText(text, newCursor = 'end') {
     const { start, end } = this.getSelectionRange();
-    const value = this.el.value;
+    const value = this.#el.value;
     const newValue = value.slice(0, start) + text + value.slice(end);
     this.setValue(newValue);
 
@@ -125,7 +128,7 @@ class TinyTextRangeEditor {
    * Selects the entire content.
    */
   selectAll() {
-    this.setSelectionRange(0, this.el.value.length);
+    this.setSelectionRange(0, this.#el.value.length);
   }
 
   /**
@@ -136,7 +139,7 @@ class TinyTextRangeEditor {
   expandSelection(before, after) {
     const { start, end } = this.getSelectionRange();
     const newStart = Math.max(0, start - before);
-    const newEnd = Math.min(this.el.value.length, end + after);
+    const newEnd = Math.min(this.#el.value.length, end + after);
     this.setSelectionRange(newStart, newEnd);
   }
 
@@ -146,7 +149,7 @@ class TinyTextRangeEditor {
    *  @param {(match: string) => string} replacer
    */
   replaceAll(regex, replacer) {
-    const newValue = this.el.value.replace(regex, replacer);
+    const newValue = this.#el.value.replace(regex, replacer);
     this.setValue(newValue);
   }
 }
