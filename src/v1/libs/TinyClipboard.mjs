@@ -190,21 +190,21 @@ class TinyClipboard {
             ) {
               continueLoop = false;
               const result = await this._handleBlob(mimeType, item);
-              finalResult.push(result);
+              if (result) finalResult.push(result);
             }
 
             // Text
             else if ((type === null || type === 'text') && mimeType === 'text/plain') {
               continueLoop = false;
               const result = await this._handleText(mimeType, item);
-              finalResult.push(result);
+              if (result) finalResult.push(result);
             }
 
             // Blob
             else if (type === null) {
               continueLoop = false;
               const result = await this._handleBlob(mimeType, item);
-              finalResult.push(result);
+              if (result) finalResult.push(result);
             }
           };
 
@@ -368,7 +368,7 @@ class TinyClipboard {
     const value = await this._read(null);
     if (!Array.isArray(value)) throw new Error('Expected array result from clipboard read.');
     for (const item of value) {
-      if (!(value instanceof ClipboardItem))
+      if (!(item instanceof ClipboardItem))
         throw new Error('Invalid item type found in clipboard result.');
     }
     return value;
