@@ -106,20 +106,42 @@ class TinyTextRangeEditor {
   /**
    * Inserts text at the current selection, replacing any selected content.
    * @param {string} text - The text to insert.
-   * @param {'start' | 'end' | 'preserve'} [newCursor='end'] - Controls caret position after insertion.
+   * @param {Object} [settings={}] - Optional auto-spacing behavior.
+   * @param {'start' | 'end' | 'preserve'} [settings.newCursor='end'] - Controls caret position after insertion.
+   * @param {boolean} [settings.autoSpacing=false]
+   * @param {boolean} [settings.autoSpaceLeft=false]
+   * @param {boolean} [settings.autoSpaceRight=false]
    */
-  insertText(text, newCursor = 'end') {
+  insertText(text, {
+      newCursor = 'end',
+      autoSpacing = false,
+      autoSpaceLeft = autoSpacing,
+      autoSpaceRight = autoSpacing,
+  } = {}) {
     if (typeof text !== 'string') throw new TypeError('Text must be a string.');
     if (!['start', 'end', 'preserve'].includes(newCursor))
       throw new TypeError("newCursor must be one of 'start', 'end', or 'preserve'.");
+    if (typeof autoSpacing !== 'boolean') throw new TypeError('autoSpacing must be a boolean.');
+    if (typeof autoSpaceLeft !== 'boolean') throw new TypeError('autoSpaceLeft must be a boolean.');
+    if (typeof autoSpaceRight !== 'boolean')
+      throw new TypeError('autoSpaceRight must be a boolean.');
 
     const { start, end } = this.getSelectionRange();
     const value = this.#el.value;
-    const newValue = value.slice(0, start) + text + value.slice(end);
+
+    const leftChar = value[start - 1] || '';
+    const rightChar = value[end] || '';
+
+    const addLeft = autoSpaceLeft && leftChar && !/\s/.test(leftChar);
+    const addRight = autoSpaceRight && rightChar && !/\s/.test(rightChar);
+
+    const finalText = `${addLeft ? ' ' : ''}${text}${addRight ? ' ' : ''}`;
+
+    const newValue = value.slice(0, start) + finalText + value.slice(end);
     this.setValue(newValue);
 
     let cursorPos = start;
-    if (newCursor === 'end') cursorPos = start + text.length;
+    if (newCursor === 'end') cursorPos = start + finalText.length;
     else if (newCursor === 'preserve') cursorPos = start;
 
     this.setSelectionRange(cursorPos, cursorPos);
