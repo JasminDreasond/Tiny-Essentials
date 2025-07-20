@@ -278,20 +278,6 @@ class TinyTextRangeEditor {
   }
 
   /**
-   * Wraps the current selection with a tag.
-   * @param {string} tagName - The tag name (e.g., `b`, `color`).
-   * @returns {TinyTextRangeEditor}
-   */
-  wrapWithTag(tagName) {
-    if (typeof tagName !== 'string') throw new TypeError('tagName must be a string.');
-    this.surroundSelection(
-      `${this.#openTag}${tagName}${this.#closeTag}`,
-      `${this.#openTag}/${tagName}${this.#closeTag}`,
-    );
-    return this;
-  }
-
-  /**
    * Converts a list of attributes into a string suitable for tag insertion.
    *
    * This method supports both standard key-value attribute objects (e.g., `{ key: "value" }`)
@@ -322,7 +308,6 @@ class TinyTextRangeEditor {
    * _attrInsert({ checked: "", class: "btn" });
    * // Returns: 'checked class="btn"'
    */
-
   _attrInsert(attributes) {
     // Reuse attribute logic
     let attrStr = '';
@@ -346,6 +331,20 @@ class TinyTextRangeEditor {
     }
 
     return attrStr;
+  }
+
+  /**
+   * Wraps the current selection with a tag.
+   * @param {string} tagName - The tag name (e.g., `b`, `color`).
+   * @returns {TinyTextRangeEditor}
+   */
+  wrapWithTag(tagName) {
+    if (typeof tagName !== 'string') throw new TypeError('tagName must be a string.');
+    this.surroundSelection(
+      `${this.#openTag}${tagName}${this.#closeTag}`,
+      `${this.#openTag}/${tagName}${this.#closeTag}`,
+    );
+    return this;
   }
 
   /**
