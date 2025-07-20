@@ -112,12 +112,15 @@ class TinyTextRangeEditor {
    * @param {boolean} [settings.autoSpaceLeft=false]
    * @param {boolean} [settings.autoSpaceRight=false]
    */
-  insertText(text, {
+  insertText(
+    text,
+    {
       newCursor = 'end',
       autoSpacing = false,
       autoSpaceLeft = autoSpacing,
       autoSpaceRight = autoSpacing,
-  } = {}) {
+    } = {},
+  ) {
     if (typeof text !== 'string') throw new TypeError('Text must be a string.');
     if (!['start', 'end', 'preserve'].includes(newCursor))
       throw new TypeError("newCursor must be one of 'start', 'end', or 'preserve'.");
@@ -217,6 +220,22 @@ class TinyTextRangeEditor {
     if (typeof replacer !== 'function') throw new TypeError('replacer must be a function.');
     const newValue = this.#el.value.replace(regex, replacer);
     this.setValue(newValue);
+  }
+
+  /**
+   * Toggles a code around the current selection.
+   * If it's already wrapped, unwraps it.
+   * @param {string} codeName - The code to toggle.
+   */
+  toggleCode(codeName) {
+    if (typeof codeName !== 'string') throw new TypeError('codeName must be a string.');
+    const selected = this.getSelectedText();
+    if (selected.startsWith(codeName) && selected.endsWith(codeName)) {
+      const unwrapped = selected.slice(codeName.length, selected.length - codeName.length);
+      this.insertText(unwrapped);
+    } else {
+      this.insertText(`${codeName}${selected}${codeName}`);
+    }
   }
 
   /**
