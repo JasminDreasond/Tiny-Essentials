@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>TinyClipboard Test Page</title>
+    <script type="module">
+      import { TinyClipboard } from './src/v1/libs/TinyClipboard.mjs';
+      window.TinyClipboard = TinyClipboard;
+    </script>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 2em;
+      }
+      textarea,
+      input[type='text'] {
+        width: 100%;
+        padding: 0.5em;
+        margin-bottom: 1em;
+      }
+      button {
+        margin: 0.2em 0.5em 1em 0;
+        padding: 0.5em 1em;
+        cursor: pointer;
+      }
+      pre {
+        background: #eee;
+        padding: 1em;
+        max-height: 300px;
+        overflow: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>TinyClipboard Test</h1>
+
+    <section>
+      <h2>Support Status</h2>
+      <ul>
+        <li>Clipboard API: <strong id="clipboardStatus">?</strong></li>
+        <li>execCommand: <strong id="execCommandStatus">?</strong></li>
+      </ul>
+    </section>
+
+    <hr />
+
+    <section>
+      <h2>Copy Text</h2>
+      <textarea id="textInput" placeholder="Type some text to copy..."></textarea>
+      <button onclick="copyText()">Copy Text</button>
+    </section>
+
+    <section>
+      <h2>Read Text</h2>
+      <button onclick="readText()">Read Text (index 0)</button>
+      <button onclick="readAllTexts()">Read All Texts</button>
+      <pre id="readTextOutput">[Output here]</pre>
+    </section>
+
+    <hr />
+
+    <section>
+      <h2>Copy Blob (PNG image)</h2>
+      <input type="file" id="blobInput" accept="image/*" />
+      <button onclick="copyBlob()">Copy Blob</button>
+    </section>
+
+    <section>
+      <h2>Read Blob (image)</h2>
+      <button onclick="readCustom()">Read Blob (index 0, type "image/")</button>
+      <button onclick="readAllCustom()">Read All Blobs</button>
+      <pre id="readBlobOutput">[Output here]</pre>
+    </section>
+
+    <hr />
+
+    <section>
+      <h2>Read Everything (no filter)</h2>
+      <button onclick="readAll()">Read All</button>
+      <pre id="readAllOutput">[Output here]</pre>
+    </section>
+
+    <script type="module">
+      const clipboard = new TinyClipboard();
+      window.tinyClipboard = clipboard;
+
+      // Show support status
+      document.getElementById('clipboardStatus').textContent =
+        clipboard.isNavigatorClipboardAvailable();
+      document.getElementById('execCommandStatus').textContent = clipboard.isExecCommandAvailable();
+
+      // Functions
+      window.copyText = async function () {
+        const text = document.getElementById('textInput').value;
+        try {
+          await clipboard.copyText(text);
+          alert('Text copied successfully!');
+        } catch (e) {
+          alert('Error copying text: ' + e.message);
+        }
+      };
+
+      window.readText = async function () {
+        try {
+          const text = await clipboard.readText();
+          document.getElementById('readTextOutput').textContent = text;
+        } catch (e) {
+          document.getElementById('readTextOutput').textContent = 'Error: ' + e.message;
+        }
+      };
+
+      window.readAllTexts = async function () {
+        try {
+          const texts = await clipboard.readAllTexts();
+          document.getElementById('readTextOutput').textContent = JSON.stringify(texts, null, 2);
+        } catch (e) {
+          document.getElementById('readTextOutput').textContent = 'Error: ' + e.message;
+        }
+      };
+
+      window.copyBlob = async function () {
+        const fileInput = document.getElementById('blobInput');
+        const file = fileInput.files[0];
+        if (!file) return alert('Please choose a file first!');
+        try {
+          await clipboard.copyBlob(file);
+          alert('Blob copied successfully!');
+        } catch (e) {
+          alert('Error copying blob: ' + e.message);
+        }
+      };
+
+      window.readCustom = async function () {
+        try {
+          const blob = await clipboard.readCustom('image/');
+          document.getElementById('readBlobOutput').textContent = blob
+            ? `Blob: ${blob.type}, ${blob.size} bytes`
+            : 'Nothing found';
+        } catch (e) {
+          document.getElementById('readBlobOutput').textContent = 'Error: ' + e.message;
+        }
+      };
+
+      window.readAllCustom = async function () {
+        try {
+          const blobs = await clipboard.readAllCustom('image/');
+          const infos = blobs.map((b) => `Blob: ${b.type}, ${b.size} bytes`);
+          document.getElementById('readBlobOutput').textContent = `[\n${infos.join('\n')}\n]`;
+        } catch (e) {
+          document.getElementById('readBlobOutput').textContent = 'Error: ' + e.message;
+        }
+      };
+
+      window.readAll = async function () {
+        try {
+          const all = await clipboard.readAllData();
+          const result = all.map((x, i) =>
+            typeof x === 'string' ? `Text ${i}: "${x}"` : `Blob ${i}: ${x.type}, ${x.size} bytes`,
+          );
+          document.getElementById('readAllOutput').textContent = `[\n${result.join('\n')}\n]`;
+        } catch (e) {
+          document.getElementById('readAllOutput').textContent = 'Error: ' + e.message;
+        }
+      };
+    </script>
+  </body>
+</html>

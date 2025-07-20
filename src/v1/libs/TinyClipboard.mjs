@@ -190,22 +190,35 @@ class TinyClipboard {
             ) {
               continueLoop = false;
               const result = await this._handleBlob(mimeType, item);
-              if (result) finalResult.push(result);
+              finalResult.push(result);
             }
 
             // Text
             else if ((type === null || type === 'text') && mimeType === 'text/plain') {
               continueLoop = false;
               const result = await this._handleText(mimeType, item);
-              if (result) finalResult.push(result);
+              finalResult.push(result);
             }
 
             // Blob
             else if (type === null) {
               continueLoop = false;
               const result = await this._handleBlob(mimeType, item);
-              if (result) finalResult.push(result);
+              finalResult.push(result);
             }
+          };
+
+          /** @type {Promise<void>[]} */
+          const promises = [];
+
+          /**
+           * Read Item
+           * @param {ClipboardItem | ClipboardItems} item
+           */
+          const readItem = (item) => {
+            if (!(item instanceof ClipboardItem))
+              throw new Error('Expected ClipboardItem when reading data.');
+            for (const tIndex in item.types) promises.push(completeTask(item.types[tIndex], item));
           };
 
           // Specific Item
@@ -215,11 +228,7 @@ class TinyClipboard {
             Number.isFinite(index) &&
             index > -1
           ) {
-            if (!(items instanceof ClipboardItem))
-              throw new Error('Expected ClipboardItem when reading single index.');
-            const promises = [];
-            for (const tIndex in items.types)
-              promises.push(completeTask(items.types[tIndex], items));
+            readItem(items);
             Promise.all(promises)
               .then(() => {
                 if (finalResult[0]) resolve(finalResult[0]);
@@ -230,14 +239,7 @@ class TinyClipboard {
 
           // All
           else if (Array.isArray(items)) {
-            const promises = [];
-            for (const tIndex in items) {
-              for (const tIndex2 in items[tIndex]) {
-                if (!(items[tIndex] instanceof ClipboardItem))
-                  throw new Error(`Invalid item at index ${tIndex}, expected ClipboardItem.`);
-                promises.push(completeTask(items[tIndex].types[Number(tIndex2)], items[tIndex]));
-              }
-            }
+            for (const tIndex in items) readItem(items[tIndex]);
             Promise.all(promises)
               .then(() => resolve(finalResult))
               .catch(reject);
