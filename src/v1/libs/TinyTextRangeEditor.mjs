@@ -292,29 +292,39 @@ class TinyTextRangeEditor {
   }
 
   /**
-   * Inserts a tag with optional inner content.
-   * @param {string} tagName - The tag to insert.
-   * @param {string} [content] - Optional content between tags.
-   * @returns {TinyTextRangeEditor}
+   * Converts a list of attributes into a string suitable for tag insertion.
+   *
+   * This method supports both standard key-value attribute objects (e.g., `{ key: "value" }`)
+   * and boolean-style attribute arrays (e.g., `[ "disabled", "autofocus" ]`).
+   *
+   * - Attributes passed as an array will render as boolean attributes (e.g., `disabled autofocus`)
+   * - Attributes passed as an object will render as `key="value"` pairs (or just `key` if the value is an empty string)
+   *
+   * @param {Record<string, string> | string[]} [attributes={}] - The attributes to serialize into a tag string.
+   *   - If an array: treated as a list of boolean-style attributes.
+   *   - If an object: treated as key-value pairs.
+   *
+   * @throws {TypeError} If the array contains non-strings, or the object contains non-string values.
+   * @returns {string} A string of serialized attributes for use inside a tag.
+   *
+   * @example
+   * // Using object attributes
+   * _attrInsert({ size: "12", color: "red" });
+   * // Returns: 'size="12" color="red"'
+   *
+   * @example
+   * // Using boolean attributes
+   * _attrInsert(["disabled", "autofocus"]);
+   * // Returns: 'disabled autofocus'
+   *
+   * @example
+   * // Using mixed/empty object values
+   * _attrInsert({ checked: "", class: "btn" });
+   * // Returns: 'checked class="btn"'
    */
-  insertTag(tagName, content = '') {
-    if (typeof tagName !== 'string') throw new TypeError('tagName must be a string.');
-    if (typeof content !== 'string') throw new TypeError('content must be a string.');
-    this.insertText(
-      `${this.#openTag}${tagName}${this.#closeTag}${content}${this.#openTag}/${tagName}${this.#closeTag}`,
-    );
-    return this;
-  }
 
-  /**
-   * Inserts a self-closing tag.
-   * @param {string} tagName - The tag name.
-   * @param {Record<string,string> | string[]} [attributes={}] - Optional attributes or list of empty attributes.
-   * @returns {TinyTextRangeEditor}
-   */
-  insertSelfClosingTag(tagName, attributes = {}) {
-    if (typeof tagName !== 'string') throw new TypeError('tagName must be a string.');
-
+  _attrInsert(attributes) {
+    // Reuse attribute logic
     let attrStr = '';
 
     if (Array.isArray(attributes)) {
@@ -335,6 +345,40 @@ class TinyTextRangeEditor {
       throw new TypeError('attributes must be an object or an array of strings.');
     }
 
+    return attrStr;
+  }
+
+  /**
+   * Inserts a tag with optional inner content.
+   * @param {string} tagName - The tag to insert.
+   * @param {string} [content=''] - Optional content between tags.
+   * @param {Record<string,string> | string[]} [attributes={}] - Optional attributes or list of empty attributes.
+   * @returns {TinyTextRangeEditor}
+   */
+  insertTag(tagName, content = '', attributes = {}) {
+    if (typeof tagName !== 'string') throw new TypeError('tagName must be a string.');
+    if (typeof content !== 'string') throw new TypeError('content must be a string.');
+
+    const attrStr = this._attrInsert(attributes);
+    const open = attrStr
+      ? `${this.#openTag}${tagName} ${attrStr}${this.#closeTag}`
+      : `${this.#openTag}${tagName}${this.#closeTag}`;
+    const close = `${this.#openTag}/${tagName}${this.#closeTag}`;
+
+    this.insertText(`${open}${content}${close}`);
+    return this;
+  }
+
+  /**
+   * Inserts a self-closing tag.
+   * @param {string} tagName - The tag name.
+   * @param {Record<string,string> | string[]} [attributes={}] - Optional attributes or list of empty attributes.
+   * @returns {TinyTextRangeEditor}
+   */
+  insertSelfClosingTag(tagName, attributes = {}) {
+    if (typeof tagName !== 'string') throw new TypeError('tagName must be a string.');
+
+    const attrStr = this._attrInsert(attributes);
     const tag = attrStr
       ? `${this.#openTag}${tagName} ${attrStr}${this.#closeTag}`
       : `${this.#openTag}${tagName}${this.#closeTag}`;
@@ -345,21 +389,36 @@ class TinyTextRangeEditor {
 
   /**
    * Toggles a tag around the current selection.
-   * If it's already wrapped, unwraps it.
+   * Supports tags with attributes. If already wrapped, it unwraps.
    * @param {string} tagName - The tag to toggle.
+   * @param {Record<string,string> | string[]} [attributes={}] - Optional attributes to apply when wrapping.
    * @returns {TinyTextRangeEditor}
    */
-  toggleTag(tagName) {
+  toggleTag(tagName, attributes = {}) {
     if (typeof tagName !== 'string') throw new TypeError('tagName must be a string.');
     const selected = this.getSelectedText();
-    const open = `${this.#openTag}${tagName}${this.#closeTag}`;
-    const close = `${this.#openTag}/${tagName}${this.#closeTag}`;
-    if (selected.startsWith(open) && selected.endsWith(close)) {
-      const unwrapped = selected.slice(open.length, selected.length - close.length);
+
+    // Regex: opening tag with optional attributes, and closing tag
+    const openRegex = new RegExp(`^\\[${tagName}(\\s+[^\\]]*)?\\]`);
+    const closeRegex = new RegExp(`\\[/${tagName}\\]$`);
+
+    const hasOpen = openRegex.test(selected);
+    const hasClose = closeRegex.test(selected);
+
+    if (hasOpen && hasClose) {
+      const unwrapped = selected
+        .replace(openRegex, '') // remove opening tag
+        .replace(closeRegex, ''); // remove closing tag
       this.insertText(unwrapped);
     } else {
+      const attrStr = this._attrInsert(attributes);
+      const open = attrStr
+        ? `${this.#openTag}${tagName} ${attrStr}${this.#closeTag}`
+        : `${this.#openTag}${tagName}${this.#closeTag}`;
+      const close = `${this.#openTag}/${tagName}${this.#closeTag}`;
       this.insertText(`${open}${selected}${close}`);
     }
+
     return this;
   }
 }
