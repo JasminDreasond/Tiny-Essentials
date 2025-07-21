@@ -1,21 +1,36 @@
 /**
- * @typedef {Array<number>} RgbaColor
+ * Represents a color in RGBA format.
+ * Each element must be a number between 0 and 255.
+ * The fourth value represents the alpha (transparency) channel.
+ *
+ * @typedef {number[]} RgbaColor
+ * @property {number} 0 - Red component (0–255)
+ * @property {number} 1 - Green component (0–255)
+ * @property {number} 2 - Blue component (0–255)
+ * @property {number} 3 - Alpha component (0–255)
  */
 
 /**
- * @typedef {Array<number>} RgbColor
+ * Represents a color in RGB format.
+ * Each element must be a number between 0 and 255.
+ *
+ * @typedef {number[]} RgbColor
+ * @property {number} 0 - Red component (0–255)
+ * @property {number} 1 - Green component (0–255)
+ * @property {number} 2 - Blue component (0–255)
  */
 
 /**
- * @typedef {Array<number>} HslaColor
+ * Represents a hex color.
+ *
+ * @typedef {string} HexColor
  */
 
 /**
- * @typedef {Array<number>} HslColor
- */
-
-/**
- * @typedef {string|number|RgbColor|RgbaColor|HslColor|HslaColor} ColorTypes
+ * A union type representing various accepted color formats.
+ * Can be a hex color string, a numeric value, or an array-based RGB/RGBA representation.
+ *
+ * @typedef {HexColor | number | RgbColor | RgbaColor} ColorTypes
  */
 
 /**
@@ -73,7 +88,7 @@ class TinyColorConverter {
   /**
    * Generates a random color in hexadecimal format.
    *
-   * @returns {string} A hex color string (e.g. `#a3e5f2`).
+   * @returns {HexColor} A hex color string (e.g. `#a3e5f2`).
    */
   static randomColor() {
     return `#${(0x1000000 + Math.random() * 0xffffff).toString(16).substring(1, 6)}`;
@@ -107,7 +122,7 @@ class TinyColorConverter {
 
   /**
    * Converts hex to integer.
-   * @param {string} hex
+   * @param {HexColor} hex
    * @returns {number}
    */
   static hexToInt(hex) {
@@ -117,7 +132,7 @@ class TinyColorConverter {
   /**
    * Converts hex string to RGBA array.
    * @private
-   * @param {string} hex
+   * @param {HexColor} hex
    * @returns {RgbaColor}
    */
   static hexToRgba(hex) {
@@ -136,7 +151,7 @@ class TinyColorConverter {
 
   /**
    * Converts HEX to RGB.
-   * @param {string} hex
+   * @param {HexColor} hex
    * @returns {RgbColor}
    */
   static hexToRgb(hex) {
@@ -150,7 +165,7 @@ class TinyColorConverter {
    * @param {number} r
    * @param {number} g
    * @param {number} b
-   * @returns {string}
+   * @returns {HexColor}
    */
   static rgbToHex(r, g, b) {
     return '#' + [r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('');
@@ -184,7 +199,7 @@ class TinyColorConverter {
   /**
    * Converts integer color to hex.
    * @param {number} int
-   * @returns {string}
+   * @returns {HexColor}
    */
   static intToHex(int) {
     return '#' + int.toString(16).padStart(6, '0');
@@ -262,8 +277,8 @@ class TinyColorConverter {
   }
 
   /**
-   * Returns hex string.
-   * @returns {string}
+   * Returns hex color.
+   * @returns {HexColor}
    */
   toHex() {
     const [r, g, b] = this.#rgba;
