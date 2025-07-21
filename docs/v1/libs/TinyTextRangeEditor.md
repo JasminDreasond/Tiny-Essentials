@@ -140,6 +140,14 @@ Wraps or **unwraps** the selection with a tag.
 editor.toggleTag("b");
 ```
 
+### `toggleCode(codeName)` → `this`
+
+Wraps or **unwraps** the selection with a code.
+
+```js
+editor.toggleTag("**");
+```
+
 ---
 
 ## 🧠 Utility

@@ -9,14 +9,13 @@ import {
   getTimeDuration,
 } from './basics/clock.mjs';
 import {
-  countObj,
   extendObjType,
   reorderObjTypeOrder,
   cloneObjTypeOrder,
   objType,
   checkObj,
-  isJsonObject,
 } from './basics/objFilter.mjs';
+import { countObj, isJsonObject } from './basics/objType.mjs';
 import {
   documentIsFullScreen,
   isScreenFilled,

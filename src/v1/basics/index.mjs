@@ -19,14 +19,8 @@ import {
   isInViewport,
   isScrolledIntoView,
 } from './html_deprecated.mjs';
-import {
-  countObj,
-  extendObjType,
-  reorderObjTypeOrder,
-  cloneObjTypeOrder,
-  objType,
-  isJsonObject,
-} from './objFilter.mjs';
+import { extendObjType, reorderObjTypeOrder, cloneObjTypeOrder, objType } from './objFilter.mjs';
+import { countObj, isJsonObject } from './objType.mjs';
 import {
   documentIsFullScreen,
   isScreenFilled,

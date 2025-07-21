@@ -1,4 +1,4 @@
-import { isJsonObject } from './objFilter.mjs';
+import { isJsonObject } from './objType.mjs';
 
 /////////////////////////////////////////////////////////////////
 
