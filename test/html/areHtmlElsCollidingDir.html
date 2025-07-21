@@ -61,6 +61,9 @@
       const dragger = new TinyDragger(box.get(), { jail: document.body, mirrorElem: false });
       dragger.addCollidable(wall.get());
 
+      window.box = box;
+      window.wall = wall;
+
       const dragging = () => {
         const colliding = box.isCollWithLock(wall, 'bottom'); // change 'right' if needed
         box.toggleClass('colliding', colliding);
@@ -74,6 +77,7 @@
         // console.log('DEPTH', getElsCollDirDepth(rect1, rect2));
       };
 
+      window.dragging = dragging;
       box.on('drag', dragging);
       box.on('dragging', dragging);
       box.on('drop', dragging);

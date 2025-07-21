@@ -5,7 +5,9 @@
     <title>TinyClipboard Test Page</title>
     <script type="module">
       import { TinyClipboard } from './src/v1/libs/TinyClipboard.mjs';
+      import { TinyHtml } from './src/v1/libs/TinyHtml.mjs';
       window.TinyClipboard = TinyClipboard;
+      window.TinyHtml = TinyHtml;
     </script>
     <style>
       body {
@@ -28,6 +30,17 @@
         padding: 1em;
         max-height: 300px;
         overflow: auto;
+      }
+      .paste-preview {
+        margin-top: 1em;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1em;
+      }
+      .paste-preview img {
+        max-height: 150px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
       }
     </style>
   </head>
@@ -84,6 +97,14 @@
       <h2>Read Everything (console)</h2>
       <button onclick="readAllConsole()">Read All</button>
       <button onclick="readConsole()">Read Index 0</button>
+    </section>
+
+    <hr />
+
+    <section>
+      <h2>Paste Files (Ctrl+V)</h2>
+      <p>Paste an image or file here (Ctrl+V or right-click → Paste)</p>
+      <div class="paste-preview" id="pastePreview"></div>
     </section>
 
     <script type="module">
@@ -189,6 +210,21 @@
         console.log(result);
         console.log(await result.getType('text/plain'));
       };
+
+      // Listen for pasted files
+      TinyHtml.listenForPaste(document, {
+        onFilePaste: (item, file) => {
+          console.log(item, 'Pasted blob:', file);
+          const preview = document.getElementById('pastePreview');
+          const img = document.createElement('img');
+          img.src = URL.createObjectURL(file);
+          img.title = `${file.name} (${file.type})`;
+          preview.appendChild(img);
+        },
+        onTextPaste: (item, text) => {
+          console.log(item, 'Pasted text:', text);
+        },
+      });
     </script>
   </body>
 </html>

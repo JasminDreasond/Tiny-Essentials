@@ -93,6 +93,21 @@ const {
  */
 
 /**
+ * Represents a raw DOM element with document or an instance of TinyHtml.
+ * This type is used to abstract interactions with both plain elements
+ * and wrapped elements via the TinyHtml class.
+ *
+ * @typedef {ElementWithDoc|TinyHtml} TinyElementWithDoc
+ */
+
+/**
+ * Represents a value that can be either a DOM Element, or the document object.
+ * Useful for functions that operate generically on measurable targets.
+ *
+ * @typedef {Element|Document} ElementWithDoc
+ */
+
+/**
  * A parameter type used for filtering or matching elements.
  * It can be:
  * - A string (CSS selector),
@@ -112,12 +127,6 @@ const {
  */
 
 /**
- * The handler function used in event listeners.
- *
- * @typedef {(e: Event) => any} EventRegistryHandle
- */
-
-/**
  * Options passed to `addEventListener` or `removeEventListener`.
  * Can be a boolean or an object of type `AddEventListenerOptions`.
  *
@@ -128,7 +137,7 @@ const {
  * Structure describing a registered event callback and its options.
  *
  * @typedef {Object} EventRegistryItem
- * @property {EventRegistryHandle} handler - The function to be executed when the event is triggered.
+ * @property {EventListenerOrEventListenerObject|null} handler - The function to be executed when the event is triggered.
  * @property {EventRegistryOptions} [options] - Optional configuration passed to the listener.
  */
 
@@ -687,9 +696,9 @@ class TinyHtml {
    * Ensures the input is returned as an array.
    * Useful to normalize operations across multiple or single element/window/document elements.
    *
-   * @param {TinyElementAndWinAndDoc|TinyElementAndWinAndDoc[]} elems - A single element/window element or array of html elements.
+   * @param {TinyElementAndWinAndDoc|TinyElementAndWinAndDoc[]} elems - A single element/document/window element or array of html elements.
    * @param {string} where - The method or context name where validation is being called.
-   * @returns {ElementAndWindow[]} - Always returns an array of element/window elements.
+   * @returns {ElementAndWindow[]} - Always returns an array of element/document/window elements.
    * @readonly
    */
   static _preElemsAndWinAndDoc(elems, where) {
@@ -706,9 +715,9 @@ class TinyHtml {
    * Ensures the input is returned as an single element/window/document element.
    * Useful to normalize operations across multiple or single element/window/document elements.
    *
-   * @param {TinyElementAndWinAndDoc|TinyElementAndWinAndDoc[]} elems - A single element/window element or array of html elements.
+   * @param {TinyElementAndWinAndDoc|TinyElementAndWinAndDoc[]} elems - A single element/document/window element or array of html elements.
    * @param {string} where - The method or context name where validation is being called.
-   * @returns {ElementAndWindow} - Always returns an single element/window element.
+   * @returns {ElementAndWindow} - Always returns an single element/document/window element.
    * @readonly
    */
   static _preElemAndWinAndDoc(elems, where) {
@@ -720,6 +729,32 @@ class TinyHtml {
     );
     if (result instanceof Document) return result.documentElement;
     return result;
+  }
+
+  /**
+   * Ensures the input is returned as an array.
+   * Useful to normalize operations across multiple or single element with document elements.
+   *
+   * @param {TinyElementWithDoc|TinyElementWithDoc[]} elems - A single element with document element or array of html elements.
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {ElementWithDoc[]} - Always returns an array of element with document elements.
+   * @readonly
+   */
+  static _preElemsWithDoc(elems, where) {
+    return TinyHtml._preElemsTemplate(elems, where, [Element, Document], ['Element', 'Document']);
+  }
+
+  /**
+   * Ensures the input is returned as an single element with document element.
+   * Useful to normalize operations across multiple or single element with document elements.
+   *
+   * @param {TinyElementWithDoc|TinyElementWithDoc[]} elems - A single element/window element or array of html elements.
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {ElementWithDoc} - Always returns an single element/window element.
+   * @readonly
+   */
+  static _preElemWithDoc(elems, where) {
+    return TinyHtml._preElemTemplate(elems, where, [Element, Document], ['Element', 'Document']);
   }
 
   /**
@@ -3982,11 +4017,119 @@ class TinyHtml {
   ////////////////////////////////////////////
 
   /**
+   * Registers a listener for the "paste" event to extract files and text from the clipboard (e.g., when the user presses Ctrl+V).
+   *
+   * This method allows reacting to pasted content by providing separate callbacks for files and plain text.
+   * Useful for building file upload areas, rich-text editors, or input enhancements.
+   *
+   * @param {TinyElementWithDoc|TinyElementWithDoc[]} el - The target element(s) where the "paste" event will be listened.
+   * @param {Object} [settings={}] - Optional callbacks to handle clipboard content.
+   * @param {(data: DataTransferItem, file: File) => void} [settings.onFilePaste] - Called for each file pasted from the clipboard (e.g., images).
+   * @param {(data: DataTransferItem, text: string) => void} [settings.onTextPaste] - Called when plain text is pasted from the clipboard.
+   * @returns {EventListenerOrEventListenerObject} The internal "paste" event handler used.
+   */
+  static listenForPaste(el, { onFilePaste, onTextPaste } = {}) {
+    if (typeof onFilePaste !== 'undefined' && typeof onFilePaste !== 'function')
+      throw new TypeError('onFilePaste must be a function.');
+    if (typeof onTextPaste !== 'undefined' && typeof onTextPaste !== 'function')
+      throw new TypeError('onTextPaste must be a function.');
+
+    /** @type {EventListenerOrEventListenerObject} */
+    const pasteEvent = (event) => {
+      if (!(event instanceof ClipboardEvent)) return;
+      const items = event.clipboardData?.items || [];
+      for (const item of items) {
+        if (item.kind === 'file') {
+          if (typeof onFilePaste === 'function') {
+            const file = item.getAsFile();
+            if (file) onFilePaste(item, file);
+          }
+        } else if (item.kind === 'string') {
+          if (typeof onTextPaste === 'function')
+            item.getAsString((text) => onTextPaste(item, text));
+        }
+      }
+    };
+
+    TinyHtml._preElemsWithDoc(el, 'listenForPaste').forEach((elem) =>
+      TinyHtml.on(elem, 'paste', pasteEvent),
+    );
+    return pasteEvent;
+  }
+
+  /**
+   * Registers a listener for the "paste" event to extract files and text from the clipboard (e.g., when the user presses Ctrl+V).
+   *
+   * This method allows reacting to pasted content by providing separate callbacks for files and plain text.
+   * Useful for building file upload areas, rich-text editors, or input enhancements.
+   *
+   * @param {Object} [settings={}] - Optional callbacks to handle clipboard content.
+   * @param {(data: DataTransferItem, file: File) => void} [settings.onFilePaste] - Called for each file pasted from the clipboard (e.g., images).
+   * @param {(data: DataTransferItem, text: string) => void} [settings.onTextPaste] - Called when plain text is pasted from the clipboard.
+   * @returns {EventListenerOrEventListenerObject} The internal "paste" event handler used.
+   */
+  listenForPaste({ onFilePaste, onTextPaste } = {}) {
+    return TinyHtml.listenForPaste(this, { onFilePaste, onTextPaste });
+  }
+
+  /**
+   * Checks if the element has a listener for a specific event.
+   *
+   * @param {TinyEventTarget} el - The element to check.
+   * @param {string} event - The event name to check.
+   * @returns {boolean}
+   */
+  static hasEventListener(el, event) {
+    const elem = TinyHtml._preEventTargetElem(el, 'hasEventListener');
+    if (!__eventRegistry.has(elem)) return false;
+    const events = __eventRegistry.get(elem);
+    return !!(events && Array.isArray(events[event]) && events[event].length > 0);
+  }
+
+  /**
+   * Checks if the element has a listener for a specific event.
+   *
+   * @param {string} event - The event name to check.
+   * @returns {boolean}
+   */
+  hasEventListener(event) {
+    return TinyHtml.hasEventListener(this, event);
+  }
+
+  /**
+   * Checks if the element has the exact handler registered for a specific event.
+   *
+   * @param {TinyEventTarget} el - The element to check.
+   * @param {string} event - The event name to check.
+   * @param {EventListenerOrEventListenerObject} handler - The handler function to check.
+   * @returns {boolean}
+   */
+  static hasExactEventListener(el, event, handler) {
+    const elem = TinyHtml._preEventTargetElem(el, 'hasExactEventListener');
+    if (typeof handler !== 'function') throw new TypeError('The "handler" must be a function.');
+    if (!__eventRegistry.has(elem)) return false;
+    const events = __eventRegistry.get(elem);
+    if (!events || !Array.isArray(events[event])) return false;
+    return events[event].some((item) => item.handler === handler);
+  }
+
+  /**
+   * Checks if the element has the exact handler registered for a specific event.
+   *
+   * @param {string} event - The event name to check.
+   * @param {EventListenerOrEventListenerObject} handler - The handler function to check.
+   * @returns {boolean}
+   */
+  hasExactEventListener(event, handler) {
+    return TinyHtml.hasExactEventListener(this, event, handler);
+  }
+
+  /**
    * Registers an event listener on the specified element.
    *
    * @param {TinyEventTarget|TinyEventTarget[]} el - The target to listen on.
    * @param {string} event - The event type (e.g. 'click', 'keydown').
-   * @param {EventRegistryHandle} handler - The callback function to run on event.
+   * @param {EventListenerOrEventListenerObject|null} handler - The callback function to run on event.
    * @param {EventRegistryOptions} [options] - Optional event listener options.
    * @returns {TinyEventTarget|TinyEventTarget[]}
    */
@@ -4008,7 +4151,7 @@ class TinyHtml {
    * Registers an event listener on the specified element.
    *
    * @param {string} event - The event type (e.g. 'click', 'keydown').
-   * @param {EventRegistryHandle} handler - The callback function to run on event.
+   * @param {EventListenerOrEventListenerObject|null} handler - The callback function to run on event.
    * @param {EventRegistryOptions} [options] - Optional event listener options.
    * @returns {TinyEventTarget|TinyEventTarget[]}
    */
@@ -4021,17 +4164,17 @@ class TinyHtml {
    *
    * @param {TinyEventTarget|TinyEventTarget[]} el - The target to listen on.
    * @param {string} event - The event type (e.g. 'click', 'keydown').
-   * @param {EventRegistryHandle} handler - The callback function to run on event.
+   * @param {EventListenerOrEventListenerObject} handler - The callback function to run on event.
    * @param {EventRegistryOptions} [options={}] - Optional event listener options.
    * @returns {TinyEventTarget|TinyEventTarget[]}
    */
   static once(el, event, handler, options = {}) {
     if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
     TinyHtml._preEventTargetElems(el, 'once').forEach((elem) => {
-      /** @type {EventRegistryHandle} e */
+      /** @type {EventListenerOrEventListenerObject} */
       const wrapped = (e) => {
         TinyHtml.off(elem, event, wrapped);
-        handler(e);
+        if (typeof handler === 'function') handler(e);
       };
 
       TinyHtml.on(
@@ -4048,7 +4191,7 @@ class TinyHtml {
    * Registers an event listener that runs only once, then is removed.
    *
    * @param {string} event - The event type (e.g. 'click', 'keydown').
-   * @param {EventRegistryHandle} handler - The callback function to run on event.
+   * @param {EventListenerOrEventListenerObject} handler - The callback function to run on event.
    * @param {EventRegistryOptions} [options={}] - Optional event listener options.
    * @returns {TinyEventTarget|TinyEventTarget[]}
    */
@@ -4061,7 +4204,7 @@ class TinyHtml {
    *
    * @param {TinyEventTarget|TinyEventTarget[]} el - The target element.
    * @param {string} event - The event type.
-   * @param {EventRegistryHandle} handler - The function originally bound to the event.
+   * @param {EventListenerOrEventListenerObject|null} handler - The function originally bound to the event.
    * @param {boolean|EventListenerOptions} [options] - Optional listener options.
    * @returns {TinyEventTarget|TinyEventTarget[]}
    */
@@ -4083,7 +4226,7 @@ class TinyHtml {
    * Removes a specific event listener from an element.
    *
    * @param {string} event - The event type.
-   * @param {EventRegistryHandle} handler - The function originally bound to the event.
+   * @param {EventListenerOrEventListenerObject|null} handler - The function originally bound to the event.
    * @param {boolean|EventListenerOptions} [options] - Optional listener options.
    * @returns {TinyEventTarget|TinyEventTarget[]}
    */
@@ -4126,7 +4269,7 @@ class TinyHtml {
    * Removes all event listeners of all types from the element.
    *
    * @param {TinyEventTarget|TinyEventTarget[]} el - The target element.
-   * @param {((handler: EventListenerOrEventListenerObject, event: string) => boolean)|null} [filterFn=null] -
+   * @param {((handler: EventListenerOrEventListenerObject|null, event: string) => boolean)|null} [filterFn=null] -
    *        Optional filter function to selectively remove specific handlers.
    * @returns {TinyEventTarget|TinyEventTarget[]}
    */
@@ -4153,7 +4296,7 @@ class TinyHtml {
   /**
    * Removes all event listeners of all types from the element.
    *
-   * @param {((handler: EventListenerOrEventListenerObject, event: string) => boolean)|null} [filterFn=null] -
+   * @param {((handler: EventListenerOrEventListenerObject|null, event: string) => boolean)|null} [filterFn=null] -
    *        Optional filter function to selectively remove specific handlers.
    * @returns {TinyEventTarget|TinyEventTarget[]}
    */

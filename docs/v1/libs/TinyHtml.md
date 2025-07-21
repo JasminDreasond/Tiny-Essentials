@@ -90,7 +90,31 @@ ElementAndWinAndDoc | TinyHtml
 
 ---
 
+#### `TinyElementWithDoc`
+
+Accepts both raw DOM elements, the `document` object, or a `TinyHtml` wrapper.
+
+```ts
+ElementWithDoc | TinyHtml
+```
+
+Used to abstract interactions with either native elements or enhanced wrappers.
+
+---
+
 ### 🔀 Union Types
+
+#### `ElementWithDoc`
+
+A raw DOM `Element` or the `document` object.
+
+```ts
+Element | Document
+```
+
+Commonly used when the target might be either a single HTML element or the whole document, particularly in layout and measurement utilities.
+
+---
 
 #### `ElementAndWinAndDoc`
 
@@ -133,18 +157,6 @@ Window | Element | Document | Text
 
 ---
 
-### 🎯 Event System Types
-
-#### `EventRegistryHandle`
-
-A basic event listener handler function.
-
-```ts
-(e: Event) => any
-```
-
----
-
 #### `EventRegistryOptions`
 
 Options for `addEventListener` and `removeEventListener`.
@@ -161,7 +173,7 @@ Describes an individual event registration.
 
 ```ts
 {
-  handler: EventRegistryHandle,
+  handler: EventListenerOrEventListenerObject | null,
   options?: EventRegistryOptions
 }
 ```
@@ -446,8 +458,10 @@ Each method below ensures type and returns raw DOM objects:
 | `_preEventTargetElem(...)`    | `EventTarget`    | `EventTarget`  |
 | `_preElemsAndWindow(...)`     | `Element\|Window` | `ElementAndWindow[]` |
 | `_preElemAndWindow(...)`      | `Element\|Window` | `ElementAndWindow` |
-| `_preElemsAndWinAndDoc(...)`     | `Element\|Window\|Document` | `ElementAndWindow[]` |
-| `_preElemAndWinAndDoc(...)`      | `Element\|Window\|Document` | `ElementAndWindow` |
+| `_preElemsAndWinAndDoc(...)`  | `Element\|Window\|Document` | `ElementAndWindow[]` |
+| `_preElemAndWinAndDoc(...)`   | `Element\|Window\|Document` | `ElementAndWindow` |
+| `_preElemsWithDoc(...)`       | `Element\|Document` | `ElementWithDoc[]` |
+| `_preElemWithDoc(...)`        | `Element\|Document` | `ElementWithDoc` |
 
 ---
 
@@ -1233,6 +1247,89 @@ Returns boolean state for checkboxes/radios based on value `"on"` or `"off"`.
 
 These methods allow you to easily register, remove, or trigger DOM events.
 All event listeners are tracked in a private registry for full control.
+
+---
+
+### 📋 `listenForPaste()`
+
+Handling Pasted Files and Text
+
+```js
+element.listenForPaste({
+  onFilePaste(item, file) {
+    console.log("Pasted file:", file.name);
+  },
+  onTextPaste(item, text) {
+    console.log("Pasted text:", text);
+  },
+});
+```
+
+Registers a listener for the `"paste"` event to extract files or plain text directly from the clipboard.
+
+* `onFilePaste(item, file)` – Triggered once for each file pasted (e.g., images or documents).
+* `onTextPaste(item, text)` – Triggered when plain text is pasted.
+
+Use this to build file dropzones, rich editors, or custom paste behavior.
+You can also use the static version for multiple elements:
+
+```js
+TinyHtml.listenForPaste([el1, el2], {
+  onFilePaste(item, file) {
+    console.log("Pasted a file into multiple elements!");
+  }
+});
+```
+
+Returns the internal paste handler function.
+
+---
+
+### 📡 `hasEventListener()`
+
+Checking for Event Presence
+
+```js
+if (element.hasEventListener("click")) {
+  console.log("Click handler already registered.");
+}
+```
+
+Checks whether any handler is currently registered on `__eventRegistry` for the given event name on an element.
+
+* Returns `true` if any listener exists for the event, otherwise `false`.
+
+Also available as a static version:
+
+```js
+TinyHtml.hasEventListener(el, "paste");
+```
+
+---
+
+### 🎯 `hasExactEventListener()`
+
+Checking for a Specific Handler
+
+```js
+function onClick() {}
+element.on("click", onClick);
+
+if (element.hasExactEventListener("click", onClick)) {
+  console.log("The exact click handler is registered.");
+}
+```
+
+Checks whether an element has **that exact function** registered on `__eventRegistry` for the given event.
+
+* Returns `true` only if the same reference to the function is found.
+* Helps prevent duplicate listeners or for conditional removal logic.
+
+Also available as a static version:
+
+```js
+TinyHtml.hasExactEventListener(el, "click", onClick);
+```
 
 ---
 
