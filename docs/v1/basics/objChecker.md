@@ -1,4 +1,4 @@
-# 🧠 objType.mjs
+# 🧠 objChecker.mjs
 
 ## 📘 Object & Type Utilities
 

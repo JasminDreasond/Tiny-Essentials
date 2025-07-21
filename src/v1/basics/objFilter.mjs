@@ -1,5 +1,5 @@
 import { Buffer } from 'buffer';
-import { countObj, isJsonObject } from './objType.mjs';
+import { countObj, isJsonObject } from './objChecker.mjs';
 
 export { countObj, isJsonObject };
 

@@ -1,3 +1,3 @@
-import { countObj } from '../../v1/basics/objType.mjs';
+import { countObj } from '../../v1/basics/objChecker.mjs';
 
 export default countObj;

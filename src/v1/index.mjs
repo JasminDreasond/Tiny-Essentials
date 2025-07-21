@@ -15,7 +15,7 @@ import {
   objType,
   checkObj,
 } from './basics/objFilter.mjs';
-import { countObj, isJsonObject } from './basics/objType.mjs';
+import { countObj, isJsonObject } from './basics/objChecker.mjs';
 import {
   documentIsFullScreen,
   isScreenFilled,

@@ -15,7 +15,7 @@ This folder contains the core scripts we have worked on so far. Each file is a m
 - 📦 **[Array](./basics/array.md)** — A tiny utility for shuffling arrays using the Fisher–Yates algorithm.
 - ⏰ **[Clock](./basics/clock.md)** — A versatile time utility module for calculating and formatting time durations.
 - 🧠 **[ObjFilter](./basics/objFilter.md)** — Type detection, extension, and analysis made easy with simple and extensible type validation.
-* 🧮 **[ObjType](./basics/objType.md)** — Utilities for counting keys in objects or arrays and for safely detecting plain JSON-compatible objects.
+* 🧮 **[objChecker](./basics/objChecker.md)** — Utilities for counting keys in objects or arrays and for safely detecting plain JSON-compatible objects.
 - 🔢 **[SimpleMath](./basics/simpleMath.md)** — A collection of simple math utilities for calculations like the Rule of Three and percentages.
 - ✍️ **[Text](./basics/text.md)** — A utility for transforming text into title case formats, with multiple options for capitalization.
 - 🔄 **[AsyncReplace](./basics/asyncReplace.md)** — Asynchronously replaces matches in a string using a regex and an async function.

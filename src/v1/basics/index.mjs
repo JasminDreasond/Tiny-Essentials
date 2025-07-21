@@ -20,7 +20,7 @@ import {
   isScrolledIntoView,
 } from './html_deprecated.mjs';
 import { extendObjType, reorderObjTypeOrder, cloneObjTypeOrder, objType } from './objFilter.mjs';
-import { countObj, isJsonObject } from './objType.mjs';
+import { countObj, isJsonObject } from './objChecker.mjs';
 import {
   documentIsFullScreen,
   isScreenFilled,

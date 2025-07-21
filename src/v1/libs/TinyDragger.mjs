@@ -1,6 +1,6 @@
 import TinyHtml from './TinyHtml.mjs';
 import * as TinyCollision from '../basics/collision.mjs';
-import { isJsonObject } from '../basics/objType.mjs';
+import { isJsonObject } from '../basics/objChecker.mjs';
 
 /**
  * @typedef {Object} VibrationPatterns
