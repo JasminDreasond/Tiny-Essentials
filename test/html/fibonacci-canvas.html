@@ -55,7 +55,7 @@
       window.addEventListener('resize', resizeCanvas);
       resizeCanvas();
 
-      window.draw = function() {
+      window.draw = function () {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         const baseA = parseInt(document.getElementById('baseA').value);
@@ -85,7 +85,7 @@
         }
 
         ctx.stroke();
-      }
+      };
 
       draw();
     </script>

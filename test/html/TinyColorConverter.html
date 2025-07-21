@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Color Tester - TinyColorConverter</title>
+    <style>
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #eaf0f6;
+        padding: 20px;
+        line-height: 1.6;
+        color: #333;
+      }
+      h1,
+      h2 {
+        text-align: center;
+        color: #2c3e50;
+      }
+      .card {
+        background: #ffffff;
+        padding: 20px;
+        margin: 1.5em auto;
+        max-width: 860px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        transition: transform 0.2s ease-in-out;
+      }
+      .card:hover {
+        transform: translateY(-2px);
+      }
+      label,
+      input,
+      select,
+      button {
+        display: block;
+        margin: 12px 0;
+        font-size: 1rem;
+      }
+      button {
+        background: #3498db;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+      }
+      button:hover {
+        background: #2980b9;
+      }
+      .output {
+        background: #f9f9f9;
+        padding: 10px;
+        border-radius: 6px;
+        white-space: pre-wrap;
+      }
+      .color-box {
+        width: 100px;
+        height: 100px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        margin: 10px 0;
+        cursor: pointer;
+      }
+      .flex {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      select.toggle-method {
+        margin-top: 10px;
+      }
+      #result-data .tiny-click:hover {
+        cursor: pointer;
+        color: #441f9b;
+      }
+      #result-data .tiny-click:active {
+        color: #230f50;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Color Tester - TinyColorConverter</h1>
+    <div class="card">
+      <label for="colorInput">Enter a color (HEX, RGB, HSL, name, array or integer):</label>
+      <input
+        id="colorInput"
+        type="text"
+        placeholder="#ff0000, rgb(255,0,0), red, [255,0,0], 16711680"
+      />
+      <label>
+        <input type="checkbox" id="checkHSL" />
+        Interpret arrays as HSL
+      </label>
+      <label for="methodSelect">Conversion method:</label>
+      <select id="methodSelect" class="toggle-method">
+        <option value="class">Class Methods</option>
+        <option value="static">Static Methods</option>
+      </select>
+      <button onclick="handleConvert()">Convert Color</button>
+      <button onclick="generateRandom()">Generate random color</button>
+
+      <div class="flex">
+        <div class="color-box" id="colorPreview"></div>
+        <div id="result-data">
+          <div><strong>Original:</strong> <span id="outputOriginal"></span></div>
+          <br />
+          <div><strong>HEX:</strong> <span id="outputHex"></span></div>
+          <div><strong>INT:</strong> <span id="outputInt" is-int></span></div>
+          <br />
+          <div><strong>RGB String:</strong> <span id="outputRgbStr"></span></div>
+          <div><strong>RGBA String:</strong> <span id="outputRgbaStr"></span></div>
+          <!-- <br />
+          <div><strong>HSL String:</strong> <span id="outputHslStr" is-hsl></span></div>
+          <div><strong>HSLA String:</strong> <span id="outputHslaStr" is-hsl></span></div> -->
+          <br />
+          <div><strong>RGBA Array:</strong> <span id="outputRgba"></span></div>
+          <!-- <div><strong>HSLA Array:</strong> <span id="outputHsla"></span></div> -->
+          <br />
+          <div><strong>Hex to Int:</strong> <span id="outputHexToInt"></span></div>
+          <div><strong>Hex to RGB:</strong> <span id="outputHexToRgb"></span></div>
+          <div><strong>Int to Hex:</strong> <span id="outputIntToHex"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Gradient Generator</h2>
+      <label>Length:</label>
+      <input type="number" id="gradientLen" value="12" />
+      <label>Type:</label>
+      <select id="gradientType">
+        <option value="rgb">RGB</option>
+        <option value="hex">HEX</option>
+        <option value="hsl">HSL</option>
+      </select>
+      <label>
+        <input type="checkbox" id="pastelMode" />
+        Pastel tones
+      </label>
+      <button onclick="generateGradient()">Generate</button>
+      <div id="gradientOutput" class="flex" style="margin-top: 1em"></div>
+    </div>
+
+    <script type="module">
+      import { TinyHtml } from './src/v1/libs/TinyHtml.mjs';
+      import { TinyColorConverter } from './src/v1/libs/TinyColorConverter.mjs';
+
+      window.TinyHtml = TinyHtml;
+      window.TinyColorConverter = TinyColorConverter;
+
+      const colorPreview = TinyHtml.getById('colorPreview');
+
+      const outputOriginal = TinyHtml.getById('outputOriginal');
+      const outputHex = TinyHtml.getById('outputHex');
+      const outputInt = TinyHtml.getById('outputInt');
+
+      const outputRgbStr = TinyHtml.getById('outputRgbStr');
+      const outputRgbaStr = TinyHtml.getById('outputRgbaStr');
+
+      // const outputHslStr = TinyHtml.getById('outputHslStr');
+      // const outputHslaStr = TinyHtml.getById('outputHslaStr');
+
+      const outputRgba = TinyHtml.getById('outputRgba');
+      // const outputHsla = TinyHtml.getById('outputHsla');
+
+      const outputHexToInt = TinyHtml.getById('outputHexToInt');
+      const outputHexToRgb = TinyHtml.getById('outputHexToRgb');
+      const outputIntToHex = TinyHtml.getById('outputIntToHex');
+
+      const values = [
+        outputHex,
+        outputInt,
+        ////////////////////
+        outputRgbStr,
+        outputRgbaStr,
+        ////////////////////
+        // outputHslStr,
+        // outputHslaStr,
+        ////////////////////
+        outputHexToInt,
+        outputIntToHex,
+      ];
+
+      for (const item of values) {
+        item.addClass('tiny-click').on('click', () => {
+          const isInt = item.hasAttr('is-int');
+          const isHsl = item.hasAttr('is-hsl');
+          const parsed = !isInt ? item.text() : parseInt(item.text());
+          console.log(parsed, isHsl, isInt);
+          const conv = new TinyColorConverter(parsed, isHsl);
+          showResults(conv);
+        });
+      }
+
+      function showResults(conv) {
+        colorPreview.setStyle('background', conv.toHex());
+
+        outputOriginal.setText(JSON.stringify(conv.getOriginal()));
+        outputHex.setText(conv.toHex());
+
+        outputInt.setText(conv.toInt().toString());
+
+        outputRgbStr.setText(conv.toRgbString());
+        outputRgbaStr.setText(conv.toRgbaString());
+
+        // outputHslStr.setText(conv.toHslString());
+        // outputHslaStr.setText(conv.toHslaString());
+
+        outputRgba.setText(JSON.stringify(conv.toRgbaArray()));
+        // outputHsla.setText(JSON.stringify(conv.toHslArray()));
+
+        outputHexToInt.setText(TinyColorConverter.hexToInt(conv.toHex()).toString());
+        outputHexToRgb.setText(JSON.stringify(TinyColorConverter.hexToRgb(conv.toHex())));
+        outputIntToHex.setText(TinyColorConverter.intToHex(conv.toInt()));
+      }
+
+      window.handleConvert = () => {
+        const input = document.getElementById('colorInput').value;
+        const isHsl = document.getElementById('checkHSL').checked;
+        const method = document.getElementById('methodSelect').value;
+
+        let parsed;
+        try {
+          parsed = JSON.parse(input);
+        } catch {
+          parsed = input;
+        }
+
+        try {
+          if (method === 'static') {
+          } else {
+            const conv = new TinyColorConverter(parsed, isHsl);
+            showResults(conv);
+          }
+        } catch (e) {
+          alert('Error converting color: ' + e.message);
+          console.error(e);
+        }
+      };
+
+      window.generateRandom = () => {
+        const color = TinyColorConverter.randomColor();
+        const conv = new TinyColorConverter(color);
+        showResults(conv);
+      };
+
+      window.generateGradient = () => {
+        const len = parseInt(document.getElementById('gradientLen').value);
+        const type = document.getElementById('gradientType').value;
+        const pastel = document.getElementById('pastelMode').checked;
+        const out = TinyColorConverter.rca(len, type, pastel);
+
+        const container = document.getElementById('gradientOutput');
+        container.innerHTML = '';
+        out.forEach((c) => {
+          const div = document.createElement('div');
+          div.className = 'color-box';
+          let bg = '#000';
+          if (type === 'hex') {
+            bg = c.hex;
+            div.title = c.hex;
+          } else if (type === 'rgb') {
+            bg = `rgb(${c.r}, ${c.g}, ${c.b})`;
+            div.title = bg;
+          } else {
+            bg = `hsl(${c.h}, ${c.s}%, ${c.l}%)`;
+            div.title = bg;
+          }
+          div.style.background = bg;
+          div.onclick = () => {
+            document.getElementById('colorInput').value =
+              `rgb(${Math.trunc(c.r)}, ${Math.trunc(c.g)}, ${Math.trunc(c.b)})`;
+            handleConvert();
+          };
+          container.appendChild(div);
+        });
+      };
+
+      generateRandom();
+    </script>
+  </body>
+</html>
