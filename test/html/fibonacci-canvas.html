@@ -3,6 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <title>Fibonacci Canvas</title>
+    <script type="module">
+      import { genFibonacciSeq } from './src/v1/basics/simpleMath.mjs';
+      window.genFibonacciSeq = genFibonacciSeq;
+    </script>
     <style>
       html,
       body {
@@ -39,7 +43,7 @@
       <button onclick="draw()">Draw</button>
     </div>
 
-    <script>
+    <script type="module">
       const canvas = document.getElementById('canvas');
       const ctx = canvas.getContext('2d');
 
@@ -51,33 +55,14 @@
       window.addEventListener('resize', resizeCanvas);
       resizeCanvas();
 
-      function generateFibonacciSequence({
-        baseValues = [0, 1],
-        length = 10,
-        combiner = (a, b) => a + b,
-      } = {}) {
-        if (!Array.isArray(baseValues) || baseValues.length !== 2) {
-          throw new Error('baseValues must be an array of exactly two numbers');
-        }
-
-        const sequence = [...baseValues.slice(0, 2)];
-
-        for (let i = 2; i < length; i++) {
-          const next = combiner(sequence[i - 2], sequence[i - 1], i);
-          sequence.push(next);
-        }
-
-        return sequence;
-      }
-
-      function draw() {
+      window.draw = function() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         const baseA = parseInt(document.getElementById('baseA').value);
         const baseB = parseInt(document.getElementById('baseB').value);
         const length = parseInt(document.getElementById('length').value);
 
-        const fib = generateFibonacciSequence({
+        const fib = genFibonacciSeq({
           baseValues: [baseA, baseB],
           length,
         });
