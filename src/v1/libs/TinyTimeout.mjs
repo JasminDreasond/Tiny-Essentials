@@ -143,9 +143,9 @@ class TinyTimeout {
    * @throws {TypeError} If arguments are invalid.
    */
   static waitForTrue(getValue, checkInterval = 100) {
-    if (typeof getValue !== 'function') 
+    if (typeof getValue !== 'function')
       throw new TypeError(`Expected 'getValue' to be a function.`);
-    if (!Number.isFinite(checkInterval) || checkInterval <= 0) 
+    if (!Number.isFinite(checkInterval) || checkInterval <= 0)
       throw new TypeError(`Expected 'checkInterval' to be a positive number.`);
 
     return new Promise((resolve) => {
@@ -169,9 +169,9 @@ class TinyTimeout {
    */
   waitForTrue(getValue, checkInterval = 100) {
     if (this.#isDestroyed) throw new Error('TinyTimeout has been destroyed.');
-    if (typeof getValue !== 'function') 
+    if (typeof getValue !== 'function')
       throw new TypeError(`Expected 'getValue' to be a function.`);
-    if (checkInterval !== null && (!Number.isFinite(checkInterval) || checkInterval <= 0)) 
+    if (checkInterval !== null && (!Number.isFinite(checkInterval) || checkInterval <= 0))
       throw new TypeError(`Expected 'checkInterval' to be null or a positive number.`);
     return TinyTimeout.waitForTrue(getValue, checkInterval ?? this.#cooldownWatcherTime);
   }
