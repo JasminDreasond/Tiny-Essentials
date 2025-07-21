@@ -1,7 +1,7 @@
 /**
  * Counts the number of elements in an array or the number of properties in an object.
  *
- * @param {Array<*>|Record<string|number, any>} obj - The array or object to count.
+ * @param {Array<*>|Record<string | number | symbol, any>} obj - The array or object to count.
  * @returns {number} - The count of items (array elements or object keys), or `0` if the input is neither an array nor an object.
  *
  * @example
