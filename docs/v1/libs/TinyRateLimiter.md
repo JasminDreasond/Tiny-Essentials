@@ -303,6 +303,3 @@ if (limiter.isRateLimited("user42")) {
 | Group-based rate limiting  | ✅       |
 | Activity metrics per group | ✅       |
 
----
-
-Made with 💜 to protect your app from spammers and abusers — in a cute and efficient way! 😄
