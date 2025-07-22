@@ -50,6 +50,24 @@ class TinySmartScroller {
 
   #events = new TinyEvents();
 
+  /**
+   * Enables or disables throwing an error when the maximum number of listeners is exceeded.
+   *
+   * @param {boolean} shouldThrow - If true, an error will be thrown when the max is exceeded.
+   */
+  setThrowOnMaxListeners(shouldThrow) {
+    return this.#events.setThrowOnMaxListeners(shouldThrow);
+  }
+
+  /**
+   * Checks whether an error will be thrown when the max listener limit is exceeded.
+   *
+   * @returns {boolean} True if an error will be thrown, false if only a warning is shown.
+   */
+  getThrowOnMaxListeners() {
+    return this.#events.getThrowOnMaxListeners();
+  }
+
   /////////////////////////////////////////////////////////////
 
   /**

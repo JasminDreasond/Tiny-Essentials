@@ -137,6 +137,29 @@ Returns the current max listener limit (default: 10).
 
 ---
 
+### `setThrowOnMaxListeners(shouldThrow: boolean): void`
+
+Enables or disables the behavior of throwing an error when the number of listeners exceeds the maximum limit.
+
+* If `true`, the class will **throw an error** instead of just logging a warning.
+* If `false`, it will default to console warning (default behavior).
+
+#### Parameters:
+
+* `shouldThrow` *(boolean)* – Whether to throw an error when the listener limit is exceeded.
+
+---
+
+### `getThrowOnMaxListeners(): boolean`
+
+Returns whether the emitter is currently set to throw an error when the maximum number of listeners is exceeded.
+
+#### Returns:
+
+* *(boolean)* – `true` if error throwing is enabled, otherwise `false`.
+
+---
+
 ## 🧪 Example
 
 ```js

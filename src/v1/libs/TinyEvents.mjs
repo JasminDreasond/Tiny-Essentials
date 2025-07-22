@@ -29,6 +29,29 @@ class TinyEvents {
   /** @type {number} */
   #maxListeners = 10;
 
+  /** @type {boolean} */
+  #throwMaxListeners = false;
+
+  /**
+   * Enables or disables throwing an error when the maximum number of listeners is exceeded.
+   *
+   * @param {boolean} shouldThrow - If true, an error will be thrown when the max is exceeded.
+   */
+  setThrowOnMaxListeners(shouldThrow) {
+    if (typeof shouldThrow !== 'boolean')
+      throw new TypeError('setThrowOnMaxListeners(value): value must be a boolean');
+    this.#throwMaxListeners = shouldThrow;
+  }
+
+  /**
+   * Checks whether an error will be thrown when the max listener limit is exceeded.
+   *
+   * @returns {boolean} True if an error will be thrown, false if only a warning is shown.
+   */
+  getThrowOnMaxListeners() {
+    return this.#throwMaxListeners;
+  }
+
   ///////////////////////////////////////////////////
 
   /**
@@ -49,10 +72,11 @@ class TinyEvents {
 
     const max = this.#maxListeners;
     if (max > 0 && eventData.length > max) {
-      console.warn(
+      const warnMessage =
         `Possible memory leak detected. ${eventData.length} "${event}" listeners added. ` +
-          `Use setMaxListeners() to increase limit.`,
-      );
+        `Use setMaxListeners() to increase limit.`;
+      if (!this.#throwMaxListeners) console.warn(warnMessage);
+      else throw new Error(warnMessage);
     }
   }
 
@@ -113,10 +137,11 @@ class TinyEvents {
     // Warn if listener count exceeds the max allowed
     const max = this.#maxListeners;
     if (max > 0 && eventData.length > max) {
-      console.warn(
+      const warnMessage =
         `Possible memory leak detected. ${eventData.length} "${event}" listeners added. ` +
-          `Use setMaxListeners() to increase limit.`,
-      );
+        `Use setMaxListeners() to increase limit.`;
+      if (!this.#throwMaxListeners) console.warn(warnMessage);
+      else throw new Error(warnMessage);
     }
   }
 
