@@ -70,6 +70,14 @@ Check out the full documentation here:
 
 ---
 
+### 🔧 Recommended Tool: **JsStore**
+
+Although not part of Tiny Essentials, we recommend using [**JsStore**](https://www.npmjs.com/package/jsstore) if you're looking for a well-maintained and developer-friendly solution to interact with **IndexedDB** using SQL-like syntax.
+
+> 💬 *This is a personal recommendation. This project is not sponsored or affiliated with JsStore.*
+
+---
+
 ## 🤝 Contributions
 
 Feel free to fork, contribute, and create pull requests for improvements! Whether it's a bug fix or an additional feature, contributions are always welcome.
