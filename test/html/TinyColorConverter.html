@@ -254,15 +254,23 @@
         outputHexToRgb.setText(JSON.stringify(TinyColorConverter.hexToRgb(conv.toHex())));
         outputIntToHex.setText(TinyColorConverter.intToHex(conv.toInt()));
 
-        outputHslStringToRgbaArray.setText(JSON.stringify(TinyColorConverter.hslStringToRgbaArray(conv.toHslaString())));
-        outputHslToRgba.setText(JSON.stringify(TinyColorConverter.hslToRgba(...conv.toHslaArray())));
+        outputHslStringToRgbaArray.setText(
+          JSON.stringify(TinyColorConverter.hslStringToRgbaArray(conv.toHslaString())),
+        );
+        outputHslToRgba.setText(
+          JSON.stringify(TinyColorConverter.hslToRgba(...conv.toHslaArray())),
+        );
         outputHslToRgb.setText(JSON.stringify(TinyColorConverter.hslToRgb(...conv.toHslaArray())));
 
         outputHslToInt.setText(TinyColorConverter.hslToInt(...conv.toHslaArray()).toString());
         outputHslToHex.setText(TinyColorConverter.hslToHex(...conv.toHslaArray()));
 
-        outputRgbaToHsl.setText(JSON.stringify(TinyColorConverter.rgbaToHsl(...conv.toRgbaArray())));
-        outputRgbaToHsla.setText(JSON.stringify(TinyColorConverter.rgbaToHsla(...conv.toRgbaArray())));
+        outputRgbaToHsl.setText(
+          JSON.stringify(TinyColorConverter.rgbaToHsl(...conv.toRgbaArray())),
+        );
+        outputRgbaToHsla.setText(
+          JSON.stringify(TinyColorConverter.rgbaToHsla(...conv.toRgbaArray())),
+        );
 
         outputIntToHsl.setText(JSON.stringify(TinyColorConverter.intToHsl(conv.toInt())));
         outputIntToHsla.setText(JSON.stringify(TinyColorConverter.intToHsla(conv.toInt())));
@@ -316,19 +324,28 @@
           if (type === 'hex') {
             bg = c.hex;
             div.title = c.hex;
+            div.onclick = () => {
+              document.getElementById('colorInput').value = c.hex;
+              handleConvert();
+            };
           } else if (type === 'rgb') {
             bg = `rgb(${c.r}, ${c.g}, ${c.b})`;
             div.title = bg;
+            div.onclick = () => {
+              document.getElementById('colorInput').value =
+                `rgb(${Math.trunc(c.r)}, ${Math.trunc(c.g)}, ${Math.trunc(c.b)})`;
+              handleConvert();
+            };
           } else {
             bg = `hsl(${c.h}, ${c.s}%, ${c.l}%)`;
             div.title = bg;
+            div.onclick = () => {
+              document.getElementById('colorInput').value =
+                `hsl(${Math.trunc(c.h)}, ${Math.trunc(c.s)}, ${Math.trunc(c.l)})`;
+              handleConvert();
+            };
           }
           div.style.background = bg;
-          div.onclick = () => {
-            document.getElementById('colorInput').value =
-              `rgb(${Math.trunc(c.r)}, ${Math.trunc(c.g)}, ${Math.trunc(c.b)})`;
-            handleConvert();
-          };
           container.appendChild(div);
         });
       };
