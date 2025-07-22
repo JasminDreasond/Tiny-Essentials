@@ -178,8 +178,9 @@
           text: 85,
           image: 4,
           image2: 1,
-          'async-image': 5,
-          'image-base64': 5,
+          image3: 4,
+          'async-image': 3,
+          'image-base64': 3,
         };
 
         function getWeightedRandomType() {
@@ -357,6 +358,10 @@
 
           if (type === 'image2') {
             genMessage('/3da28b7b-69ca-403f-96f3-03735653d39e.png');
+          }
+
+          if (type === 'image3') {
+            genMessage('/5ec92aff-7a9d-4b86-bcc3-fe715def537a.png');
           }
 
           if (type === 'image-base64') {

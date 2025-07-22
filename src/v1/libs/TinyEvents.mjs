@@ -29,6 +29,72 @@ class TinyEvents {
   /** @type {number} */
   #maxListeners = 10;
 
+  ///////////////////////////////////////////////////
+
+  /**
+   * Internal method to prepend a listener with options.
+   *
+   * @param {string} event - Event name.
+   * @param {handler} handler - The callback function.
+   * @param {Object} [settings={}] - Optional settings.
+   * @param {boolean} [settings.once=false] - If the listener should be executed once.
+   */
+  #prepend(event, handler, { once = false } = {}) {
+    let eventData = this.#listeners.get(event);
+    if (!Array.isArray(eventData)) {
+      eventData = [];
+      this.#listeners.set(event, eventData);
+    }
+    eventData.unshift({ handler, config: { once } });
+
+    const max = this.#maxListeners;
+    if (max > 0 && eventData.length > max) {
+      console.warn(
+        `Possible memory leak detected. ${eventData.length} "${event}" listeners added. ` +
+          `Use setMaxListeners() to increase limit.`,
+      );
+    }
+  }
+
+  /**
+   * Adds a listener to the beginning of the listeners array for the specified event.
+   *
+   * @param {string} event - Event name.
+   * @param {handler} handler - The callback function.
+   */
+  prepend(event, handler) {
+    if (typeof event !== 'string')
+      throw new TypeError('prepend(event, handler): event name must be a string');
+    if (typeof handler !== 'function')
+      throw new TypeError('prepend(event, handler): handler must be a function');
+    this.#prepend(event, handler);
+  }
+
+  /**
+   * Adds a one-time listener to the beginning of the listeners array for the specified event.
+   *
+   * @param {string} event - Event name.
+   * @param {handler} handler - The callback function.
+   * @returns {handler} - The wrapped handler used internally.
+   */
+  prependOnce(event, handler) {
+    if (typeof event !== 'string')
+      throw new TypeError('prependOnceListener(event, handler): event name must be a string');
+    if (typeof handler !== 'function')
+      throw new TypeError('prependOnceListener(event, handler): handler must be a function');
+
+    /** @type {handler} */
+    const wrapped = (...args) => {
+      this.off(event, wrapped);
+      handler(...args);
+    };
+
+    this.#prepend(event, wrapped, { once: true });
+    return wrapped;
+  }
+
+  ////////////////////////////////////////////////////////////
+
   /**
    * Adds a event listener.
    *
@@ -38,11 +104,6 @@ class TinyEvents {
    * @param {boolean} [settings.once=false] - This is a once event.
    */
   #on(event, handler, { once = false } = {}) {
-    if (typeof event !== 'string')
-      throw new TypeError('on(event, handler): event name must be a string');
-    if (typeof handler !== 'function')
-      throw new TypeError('on(event, handler): handler must be a function');
-
     let eventData = this.#listeners.get(event);
     if (!Array.isArray(eventData)) {
       eventData = [];
@@ -66,6 +127,10 @@ class TinyEvents {
    * @param {handler} handler - Callback function to be called when event fires.
    */
   on(event, handler) {
+    if (typeof event !== 'string')
+      throw new TypeError('on(event, handler): event name must be a string');
+    if (typeof handler !== 'function')
+      throw new TypeError('on(event, handler): handler must be a function');
     return this.#on(event, handler);
   }
 
@@ -89,6 +154,29 @@ class TinyEvents {
     this.#on(event, wrapped, { once: true });
     return wrapped;
   }
+
+  /**
+   * Adds a event listener.
+   *
+   * @param {string} event - Event name, such as 'onScrollBoundary' or 'onAutoScroll'.
+   * @param {handler} handler - Callback function to be called when event fires.
+   */
+  append(event, handler) {
+    return this.on(event, handler);
+  }
+
+  /**
+   * Registers an event listener that runs only once, then is removed.
+   *
+   * @param {string} event - Event name, such as 'onScrollBoundary' or 'onAutoScroll'.
+   * @param {handler} handler - The callback function to run on event.
+   * @returns {handler} - The wrapped version of the handler.
+   */
+  appendOnce(event, handler) {
+    return this.once(event, handler);
+  }
+
+  ///////////////////////////////////////////////
 
   /**
    * Removes a previously registered event listener.
@@ -128,6 +216,8 @@ class TinyEvents {
   offAllTypes() {
     this.#listeners.clear();
   }
+
+  /////////////////////////////////////////////
 
   /**
    * Returns the number of listeners for a given event.
@@ -219,6 +309,8 @@ class TinyEvents {
     listeners.forEach((listener) => listener.handler(...payload));
     return true;
   }
+
+  ///////////////////////////////////
 
   /**
    * Sets the maximum number of listeners per event before a warning is shown.

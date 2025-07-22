@@ -50,6 +50,52 @@ class TinySmartScroller {
 
   #events = new TinyEvents();
 
+  /////////////////////////////////////////////////////////////
+
+  /**
+   * Adds a listener to the beginning of the listeners array for the specified event.
+   *
+   * @param {string} event - Event name.
+   * @param {ScrollListenersFunc} handler - The callback function.
+   */
+  prepend(event, handler) {
+    return this.#events.prepend(event, handler);
+  }
+
+  /**
+   * Adds a one-time listener to the beginning of the listeners array for the specified event.
+   *
+   * @param {string} event - Event name.
+   * @param {ScrollListenersFunc} handler - The callback function.
+   * @returns {ScrollListenersFunc} - The wrapped handler used internally.
+   */
+  prependOnce(event, handler) {
+    return this.#events.prependOnce(event, handler);
+  }
+
+  //////////////////////////////////////////////////////////////////////
+
+  /**
+   * Adds a event listener.
+   *
+   * @param {string} event - Event name, such as 'onScrollBoundary' or 'onAutoScroll'.
+   * @param {ScrollListenersFunc} handler - Callback function to be called when event fires.
+   */
+  append(event, handler) {
+    return this.#events.append(event, handler);
+  }
+
+  /**
+   * Registers an event listener that runs only once, then is removed.
+   *
+   * @param {string} event - Event name, such as 'onScrollBoundary' or 'onAutoScroll'.
+   * @param {ScrollListenersFunc} handler - The callback function to run on event.
+   * @returns {ScrollListenersFunc} - The wrapped version of the handler.
+   */
+  appendOnce(event, handler) {
+    return this.#events.appendOnce(event, handler);
+  }
+
   /**
    * Adds a event listener.
    *
@@ -70,6 +116,8 @@ class TinySmartScroller {
   once(event, handler) {
     return this.#events.once(event, handler);
   }
+
+  ////////////////////////////////////////////////////////////////////
 
   /**
    * Removes a previously registered event listener.
@@ -96,6 +144,8 @@ class TinySmartScroller {
   offAllTypes() {
     return this.#events.offAllTypes();
   }
+
+  ////////////////////////////////////////////////////////////
 
   /**
    * Returns the number of listeners for a given event.
@@ -145,6 +195,8 @@ class TinySmartScroller {
   eventNames() {
     return this.#events.eventNames();
   }
+
+  //////////////////////////////////////////////////////
 
   /**
    * Emits an event, triggering all registered handlers for that event.
