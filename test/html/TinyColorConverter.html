@@ -119,7 +119,7 @@
           <div><strong>RGBA Array:</strong> <span id="outputRgba"></span></div>
           <!-- <div><strong>HSLA Array:</strong> <span id="outputHsla"></span></div> -->
           <br />
-          <div><strong>Hex to Int:</strong> <span id="outputHexToInt"></span></div>
+          <div><strong>Hex to Int:</strong> <span id="outputHexToInt" is-int></span></div>
           <div><strong>Hex to RGB:</strong> <span id="outputHexToRgb"></span></div>
           <div><strong>Int to Hex:</strong> <span id="outputIntToHex"></span></div>
         </div>
@@ -251,7 +251,7 @@
         const len = parseInt(document.getElementById('gradientLen').value);
         const type = document.getElementById('gradientType').value;
         const pastel = document.getElementById('pastelMode').checked;
-        const out = TinyColorConverter.rca(len, type, pastel);
+        const out = TinyColorConverter._rca(len, type, pastel);
 
         const container = document.getElementById('gradientOutput');
         container.innerHTML = '';

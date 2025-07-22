@@ -21,6 +21,26 @@
  */
 
 /**
+ * Represents a color in HSLA format.
+ * The fourth value represents the alpha (transparency) channel.
+ *
+ * @typedef {number[]} HslaColor
+ * @property {number} 0 - Hue (0–360)
+ * @property {number} 1 - Saturation (0–100)
+ * @property {number} 2 - Lightness (0–100)
+ * @property {number} 3 - Alpha component (0–255)
+ */
+
+/**
+ * Represents a color in HSL format.
+ *
+ * @typedef {number[]} HslColor
+ * @property {number} 0 - Hue (0–360)
+ * @property {number} 1 - Saturation (0–100)
+ * @property {number} 2 - Lightness (0–100)
+ */
+
+/**
  * Represents a hex color.
  *
  * @typedef {string} HexColor
@@ -34,21 +54,38 @@
  */
 
 /**
+ * @typedef {Object} RgbResult
+ * @property {number} r - Red component (0–255)
+ * @property {number} g - Green component (0–255)
+ * @property {number} b - Blue component (0–255)
+ */
+
+/**
+ * @typedef {Object} HexResult
+ * @property {string} hex - Hex color
+ */
+
+/**
+ * @typedef {Object} HslResult
+ * @property {number} h - Hue (0–360)
+ * @property {number} s - Saturation (0–100)
+ * @property {number} l - Lightness (0–100)
+ */
+
+/**
  * A class that allows converting colors between all common formats.
  */
 class TinyColorConverter {
   /**
    * Generates a smooth gradient of colors based on sine wave patterns.
    *
+   * @see {@link https://www.npmjs.com/package/rainbow-colors-array} Code Reference
    * @param {number} [len=24] - The number of colors to generate.
    * @param {'rgb'|'hex'|'hsl'} [type='rgb'] - The format of the colors returned: `'rgb'`, `'hex'`, or `'hsl'`.
    * @param {boolean} [pastel=false] - If true, generates pastel tones by adjusting the intensity and offset.
-   * @returns {Array<Object>} An array of color values in the selected format:
-   * - For `'rgb'`: `{ r: number, g: number, b: number }`
-   * - For `'hex'`: `{ hex: string }`
-   * - For `'hsl'`: `{ h: number, s: number, l: number }`
+   * @returns {Array<RgbResult|HexResult|HslResult>} An array of color values in the selected format:
    */
-  static rca(len, type, pastel) {
+  static _rca(len, type, pastel) {
     let eq1 = 127;
     let eq2 = 128;
     if (len === undefined) {
@@ -77,12 +114,46 @@ class TinyColorConverter {
           cvparr.push({ r: red, g: green, b: blue });
           break;
         case 'hsl':
-          cvparr.push(this.rgbToHsl(Math.round(red), Math.round(green), Math.round(blue)));
+          const [h, s, l] = this.rgbaToHsl(Math.round(red), Math.round(green), Math.round(blue));
+          cvparr.push({ h, s, l });
           break;
       }
     }
 
     return cvparr;
+  }
+
+  /**
+   * Generates a smooth gradient of colors based on sine wave patterns.
+   *
+   * @param {number} [len=24] - The number of colors to generate.
+   * @param {boolean} [pastel=false] - If true, generates pastel tones by adjusting the intensity and offset.
+   * @returns {RgbResult[]} An array of rgb color values.
+   */
+  static rcaRgb(len, pastel) {
+    return /** @type {RgbResult[]} */ (TinyColorConverter._rca(len, 'rgb', pastel));
+  }
+
+  /**
+   * Generates a smooth gradient of colors based on sine wave patterns.
+   *
+   * @param {number} [len=24] - The number of colors to generate.
+   * @param {boolean} [pastel=false] - If true, generates pastel tones by adjusting the intensity and offset.
+   * @returns {HslResult[]} An array of hsl color values.
+   */
+  static rcaHsl(len, pastel) {
+    return /** @type {HslResult[]} */ (TinyColorConverter._rca(len, 'hsl', pastel));
+  }
+
+  /**
+   * Generates a smooth gradient of colors based on sine wave patterns.
+   *
+   * @param {number} [len=24] - The number of colors to generate.
+   * @param {boolean} [pastel=false] - If true, generates pastel tones by adjusting the intensity and offset.
+   * @returns {HexResult[]} An array of hex color values.
+   */
+  static rcaHex(len, pastel) {
+    return /** @type {HexResult[]} */ (TinyColorConverter._rca(len, 'hex', pastel));
   }
 
   /**
@@ -96,7 +167,6 @@ class TinyColorConverter {
 
   /**
    * Parses input into RGBA array.
-   * @private
    * @param {ColorTypes} input
    * @returns {RgbaColor}
    */
@@ -118,6 +188,39 @@ class TinyColorConverter {
     throw new Error('Unsupported color format.');
   }
 
+  // HSL Color
+
+  /**
+   * Converts hsl(a) string to RGBA array.
+   * @param {string} hsl
+   * @returns {RgbaColor}
+   */
+  static hslStringToRgbaArray(hsl) {
+    const match = hsl.match(/[\d.]+/g)?.map(Number);
+    if (!match || match.length < 3) return [0, 0, 0, 1];
+    const [h, s, l, a = 1] = match;
+    return this.hslToRgba(h, s, l, a);
+  }
+
+  /**
+   * Converts HSL or HSLA to RGBA.
+   * @param {number} h - Hue (0–360)
+   * @param {number} s - Saturation (0–100)
+   * @param {number} l - Lightness (0–100)
+   * @param {number} [a=1] - Alpha (0–1)
+   * @returns {RgbaColor}
+   */
+  static hslToRgba(h, s, l, a = 1) {
+    s /= 100;
+    l /= 100;
+    /** @type {(n: number) => number} */
+    const k = (n) => (n + h / 30) % 12;
+    const a_ = s * Math.min(l, 1 - l);
+    /** @type {(n: number) => number} */
+    const f = (n) => l - a_ * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+    return [Math.round(f(0) * 255), Math.round(f(8) * 255), Math.round(f(4) * 255), a];
+  }
+
   // Hex Color
 
   /**
@@ -131,7 +234,6 @@ class TinyColorConverter {
 
   /**
    * Converts hex string to RGBA array.
-   * @private
    * @param {HexColor} hex
    * @returns {RgbaColor}
    */
@@ -183,8 +285,57 @@ class TinyColorConverter {
   }
 
   /**
+   * Converts RGBA to HSLA.
+   * @param {number} r
+   * @param {number} g
+   * @param {number} b
+   * @param {number} [a=1]
+   * @returns {HslaColor}
+   */
+  static rgbaToHsla(r, g, b, a = 1) {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h = 0,
+      s = 0,
+      l = (max + min) / 2;
+    const d = max - min;
+
+    if (d !== 0) {
+      s = d / (1 - Math.abs(2 * l - 1));
+      switch (max) {
+        case r:
+          h = (g - b) / d + (g < b ? 6 : 0);
+          break;
+        case g:
+          h = (b - r) / d + 2;
+          break;
+        case b:
+          h = (r - g) / d + 4;
+          break;
+      }
+      h *= 60;
+    }
+
+    return [Math.round(h), Math.round(s * 100), Math.round(l * 100), a];
+  }
+
+  /**
+   * Converts RGBA to HSL.
+   * @param {number} r
+   * @param {number} g
+   * @param {number} b
+   * @param {number} [a=1]
+   * @returns {HslColor}
+   */
+  static rgbaToHsl(r, g, b, a) {
+    return this.rgbaToHsla(r, g, b, a).slice(0, 3);
+  }
+
+  /**
    * Converts rgb(a) string to RGBA array.
-   * @private
    * @param {string} rgb
    * @returns {RgbaColor}
    */
@@ -207,7 +358,6 @@ class TinyColorConverter {
 
   /**
    * Converts an integer (0xRRGGBB) to RGBA.
-   * @private
    * @param {number} value
    * @returns {RgbaColor}
    */
