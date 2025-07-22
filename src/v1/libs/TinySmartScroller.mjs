@@ -1,5 +1,6 @@
 import TinyHtml from './TinyHtml.mjs';
 import * as TinyCollision from '../basics/collision.mjs';
+import TinyEvents from './TinyEvents.mjs';
 
 /**
  * Represents the dimensions of a DOM element.
@@ -47,11 +48,7 @@ import * as TinyCollision from '../basics/collision.mjs';
 class TinySmartScroller {
   static Utils = { ...TinyCollision, TinyHtml };
 
-  /** @type {Map<string, ScrollListenersFunc[]>} */
-  #listeners = new Map();
-
-  /** @type {number} */
-  #maxListeners = 10;
+  #events = new TinyEvents();
 
   /**
    * Adds a event listener.
@@ -60,26 +57,7 @@ class TinySmartScroller {
    * @param {ScrollListenersFunc} handler - Callback function to be called when event fires.
    */
   on(event, handler) {
-    if (this.#destroyed) return;
-    if (typeof event !== 'string')
-      throw new TypeError('on(event, handler): event name must be a string');
-    if (typeof handler !== 'function')
-      throw new TypeError('on(event, handler): handler must be a function');
-
-    let eventData = this.#listeners.get(event);
-    if (!Array.isArray(eventData)) {
-      eventData = [];
-      this.#listeners.set(event, eventData);
-    }
-    eventData.push(handler);
-    // Warn if listener count exceeds the max allowed
-    const max = this.#maxListeners;
-    if (max > 0 && eventData.length > max) {
-      console.warn(
-        `Possible memory leak detected. ${eventData.length} "${event}" listeners added. ` +
-          `Use setMaxListeners() to increase limit.`,
-      );
-    }
+    return this.#events.on(event, handler);
   }
 
   /**
@@ -87,18 +65,10 @@ class TinySmartScroller {
    *
    * @param {string} event - Event name, such as 'onScrollBoundary' or 'onAutoScroll'.
    * @param {ScrollListenersFunc} handler - The callback function to run on event.
+   * @returns {ScrollListenersFunc} - The wrapped version of the handler.
    */
   once(event, handler) {
-    if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
-    if (typeof handler !== 'function')
-      throw new TypeError('once(event, handler): handler must be a function');
-
-    /** @type {ScrollListenersFunc} */
-    const wrapped = (e) => {
-      this.off(event, wrapped);
-      if (typeof handler === 'function') handler(e);
-    };
-    this.on(event, wrapped);
+    return this.#events.once(event, handler);
   }
 
   /**
@@ -108,20 +78,7 @@ class TinySmartScroller {
    * @param {ScrollListenersFunc} handler - The specific callback function to remove.
    */
   off(event, handler) {
-    if (this.#destroyed) return;
-    if (typeof event !== 'string')
-      throw new TypeError('off(event, handler): event name must be a string');
-    if (typeof handler !== 'function')
-      throw new TypeError('off(event, handler): handler must be a function');
-
-    const listeners = this.#listeners.get(event);
-    if (!Array.isArray(listeners)) return;
-
-    const index = listeners.indexOf(handler);
-    if (index !== -1) listeners.splice(index, 1);
-
-    // Optionally clean up empty arrays (optional)
-    if (listeners.length === 0) this.#listeners.delete(event);
+    return this.#events.off(event, handler);
   }
 
   /**
@@ -130,15 +87,14 @@ class TinySmartScroller {
    * @param {string} event - The event type to remove (e.g. 'onScrollBoundary').
    */
   offAll(event) {
-    if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
-    this.#listeners.delete(event);
+    return this.#events.offAll(event);
   }
 
   /**
    * Removes all event listeners of all types from the element.
    */
   offAllTypes() {
-    this.#listeners.clear();
+    return this.#events.offAllTypes();
   }
 
   /**
@@ -148,11 +104,7 @@ class TinySmartScroller {
    * @returns {number} Number of listeners for the event.
    */
   listenerCount(event) {
-    if (typeof event !== 'string')
-      throw new TypeError('listenerCount(event): event name must be a string');
-
-    const listeners = this.#listeners.get(event);
-    return Array.isArray(listeners) ? listeners.length : 0;
+    return this.#events.listenerCount(event);
   }
 
   /**
@@ -162,11 +114,27 @@ class TinySmartScroller {
    * @returns {ScrollListenersFunc[]} Array of listener functions.
    */
   listeners(event) {
-    if (typeof event !== 'string')
-      throw new TypeError('listeners(event): event name must be a string');
+    return this.#events.listeners(event);
+  }
 
-    const listeners = this.#listeners.get(event);
-    return Array.isArray(listeners) ? [...listeners] : [];
+  /**
+   * Returns a copy of the array of listeners for the specified event.
+   *
+   * @param {string} event - The name of the event.
+   * @returns {ScrollListenersFunc[]} Array of listener functions.
+   */
+  onceListeners(event) {
+    return this.#events.onceListeners(event);
+  }
+
+  /**
+   * Returns a copy of the internal listeners array for the specified event,
+   * including wrapper functions like those used by `.once()`.
+   * @param {string | symbol} event - The event name.
+   * @returns {ScrollListenersFunc[]} An array of raw listener functions.
+   */
+  allListeners(event) {
+    return this.#events.allListeners(event);
   }
 
   /**
@@ -175,27 +143,18 @@ class TinySmartScroller {
    * @returns {string[]} Array of registered event names.
    */
   eventNames() {
-    return [...this.#listeners.keys()];
+    return this.#events.eventNames();
   }
 
   /**
    * Emits an event, triggering all registered handlers for that event.
    *
    * @param {string} event - The event name to emit.
-   * @param {any} [payload] - Optional data to pass to each handler.
+   * @param {...any} payload - Optional data to pass to each handler.
    * @returns {boolean} True if any listeners were called, false otherwise.
    */
-  emit(event, payload) {
-    if (this.#destroyed) return false;
-    if (typeof event !== 'string')
-      throw new TypeError('emit(event, data): event name must be a string');
-
-    const listeners = this.#listeners.get(event);
-    if (!Array.isArray(listeners) || listeners.length === 0) return false;
-
-    // Call all listeners with the provided data
-    listeners.forEach((fn) => fn(payload));
-    return true;
+  emit(event, ...payload) {
+    return this.#events.emit(event, ...payload);
   }
 
   /**
@@ -204,9 +163,7 @@ class TinySmartScroller {
    * @param {number} n - The maximum number of listeners.
    */
   setMaxListeners(n) {
-    if (!Number.isInteger(n) || n < 0)
-      throw new TypeError('setMaxListeners(n): n must be a non-negative integer');
-    this.#maxListeners = n;
+    return this.#events.setMaxListeners(n);
   }
 
   /**
@@ -215,7 +172,7 @@ class TinySmartScroller {
    * @returns {number} The maximum number of listeners.
    */
   getMaxListeners() {
-    return this.#maxListeners;
+    return this.#events.getMaxListeners();
   }
 
   ///////////////////////////////////////////////////
@@ -1093,7 +1050,7 @@ class TinySmartScroller {
     this.#oldVisiblesByTime = new WeakMap();
 
     // Cleans listeners and filters
-    this.#listeners.clear();
+    this.#events.offAllTypes();
     this.#sizeFilter.clear();
     this.#loadTags.clear();
   }

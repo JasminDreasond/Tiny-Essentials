@@ -183,7 +183,7 @@ class TinyEvents {
    * Returns a copy of the internal listeners array for the specified event,
    * including wrapper functions like those used by `.once()`.
    * @param {string | symbol} event - The event name.
-   * @returns {Function[]} An array of raw listener functions.
+   * @returns {handler[]} An array of raw listener functions.
    */
   allListeners(event) {
     if (typeof event !== 'string')
