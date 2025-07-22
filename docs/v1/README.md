@@ -41,6 +41,7 @@ This folder contains the core scripts we have worked on so far. Each file is a m
 - 🍮 **[UltraRandomMsgGen](./libs/UltraRandomMsgGen.md)** — A whimsical random message generator using grammar templates, word sets, emojis, and chaotic modes to craft playful text outputs.
 - ✍️ **[TinyTextRangeEditor](./libs/TinyTextRangeEditor.md)** — An flexible text range manipulation utility for `input` and `textarea` elements. Supports selection, cursor control, tag insertion, attribute handling, inline editing, formatting, and advanced wrap/toggle logic with optional spacing auto-completion.
 - ⏳ **[TinyTimeout](./libs/TinyTimeout.md)** — A dynamic timeout and delay manager with support for usage-based throttling, delay scaling, configurable decay intervals, and asynchronous polling for conditions.
+- 🌈 **[TinyColorConverter](./libs/TinyColorConverter.md)** — A complete color conversion toolkit supporting hex, RGB(A), HSL(A), and integer formats, with smooth gradient generation, color parsing, and multi-format output conversion.
 
 ### 3. **`fileManager/`**
 * 📁 **[Main](./fileManager/main.md)** — A Node.js file/directory utility module with support for JSON, backups, renaming, size analysis, and more.

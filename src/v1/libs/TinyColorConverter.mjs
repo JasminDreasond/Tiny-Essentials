@@ -170,7 +170,8 @@ class TinyColorConverter {
    * @returns {HexColor} A hex color string (e.g. `#a3e5f2`).
    */
   static randomColor() {
-    return `#${(0x1000000 + Math.random() * 0xffffff).toString(16).substring(1, 6)}`;
+    const hex = Math.floor(Math.random() * 0x1000000).toString(16);
+    return `#${hex.padStart(6, '0')}`;
   }
 
   /**
@@ -183,7 +184,7 @@ class TinyColorConverter {
     if (typeof input === 'string') {
       input = input.trim().toLowerCase();
       if (input.startsWith('#')) return this.hexToRgba(input);
-      if (input.startsWith('rgb')) return this.rgbaStringToRgbaArray(input);
+      if (input.startsWith('rgb')) return this.rgbStringToRgbaArray(input);
       if (input.startsWith('hsl')) return this.hslStringToRgbaArray(input);
     }
     if (typeof input === 'number') return this.intToRgba(input);
@@ -409,7 +410,7 @@ class TinyColorConverter {
    * @param {string} rgb
    * @returns {RgbaColor}
    */
-  static rgbaStringToRgbaArray(rgb) {
+  static rgbStringToRgbaArray(rgb) {
     const match = rgb.match(/[\d.]+/g)?.map(Number);
     if (!match) return [];
     return [...match, 1].slice(0, 4);
