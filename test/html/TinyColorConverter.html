@@ -112,12 +112,12 @@
           <br />
           <div><strong>RGB String:</strong> <span id="outputRgbStr"></span></div>
           <div><strong>RGBA String:</strong> <span id="outputRgbaStr"></span></div>
-          <!-- <br />
+          <br />
           <div><strong>HSL String:</strong> <span id="outputHslStr" is-hsl></span></div>
-          <div><strong>HSLA String:</strong> <span id="outputHslaStr" is-hsl></span></div> -->
+          <div><strong>HSLA String:</strong> <span id="outputHslaStr" is-hsl></span></div>
           <br />
           <div><strong>RGBA Array:</strong> <span id="outputRgba"></span></div>
-          <!-- <div><strong>HSLA Array:</strong> <span id="outputHsla"></span></div> -->
+          <div><strong>HSLA Array:</strong> <span id="outputHsla"></span></div>
           <br />
           <div><strong>Hex to Int:</strong> <span id="outputHexToInt" is-int></span></div>
           <div><strong>Hex to RGB:</strong> <span id="outputHexToRgb"></span></div>
@@ -160,11 +160,11 @@
       const outputRgbStr = TinyHtml.getById('outputRgbStr');
       const outputRgbaStr = TinyHtml.getById('outputRgbaStr');
 
-      // const outputHslStr = TinyHtml.getById('outputHslStr');
-      // const outputHslaStr = TinyHtml.getById('outputHslaStr');
+      const outputHslStr = TinyHtml.getById('outputHslStr');
+      const outputHslaStr = TinyHtml.getById('outputHslaStr');
 
       const outputRgba = TinyHtml.getById('outputRgba');
-      // const outputHsla = TinyHtml.getById('outputHsla');
+      const outputHsla = TinyHtml.getById('outputHsla');
 
       const outputHexToInt = TinyHtml.getById('outputHexToInt');
       const outputHexToRgb = TinyHtml.getById('outputHexToRgb');
@@ -177,8 +177,8 @@
         outputRgbStr,
         outputRgbaStr,
         ////////////////////
-        // outputHslStr,
-        // outputHslaStr,
+        outputHslStr,
+        outputHslaStr,
         ////////////////////
         outputHexToInt,
         outputIntToHex,
@@ -196,7 +196,7 @@
       }
 
       function showResults(conv) {
-        colorPreview.setStyle('background', conv.toHex());
+        colorPreview.setStyle('background', conv.toRgbaString());
 
         outputOriginal.setText(JSON.stringify(conv.getOriginal()));
         outputHex.setText(conv.toHex());
@@ -206,11 +206,11 @@
         outputRgbStr.setText(conv.toRgbString());
         outputRgbaStr.setText(conv.toRgbaString());
 
-        // outputHslStr.setText(conv.toHslString());
-        // outputHslaStr.setText(conv.toHslaString());
+        outputHslStr.setText(conv.toHslString());
+        outputHslaStr.setText(conv.toHslaString());
 
         outputRgba.setText(JSON.stringify(conv.toRgbaArray()));
-        // outputHsla.setText(JSON.stringify(conv.toHslArray()));
+        outputHsla.setText(JSON.stringify(conv.toHslaArray()));
 
         outputHexToInt.setText(TinyColorConverter.hexToInt(conv.toHex()).toString());
         outputHexToRgb.setText(JSON.stringify(TinyColorConverter.hexToRgb(conv.toHex())));

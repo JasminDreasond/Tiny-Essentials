@@ -54,6 +54,14 @@
  */
 
 /**
+ * @typedef {Object} RgbaResult
+ * @property {number} r - Red component (0–255)
+ * @property {number} g - Green component (0–255)
+ * @property {number} b - Blue component (0–255)
+ * @property {number} a - Alpha component (0–255)
+ */
+
+/**
  * @typedef {Object} RgbResult
  * @property {number} r - Red component (0–255)
  * @property {number} g - Green component (0–255)
@@ -168,13 +176,15 @@ class TinyColorConverter {
   /**
    * Parses input into RGBA array.
    * @param {ColorTypes} input
+   * @param {boolean} isHsl
    * @returns {RgbaColor}
    */
-  static parseInput(input) {
+  static parseInput(input, isHsl) {
     if (typeof input === 'string') {
       input = input.trim().toLowerCase();
       if (input.startsWith('#')) return this.hexToRgba(input);
       if (input.startsWith('rgb')) return this.rgbaStringToRgbaArray(input);
+      if (input.startsWith('hsl')) return this.hslStringToRgbaArray(input);
     }
     if (typeof input === 'number') return this.intToRgba(input);
     if (
@@ -182,6 +192,10 @@ class TinyColorConverter {
       (input.length === 3 || input.length === 4) &&
       input.every((item) => typeof item === 'number')
     ) {
+      if (isHsl) {
+        const [h, s, l, a2] = input;
+        if (h <= 360 && s <= 100 && l <= 100) return this.hslToRgba(h, s, l, a2);
+      }
       return [...input, 1].slice(0, 4);
     }
 
@@ -189,6 +203,30 @@ class TinyColorConverter {
   }
 
   // HSL Color
+
+  /**
+   * Converts hsl to integer.
+   * @param {number} h - Hue (0–360)
+   * @param {number} s - Saturation (0–100)
+   * @param {number} l - Lightness (0–100)
+   * @returns {number}
+   */
+  static hslToInt(h, s, l) {
+    const [r, g, b] = TinyColorConverter.hslToRgba(h, s, l);
+    return TinyColorConverter.rgbToInt(r, g, b);
+  }
+
+  /**
+   * Converts hsl to hex.
+   * @param {number} h - Hue (0–360)
+   * @param {number} s - Saturation (0–100)
+   * @param {number} l - Lightness (0–100)
+   * @returns {HexColor}
+   */
+  static hslToHex(h, s, l) {
+    const [r, g, b] = TinyColorConverter.hslToRgba(h, s, l);
+    return TinyColorConverter.rgbToHex(r, g, b);
+  }
 
   /**
    * Converts hsl(a) string to RGBA array.
@@ -221,6 +259,18 @@ class TinyColorConverter {
     return [Math.round(f(0) * 255), Math.round(f(8) * 255), Math.round(f(4) * 255), a];
   }
 
+  /**
+   * Converts HSL or HSLA to RGB.
+   * @param {number} h - Hue (0–360)
+   * @param {number} s - Saturation (0–100)
+   * @param {number} l - Lightness (0–100)
+   * @param {number} [a=1] - Alpha (0–1)
+   * @returns {RgbColor}
+   */
+  static hslToRgb(h, s, l, a = 1) {
+    return TinyColorConverter.hslToRgba(h, s, l, a).slice(0, 3);
+  }
+
   // Hex Color
 
   /**
@@ -230,6 +280,26 @@ class TinyColorConverter {
    */
   static hexToInt(hex) {
     return parseInt(hex.replace(/^#/, ''), 16);
+  }
+
+  /**
+   * Converts hex string to HSL array.
+   * @param {HexColor} hex
+   * @returns {HslColor}
+   */
+  static hexToHsl(hex) {
+    const [r, g, b, a] = TinyColorConverter.hexToRgba(hex);
+    return TinyColorConverter.rgbaToHsl(r, g, b, a);
+  }
+
+  /**
+   * Converts hex string to HSL array.
+   * @param {HexColor} hex
+   * @returns {HslaColor}
+   */
+  static hexToHsla(hex) {
+    const [r, g, b, a] = TinyColorConverter.hexToRgba(hex);
+    return TinyColorConverter.rgbaToHsla(r, g, b, a);
   }
 
   /**
@@ -348,6 +418,26 @@ class TinyColorConverter {
   // Integer Color
 
   /**
+   * Converts integer color to HSL.
+   * @param {number} int
+   * @returns {HslColor}
+   */
+  static intToHsl(int) {
+    const [r, g, b, a] = TinyColorConverter.intToRgba(int);
+    return TinyColorConverter.rgbaToHsl(r, g, b, a);
+  }
+
+  /**
+   * Converts integer color to HSL.
+   * @param {number} int
+   * @returns {HslaColor}
+   */
+  static intToHsla(int) {
+    const [r, g, b, a] = TinyColorConverter.intToRgba(int);
+    return TinyColorConverter.rgbaToHsla(r, g, b, a);
+  }
+
+  /**
    * Converts integer color to hex.
    * @param {number} int
    * @returns {HexColor}
@@ -397,7 +487,36 @@ class TinyColorConverter {
       input[0] <= 360 &&
       input[1] <= 100 &&
       input[2] <= 100;
-    this.#rgba = TinyColorConverter.parseInput(input);
+    this.#rgba = TinyColorConverter.parseInput(input, isHsl);
+  }
+
+  /**
+   * Returns HSLA array.
+   * @returns {HslaColor}
+   */
+  toHslaArray() {
+    const [r, g, b, a] = this.#rgba;
+    return TinyColorConverter.rgbaToHsla(r, g, b, a);
+  }
+
+  /**
+   * Returns RGB string.
+   * @returns {string}
+   */
+  toHslString() {
+    const [r, g, b] = this.#rgba;
+    const [h, s, l] = TinyColorConverter.rgbaToHsl(r, g, b);
+    return `hsl(${h}, ${s}%, ${l}%)`;
+  }
+
+  /**
+   * Returns RGBA string.
+   * @returns {string}
+   */
+  toHslaString() {
+    const [r, g, b, a] = this.#rgba;
+    const [h, s, l, a2] = TinyColorConverter.rgbaToHsla(r, g, b, a);
+    return `hsla(${h}, ${s}%, ${l}%, ${a2 ?? 1})`;
   }
 
   /**
@@ -409,7 +528,7 @@ class TinyColorConverter {
   }
 
   /**
-   * Returns RGB or RGBA string.
+   * Returns RGB string.
    * @returns {string}
    */
   toRgbString() {
@@ -418,7 +537,7 @@ class TinyColorConverter {
   }
 
   /**
-   * Returns RGB or RGBA string.
+   * Returns RGBA string.
    * @returns {string}
    */
   toRgbaString() {
