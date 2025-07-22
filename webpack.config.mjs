@@ -78,5 +78,7 @@ addModule(1, './src/v1/build/UltraRandomMsgGen.mjs', 'UltraRandomMsgGen', true);
 addModule(1, './src/v1/build/TinySmartScroller.mjs', 'TinySmartScroller', true);
 addModule(1, './src/v1/build/TinyTextRangeEditor.mjs', 'TinyTextRangeEditor', true);
 addModule(1, './src/v1/build/TinyClipboard.mjs', 'TinyClipboard', true);
+addModule(1, './src/v1/build/TinyColorConverter.mjs', 'TinyColorConverter', true);
+addModule(1, './src/v1/build/TinyTimeout.mjs', 'TinyTimeout', true);
 
 export default modules;

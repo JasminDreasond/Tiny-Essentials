@@ -125,8 +125,12 @@ import UltraRandomMsgGen from './libs/UltraRandomMsgGen.mjs';
 import TinySmartScroller from './libs/TinySmartScroller.mjs';
 import TinyTextRangeEditor from './libs/TinyTextRangeEditor.mjs';
 import TinyClipboard from './libs/TinyClipboard.mjs';
+import TinyColorConverter from './libs/TinyColorConverter.mjs';
+import TinyTimeout from './libs/TinyTimeout.mjs';
 
 export {
+  TinyTimeout,
+  TinyColorConverter,
   TinyClipboard,
   TinyTextRangeEditor,
   TinySmartScroller,
