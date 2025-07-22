@@ -122,6 +122,25 @@
           <div><strong>Hex to Int:</strong> <span id="outputHexToInt" is-int></span></div>
           <div><strong>Hex to RGB:</strong> <span id="outputHexToRgb"></span></div>
           <div><strong>Int to Hex:</strong> <span id="outputIntToHex"></span></div>
+          <br />
+          <div>
+            <strong>HSL (String) to RGBA (Array):</strong>
+            <span id="outputHslStringToRgbaArray"></span>
+          </div>
+          <div><strong>HSL to RGBA:</strong> <span id="outputHslToRgba"></span></div>
+          <div><strong>HSL to RGB to Hex:</strong> <span id="outputHslToRgb"></span></div>
+          <br />
+          <div><strong>HSL to Int:</strong> <span id="outputHslToInt" is-int></span></div>
+          <div><strong>HSL to Hex:</strong> <span id="outputHslToHex"></span></div>
+          <br />
+          <div><strong>RGBA to Hsl:</strong> <span id="outputRgbaToHsl" is-hsl></span></div>
+          <div><strong>RGBA to HSLA:</strong> <span id="outputRgbaToHsla" is-hsl></span></div>
+          <br />
+          <div><strong>Int to HSL:</strong> <span id="outputIntToHsl" is-hsl></span></div>
+          <div><strong>Int to HSLA:</strong> <span id="outputIntToHsla" is-hsl></span></div>
+          <br />
+          <div><strong>Hex to HSL:</strong> <span id="outputHexToHsl" is-hsl></span></div>
+          <div><strong>Hex to HSLA:</strong> <span id="outputHexToHsla" is-hsl></span></div>
         </div>
       </div>
     </div>
@@ -170,6 +189,22 @@
       const outputHexToRgb = TinyHtml.getById('outputHexToRgb');
       const outputIntToHex = TinyHtml.getById('outputIntToHex');
 
+      const outputHslStringToRgbaArray = TinyHtml.getById('outputHslStringToRgbaArray');
+      const outputHslToRgba = TinyHtml.getById('outputHslToRgba');
+      const outputHslToRgb = TinyHtml.getById('outputHslToRgb');
+
+      const outputHslToInt = TinyHtml.getById('outputHslToInt');
+      const outputHslToHex = TinyHtml.getById('outputHslToHex');
+
+      const outputRgbaToHsl = TinyHtml.getById('outputRgbaToHsl');
+      const outputRgbaToHsla = TinyHtml.getById('outputRgbaToHsla');
+
+      const outputIntToHsl = TinyHtml.getById('outputIntToHsl');
+      const outputIntToHsla = TinyHtml.getById('outputIntToHsla');
+
+      const outputHexToHsl = TinyHtml.getById('outputHexToHsl');
+      const outputHexToHsla = TinyHtml.getById('outputHexToHsla');
+
       const values = [
         outputHex,
         outputInt,
@@ -182,6 +217,9 @@
         ////////////////////
         outputHexToInt,
         outputIntToHex,
+        ////////////////////
+        outputHslToInt,
+        outputHslToHex,
       ];
 
       for (const item of values) {
@@ -215,6 +253,22 @@
         outputHexToInt.setText(TinyColorConverter.hexToInt(conv.toHex()).toString());
         outputHexToRgb.setText(JSON.stringify(TinyColorConverter.hexToRgb(conv.toHex())));
         outputIntToHex.setText(TinyColorConverter.intToHex(conv.toInt()));
+
+        outputHslStringToRgbaArray.setText(JSON.stringify(TinyColorConverter.hslStringToRgbaArray(conv.toHslaString())));
+        outputHslToRgba.setText(JSON.stringify(TinyColorConverter.hslToRgba(...conv.toHslaArray())));
+        outputHslToRgb.setText(JSON.stringify(TinyColorConverter.hslToRgb(...conv.toHslaArray())));
+
+        outputHslToInt.setText(TinyColorConverter.hslToInt(...conv.toHslaArray()).toString());
+        outputHslToHex.setText(TinyColorConverter.hslToHex(...conv.toHslaArray()));
+
+        outputRgbaToHsl.setText(JSON.stringify(TinyColorConverter.rgbaToHsl(...conv.toRgbaArray())));
+        outputRgbaToHsla.setText(JSON.stringify(TinyColorConverter.rgbaToHsla(...conv.toRgbaArray())));
+
+        outputIntToHsl.setText(JSON.stringify(TinyColorConverter.intToHsl(conv.toInt())));
+        outputIntToHsla.setText(JSON.stringify(TinyColorConverter.intToHsla(conv.toInt())));
+
+        outputHexToHsl.setText(JSON.stringify(TinyColorConverter.hexToHsl(conv.toHex())));
+        outputHexToHsla.setText(JSON.stringify(TinyColorConverter.hexToHsla(conv.toHex())));
       }
 
       window.handleConvert = () => {
