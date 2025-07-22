@@ -284,6 +284,12 @@
           statusText.textContent = 'Status: ' + state;
         };
 
+        scroller.once('onScrollBoundary', ({ status }) => {
+          if (!status) return;
+          updateStatus();
+          log(`onScrollBoundary (Once): ${status}`);
+        });
+
         scroller.on('onScrollBoundary', ({ status }) => {
           if (!status) return;
           updateStatus();
