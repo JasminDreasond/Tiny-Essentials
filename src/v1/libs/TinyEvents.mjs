@@ -2,7 +2,7 @@
  * A generic event listener callback function.
  *
  * @callback handler
- * @param {any} payload - The data payload passed when the event is triggered.
+ * @param {...any} payload - The data payload passed when the event is triggered.
  * @returns {void}
  */
 
@@ -23,7 +23,7 @@
  * @class
  */
 class TinyEvents {
-  /** @type {Map<string, handler[]>} */
+  /** @type {Map<string, { handler: handler; config: { once: boolean } }[]>} */
   #listeners = new Map();
 
   /** @type {number} */
@@ -34,8 +34,10 @@ class TinyEvents {
    *
    * @param {string} event - Event name, such as 'onScrollBoundary' or 'onAutoScroll'.
    * @param {handler} handler - Callback function to be called when event fires.
+   * @param {Object} [settings={}] - Optional settings.
+   * @param {boolean} [settings.once=false] - This is a once event.
    */
-  on(event, handler) {
+  #on(event, handler, { once = false } = {}) {
     if (typeof event !== 'string')
       throw new TypeError('on(event, handler): event name must be a string');
     if (typeof handler !== 'function')
@@ -46,7 +48,7 @@ class TinyEvents {
       eventData = [];
       this.#listeners.set(event, eventData);
     }
-    eventData.push(handler);
+    eventData.push({ handler, config: { once } });
     // Warn if listener count exceeds the max allowed
     const max = this.#maxListeners;
     if (max > 0 && eventData.length > max) {
@@ -58,10 +60,21 @@ class TinyEvents {
   }
 
   /**
+   * Adds a event listener.
+   *
+   * @param {string} event - Event name, such as 'onScrollBoundary' or 'onAutoScroll'.
+   * @param {handler} handler - Callback function to be called when event fires.
+   */
+  on(event, handler) {
+    return this.#on(event, handler);
+  }
+
+  /**
    * Registers an event listener that runs only once, then is removed.
    *
    * @param {string} event - Event name, such as 'onScrollBoundary' or 'onAutoScroll'.
    * @param {handler} handler - The callback function to run on event.
+   * @returns {handler} - The wrapped version of the handler.
    */
   once(event, handler) {
     if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
@@ -73,7 +86,8 @@ class TinyEvents {
       this.off(event, wrapped);
       if (typeof handler === 'function') handler(e);
     };
-    this.on(event, wrapped);
+    this.#on(event, wrapped, { once: true });
+    return wrapped;
   }
 
   /**
@@ -91,7 +105,7 @@ class TinyEvents {
     const listeners = this.#listeners.get(event);
     if (!Array.isArray(listeners)) return;
 
-    const index = listeners.indexOf(handler);
+    const index = listeners.findIndex((listener) => listener.handler === handler);
     if (index !== -1) listeners.splice(index, 1);
 
     // Optionally clean up empty arrays (optional)
@@ -140,7 +154,42 @@ class TinyEvents {
       throw new TypeError('listeners(event): event name must be a string');
 
     const listeners = this.#listeners.get(event);
-    return Array.isArray(listeners) ? [...listeners] : [];
+    return Array.isArray(listeners)
+      ? [...listeners]
+          .filter((listener) => !listener.config.once)
+          .map((listener) => listener.handler)
+      : [];
+  }
+
+  /**
+   * Returns a copy of the array of listeners for the specified event.
+   *
+   * @param {string} event - The name of the event.
+   * @returns {handler[]} Array of listener functions.
+   */
+  onceListeners(event) {
+    if (typeof event !== 'string')
+      throw new TypeError('onceListeners(event): event name must be a string');
+
+    const listeners = this.#listeners.get(event);
+    return Array.isArray(listeners)
+      ? [...listeners]
+          .filter((listener) => listener.config.once)
+          .map((listener) => listener.handler)
+      : [];
+  }
+
+  /**
+   * Returns a copy of the internal listeners array for the specified event,
+   * including wrapper functions like those used by `.once()`.
+   * @param {string | symbol} event - The event name.
+   * @returns {Function[]} An array of raw listener functions.
+   */
+  allListeners(event) {
+    if (typeof event !== 'string')
+      throw new TypeError('allListeners(event): event name must be a string');
+    const listeners = this.#listeners.get(event);
+    return Array.isArray(listeners) ? [...listeners].map((listener) => listener.handler) : [];
   }
 
   /**
@@ -156,10 +205,10 @@ class TinyEvents {
    * Emits an event, triggering all registered handlers for that event.
    *
    * @param {string} event - The event name to emit.
-   * @param {any} [payload] - Optional data to pass to each handler.
+   * @param {...any} payload - Optional data to pass to each handler.
    * @returns {boolean} True if any listeners were called, false otherwise.
    */
-  emit(event, payload) {
+  emit(event, ...payload) {
     if (typeof event !== 'string')
       throw new TypeError('emit(event, data): event name must be a string');
 
@@ -167,7 +216,7 @@ class TinyEvents {
     if (!Array.isArray(listeners) || listeners.length === 0) return false;
 
     // Call all listeners with the provided data
-    listeners.forEach((fn) => fn(payload));
+    listeners.forEach((listener) => listener.handler(...payload));
     return true;
   }
 

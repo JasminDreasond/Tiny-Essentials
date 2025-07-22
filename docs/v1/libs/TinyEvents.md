@@ -1,159 +1,143 @@
-# ✨ `TinyEvents` — Minimal Event Emitter for JavaScript
+# 🧩 `TinyEvents` — Minimal Event Emitter for JavaScript
 
 TinyEvents is a lightweight, dependency-free event emitter class inspired by Node.js's `EventEmitter`. It allows you to manage listeners, emit custom events, and control event lifecycles with ease!
 
 ---
 
-## 📦 Features
+## ✨ Features
 
-* 🔁 Add/remove event listeners (`on`, `off`, `offAll`, `offAllTypes`)
-* 🔂 Add one-time event listeners (`once`)
-* 📢 Emit events (`emit`)
-* 🧠 Inspect listeners (`listenerCount`, `listeners`, `eventNames`)
-* 🚫 Prevent memory leaks with listener limits (`setMaxListeners`, `getMaxListeners`)
+* 🔄 Add/remove event listeners (`on`, `off`, `offAll`, `offAllTypes`)
+* 🎯 One-time listeners (`once`)
+* 🚀 Emit events (`emit`)
+* 🔍 Inspect listeners (`listenerCount`, `listeners`, `onceListeners`, `allListeners`)
+* ⚙️ Limit listener counts (`setMaxListeners`, `getMaxListeners`)
 
 ---
 
-## 🧠 Type Definition
+## 🧠 Type Definitions
 
-```ts
+```js
 /**
  * A generic event listener callback function.
+ * 
  * @callback handler
- * @param {any} payload - The data passed when the event is triggered.
+ * @param {any} payload - The data payload passed when the event is triggered.
  * @returns {void}
  */
 ```
 
 ---
 
-## 🛠️ Methods
+## 📚 API
 
 ### `on(event: string, handler: handler): void`
 
-🔗 Adds a new event listener for the given event.
+Registers a persistent event listener.
 
-```js
-events.on('dataLoaded', (data) => console.log(data));
-```
+### `once(event: string, handler: handler): handler`
 
----
-
-### `once(event: string, handler: handler): void`
-
-🔂 Adds a listener that runs **only once** and then is removed.
-
-```js
-events.once('init', () => console.log('Initialized!'));
-```
-
----
+Registers a one-time event listener. The listener will automatically be removed after its first call.
 
 ### `off(event: string, handler: handler): void`
 
-🧽 Removes a specific listener from an event.
-
-```js
-events.off('dataLoaded', myHandler);
-```
-
----
+Removes a specific listener from an event.
 
 ### `offAll(event: string): void`
 
-🚮 Removes **all** listeners for a specific event.
-
-```js
-events.offAll('dataLoaded');
-```
-
----
+Removes **all listeners** from a specific event.
 
 ### `offAllTypes(): void`
 
-🧼 Removes **all** listeners from **all** events.
-
-```js
-events.offAllTypes();
-```
+Removes **all listeners** from **all events**.
 
 ---
 
-### `emit(event: string, payload?: any): boolean`
+### `emit(event: string, ...payload: any[]): boolean`
 
-📢 Triggers an event and calls all registered listeners for it.
-
-```js
-events.emit('dataLoaded', { user: 'Jasmin' });
-```
+Emits an event with optional data.
+Returns `true` if any listener was called, otherwise `false`.
 
 ---
 
 ### `listenerCount(event: string): number`
 
-🔎 Returns the number of listeners registered for a given event.
-
-```js
-console.log(events.listenerCount('dataLoaded')); // 2
-```
+Returns the number of active listeners for a given event.
 
 ---
 
 ### `listeners(event: string): handler[]`
 
-📋 Returns a copy of the array of handlers for an event.
+Returns all **persistent** (non-once) listeners for the event.
 
-```js
-const handlers = events.listeners('dataLoaded');
-```
+### `onceListeners(event: string): handler[]`
+
+Returns all **one-time** listeners for the event.
+
+### `allListeners(event: string): handler[]`
+
+Returns **all** listeners (both persistent and once-wrapped) for the event.
 
 ---
 
 ### `eventNames(): string[]`
 
-🧾 Returns all event names that currently have listeners.
-
-```js
-console.log(events.eventNames()); // ['dataLoaded', 'error']
-```
+Returns a list of all event names that have registered listeners.
 
 ---
 
 ### `setMaxListeners(n: number): void`
 
-⚠️ Sets the maximum number of listeners before a warning is shown.
-
-```js
-events.setMaxListeners(20);
-```
-
----
+Sets the **maximum number** of listeners allowed per event before a warning is shown.
 
 ### `getMaxListeners(): number`
 
-📐 Returns the current max listener limit.
+Returns the current max listener count per event.
 
-```js
-const limit = events.getMaxListeners();
+---
+
+## ⚠️ Listener Limit Warning
+
+If you register more listeners than allowed (`default: 10`), a warning is printed to avoid memory leaks:
+
+```txt
+Possible memory leak detected. 11 "myEvent" listeners added.
+Use setMaxListeners() to increase limit.
 ```
 
 ---
 
-## 🧪 Example Usage
+## 💡 Example
 
 ```js
 import TinyEvents from './TinyEvents.js';
 
 const events = new TinyEvents();
 
-events.on('ready', () => console.log('System is ready!'));
-events.emit('ready');
+events.on('hello', (name) => {
+  console.log(`Hello, ${name}!`);
+});
+
+events.emit('hello', 'Yasmin'); // => Hello, Yasmin!
 ```
 
 ---
 
-## 🐾 Why Use TinyEvents?
+## 🧪 Testing One-Time Events
 
-* ✅ Tiny and dependency-free
-* 🧩 Easy to drop into modular projects
-* 💡 Clean and intuitive API
+```js
+const onceHandler = (data) => console.log('Ran only once:', data);
+
+events.once('runOnce', onceHandler);
+events.emit('runOnce', 123); // ✅ Runs
+events.emit('runOnce', 456); // ❌ Doesn't run
+```
+
+---
+
+## 📦 Use Case Ideas
+
+* Component communication in front-end apps
+* Internal systems messaging
+* Event delegation wrappers
+* Data update propagation
+* UI or animation triggers
