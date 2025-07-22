@@ -281,8 +281,8 @@ export async function fetchBlob(url, allowedMimeTypes, options) {
  * @param {Element} [settings.element=document.body] - The element to receive visibility classes.
  * @param {string} [settings.hiddenClass='windowHidden'] - CSS class applied when the page is hidden.
  * @param {string} [settings.visibleClass='windowVisible'] - CSS class applied when the page is visible.
- * @param {() => void} [settings.onVisible] - Callback called when page becomes visible.
- * @param {() => void} [settings.onHidden] - Callback called when page becomes hidden.
+ * @param {(data: { type: string; oldType: string; oldClass: string; }) => void} [settings.onVisible] - Callback called when page becomes visible.
+ * @param {(data: { type: string; oldType: string; oldClass: string; }) => void} [settings.onHidden] - Callback called when page becomes hidden.
  * @returns {() => void} Function that removes all installed event listeners.
  * @throws {TypeError} If any provided setting is invalid.
  */
@@ -302,6 +302,8 @@ export function installWindowHiddenScript({
   if (onHidden !== undefined && typeof onHidden !== 'function')
     throw new TypeError(`"onHidden" must be a function if provided.`);
 
+  let oldType = '';
+  let oldClass = '';
   const removeClass = () => {
     element.classList.remove(hiddenClass);
     element.classList.remove(visibleClass);
@@ -339,19 +341,24 @@ export function installWindowHiddenScript({
 
     if (visibleEvents.includes(type)) {
       element.classList.add(visibleClass);
-      onVisible?.();
+      onVisible?.({ type, oldClass, oldType });
+      oldClass = visibleClass;
     } else if (hiddenEvents.includes(type)) {
       element.classList.add(hiddenClass);
-      onHidden?.();
+      onHidden?.({ type, oldClass, oldType });
+      oldClass = hiddenClass;
     } else {
       if (isHidden) {
         element.classList.add(hiddenClass);
-        onHidden?.();
+        onHidden?.({ type, oldClass, oldType });
+        oldClass = hiddenClass;
       } else {
         element.classList.add(visibleClass);
-        onVisible?.();
+        onVisible?.({ type, oldClass, oldType });
+        oldClass = visibleClass;
       }
     }
+    oldType = type;
   };
 
   /** @type {() => void} */
