@@ -2,7 +2,17 @@ import { isJsonObject } from '../basics/objChecker.mjs';
 import TinyEvents from './TinyEvents.mjs';
 
 /**
- * @typedef {Record<string|number|symbol, any>|any[]|Map<string|number|symbol, any>|Set<any>} LocalStorageJsonValue
+ * Represents a value that can be safely stored and restored using JSON in `localStorage`,
+ * including structures like arrays, plain objects, Map and Set.
+ *
+ * - `Record<string|number|symbol, any>` → plain object (e.g., `{ key: value }`)
+ * - `any[]` → array of any JSON-serializable values
+ * - `Map<string|number|symbol, any>` → converted to `{ __map__: true, data: [[k, v], ...] }`
+ * - `Set<any>` → converted to `{ __set__: true, data: [v1, v2, ...] }`
+ *
+ * These conversions allow complex structures to be restored after JSON serialization.
+ *
+ * @typedef {(Record<string|number|symbol, any> | any[] | Map<string|number|symbol, any> | Set<any>)} LocalStorageJsonValue
  */
 
 class TinyLocalStorage {
@@ -465,6 +475,7 @@ class TinyLocalStorage {
    */
   destroy() {
     window.removeEventListener('storage', this.#storageEvent);
+    this.#events.offAllTypes();
   }
 }
 
