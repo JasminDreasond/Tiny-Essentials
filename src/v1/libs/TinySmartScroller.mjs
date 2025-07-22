@@ -47,6 +47,89 @@ import * as TinyCollision from '../basics/collision.mjs';
 class TinySmartScroller {
   static Utils = { ...TinyCollision, TinyHtml };
 
+  /** @type {Map<string, ScrollListenersFunc[]>} */
+  #scrollListeners = new Map();
+
+  /**
+   * Adds a scroll-related event listener.
+   *
+   * @param {string} event - Event name, such as 'onScrollBoundary' or 'onAutoScroll'.
+   * @param {ScrollListenersFunc} handler - Callback function to be called when event fires.
+   */
+  on(event, handler) {
+    if (this.#destroyed) return;
+    if (typeof event !== 'string')
+      throw new TypeError('on(event, handler): event name must be a string');
+    if (typeof handler !== 'function')
+      throw new TypeError('on(event, handler): handler must be a function');
+
+    let eventData = this.#scrollListeners.get(event);
+    if (!Array.isArray(eventData)) {
+      eventData = [];
+      this.#scrollListeners.set(event, eventData);
+    }
+    eventData.push(handler);
+  }
+
+  /**
+   * Registers an event listener that runs only once, then is removed.
+   *
+   * @param {string} event - Event name, such as 'onScrollBoundary' or 'onAutoScroll'.
+   * @param {ScrollListenersFunc} handler - The callback function to run on event.
+   */
+  once(event, handler) {
+    if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
+    if (typeof handler !== 'function')
+      throw new TypeError('once(event, handler): handler must be a function');
+
+    /** @type {ScrollListenersFunc} */
+    const wrapped = (e) => {
+      this.off(event, wrapped);
+      if (typeof handler === 'function') handler(e);
+    };
+    this.on(event, wrapped);
+  }
+
+  /**
+   * Removes a previously registered scroll-related event listener.
+   *
+   * @param {string} event - The name of the event to remove the handler from.
+   * @param {ScrollListenersFunc} handler - The specific callback function to remove.
+   */
+  off(event, handler) {
+    if (this.#destroyed) return;
+    if (typeof event !== 'string')
+      throw new TypeError('off(event, handler): event name must be a string');
+    if (typeof handler !== 'function')
+      throw new TypeError('off(event, handler): handler must be a function');
+
+    const listeners = this.#scrollListeners.get(event);
+    if (!Array.isArray(listeners)) return;
+
+    const index = listeners.indexOf(handler);
+    if (index !== -1) listeners.splice(index, 1);
+
+    // Optionally clean up empty arrays (optional)
+    if (listeners.length === 0) this.#scrollListeners.delete(event);
+  }
+
+  /**
+   * Removes all event listeners of a specific type from the element.
+   *
+   * @param {string} event - The event type to remove (e.g. 'onScrollBoundary').
+   */
+  offAll(event) {
+    if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
+    this.#scrollListeners.delete(event);
+  }
+
+  /**
+   * Removes all event listeners of all types from the element.
+   */
+  offAllTypes() {
+    this.#scrollListeners.clear();
+  }
+
   /** @type {WeakMap<Element, NodeSizes>} */
   #oldSizes = new WeakMap();
   /** @type {WeakMap<Element, NodeSizes>} */
@@ -61,9 +144,6 @@ class TinySmartScroller {
   #newVisiblesByTime = new WeakMap();
   /** @type {WeakMap<Element, boolean>} */
   #oldVisiblesByTime = new WeakMap();
-
-  /** @type {Map<string, ScrollListenersFunc[]>} */
-  #scrollListeners = new Map();
 
   /** @type {ResizeObserver|null} */
   #resizeObserver = null;
@@ -376,86 +456,6 @@ class TinySmartScroller {
     if (typeof handler !== 'function')
       throw new TypeError('offSize(handler): handler must be a function');
     this.#sizeFilter.delete(handler);
-  }
-
-  /**
-   * Adds a scroll-related event listener.
-   *
-   * @param {string} event - Event name, such as 'onScrollBoundary' or 'onAutoScroll'.
-   * @param {ScrollListenersFunc} handler - Callback function to be called when event fires.
-   */
-  on(event, handler) {
-    if (this.#destroyed) return;
-    if (typeof event !== 'string')
-      throw new TypeError('on(event, handler): event name must be a string');
-    if (typeof handler !== 'function')
-      throw new TypeError('on(event, handler): handler must be a function');
-
-    let eventData = this.#scrollListeners.get(event);
-    if (!Array.isArray(eventData)) {
-      eventData = [];
-      this.#scrollListeners.set(event, eventData);
-    }
-    eventData.push(handler);
-  }
-
-  /**
-   * Registers an event listener that runs only once, then is removed.
-   *
-   * @param {string} event - Event name, such as 'onScrollBoundary' or 'onAutoScroll'.
-   * @param {ScrollListenersFunc} handler - The callback function to run on event.
-   */
-  once(event, handler) {
-    if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
-    if (typeof handler !== 'function')
-      throw new TypeError('once(event, handler): handler must be a function');
-
-    /** @type {ScrollListenersFunc} */
-    const wrapped = (e) => {
-      this.off(event, wrapped);
-      if (typeof handler === 'function') handler(e);
-    };
-    this.on(event, wrapped);
-  }
-
-  /**
-   * Removes a previously registered scroll-related event listener.
-   *
-   * @param {string} event - The name of the event to remove the handler from.
-   * @param {ScrollListenersFunc} handler - The specific callback function to remove.
-   */
-  off(event, handler) {
-    if (this.#destroyed) return;
-    if (typeof event !== 'string')
-      throw new TypeError('off(event, handler): event name must be a string');
-    if (typeof handler !== 'function')
-      throw new TypeError('off(event, handler): handler must be a function');
-
-    const listeners = this.#scrollListeners.get(event);
-    if (!Array.isArray(listeners)) return;
-
-    const index = listeners.indexOf(handler);
-    if (index !== -1) listeners.splice(index, 1);
-
-    // Optionally clean up empty arrays (optional)
-    if (listeners.length === 0) this.#scrollListeners.delete(event);
-  }
-
-  /**
-   * Removes all event listeners of a specific type from the element.
-   *
-   * @param {string} event - The event type to remove (e.g. 'onScrollBoundary').
-   */
-  offAll(event) {
-    if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
-    this.#scrollListeners.delete(event);
-  }
-
-  /**
-   * Removes all event listeners of all types from the element.
-   */
-  offAllTypes() {
-    this.#scrollListeners.clear();
   }
 
   /**
