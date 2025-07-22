@@ -127,8 +127,10 @@ import TinyTextRangeEditor from './libs/TinyTextRangeEditor.mjs';
 import TinyClipboard from './libs/TinyClipboard.mjs';
 import TinyColorConverter from './libs/TinyColorConverter.mjs';
 import TinyTimeout from './libs/TinyTimeout.mjs';
+import TinyEvents from './libs/TinyEvents.mjs';
 
 export {
+  TinyEvents,
   TinyTimeout,
   TinyColorConverter,
   TinyClipboard,
