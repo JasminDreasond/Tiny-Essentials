@@ -144,12 +144,12 @@
         const num = storage.getNumber('num');
         const bool = storage.getBool('bool');
         const raw = storage.getItem('raw');
-        const obj = storage.getJson('obj');
-        const array = storage.getJson('array');
+        const obj = storage.getJson('obj', 'obj');
+        const array = storage.getJson('array', 'array');
         const obj2 = storage.getJson('obj2');
-        const array2 = storage.getJson('array2');
-        const map = storage.getJson('map');
-        const set = storage.getJson('set');
+        const array2 = storage.getJson('array2', 'null');
+        const map = storage.getJson('map', 'map');
+        const set = storage.getJson('set', 'set');
 
         log('String:', str);
         log('Number:', num);
