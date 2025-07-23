@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TinyLocalStorage Test Page</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-gray-100 font-sans">
+    <div class="max-w-5xl mx-auto p-6">
+      <h1 class="text-3xl font-bold mb-6">TinyLocalStorage Advanced Test Suite</h1>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Test Controls Panel -->
+        <div class="space-y-4">
+          <div class="bg-white shadow-md rounded-lg p-4">
+            <h2 class="text-xl font-semibold mb-2">Store Various Types</h2>
+            <div class="space-y-2">
+              <button
+                onclick="runSetTests()"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+              >
+                Store Sample Data
+              </button>
+              <button
+                onclick="runGetTests()"
+                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+              >
+                Retrieve and Verify
+              </button>
+              <button
+                onclick="runRemoveTests()"
+                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
+              >
+                Remove Test Items
+              </button>
+              <button
+                onclick="clearLog()"
+                class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded"
+              >
+                Clear Log
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-white shadow-md rounded-lg p-4">
+            <h2 class="text-xl font-semibold mb-2">Manual Entry</h2>
+            <input
+              type="text"
+              id="manualKey"
+              placeholder="Key"
+              class="border px-2 py-1 rounded w-full mb-2"
+            />
+            <input
+              type="text"
+              id="manualValue"
+              placeholder="Value"
+              class="border px-2 py-1 rounded w-full mb-2"
+            />
+            <div class="space-x-2">
+              <button
+                onclick="manualSet()"
+                class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-1 rounded"
+              >
+                Set
+              </button>
+              <button
+                onclick="manualGet()"
+                class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-1 rounded"
+              >
+                Get
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Logs Panel -->
+        <div class="bg-white shadow-md rounded-lg p-4">
+          <h2 class="text-xl font-semibold mb-2">Event Log</h2>
+          <div
+            id="log"
+            class="h-96 overflow-y-auto bg-gray-50 border border-gray-200 rounded"
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { TinyLocalStorage } from './src/v1/libs/TinyLocalStorage.mjs';
+
+      const storage = new TinyLocalStorage();
+
+      function log(...args) {
+        const logEl = document.getElementById('log');
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.textContent = `[${new Date().toLocaleTimeString()}] ` + args.join(' ');
+        logEl.prepend(entry);
+      }
+
+      window.runSetTests = function () {
+        storage.setString('str', 'Hello World');
+        storage.setNumber('num', 123.456);
+        storage.setBool('bool', true);
+        storage.setItem('raw', 'rawValue');
+        storage.setJson('obj', { a: 1, b: 'two', c: [1, 2, 3] });
+        storage.setJson('array', [1, 2, 3, 4]);
+        storage.setJson(
+          'map',
+          new Map([
+            ['key1', 1],
+            ['key2', 2],
+          ]),
+        );
+        storage.setJson('set', new Set(['a', 'b', 'c']));
+        log('Sample data stored');
+      };
+
+      window.runGetTests = function () {
+        const str = storage.getString('str');
+        const num = storage.getNumber('num');
+        const bool = storage.getBool('bool');
+        const raw = storage.getItem('raw');
+        const obj = storage.getJson('obj');
+        const array = storage.getJson('array');
+        const map = storage.getJson('map');
+        const set = storage.getJson('set');
+
+        log('String:', str);
+        log('Number:', num);
+        log('Boolean:', bool);
+        log('Raw:', raw);
+        log('Object:', JSON.stringify(obj));
+        log('Array:', JSON.stringify(array));
+        log('Map:', JSON.stringify(Array.from(map)));
+        log('Set:', JSON.stringify(Array.from(set)));
+
+        console.log('[runGetTests] String:', str);
+        console.log('[runGetTests] Number:', num);
+        console.log('[runGetTests] Boolean:', bool);
+        console.log('[runGetTests] Raw:', raw);
+        console.log('[runGetTests] Object:', obj);
+        console.log('[runGetTests] Array:', array);
+        console.log('[runGetTests] Map:', map);
+        console.log('[runGetTests] Set:', set);
+      };
+
+      window.runRemoveTests = function () {
+        ['str', 'num', 'bool', 'raw', 'obj', 'array', 'map', 'set'].forEach((k) =>
+          storage.removeItem(k),
+        );
+        log('Removed test keys from localStorage');
+      };
+
+      window.manualSet = function () {
+        const key = document.getElementById('manualKey').value;
+        const val = document.getElementById('manualValue').value;
+        storage.setItem(key, val);
+        log(`Manually set ${key} = ${val}`);
+      };
+
+      window.manualGet = function () {
+        const key = document.getElementById('manualKey').value;
+        const val = storage.getItem(key);
+        log(`Manually got ${key} = ${val}`);
+      };
+
+      window.clearLog = function () {
+        document.getElementById('log').innerHTML = '';
+      };
+
+      // Event listeners
+      storage.on('setJson', (k, v) => log(`Event: setJson → ${k}`));
+      storage.on('setItem', (k, v) => log(`Event: setItem → ${k}`));
+      storage.on('setString', (k, v) => log(`Event: setString → ${k}`));
+      storage.on('setNumber', (k, v) => log(`Event: setNumber → ${k}`));
+      storage.on('setBool', (k, v) => log(`Event: setBool → ${k}`));
+      storage.on('removeItem', (k) => log(`Event: removeItem → ${k}`));
+      storage.on('storage', (e) => log(`Storage event from another tab:`, e.key));
+    </script>
+  </body>
+</html>
