@@ -323,7 +323,8 @@ class TinyLocalStorage {
    * @type {decodeSpecialJson}
    */
   static decodeSpecialJson(value) {
-    if (isJsonObject(value)) {
+    const isJson = isJsonObject(value);
+    if (isJson) {
       if (value.__undefined__) return undefined;
       if (value.__null__) return null;
     }
@@ -332,7 +333,7 @@ class TinyLocalStorage {
       return value.map(TinyLocalStorage.decodeSpecialJson);
     }
 
-    if (isJsonObject(value)) {
+    if (isJson) {
       for (const [type, decoder] of customDecoders.entries()) {
         if (decoder.check && decoder.check(value)) {
           return decoder.decode(value, TinyLocalStorage.decodeSpecialJson);
