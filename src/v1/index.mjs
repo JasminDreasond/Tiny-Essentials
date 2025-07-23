@@ -128,8 +128,10 @@ import TinyClipboard from './libs/TinyClipboard.mjs';
 import TinyColorConverter from './libs/TinyColorConverter.mjs';
 import TinyTimeout from './libs/TinyTimeout.mjs';
 import TinyEvents from './libs/TinyEvents.mjs';
+import TinyLocalStorage from './libs/TinyLocalStorage.mjs';
 
 export {
+  TinyLocalStorage,
   TinyEvents,
   TinyTimeout,
   TinyColorConverter,

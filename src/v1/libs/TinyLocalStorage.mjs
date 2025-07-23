@@ -344,7 +344,7 @@ class TinyLocalStorage {
    * Automatically restores nested `Map` and `Set` instances.
    *
    * @param {string} name - The key to retrieve.
-   * @param {'array'|'obj'|'map'|'null'} [defaultData] - Default fallback format if value is invalid.
+   * @param {'array'|'obj'|'map'|'set'|'null'} [defaultData] - Default fallback format if value is invalid.
    * @returns {LocalStorageJsonValue|null} The parsed object or fallback.
    */
   getJson(name, defaultData) {
@@ -359,7 +359,9 @@ class TinyLocalStorage {
           ? []
           : defaultData === 'map'
             ? new Map()
-            : null;
+            : defaultData === 'set'
+              ? new Set()
+              : null;
 
     let parsed;
 
