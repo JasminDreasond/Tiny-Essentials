@@ -2,6 +2,71 @@ import { isJsonObject } from '../basics/objChecker.mjs';
 import TinyEvents from './TinyEvents.mjs';
 
 /**
+ * Recursively encodes Maps and Sets inside objects or arrays.
+ * @param {any} value
+ * @returns {any}
+ */
+function encodeSpecialJson(value) {
+  if (value instanceof Map) {
+    return {
+      __map__: true,
+      data: Array.from(value.entries()).map(([k, v]) => [k, encodeSpecialJson(v)]),
+    };
+  }
+
+  if (value instanceof Set) {
+    return {
+      __set__: true,
+      data: Array.from(value).map(encodeSpecialJson),
+    };
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(encodeSpecialJson);
+  }
+
+  if (isJsonObject(value)) {
+    const encoded = {};
+    for (const key in value) {
+      // @ts-ignore
+      encoded[key] = encodeSpecialJson(value[key]);
+    }
+    return encoded;
+  }
+
+  return value;
+}
+
+/**
+ * Recursively decodes Maps and Sets from objects or arrays.
+ * @param {any} value
+ * @returns {any}
+ */
+function decodeSpecialJson(value) {
+  if (Array.isArray(value)) {
+    return value.map(decodeSpecialJson);
+  }
+
+  if (isJsonObject(value)) {
+    if (value.__map__ === true && Array.isArray(value.data)) {
+      return new Map(value.data.map(([k, v]) => [k, decodeSpecialJson(v)]));
+    }
+    if (value.__set__ === true && Array.isArray(value.data)) {
+      return new Set(value.data.map(decodeSpecialJson));
+    }
+
+    const decoded = {};
+    for (const key in value) {
+      // @ts-ignore
+      decoded[key] = decodeSpecialJson(value[key]);
+    }
+    return decoded;
+  }
+
+  return value;
+}
+
+/**
  * Represents a value that can be safely stored and restored using JSON in `localStorage`,
  * including structures like arrays, plain objects, Map and Set.
  *
@@ -250,7 +315,7 @@ class TinyLocalStorage {
   /**
    * Stores a JSON-compatible value in `localStorage`.
    *
-   * If the value is a `Map` or `Set`, it will be converted to an object with a marker before serialization.
+   * Automatically serializes nested `Map` and `Set` instances.
    *
    * @param {string} name - The key under which to store the data.
    * @param {LocalStorageJsonValue} data - The data to be serialized and stored.
@@ -259,30 +324,24 @@ class TinyLocalStorage {
     if (typeof name !== 'string' || !name.length)
       throw new Error('Key must be a non-empty string.');
 
-    let valueToStore = data;
-
-    if (data instanceof Map) {
-      valueToStore = {
-        __map__: true,
-        data: Array.from(data.entries()),
-      };
-    } else if (data instanceof Set) {
-      valueToStore = {
-        __set__: true,
-        data: Array.from(data),
-      };
-    } else if (!isJsonObject(data) && !Array.isArray(data)) {
+    if (
+      !isJsonObject(data) &&
+      !Array.isArray(data) &&
+      !(data instanceof Map) &&
+      !(data instanceof Set)
+    ) {
       throw new Error('The storage value is not a valid JSON-compatible structure.');
     }
 
+    const encoded = encodeSpecialJson(data);
     this.emit('setJson', name, data);
-    this.#localStorage.setItem(name, JSON.stringify(valueToStore));
+    this.#localStorage.setItem(name, JSON.stringify(encoded));
   }
 
   /**
    * Retrieves and parses a JSON value from `localStorage`.
    *
-   * Automatically restores `Map` or `Set` if stored with special markers.
+   * Automatically restores nested `Map` and `Set` instances.
    *
    * @param {string} name - The key to retrieve.
    * @param {'array'|'obj'|'map'|'null'} [defaultData] - Default fallback format if value is invalid.
@@ -312,17 +371,15 @@ class TinyLocalStorage {
       return fallback;
     }
 
-    if (parsed && typeof parsed === 'object') {
-      if (parsed.__map__ === true && Array.isArray(parsed.data)) {
-        return new Map(parsed.data);
-      }
-      if (parsed.__set__ === true && Array.isArray(parsed.data)) {
-        return new Set(parsed.data);
-      }
-    }
+    const decoded = decodeSpecialJson(parsed);
 
-    if (Array.isArray(parsed) || isJsonObject(parsed)) {
-      return parsed;
+    if (
+      decoded instanceof Map ||
+      decoded instanceof Set ||
+      Array.isArray(decoded) ||
+      isJsonObject(decoded)
+    ) {
+      return decoded;
     }
 
     return fallback;

@@ -108,6 +108,26 @@
         storage.setItem('raw', 'rawValue');
         storage.setJson('obj', { a: 1, b: 'two', c: [1, 2, 3] });
         storage.setJson('array', [1, 2, 3, 4]);
+        storage.setJson('obj2', {
+          a: 1,
+          b: new Set(['pudding']),
+          c: [
+            1,
+            new Set([1, 2, 3]),
+            new Map([
+              ['pudding', 'yay'],
+              ['cookie', 'yay'],
+            ]),
+          ],
+        });
+        storage.setJson('array2', [
+          1,
+          new Set([1, 2, new Set([1, 2, 3])]),
+          new Map([
+            ['pudding', 'yay'],
+            ['cookie', 'yay'],
+          ]),
+        ]);
         storage.setJson(
           'map',
           new Map([
@@ -126,6 +146,8 @@
         const raw = storage.getItem('raw');
         const obj = storage.getJson('obj');
         const array = storage.getJson('array');
+        const obj2 = storage.getJson('obj2');
+        const array2 = storage.getJson('array2');
         const map = storage.getJson('map');
         const set = storage.getJson('set');
 
@@ -144,6 +166,8 @@
         console.log('[runGetTests] Raw:', raw);
         console.log('[runGetTests] Object:', obj);
         console.log('[runGetTests] Array:', array);
+        console.log('[runGetTests] Object2:', obj2);
+        console.log('[runGetTests] Array2:', array2);
         console.log('[runGetTests] Map:', map);
         console.log('[runGetTests] Set:', set);
       };
