@@ -352,16 +352,16 @@ class TinyLocalStorage {
       throw new Error('Key must be a non-empty string.');
 
     const raw = this.#localStorage.getItem(name);
+    const fallbackTypes = {
+      obj: () => ({}),
+      array: () => [],
+      map: () => new Map(),
+      set: () => new Set(),
+    };
+
     const fallback =
-      defaultData === 'obj'
-        ? {}
-        : defaultData === 'array'
-          ? []
-          : defaultData === 'map'
-            ? new Map()
-            : defaultData === 'set'
-              ? new Set()
-              : null;
+      // @ts-ignore
+      typeof fallbackTypes[defaultData] === 'function' ? fallbackTypes[defaultData]() : null;
 
     let parsed;
 
