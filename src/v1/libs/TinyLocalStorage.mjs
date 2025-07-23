@@ -359,6 +359,21 @@ class TinyLocalStorage {
   }
 
   /**
+   * Stores a value in `localStorage`.
+   *
+   * Automatically serializes nested instances.
+   *
+   * @param {string} name - The key under which to store the data.
+   * @param {*} data - The data to be serialized and stored.
+   * @returns {*}
+   */
+  #setJson(name, data) {
+    if (typeof name !== 'string' || !name.length)
+      throw new Error('Key must be a non-empty string.');
+    return TinyLocalStorage.encodeSpecialJson(data);
+  }
+
+  /**
    * Stores a JSON-compatible value in `localStorage`.
    *
    * Automatically serializes nested `Map` and `Set` instances.
@@ -367,9 +382,6 @@ class TinyLocalStorage {
    * @param {LocalStorageJsonValue} data - The data to be serialized and stored.
    */
   setJson(name, data) {
-    if (typeof name !== 'string' || !name.length)
-      throw new Error('Key must be a non-empty string.');
-
     if (
       !isJsonObject(data) &&
       !Array.isArray(data) &&
@@ -378,22 +390,21 @@ class TinyLocalStorage {
     ) {
       throw new Error('The storage value is not a valid JSON-compatible structure.');
     }
-
-    const encoded = TinyLocalStorage.encodeSpecialJson(data);
+    const encoded = this.#setJson(name, data);
     this.emit('setJson', name, data);
     this.#localStorage.setItem(name, JSON.stringify(encoded));
   }
 
   /**
-   * Retrieves and parses a JSON value from `localStorage`.
+   * Retrieves a value from `localStorage`.
    *
-   * Automatically restores nested `Map` and `Set` instances.
+   * Automatically restores nested instances.
    *
    * @param {string} name - The key to retrieve.
    * @param {'array'|'obj'|'map'|'set'|'null'} [defaultData] - Default fallback format if value is invalid.
-   * @returns {LocalStorageJsonValue|null} The parsed object or fallback.
+   * @returns {{ decoded: any, fallback: any }} The parsed object or fallback.
    */
-  getJson(name, defaultData) {
+  #getJson(name, defaultData) {
     if (typeof name !== 'string' || !name.length)
       throw new Error('Key must be a non-empty string.');
 
@@ -419,17 +430,27 @@ class TinyLocalStorage {
       return fallback;
     }
 
-    const decoded = TinyLocalStorage.decodeSpecialJson(parsed);
+    return { decoded: TinyLocalStorage.decodeSpecialJson(parsed), fallback };
+  }
 
+  /**
+   * Retrieves and parses a JSON value from `localStorage`.
+   *
+   * Automatically restores nested `Map` and `Set` instances.
+   *
+   * @param {string} name - The key to retrieve.
+   * @param {'array'|'obj'|'map'|'set'|'null'} [defaultData] - Default fallback format if value is invalid.
+   * @returns {LocalStorageJsonValue|null} The parsed object or fallback.
+   */
+  getJson(name, defaultData) {
+    const { decoded, fallback } = this.#getJson(name, defaultData);
     if (
       decoded instanceof Map ||
       decoded instanceof Set ||
       Array.isArray(decoded) ||
       isJsonObject(decoded)
-    ) {
+    )
       return decoded;
-    }
-
     return fallback;
   }
 
@@ -641,7 +662,7 @@ TinyLocalStorage.registerJsonType(
   },
 );
 
-// Bing Int
+// Big Int
 TinyLocalStorage.registerJsonType(
   'bigint',
   (value) => ({
