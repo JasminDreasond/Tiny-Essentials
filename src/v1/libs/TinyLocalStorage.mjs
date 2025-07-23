@@ -642,7 +642,13 @@ class TinyLocalStorage {
     if (typeof data !== 'string') throw new Error('Value must be a string.');
 
     this.emit('setString', name, data);
-    return this.#localStorage.setItem(name, data);
+    return this.#localStorage.setItem(
+      name,
+      JSON.stringify({
+        __string__: true,
+        value: data,
+      }),
+    );
   }
 
   /**
@@ -655,6 +661,15 @@ class TinyLocalStorage {
     if (typeof name !== 'string' || !name.length)
       throw new Error('Key must be a non-empty string.');
     let value = this.#localStorage.getItem(name);
+    try {
+      /** @type {{ value: string; __string__: boolean }} */
+      // @ts-ignore
+      value = JSON.parse(value);
+      if (!isJsonObject(value) || !value.__string__ || typeof value.value !== 'string') return null;
+      value = value.value;
+    } catch {
+      value = null;
+    }
     if (typeof value === 'string') return value;
     return null;
   }
