@@ -419,6 +419,12 @@ class TinyLocalStorage {
   /** @type {Storage} */
   #localStorage = window.localStorage;
 
+  /** @type {string|null} */
+  #dbKey = null;
+
+  /** @type {number} */
+  #version = 0;
+
   /** @type {(ev: StorageEvent) => any} */
   #storageEvent = (ev) => this.emit('storage', ev);
 
@@ -426,9 +432,82 @@ class TinyLocalStorage {
    * Initializes the TinyLocalStorage instance and sets up cross-tab sync.
    *
    * Adds listener for the native `storage` event to support tab synchronization.
+   * @param {string} [dbName] - Unique database name.
    */
-  constructor() {
+  constructor(dbName) {
+    if (typeof dbName !== 'undefined' && typeof dbName !== 'string')
+      throw new TypeError('TinyLocalStorage: dbName must be a string if provided.');
+    if (typeof dbName === 'string') this.#dbKey = `LSDB::${dbName}`;
     window.addEventListener('storage', this.#storageEvent);
+  }
+
+  /**
+   * Validates that a given key does not conflict with internal database keys.
+   *
+   * This method is used to prevent accidental overwriting of reserved `LSDB::` keys
+   * in `localStorage`, which are used internally by TinyLocalStorage for versioning
+   * and data management.
+   *
+   * @param {string} name - The key to validate before writing to localStorage.
+   * @throws {Error} If the key starts with `LSDB::`.
+   */
+  #isProtectedDbKey(name) {
+    if (typeof name === 'string' && name.startsWith('LSDB::'))
+      throw new Error(`TinyLocalStorage: Key "${name}" may conflict with reserved dbKeys.`);
+  }
+
+  /**
+   * Updates the version of the storage and triggers migration if needed.
+   *
+   * @param {number} version - Desired version of the database.
+   * @param {(oldVersion: number, newVersion: number) => void} onUpgrade - Callback to perform migration logic.
+   * @throws {Error} If the database key has not been initialized.
+   * @throws {TypeError} If `version` is not a valid positive number.
+   * @throws {TypeError} If `onUpgrade` is not a function.
+   */
+  updateStorageVersion(version, onUpgrade) {
+    if (typeof this.#dbKey !== 'string')
+      throw new Error(
+        'TinyLocalStorage: Database key is not initialized. Set a valid dbName in the constructor.',
+      );
+    if (typeof version !== 'number' || Number.isNaN(version) || version < 1)
+      throw new TypeError('TinyLocalStorage: version must be a positive number.');
+    if (typeof onUpgrade !== 'function')
+      throw new TypeError('TinyLocalStorage: onUpgrade must be a function.');
+
+    // @ts-ignore
+    const savedVersion = parseInt(localStorage.getItem(this.#dbKey), 10) || 0;
+    if (typeof savedVersion !== 'number' || Number.isNaN(savedVersion) || savedVersion < 0)
+      throw new TypeError('TinyLocalStorage: saved version in localStorage is not a valid number.');
+
+    if (version < savedVersion)
+      throw new Error(
+        `TinyLocalStorage: Cannot downgrade database version from ${savedVersion} to ${version}.`,
+      );
+
+    if (version > savedVersion) {
+      onUpgrade(savedVersion, version);
+      localStorage.setItem(this.#dbKey, String(version));
+      this.#version = version;
+    }
+  }
+
+  /**
+   * Gets the current database key used in localStorage.
+   *
+   * @returns {string|null} The database key, or null if not set.
+   */
+  getDbKey() {
+    return this.#dbKey;
+  }
+
+  /**
+   * Gets the current version of the database.
+   *
+   * @returns {number} The current version number.
+   */
+  getVersion() {
+    return this.#version;
   }
 
   /**
@@ -438,7 +517,7 @@ class TinyLocalStorage {
    */
   setLocalStorage(localstorage) {
     if (!(localstorage instanceof Storage))
-      throw new Error('Argument must be a valid instance of Storage.');
+      throw new TypeError('Argument must be a valid instance of Storage.');
     this.#localStorage = localstorage;
   }
 
@@ -460,7 +539,7 @@ class TinyLocalStorage {
    */
   #setJson(name, data) {
     if (typeof name !== 'string' || !name.length)
-      throw new Error('Key must be a non-empty string.');
+      throw new TypeError('Key must be a non-empty string.');
     return TinyLocalStorage.encodeSpecialJson(data);
   }
 
@@ -473,13 +552,14 @@ class TinyLocalStorage {
    * @param {LocalStorageJsonValue} data - The data to be serialized and stored.
    */
   setJson(name, data) {
+    this.#isProtectedDbKey(name);
     if (
       !isJsonObject(data) &&
       !Array.isArray(data) &&
       !(data instanceof Map) &&
       !(data instanceof Set)
     ) {
-      throw new Error('The storage value is not a valid JSON-compatible structure.');
+      throw new TypeError('The storage value is not a valid JSON-compatible structure.');
     }
     const encoded = this.#setJson(name, data);
     this.emit('setJson', name, data);
@@ -497,7 +577,7 @@ class TinyLocalStorage {
    */
   #getJson(name, defaultData) {
     if (typeof name !== 'string' || !name.length)
-      throw new Error('Key must be a non-empty string.');
+      throw new TypeError('Key must be a non-empty string.');
 
     const raw = this.#localStorage.getItem(name);
     const fallbackTypes = {
@@ -551,7 +631,8 @@ class TinyLocalStorage {
    * @param {Date} data
    */
   setDate(name, data) {
-    if (!(data instanceof Date)) throw new Error('Value must be a Date.');
+    this.#isProtectedDbKey(name);
+    if (!(data instanceof Date)) throw new TypeError('Value must be a Date.');
     const encoded = this.#setJson(name, data);
     this.emit('setDate', name, data);
     return this.#localStorage.setItem(name, JSON.stringify(encoded));
@@ -573,7 +654,8 @@ class TinyLocalStorage {
    * @param {RegExp} data
    */
   setRegExp(name, data) {
-    if (!(data instanceof RegExp)) throw new Error('Value must be a RegExp.');
+    this.#isProtectedDbKey(name);
+    if (!(data instanceof RegExp)) throw new TypeError('Value must be a RegExp.');
     const encoded = this.#setJson(name, data);
     this.emit('setRegExp', name, data);
     return this.#localStorage.setItem(name, JSON.stringify(encoded));
@@ -595,7 +677,8 @@ class TinyLocalStorage {
    * @param {bigint} data
    */
   setBigInt(name, data) {
-    if (typeof data !== 'bigint') throw new Error('Value must be a BigInt.');
+    this.#isProtectedDbKey(name);
+    if (typeof data !== 'bigint') throw new TypeError('Value must be a BigInt.');
     const encoded = this.#setJson(name, data);
     this.emit('setBigInt', name, data);
     return this.#localStorage.setItem(name, JSON.stringify(encoded));
@@ -618,7 +701,8 @@ class TinyLocalStorage {
    * @param {symbol} data
    */
   setSymbol(name, data) {
-    if (typeof data !== 'symbol') throw new Error('Value must be a Symbol.');
+    this.#isProtectedDbKey(name);
+    if (typeof data !== 'symbol') throw new TypeError('Value must be a Symbol.');
     const encoded = this.#setJson(name, data);
     this.emit('setSymbol', name, data);
     return this.#localStorage.setItem(name, JSON.stringify(encoded));
@@ -651,8 +735,9 @@ class TinyLocalStorage {
    * @param {any} data - The data to store.
    */
   setItem(name, data) {
+    this.#isProtectedDbKey(name);
     if (typeof name !== 'string' || !name.length)
-      throw new Error('Key must be a non-empty string.');
+      throw new TypeError('Key must be a non-empty string.');
     this.emit('setItem', name, data);
     return this.#localStorage.setItem(name, data);
   }
@@ -665,7 +750,7 @@ class TinyLocalStorage {
    */
   getItem(name) {
     if (typeof name !== 'string' || !name.length)
-      throw new Error('Key must be a non-empty string.');
+      throw new TypeError('Key must be a non-empty string.');
     return this.#localStorage.getItem(name);
   }
 
@@ -676,9 +761,10 @@ class TinyLocalStorage {
    * @param {string} data - The string to store.
    */
   setString(name, data) {
+    this.#isProtectedDbKey(name);
     if (typeof name !== 'string' || !name.length)
-      throw new Error('Key must be a non-empty string.');
-    if (typeof data !== 'string') throw new Error('Value must be a string.');
+      throw new TypeError('Key must be a non-empty string.');
+    if (typeof data !== 'string') throw new TypeError('Value must be a string.');
 
     this.emit('setString', name, data);
     return this.#localStorage.setItem(
@@ -698,7 +784,7 @@ class TinyLocalStorage {
    */
   getString(name) {
     if (typeof name !== 'string' || !name.length)
-      throw new Error('Key must be a non-empty string.');
+      throw new TypeError('Key must be a non-empty string.');
     let value = this.#localStorage.getItem(name);
     try {
       /** @type {{ value: string; __string__: boolean }} */
@@ -720,9 +806,10 @@ class TinyLocalStorage {
    * @param {number} data - The number to store.
    */
   setNumber(name, data) {
+    this.#isProtectedDbKey(name);
     if (typeof name !== 'string' || !name.length)
-      throw new Error('Key must be a non-empty string.');
-    if (typeof data !== 'number') throw new Error('Value must be a number.');
+      throw new TypeError('Key must be a non-empty string.');
+    if (typeof data !== 'number') throw new TypeError('Value must be a number.');
     this.emit('setNumber', name, data);
     return this.#localStorage.setItem(name, String(data));
   }
@@ -735,7 +822,7 @@ class TinyLocalStorage {
    */
   getNumber(name) {
     if (typeof name !== 'string' || !name.length)
-      throw new Error('Key must be a non-empty string.');
+      throw new TypeError('Key must be a non-empty string.');
 
     /** @type {number|string|null} */
     let number = this.#localStorage.getItem(name);
@@ -754,9 +841,10 @@ class TinyLocalStorage {
    * @param {boolean} data - The boolean value to store.
    */
   setBool(name, data) {
+    this.#isProtectedDbKey(name);
     if (typeof name !== 'string' || !name.length)
-      throw new Error('Key must be a non-empty string.');
-    if (typeof data !== 'boolean') throw new Error('Value must be a boolean.');
+      throw new TypeError('Key must be a non-empty string.');
+    if (typeof data !== 'boolean') throw new TypeError('Value must be a boolean.');
     this.emit('setBool', name, data);
     return this.#localStorage.setItem(name, String(data));
   }
@@ -769,7 +857,7 @@ class TinyLocalStorage {
    */
   getBool(name) {
     if (typeof name !== 'string' || !name.length)
-      throw new Error('Key must be a non-empty string.');
+      throw new TypeError('Key must be a non-empty string.');
 
     const value = this.#localStorage.getItem(name);
     if (typeof value === 'boolean') return value;
@@ -788,7 +876,7 @@ class TinyLocalStorage {
    */
   removeItem(name) {
     if (typeof name !== 'string' || !name.length)
-      throw new Error('Key must be a non-empty string.');
+      throw new TypeError('Key must be a non-empty string.');
 
     this.emit('removeItem', name);
     return this.#localStorage.removeItem(name);

@@ -32,6 +32,59 @@ console.log(storage.getDate('today') instanceof Date); // true
 
 ---
 
+## 🏁 `constructor(dbName?: string)`
+
+Initializes the `TinyLocalStorage` instance and sets up cross-tab synchronization.
+
+### 🔧 Parameters
+
+* `dbName` (optional, `string`) – A unique name for the database. It becomes the base key used internally in `localStorage`.
+
+### 📡 Behavior
+
+* Automatically adds a `storage` event listener to support syncing across browser tabs.
+
+---
+
+## 🔁 `updateStorageVersion(version: number, onUpgrade: (oldVersion: number, newVersion: number) => void)`
+
+Updates the version of the database. If the new version is higher than the current one, it triggers the provided migration callback.
+
+### 🔧 Parameters
+
+* `version` (`number`) – The desired new version of the database. Must be a positive integer.
+* `onUpgrade` (`function`) – A callback function executed during upgrade. Receives `oldVersion` and `newVersion` as arguments.
+
+### ⚠️ Throws
+
+* `Error` – If the database key hasn't been initialized via the constructor.
+* `TypeError` – If `version` is invalid (not a number, NaN, or < 1).
+* `TypeError` – If `onUpgrade` is not a function.
+* `TypeError` – If the saved version in `localStorage` is invalid.
+* `Error` – If the provided `version` is lower than the stored version (downgrade is not supported).
+
+---
+
+## 🔑 `getDbKey(): string | null`
+
+Returns the current internal database key used in `localStorage`.
+
+### 🔙 Returns
+
+* `string | null` – The full storage key prefix (e.g. `LSDB::yourDbName`), or `null` if uninitialized.
+
+---
+
+## 🧮 `getVersion(): number`
+
+Returns the current active version of the storage system.
+
+### 🔙 Returns
+
+* `number` – The version number currently in use.
+
+---
+
 ## 📦 Storage Methods
 
 ### `setJson(key, data)`
