@@ -86,7 +86,7 @@ class TinyEvents {
    * @param {string} event - Event name.
    * @param {handler} handler - The callback function.
    */
-  prepend(event, handler) {
+  prependListener(event, handler) {
     if (typeof event !== 'string')
       throw new TypeError('prepend(event, handler): event name must be a string');
     if (typeof handler !== 'function')
@@ -101,7 +101,7 @@ class TinyEvents {
    * @param {handler} handler - The callback function.
    * @returns {handler} - The wrapped handler used internally.
    */
-  prependOnce(event, handler) {
+  prependListenerOnce(event, handler) {
     if (typeof event !== 'string')
       throw new TypeError('prependOnceListener(event, handler): event name must be a string');
     if (typeof handler !== 'function')
@@ -186,7 +186,7 @@ class TinyEvents {
    * @param {string} event - Event name, such as 'onScrollBoundary' or 'onAutoScroll'.
    * @param {handler} handler - Callback function to be called when event fires.
    */
-  append(event, handler) {
+  appendListener(event, handler) {
     return this.on(event, handler);
   }
 
@@ -197,7 +197,7 @@ class TinyEvents {
    * @param {handler} handler - The callback function to run on event.
    * @returns {handler} - The wrapped version of the handler.
    */
-  appendOnce(event, handler) {
+  appendListenerOnce(event, handler) {
     return this.once(event, handler);
   }
 

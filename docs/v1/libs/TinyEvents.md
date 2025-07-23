@@ -10,8 +10,8 @@ A **lightweight event emitter** class similar to Node.js's `EventEmitter`, writt
 
 It supports:
 
-* 🔁 Persistent listeners (`on`, `append`, `prepend`)
-* 🔂 One-time listeners (`once`, `appendOnce`, `prependOnce`)
+* 🔁 Persistent listeners (`on`, `appendListener`, `prependListener`)
+* 🔂 One-time listeners (`once`, `appendListenerOnce`, `prependListenerOnce`)
 * 📤 Emitting events (`emit`)
 * 🔍 Inspecting listeners (`listenerCount`, `listeners`, `onceListeners`, `allListeners`, `eventNames`)
 * 🧹 Removing listeners (`off`, `offAll`, `offAllTypes`)
@@ -41,25 +41,25 @@ emitter.once('data', console.log);
 
 ---
 
-### `append(event: string, handler: function): void`
+### `appendListener(event: string, handler: function): void`
 
 Alias for `on()`.
 
 ---
 
-### `appendOnce(event: string, handler: function): function`
+### `appendListenerOnce(event: string, handler: function): function`
 
 Alias for `once()`.
 
 ---
 
-### `prepend(event: string, handler: function): void`
+### `prependListener(event: string, handler: function): void`
 
 Adds a listener to the **start** of the listener array (called before others).
 
 ---
 
-### `prependOnce(event: string, handler: function): function`
+### `prependListenerOnce(event: string, handler: function): function`
 
 Adds a one-time listener to the **start** of the listener array.
 

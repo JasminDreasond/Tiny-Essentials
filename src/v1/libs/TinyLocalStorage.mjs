@@ -107,8 +107,8 @@ class TinyLocalStorage {
    * @param {string} event - Event name.
    * @param {handler} handler - The callback function.
    */
-  prepend(event, handler) {
-    return this.#events.prepend(event, handler);
+  prependListener(event, handler) {
+    return this.#events.prependListener(event, handler);
   }
 
   /**
@@ -118,8 +118,8 @@ class TinyLocalStorage {
    * @param {handler} handler - The callback function.
    * @returns {handler} - The wrapped handler used internally.
    */
-  prependOnce(event, handler) {
-    return this.#events.prependOnce(event, handler);
+  prependListenerOnce(event, handler) {
+    return this.#events.prependListenerOnce(event, handler);
   }
 
   //////////////////////////////////////////////////////////////////////
@@ -130,8 +130,8 @@ class TinyLocalStorage {
    * @param {string} event - Event name, such as 'onScrollBoundary' or 'onAutoScroll'.
    * @param {handler} handler - Callback function to be called when event fires.
    */
-  append(event, handler) {
-    return this.#events.append(event, handler);
+  appendListener(event, handler) {
+    return this.#events.appendListener(event, handler);
   }
 
   /**
@@ -141,8 +141,8 @@ class TinyLocalStorage {
    * @param {handler} handler - The callback function to run on event.
    * @returns {handler} - The wrapped version of the handler.
    */
-  appendOnce(event, handler) {
-    return this.#events.appendOnce(event, handler);
+  appendListenerOnce(event, handler) {
+    return this.#events.appendListenerOnce(event, handler);
   }
 
   /**
