@@ -279,19 +279,19 @@ class TinyLocalStorage {
     if (value === null) return { __null__: true };
     for (const [type, encoder] of customEncoders.entries()) {
       if ((typeof type !== 'string' && value instanceof type) || typeof value === type) {
-        return encoder(value, this.encodeSpecialJson);
+        return encoder(value, TinyLocalStorage.encodeSpecialJson);
       }
     }
 
     if (Array.isArray(value)) {
-      return value.map(this.encodeSpecialJson);
+      return value.map(TinyLocalStorage.encodeSpecialJson);
     }
 
     if (isJsonObject(value)) {
       const encoded = {};
       for (const key in value) {
         // @ts-ignore
-        encoded[key] = this.encodeSpecialJson(value[key]);
+        encoded[key] = TinyLocalStorage.encodeSpecialJson(value[key]);
       }
       return encoded;
     }
@@ -305,20 +305,20 @@ class TinyLocalStorage {
     if (value.__null__) return null;
 
     if (Array.isArray(value)) {
-      return value.map(this.decodeSpecialJson);
+      return value.map(TinyLocalStorage.decodeSpecialJson);
     }
 
     if (isJsonObject(value)) {
       for (const [type, decoder] of customDecoders.entries()) {
         if (decoder.check && decoder.check(value)) {
-          return decoder.decode(value, this.decodeSpecialJson);
+          return decoder.decode(value, TinyLocalStorage.decodeSpecialJson);
         }
       }
 
       const decoded = {};
       for (const key in value) {
         // @ts-ignore
-        decoded[key] = decodeSpecialJson(value[key]);
+        decoded[key] = TinyLocalStorage.decodeSpecialJson(value[key]);
       }
       return decoded;
     }
