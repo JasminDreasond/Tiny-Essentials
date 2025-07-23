@@ -359,12 +359,10 @@ class TinyLocalStorage {
   }
 
   /**
-   * Stores a value in `localStorage`.
-   *
    * Automatically serializes nested instances.
    *
    * @param {string} name - The key under which to store the data.
-   * @param {*} data - The data to be serialized and stored.
+   * @param {*} data - The data to be serialized.
    * @returns {*}
    */
   #setJson(name, data) {
@@ -452,6 +450,95 @@ class TinyLocalStorage {
     )
       return decoded;
     return fallback;
+  }
+
+  /**
+   * Stores a Date in localStorage.
+   * @param {string} name
+   * @param {Date} data
+   */
+  setDate(name, data) {
+    if (!(data instanceof Date)) throw new Error('Value must be a Date.');
+    const encoded = this.#setJson(name, data);
+    this.#localStorage.setItem(name, JSON.stringify(encoded));
+    this.emit('setDate', name, data);
+  }
+
+  /**
+   * Retrieves a Date from localStorage.
+   * @param {string} name
+   * @returns {Date|null}
+   */
+  getDate(name) {
+    const value = this.#getJson(name).decoded;
+    return value instanceof Date ? value : null;
+  }
+
+  /**
+   * Stores a RegExp in localStorage.
+   * @param {string} name
+   * @param {RegExp} data
+   */
+  setRegExp(name, data) {
+    if (!(data instanceof RegExp)) throw new Error('Value must be a RegExp.');
+    const encoded = this.#setJson(name, data);
+    this.#localStorage.setItem(name, JSON.stringify(encoded));
+    this.emit('setRegExp', name, data);
+  }
+
+  /**
+   * Retrieves a RegExp from localStorage.
+   * @param {string} name
+   * @returns {RegExp|null}
+   */
+  getRegExp(name) {
+    const value = this.#getJson(name).decoded;
+    return value instanceof RegExp ? value : null;
+  }
+
+  /**
+   * Stores a BigInt in localStorage.
+   * @param {string} name
+   * @param {bigint} data
+   */
+  setBigInt(name, data) {
+    if (typeof data !== 'bigint') throw new Error('Value must be a BigInt.');
+    const encoded = this.#setJson(name, data);
+    this.#localStorage.setItem(name, JSON.stringify(encoded));
+    this.emit('setBigInt', name, data);
+  }
+
+  /**
+   * Retrieves a BigInt from localStorage.
+   * @param {string} name
+   * @returns {bigint|null}
+   */
+  getBigInt(name) {
+    const value = this.#getJson(name).decoded;
+    return typeof value === 'bigint' ? value : null;
+  }
+
+  /**
+   * Stores a Symbol in localStorage.
+   * Only global symbols (`Symbol.for`) will preserve the key.
+   * @param {string} name
+   * @param {symbol} data
+   */
+  setSymbol(name, data) {
+    if (typeof data !== 'symbol') throw new Error('Value must be a Symbol.');
+    const encoded = this.#setJson(name, data);
+    this.#localStorage.setItem(name, JSON.stringify(encoded));
+    this.emit('setSymbol', name, data);
+  }
+
+  /**
+   * Retrieves a Symbol from localStorage.
+   * @param {string} name
+   * @returns {symbol|null}
+   */
+  getSymbol(name) {
+    const value = this.#getJson(name).decoded;
+    return typeof value === 'symbol' ? value : null;
   }
 
   /**
