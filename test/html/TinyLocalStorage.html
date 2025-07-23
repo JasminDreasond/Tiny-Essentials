@@ -173,7 +173,7 @@
       };
 
       window.runRemoveTests = function () {
-        ['str', 'num', 'bool', 'raw', 'obj', 'array', 'map', 'set'].forEach((k) =>
+        ['str', 'num', 'bool', 'raw', 'obj', 'array', 'map', 'set', 'obj2', 'array2'].forEach((k) =>
           storage.removeItem(k),
         );
         log('Removed test keys from localStorage');

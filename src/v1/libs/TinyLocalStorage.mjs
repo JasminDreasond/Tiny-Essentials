@@ -2,23 +2,125 @@ import { isJsonObject } from '../basics/objChecker.mjs';
 import TinyEvents from './TinyEvents.mjs';
 
 /**
- * Recursively encodes Maps and Sets inside objects or arrays.
+ * @typedef {(value: any, encodeSpecialJson: encodeSpecialJson ) => any} EncodeFn
+ */
+
+/**
+ * @typedef {{
+ *  check: (value: any) => any;
+ *  decode: (value: any, decodeSpecialJson: decodeSpecialJson ) => any;
+ * }} DecodeFn
+ */
+
+const customEncoders = new Map();
+const customDecoders = new Map();
+
+/**
+ * @callback registerJsonType
+ * @param {any} type
+ * @param {EncodeFn} encodeFn
+ * @param {DecodeFn} decodeFn
+ */
+
+/** @type {registerJsonType} */
+function registerJsonType(type, encodeFn, decodeFn) {
+  customEncoders.set(type, encodeFn);
+  customDecoders.set(type, decodeFn);
+}
+
+registerJsonType(
+  Map,
+  (value, encodeSpecialJson) => ({
+    __map__: true,
+    data: Array.from(value.entries()).map(([k, v]) => [k, encodeSpecialJson(v)]),
+  }),
+  {
+    check: (value) => value.__map__,
+    /** @param {{ data: any[] }} value */
+    decode: (value, decodeSpecialJson) =>
+      new Map(value.data.map(([k, v]) => [k, decodeSpecialJson(v)])),
+  },
+);
+
+registerJsonType(
+  Set,
+  (value, encodeSpecialJson) => ({
+    __set__: true,
+    data: Array.from(value).map(encodeSpecialJson),
+  }),
+  {
+    check: (value) => value.__set__,
+    decode: (value, decodeSpecialJson) => new Set(value.data.map(decodeSpecialJson)),
+  },
+);
+
+registerJsonType(
+  Date,
+  (value) => ({
+    __date__: true,
+    value: value.toISOString(),
+  }),
+  {
+    check: (value) => value.__date__,
+    decode: (value) => new Date(value.value),
+  },
+);
+
+registerJsonType(
+  RegExp,
+  (value) => ({
+    __regexp__: true,
+    source: value.source,
+    flags: value.flags,
+  }),
+  {
+    check: (value) => value.__regexp__,
+    decode: (value) => new RegExp(value.source, value.flags),
+  },
+);
+
+registerJsonType(
+  'bigint',
+  (value) => ({
+    __bigint__: true,
+    value: value.toString(),
+  }),
+  {
+    check: (value) => value.__bigint__,
+    decode: (value) => BigInt(value.value),
+  },
+);
+
+registerJsonType(
+  'symbol',
+  (value) => ({
+    __symbol__: true,
+    key: Symbol.keyFor(value) ?? value.description ?? null,
+  }),
+  {
+    check: (value) => value.__symbol__,
+    decode: (value) => {
+      const key = value.key;
+      return key != null ? Symbol.for(key) : Symbol();
+    },
+  },
+);
+
+/**
+ * Encodes extended JSON-compatible structures recursively.
+ * @callback encodeSpecialJson
  * @param {any} value
  * @returns {any}
  */
-function encodeSpecialJson(value) {
-  if (value instanceof Map) {
-    return {
-      __map__: true,
-      data: Array.from(value.entries()).map(([k, v]) => [k, encodeSpecialJson(v)]),
-    };
-  }
 
-  if (value instanceof Set) {
-    return {
-      __set__: true,
-      data: Array.from(value).map(encodeSpecialJson),
-    };
+/** @type {encodeSpecialJson} */
+function encodeSpecialJson(value) {
+  if (typeof value === 'undefined') return { __undefined__: true };
+  if (value === null) return { __null__: true };
+  for (const [type, encoder] of customEncoders.entries()) {
+    if ((typeof type !== 'string' && value instanceof type) || typeof value === type) {
+      return encoder(value, encodeSpecialJson);
+    }
   }
 
   if (Array.isArray(value)) {
@@ -38,21 +140,26 @@ function encodeSpecialJson(value) {
 }
 
 /**
- * Recursively decodes Maps and Sets from objects or arrays.
+ * Decodes extended JSON-compatible structures recursively.
+ * @callback decodeSpecialJson
  * @param {any} value
  * @returns {any}
  */
+
+/** @type {decodeSpecialJson} */
 function decodeSpecialJson(value) {
+  if (value.__undefined__) return undefined;
+  if (value.__null__) return null;
+
   if (Array.isArray(value)) {
     return value.map(decodeSpecialJson);
   }
 
   if (isJsonObject(value)) {
-    if (value.__map__ === true && Array.isArray(value.data)) {
-      return new Map(value.data.map(([k, v]) => [k, decodeSpecialJson(v)]));
-    }
-    if (value.__set__ === true && Array.isArray(value.data)) {
-      return new Set(value.data.map(decodeSpecialJson));
+    for (const [type, decoder] of customDecoders.entries()) {
+      if (decoder.check && decoder.check(value)) {
+        return decoder.decode(value, decodeSpecialJson);
+      }
     }
 
     const decoded = {};
