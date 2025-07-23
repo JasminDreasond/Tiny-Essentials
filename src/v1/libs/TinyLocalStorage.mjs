@@ -52,6 +52,30 @@ const customDecoders = new Map();
  * @typedef {(Record<string|number|symbol, any> | any[] | Map<string|number|symbol, any> | Set<any>)} LocalStorageJsonValue
  */
 
+/**
+ * A powerful wrapper for Web Storage (`localStorage` or `sessionStorage`) that supports
+ * type-safe methods and full JSON-like structure encoding and decoding.
+ *
+ * `TinyLocalStorage` allows storing and retrieving complex types such as:
+ * - `Map`, `Set`
+ * - `Date`, `RegExp`
+ * - `BigInt`, `Symbol`
+ * - `undefined`, `null`
+ * - Plain objects and arrays
+ *
+ * Includes:
+ * - Type-specific `set` and `get` methods (`setDate`, `getBool`, etc.)
+ * - `getValue()` to retrieve any structure regardless of type
+ * - Auto-encoding/decoding with support for custom types via `registerJsonType`
+ * - Built-in event system (`TinyEvents`) to listen for changes
+ * - Optional fallback values on decoding errors
+ *
+ * Supports registering and unregistering custom types via:
+ * - `registerJsonType(...)`
+ * - `deleteJsonType(...)`
+ *
+ * This class is suitable for applications that require structured persistence in the browser.
+ */
 class TinyLocalStorage {
   /** @typedef {import('./TinyEvents.mjs').handler} handler */
 
