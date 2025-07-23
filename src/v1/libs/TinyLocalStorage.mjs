@@ -19,6 +19,8 @@ const customTypesFreezed = new Set([
   Number,
   Object,
   Array,
+  BigInt,
+  Symbol,
 ]);
 
 /**
