@@ -301,7 +301,7 @@ class TinyLocalStorage {
 
   /** @type {decodeSpecialJson} */
   static decodeSpecialJson(value) {
-    if (value.__undefined__) return undefined;
+    if (!isJsonObject(value) || value.__undefined__) return undefined;
     if (value.__null__) return null;
 
     if (Array.isArray(value)) {
@@ -539,6 +539,16 @@ class TinyLocalStorage {
   getSymbol(name) {
     const value = this.#getJson(name).decoded;
     return typeof value === 'symbol' ? value : null;
+  }
+
+  /**
+   * Retrieves a value from `localStorage`.
+   *
+   * @param {string} name - The key to retrieve.
+   * @returns {any} The stored value or null if not found.
+   */
+  getValue(name) {
+    return this.#getJson(name).decoded ?? null;
   }
 
   /**

@@ -92,6 +92,7 @@
       import { TinyLocalStorage } from './src/v1/libs/TinyLocalStorage.mjs';
 
       const storage = new TinyLocalStorage();
+      window.tinyLocalStorage = storage;
 
       function log(...args) {
         const logEl = document.getElementById('log');
