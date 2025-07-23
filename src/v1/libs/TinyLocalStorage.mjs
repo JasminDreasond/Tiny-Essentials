@@ -12,7 +12,10 @@ import TinyEvents from './TinyEvents.mjs';
  * }} DecodeFn
  */
 
+/** @type {Map<any, EncodeFn>} */
 const customEncoders = new Map();
+
+/** @type {Map<any, DecodeFn>} */
 const customDecoders = new Map();
 
 /**
@@ -22,90 +25,6 @@ const customDecoders = new Map();
  * @param {DecodeFn} decodeFn
  */
 
-/** @type {registerJsonType} */
-function registerJsonType(type, encodeFn, decodeFn) {
-  customEncoders.set(type, encodeFn);
-  customDecoders.set(type, decodeFn);
-}
-
-registerJsonType(
-  Map,
-  (value, encodeSpecialJson) => ({
-    __map__: true,
-    data: Array.from(value.entries()).map(([k, v]) => [k, encodeSpecialJson(v)]),
-  }),
-  {
-    check: (value) => value.__map__,
-    /** @param {{ data: any[] }} value */
-    decode: (value, decodeSpecialJson) =>
-      new Map(value.data.map(([k, v]) => [k, decodeSpecialJson(v)])),
-  },
-);
-
-registerJsonType(
-  Set,
-  (value, encodeSpecialJson) => ({
-    __set__: true,
-    data: Array.from(value).map(encodeSpecialJson),
-  }),
-  {
-    check: (value) => value.__set__,
-    decode: (value, decodeSpecialJson) => new Set(value.data.map(decodeSpecialJson)),
-  },
-);
-
-registerJsonType(
-  Date,
-  (value) => ({
-    __date__: true,
-    value: value.toISOString(),
-  }),
-  {
-    check: (value) => value.__date__,
-    decode: (value) => new Date(value.value),
-  },
-);
-
-registerJsonType(
-  RegExp,
-  (value) => ({
-    __regexp__: true,
-    source: value.source,
-    flags: value.flags,
-  }),
-  {
-    check: (value) => value.__regexp__,
-    decode: (value) => new RegExp(value.source, value.flags),
-  },
-);
-
-registerJsonType(
-  'bigint',
-  (value) => ({
-    __bigint__: true,
-    value: value.toString(),
-  }),
-  {
-    check: (value) => value.__bigint__,
-    decode: (value) => BigInt(value.value),
-  },
-);
-
-registerJsonType(
-  'symbol',
-  (value) => ({
-    __symbol__: true,
-    key: Symbol.keyFor(value) ?? value.description ?? null,
-  }),
-  {
-    check: (value) => value.__symbol__,
-    decode: (value) => {
-      const key = value.key;
-      return key != null ? Symbol.for(key) : Symbol();
-    },
-  },
-);
-
 /**
  * Encodes extended JSON-compatible structures recursively.
  * @callback encodeSpecialJson
@@ -113,65 +32,12 @@ registerJsonType(
  * @returns {any}
  */
 
-/** @type {encodeSpecialJson} */
-function encodeSpecialJson(value) {
-  if (typeof value === 'undefined') return { __undefined__: true };
-  if (value === null) return { __null__: true };
-  for (const [type, encoder] of customEncoders.entries()) {
-    if ((typeof type !== 'string' && value instanceof type) || typeof value === type) {
-      return encoder(value, encodeSpecialJson);
-    }
-  }
-
-  if (Array.isArray(value)) {
-    return value.map(encodeSpecialJson);
-  }
-
-  if (isJsonObject(value)) {
-    const encoded = {};
-    for (const key in value) {
-      // @ts-ignore
-      encoded[key] = encodeSpecialJson(value[key]);
-    }
-    return encoded;
-  }
-
-  return value;
-}
-
 /**
  * Decodes extended JSON-compatible structures recursively.
  * @callback decodeSpecialJson
  * @param {any} value
  * @returns {any}
  */
-
-/** @type {decodeSpecialJson} */
-function decodeSpecialJson(value) {
-  if (value.__undefined__) return undefined;
-  if (value.__null__) return null;
-
-  if (Array.isArray(value)) {
-    return value.map(decodeSpecialJson);
-  }
-
-  if (isJsonObject(value)) {
-    for (const [type, decoder] of customDecoders.entries()) {
-      if (decoder.check && decoder.check(value)) {
-        return decoder.decode(value, decodeSpecialJson);
-      }
-    }
-
-    const decoded = {};
-    for (const key in value) {
-      // @ts-ignore
-      decoded[key] = decodeSpecialJson(value[key]);
-    }
-    return decoded;
-  }
-
-  return value;
-}
 
 /**
  * Represents a value that can be safely stored and restored using JSON in `localStorage`,
@@ -389,6 +255,79 @@ class TinyLocalStorage {
 
   ///////////////////////////////////////////////////
 
+  /**
+   * @type {registerJsonType}
+   */
+  static registerJsonType(type, encodeFn, decodeFn) {
+    customEncoders.set(type, encodeFn);
+    customDecoders.set(type, decodeFn);
+  }
+
+  /**
+   * @param {string} type
+   */
+  static deleteJsonType(type) {
+    customEncoders.delete(type);
+    customDecoders.delete(type);
+  }
+
+  //////////////////////////////////////////////////////
+
+  /** @type {encodeSpecialJson} */
+  static encodeSpecialJson(value) {
+    if (typeof value === 'undefined') return { __undefined__: true };
+    if (value === null) return { __null__: true };
+    for (const [type, encoder] of customEncoders.entries()) {
+      if ((typeof type !== 'string' && value instanceof type) || typeof value === type) {
+        return encoder(value, this.encodeSpecialJson);
+      }
+    }
+
+    if (Array.isArray(value)) {
+      return value.map(this.encodeSpecialJson);
+    }
+
+    if (isJsonObject(value)) {
+      const encoded = {};
+      for (const key in value) {
+        // @ts-ignore
+        encoded[key] = this.encodeSpecialJson(value[key]);
+      }
+      return encoded;
+    }
+
+    return value;
+  }
+
+  /** @type {decodeSpecialJson} */
+  static decodeSpecialJson(value) {
+    if (value.__undefined__) return undefined;
+    if (value.__null__) return null;
+
+    if (Array.isArray(value)) {
+      return value.map(this.decodeSpecialJson);
+    }
+
+    if (isJsonObject(value)) {
+      for (const [type, decoder] of customDecoders.entries()) {
+        if (decoder.check && decoder.check(value)) {
+          return decoder.decode(value, this.decodeSpecialJson);
+        }
+      }
+
+      const decoded = {};
+      for (const key in value) {
+        // @ts-ignore
+        decoded[key] = decodeSpecialJson(value[key]);
+      }
+      return decoded;
+    }
+
+    return value;
+  }
+
+  //////////////////////////////////////////////////////
+
   /** @type {Storage} */
   #localStorage = window.localStorage;
 
@@ -440,7 +379,7 @@ class TinyLocalStorage {
       throw new Error('The storage value is not a valid JSON-compatible structure.');
     }
 
-    const encoded = encodeSpecialJson(data);
+    const encoded = TinyLocalStorage.encodeSpecialJson(data);
     this.emit('setJson', name, data);
     this.#localStorage.setItem(name, JSON.stringify(encoded));
   }
@@ -480,7 +419,7 @@ class TinyLocalStorage {
       return fallback;
     }
 
-    const decoded = decodeSpecialJson(parsed);
+    const decoded = TinyLocalStorage.decodeSpecialJson(parsed);
 
     if (
       decoded instanceof Map ||
@@ -644,5 +583,91 @@ class TinyLocalStorage {
     this.#events.offAllTypes();
   }
 }
+
+// First registers
+
+// Map
+TinyLocalStorage.registerJsonType(
+  Map,
+  (value, encodeSpecialJson) => ({
+    __map__: true,
+    data: Array.from(value.entries()).map(([k, v]) => [k, encodeSpecialJson(v)]),
+  }),
+  {
+    check: (value) => value.__map__,
+    /** @param {{ data: any[] }} value */
+    decode: (value, decodeSpecialJson) =>
+      new Map(value.data.map(([k, v]) => [k, decodeSpecialJson(v)])),
+  },
+);
+
+// Set
+TinyLocalStorage.registerJsonType(
+  Set,
+  (value, encodeSpecialJson) => ({
+    __set__: true,
+    data: Array.from(value).map(encodeSpecialJson),
+  }),
+  {
+    check: (value) => value.__set__,
+    decode: (value, decodeSpecialJson) => new Set(value.data.map(decodeSpecialJson)),
+  },
+);
+
+// Date
+TinyLocalStorage.registerJsonType(
+  Date,
+  (value) => ({
+    __date__: true,
+    value: value.toISOString(),
+  }),
+  {
+    check: (value) => value.__date__,
+    decode: (value) => new Date(value.value),
+  },
+);
+
+// Regex
+TinyLocalStorage.registerJsonType(
+  RegExp,
+  (value) => ({
+    __regexp__: true,
+    source: value.source,
+    flags: value.flags,
+  }),
+  {
+    check: (value) => value.__regexp__,
+    decode: (value) => new RegExp(value.source, value.flags),
+  },
+);
+
+// Bing Int
+TinyLocalStorage.registerJsonType(
+  'bigint',
+  (value) => ({
+    __bigint__: true,
+    value: value.toString(),
+  }),
+  {
+    check: (value) => value.__bigint__,
+    decode: (value) => BigInt(value.value),
+  },
+);
+
+// Symbol
+TinyLocalStorage.registerJsonType(
+  'symbol',
+  (value) => ({
+    __symbol__: true,
+    key: Symbol.keyFor(value) ?? value.description ?? null,
+  }),
+  {
+    check: (value) => value.__symbol__,
+    decode: (value) => {
+      const key = value.key;
+      return key != null ? Symbol.for(key) : Symbol();
+    },
+  },
+);
 
 export default TinyLocalStorage;
