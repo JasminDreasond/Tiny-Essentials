@@ -323,8 +323,10 @@ class TinyLocalStorage {
    * @type {decodeSpecialJson}
    */
   static decodeSpecialJson(value) {
-    if (!isJsonObject(value) || value.__undefined__) return undefined;
-    if (value.__null__) return null;
+    if (isJsonObject(value)) {
+      if (value.__undefined__) return undefined;
+      if (value.__null__) return null;
+    }
 
     if (Array.isArray(value)) {
       return value.map(TinyLocalStorage.decodeSpecialJson);
