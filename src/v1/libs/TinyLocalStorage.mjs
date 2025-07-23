@@ -444,7 +444,7 @@ class TinyLocalStorage {
     }
     const encoded = this.#setJson(name, data);
     this.emit('setJson', name, data);
-    this.#localStorage.setItem(name, JSON.stringify(encoded));
+    return this.#localStorage.setItem(name, JSON.stringify(encoded));
   }
 
   /**
@@ -514,8 +514,8 @@ class TinyLocalStorage {
   setDate(name, data) {
     if (!(data instanceof Date)) throw new Error('Value must be a Date.');
     const encoded = this.#setJson(name, data);
-    this.#localStorage.setItem(name, JSON.stringify(encoded));
     this.emit('setDate', name, data);
+    return this.#localStorage.setItem(name, JSON.stringify(encoded));
   }
 
   /**
@@ -536,8 +536,8 @@ class TinyLocalStorage {
   setRegExp(name, data) {
     if (!(data instanceof RegExp)) throw new Error('Value must be a RegExp.');
     const encoded = this.#setJson(name, data);
-    this.#localStorage.setItem(name, JSON.stringify(encoded));
     this.emit('setRegExp', name, data);
+    return this.#localStorage.setItem(name, JSON.stringify(encoded));
   }
 
   /**
@@ -558,8 +558,8 @@ class TinyLocalStorage {
   setBigInt(name, data) {
     if (typeof data !== 'bigint') throw new Error('Value must be a BigInt.');
     const encoded = this.#setJson(name, data);
-    this.#localStorage.setItem(name, JSON.stringify(encoded));
     this.emit('setBigInt', name, data);
+    return this.#localStorage.setItem(name, JSON.stringify(encoded));
   }
 
   /**
@@ -581,8 +581,8 @@ class TinyLocalStorage {
   setSymbol(name, data) {
     if (typeof data !== 'symbol') throw new Error('Value must be a Symbol.');
     const encoded = this.#setJson(name, data);
-    this.#localStorage.setItem(name, JSON.stringify(encoded));
     this.emit('setSymbol', name, data);
+    return this.#localStorage.setItem(name, JSON.stringify(encoded));
   }
 
   /**
@@ -744,7 +744,7 @@ class TinyLocalStorage {
    * Clears all data from `localStorage`.
    */
   clearLocalStorage() {
-    this.#localStorage.clear();
+    return this.#localStorage.clear();
   }
 
   /**
