@@ -294,10 +294,13 @@ class TinyLocalStorage {
    * Removes a previously registered custom type from the encoding/decoding system.
    *
    * @param {string} type - The primitive name or constructor reference used in registration.
+   * @returns {boolean} True if an registered custom type existed and has been removed, or false if the this does not exist.
    */
   static deleteJsonType(type) {
-    customEncoders.delete(type);
-    customDecoders.delete(type);
+    let isDeleted = false;
+    if (customEncoders.delete(type)) isDeleted = true;
+    if (customDecoders.delete(type)) isDeleted = true;
+    return isDeleted;
   }
 
   //////////////////////////////////////////////////////
