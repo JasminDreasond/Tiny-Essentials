@@ -1,6 +1,6 @@
 # 📦 TinyLocalStorage
 
-Tiny wrapper for `localStorage` with full support for objects, arrays, `Map`, `Set`, and typed value helpers like string, number, and boolean. Includes built-in event system powered by `TinyEvents`.
+Tiny wrapper for `localStorage` with full support for complex structures like `Map`, `Set`, `Date`, `RegExp`, `BigInt`, and even custom types. Offers a type-safe interface and a powerful event system via `TinyEvents`.
 
 ---
 
@@ -13,19 +13,22 @@ storage.setString('name', 'Yasmin');
 storage.setNumber('age', 25);
 storage.setBool('likesCats', true);
 storage.setJson('myMap', new Map([['a', 1], ['b', 2]]));
+storage.setDate('today', new Date());
 
 console.log(storage.getString('name')); // "Yasmin"
 console.log(storage.getJson('myMap')); // Map { 'a' => 1, 'b' => 2 }
+console.log(storage.getDate('today') instanceof Date); // true
 ```
 
 ---
 
 ## 🧠 Features
 
-* ✅ Store & restore `Map`, `Set`, arrays and plain objects.
-* ✅ Type-safe storage methods for string, number and boolean.
-* ✅ Fallback handling when deserialization fails.
-* ✅ Built-in event emitter system.
+* ✅ Store & restore `Map`, `Set`, `Date`, `RegExp`, `BigInt`, `Symbol`, `null`, `undefined`.
+* ✅ Custom type encoding and decoding system.
+* ✅ Type-safe methods for string, number and boolean.
+* ✅ Built-in event system (`TinyEvents`) with optional native `storage` listener.
+* ✅ Optional fallback when decoding fails.
 
 ---
 
@@ -33,7 +36,7 @@ console.log(storage.getJson('myMap')); // Map { 'a' => 1, 'b' => 2 }
 
 ### `setJson(key, data)`
 
-Stores a complex structure (`Map`, `Set`, object, or array) in `localStorage`.
+Stores any supported JSON-like structure, including `Map`, `Set`, `Date`, `RegExp`, `BigInt`, etc.
 
 ```ts
 setJson(name: string, data: LocalStorageJsonValue): void
@@ -41,17 +44,20 @@ setJson(name: string, data: LocalStorageJsonValue): void
 
 ### `getJson(key, fallback?)`
 
-Retrieves and decodes a previously stored structure.
+Retrieves and decodes the previously stored structure. Optional fallback allows recovery on decode failure.
 
 ```ts
-getJson(name: string, defaultData?: 'array' | 'obj' | 'map' | 'set' | 'null'): LocalStorageJsonValue | null
+getJson(
+  name: string,
+  defaultData?: 'array' | 'obj' | 'map' | 'set' | 'null'
+): LocalStorageJsonValue | null
 ```
 
 ---
 
 ### `setItem(key, rawString)`
 
-Stores a raw string, without any processing.
+Stores a raw `string` value as-is.
 
 ```ts
 setItem(name: string, data: string): void
@@ -59,7 +65,7 @@ setItem(name: string, data: string): void
 
 ### `getItem(key)`
 
-Retrieves a raw string.
+Retrieves a raw `string` value.
 
 ```ts
 getItem(name: string): string | null
@@ -121,6 +127,88 @@ getBool(name: string): boolean | null
 
 ---
 
+### `setDate(key, date)`
+
+Stores a `Date` object.
+
+```ts
+setDate(name: string, data: Date): void
+```
+
+### `getDate(key)`
+
+Retrieves a `Date` object.
+
+```ts
+getDate(name: string): Date | null
+```
+
+---
+
+### `setRegExp(key, pattern)`
+
+Stores a `RegExp` object.
+
+```ts
+setRegExp(name: string, data: RegExp): void
+```
+
+### `getRegExp(key)`
+
+Retrieves a `RegExp` object.
+
+```ts
+getRegExp(name: string): RegExp | null
+```
+
+---
+
+### `setBigInt(key, value)`
+
+Stores a `BigInt` value.
+
+```ts
+setBigInt(name: string, data: bigint): void
+```
+
+### `getBigInt(key)`
+
+Retrieves a `BigInt` value.
+
+```ts
+getBigInt(name: string): bigint | null
+```
+
+---
+
+### `setSymbol(key, value)`
+
+Stores a `Symbol`. Only global symbols (`Symbol.for`) will preserve identity.
+
+```ts
+setSymbol(name: string, data: symbol): void
+```
+
+### `getSymbol(key)`
+
+Retrieves a `Symbol` value.
+
+```ts
+getSymbol(name: string): symbol | null
+```
+
+---
+
+### `getValue(key)`
+
+Retrieves any previously stored value, regardless of type.
+
+```ts
+getValue(name: string): any | null
+```
+
+---
+
 ## ❌ Deletion Methods
 
 ### `removeItem(key)`
@@ -133,7 +221,7 @@ removeItem(name: string): void
 
 ### `clearLocalStorage()`
 
-Clears all data in the active storage.
+Clears all keys in the active storage.
 
 ---
 
@@ -144,26 +232,65 @@ Clears all data in the active storage.
 Switch between `localStorage` and `sessionStorage`.
 
 ```ts
-setLocalStorage(localstorage: Storage): void
+setLocalStorage(storage: Storage): void
 ```
 
 ### `localStorageExists()`
 
-Checks if the current environment supports `localStorage`.
+Returns `true` if the browser supports the configured storage backend.
+
+---
+
+## 🧩 Custom Type Registration
+
+### `registerJsonType(type, encodeFn, decodeFn)`
+
+Registers support for custom types with encoder/decoder logic.
+
+```ts
+registerJsonType(
+  type: any,
+  encodeFn: (value: any, encodeSpecialJson: EncodeFn) => any,
+  decodeFn: {
+    check: (value: any) => boolean,
+    decode: (value: any, decodeSpecialJson: DecodeFn) => any
+  }
+): void
+```
+
+---
+
+### `deleteJsonType(type)`
+
+Unregisters a previously registered custom type.
+
+```ts
+deleteJsonType(type: any): void
+```
+
+Removes the encoder and decoder associated with the given type. Useful for cleanup or reconfiguration.
 
 ---
 
 ## 🔥 Events (via TinyEvents)
 
-### Custom Events
+### Built-in Events
 
-* `'setJson'`
-* `'setItem'`
-* `'setString'`
-* `'setNumber'`
-* `'setBool'`
-* `'removeItem'`
-* `'storage'` (native `storage` event)
+| Event Name     | Triggered When...                           |
+| -------------- | ------------------------------------------- |
+| `'setJson'`    | `.setJson()` is called                      |
+| `'setItem'`    | `.setItem()` is called                      |
+| `'setString'`  | `.setString()` is called                    |
+| `'setNumber'`  | `.setNumber()` is called                    |
+| `'setBool'`    | `.setBool()` is called                      |
+| `'setSymbol'`  | `.setSymbol()` is called                    |
+| `'setBigInt'`  | `.setBigInt()` is called                    |
+| `'setRegExp'`  | `.setRegExp()` is called                    |
+| `'setDate'`    | `.setDate()` is called                      |
+| `'removeItem'` | `.removeItem()` is called                   |
+| `'storage'`    | Browser's native `storage` event (optional) |
+
+All events receive `{ key, value }` or `{ key }` depending on context.
 
 ---
 
@@ -171,7 +298,7 @@ Checks if the current environment supports `localStorage`.
 
 ### `destroy()`
 
-Cleans up the instance, removes listeners and events.
+Cleans up listeners and internal event systems.
 
 ```ts
 destroy(): void
@@ -179,7 +306,7 @@ destroy(): void
 
 ---
 
-## 🧩 Type Definition
+## 🧪 Type Definition
 
 ```ts
 type LocalStorageJsonValue =
@@ -195,23 +322,29 @@ type LocalStorageJsonValue =
 
 ### `encodeSpecialJson(value)`
 
-Recursively converts `Map` and `Set` into serializable objects.
+Recursively encodes supported complex types into serializable JSON-like structures.
 
 ### `decodeSpecialJson(value)`
 
-Restores `Map` and `Set` from encoded JSON.
+Decodes those JSON-like structures back into `Map`, `Set`, `Date`, etc.
 
 ---
 
-## 🧪 Example: Map & Set
+## 🧪 Example: Map, Set, Date, RegExp
 
 ```js
 const map = new Map([['x', 123]]);
 const set = new Set(['apple', 'banana']);
+const date = new Date();
+const regex = /hello/i;
 
-storage.setJson('myMap', map);
-storage.setJson('mySet', set);
+storage.setJson('dataMap', map);
+storage.setJson('dataSet', set);
+storage.setDate('today', date);
+storage.setRegExp('pattern', regex);
 
-console.log(storage.getJson('myMap')); // Map { 'x' => 123 }
-console.log(storage.getJson('mySet')); // Set { 'apple', 'banana' }
+console.log(storage.getJson('dataMap') instanceof Map); // true
+console.log(storage.getJson('dataSet') instanceof Set); // true
+console.log(storage.getDate('today') instanceof Date); // true
+console.log(storage.getRegExp('pattern') instanceof RegExp); // true
 ```
