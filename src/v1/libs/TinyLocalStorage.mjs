@@ -7,6 +7,17 @@ const customEncoders = new Map();
 /** @type {Map<any, DecodeFn>} */
 const customDecoders = new Map();
 
+/** @type {Set<any>} */
+const customTypesFreezed = new Set([
+  'string',
+  'boolean',
+  'number',
+  'object',
+  'array',
+  Object,
+  Array,
+]);
+
 /**
  * A function that encodes a value into a serializable JSON-compatible format.
  *
@@ -281,22 +292,31 @@ class TinyLocalStorage {
   /**
    * Registers a new JSON-serializable type with its encoder and decoder.
    *
-   * @param {any} type - The type or primitive type name (e.g. `"bigint"`, `"symbol"`, etc).
-   * @param {EncodeFn} encodeFn - The function that encodes the value.
-   * @param {DecodeFn} decodeFn - An object with `check` and `decode` methods for restoring the value.
+   * @param {any} type - The type identifier, which can be a string (e.g., `"bigint"`, `"symbol"`)
+   *                     or a reference to a class/constructor function.
+   * @param {EncodeFn} encodeFn - A function that receives a value of this type and returns a JSON-safe representation.
+   * @param {DecodeFn} decodeFn - An object with `check(value)` to identify this type and `decode(value)` to restore it.
+   * @param {boolean} [freezeType=false] - If true, prevents this type from being unregistered later.
+   * @throws {Error} Throws an error if the type is frozen and cannot be registered.
    */
-  static registerJsonType(type, encodeFn, decodeFn) {
+  static registerJsonType(type, encodeFn, decodeFn, freezeType = false) {
+    if (customTypesFreezed.has(type))
+      throw new Error(`Cannot register type "${type}" because it is frozen.`);
     customEncoders.set(type, encodeFn);
     customDecoders.set(type, decodeFn);
+    if (freezeType) customTypesFreezed.add(type);
   }
 
   /**
-   * Removes a previously registered custom type from the encoding/decoding system.
+   * Unregisters a previously registered custom type from the encoding/decoding system.
    *
-   * @param {string} type - The primitive name or constructor reference used in registration.
-   * @returns {boolean} True if an registered custom type existed and has been removed, or false if the this does not exist.
+   * @param {any} type - The primitive name or constructor reference used in the registration.
+   * @returns {boolean} Returns true if the type existed and was removed, or false if it wasn't found.
+   * @throws {Error} Throws an error if the type is frozen and cannot be unregistered.
    */
   static deleteJsonType(type) {
+    if (customTypesFreezed.has(type))
+      throw new Error(`Cannot remove type "${type}" because it is frozen.`);
     let isDeleted = false;
     if (customEncoders.delete(type)) isDeleted = true;
     if (customDecoders.delete(type)) isDeleted = true;
@@ -789,6 +809,7 @@ TinyLocalStorage.registerJsonType(
     decode: (value, decodeSpecialJson) =>
       new Map(value.data.map(([k, v]) => [k, decodeSpecialJson(v)])),
   },
+  true,
 );
 
 // Set
@@ -802,6 +823,7 @@ TinyLocalStorage.registerJsonType(
     check: (value) => value.__set__,
     decode: (value, decodeSpecialJson) => new Set(value.data.map(decodeSpecialJson)),
   },
+  true,
 );
 
 // Date
@@ -815,6 +837,7 @@ TinyLocalStorage.registerJsonType(
     check: (value) => value.__date__,
     decode: (value) => new Date(value.value),
   },
+  true,
 );
 
 // Regex
@@ -829,6 +852,7 @@ TinyLocalStorage.registerJsonType(
     check: (value) => value.__regexp__,
     decode: (value) => new RegExp(value.source, value.flags),
   },
+  true,
 );
 
 // Big Int
@@ -842,6 +866,7 @@ TinyLocalStorage.registerJsonType(
     check: (value) => value.__bigint__,
     decode: (value) => BigInt(value.value),
   },
+  true,
 );
 
 // Symbol
@@ -858,6 +883,7 @@ TinyLocalStorage.registerJsonType(
       return key != null ? Symbol.for(key) : Symbol();
     },
   },
+  true,
 );
 
 export default TinyLocalStorage;

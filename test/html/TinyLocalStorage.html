@@ -93,6 +93,7 @@
 
       const storage = new TinyLocalStorage();
       window.tinyLocalStorage = storage;
+      window.TinyLocalStorage = TinyLocalStorage;
 
       function log(...args) {
         const logEl = document.getElementById('log');
