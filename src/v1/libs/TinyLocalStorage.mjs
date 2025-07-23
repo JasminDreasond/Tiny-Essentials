@@ -1,17 +1,6 @@
 import { isJsonObject } from '../basics/objChecker.mjs';
 import TinyEvents from './TinyEvents.mjs';
 
-/**
- * @typedef {(value: any, encodeSpecialJson: encodeSpecialJson ) => any} EncodeFn
- */
-
-/**
- * @typedef {{
- *  check: (value: any) => any;
- *  decode: (value: any, decodeSpecialJson: decodeSpecialJson ) => any;
- * }} DecodeFn
- */
-
 /** @type {Map<any, EncodeFn>} */
 const customEncoders = new Map();
 
@@ -19,10 +8,20 @@ const customEncoders = new Map();
 const customDecoders = new Map();
 
 /**
- * @callback registerJsonType
- * @param {any} type
- * @param {EncodeFn} encodeFn
- * @param {DecodeFn} decodeFn
+ * A function that encodes a value into a serializable JSON-compatible format.
+ *
+ * @callback EncodeFn
+ * @param {any} value - The value to encode.
+ * @param {encodeSpecialJson} encodeSpecialJson - Recursive encoder helper.
+ * @returns {any} The encoded value.
+ */
+
+/**
+ * An object that defines how to check and decode a specific serialized type.
+ *
+ * @typedef {Object} DecodeFn
+ * @property {(value: any) => any} check - Checks if the value matches the custom encoded structure.
+ * @property {(value: any, decodeSpecialJson: decodeSpecialJson) => any} decode - Decodes the structure back into its original form.
  */
 
 /**
@@ -256,7 +255,11 @@ class TinyLocalStorage {
   ///////////////////////////////////////////////////
 
   /**
-   * @type {registerJsonType}
+   * Registers a new JSON-serializable type with its encoder and decoder.
+   *
+   * @param {any} type - The type or primitive type name (e.g. `"bigint"`, `"symbol"`, etc).
+   * @param {EncodeFn} encodeFn - The function that encodes the value.
+   * @param {DecodeFn} decodeFn - An object with `check` and `decode` methods for restoring the value.
    */
   static registerJsonType(type, encodeFn, decodeFn) {
     customEncoders.set(type, encodeFn);
@@ -264,7 +267,9 @@ class TinyLocalStorage {
   }
 
   /**
-   * @param {string} type
+   * Removes a previously registered custom type from the encoding/decoding system.
+   *
+   * @param {string} type - The primitive name or constructor reference used in registration.
    */
   static deleteJsonType(type) {
     customEncoders.delete(type);
@@ -273,7 +278,15 @@ class TinyLocalStorage {
 
   //////////////////////////////////////////////////////
 
-  /** @type {encodeSpecialJson} */
+  /**
+   * Recursively serializes a value to a JSON-compatible format.
+   *
+   * This includes custom types (via `registerJsonType`), plus support for:
+   * - `undefined` → `{ __undefined__: true }`
+   * - `null` → `{ __null__: true }`
+   *
+   * @type {encodeSpecialJson}
+   */
   static encodeSpecialJson(value) {
     if (typeof value === 'undefined') return { __undefined__: true };
     if (value === null) return { __null__: true };
@@ -299,7 +312,16 @@ class TinyLocalStorage {
     return value;
   }
 
-  /** @type {decodeSpecialJson} */
+  /**
+   * Recursively deserializes a JSON-compatible value into its original structure.
+   *
+   * Automatically handles:
+   * - `__undefined__` → `undefined`
+   * - `__null__` → `null`
+   * - Any type registered via `registerJsonType`
+   *
+   * @type {decodeSpecialJson}
+   */
   static decodeSpecialJson(value) {
     if (!isJsonObject(value) || value.__undefined__) return undefined;
     if (value.__null__) return null;
@@ -334,6 +356,11 @@ class TinyLocalStorage {
   /** @type {(ev: StorageEvent) => any} */
   #storageEvent = (ev) => this.emit('storage', ev);
 
+  /**
+   * Initializes the TinyLocalStorage instance and sets up cross-tab sync.
+   *
+   * Adds listener for the native `storage` event to support tab synchronization.
+   */
   constructor() {
     window.addEventListener('storage', this.#storageEvent);
   }
