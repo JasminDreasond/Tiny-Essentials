@@ -290,6 +290,17 @@ class TinyLocalStorage {
   ///////////////////////////////////////////////////
 
   /**
+   * Checks whether a JSON-serializable type is already registered.
+   *
+   * @param {any} type - The type identifier, which can be a string (e.g., `"bigint"`, `"symbol"`)
+   *                     or a reference to a class/constructor function.
+   * @returns {boolean} True if the type has both an encoder and decoder registered.
+   */
+  static hasJsonType(type) {
+    return (customEncoders.has(type) && customDecoders.has(type)) || customTypesFreezed.has(type);
+  }
+
+  /**
    * Registers a new JSON-serializable type with its encoder and decoder.
    *
    * @param {any} type - The type identifier, which can be a string (e.g., `"bigint"`, `"symbol"`)

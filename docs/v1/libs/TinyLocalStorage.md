@@ -243,7 +243,7 @@ Returns `true` if the browser supports the configured storage backend.
 
 ## 🧩 Custom Type Registration
 
-### `registerJsonType(type, encodeFn, decodeFn)`
+### `registerJsonType(type, encodeFn, decodeFn, freezeType?)`
 
 Registers support for custom types with encoder/decoder logic.
 
@@ -254,9 +254,14 @@ registerJsonType(
   decodeFn: {
     check: (value: any) => boolean,
     decode: (value: any, decodeSpecialJson: DecodeFn) => any
-  }
+  },
+  freezeType?: boolean // default: false
 ): void
 ```
+
+Registers a custom type by associating it with encoder and decoder logic. If `freezeType` is set to `true`, the type becomes immutable and cannot be unregistered or overwritten later.
+
+> ⚠️ Throws an error if trying to register a type that is already frozen.
 
 ---
 
@@ -265,10 +270,24 @@ registerJsonType(
 Unregisters a previously registered custom type.
 
 ```ts
-deleteJsonType(type: any): void
+deleteJsonType(type: any): boolean
 ```
 
-Removes the encoder and decoder associated with the given type. Useful for cleanup or reconfiguration.
+Removes the encoder and decoder associated with the given type. Returns `true` if the type was found and removed, or `false` if it was not registered.
+
+> ❌ Throws an error if the type was marked as frozen via `freezeType`.
+
+---
+
+### `hasJsonType(type)`
+
+Checks whether a type is currently registered for custom encoding/decoding.
+
+```ts
+hasJsonType(type: any): boolean
+```
+
+Returns `true` if the type has both encoder and decoder registered, otherwise `false`.
 
 ---
 
