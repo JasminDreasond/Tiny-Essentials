@@ -152,22 +152,6 @@ class TinyNewWinEvents {
     }
   }
 
-  /** @returns {void} */
-  destroy() {
-    if (!this.#windowRef) return;
-    window.removeEventListener('message', this._handleMessage);
-    this.#routeHandlers.clear();
-    this.#pendingQueue = [];
-    this.#ready = false;
-    if (this.#pollClosedInterval) {
-      clearInterval(this.#pollClosedInterval);
-      this.#pollClosedInterval = null;
-      pollClosedInterval.delete(this.#windowRef);
-    }
-    this.#windowRef = null;
-    this.#onCloseCallbacks.clear();
-  }
-
   /** @returns {boolean} */
   isConnected() {
     return this.#ready && this.#windowRef && !this.#windowRef.closed ? true : false;
@@ -206,6 +190,27 @@ class TinyNewWinEvents {
    */
   offClose(callback) {
     this.#onCloseCallbacks.delete(callback);
+  }
+
+  /** @returns {boolean} */
+  isDestroyed() {
+    return !this.#windowRef;
+  }
+
+  /** @returns {void} */
+  destroy() {
+    if (!this.#windowRef) return;
+    window.removeEventListener('message', this._handleMessage);
+    this.#routeHandlers.clear();
+    this.#pendingQueue = [];
+    this.#ready = false;
+    if (this.#pollClosedInterval) {
+      clearInterval(this.#pollClosedInterval);
+      this.#pollClosedInterval = null;
+      pollClosedInterval.delete(this.#windowRef);
+    }
+    this.#windowRef = null;
+    this.#onCloseCallbacks.clear();
   }
 }
 
