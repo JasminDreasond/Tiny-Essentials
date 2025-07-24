@@ -277,8 +277,9 @@ class TinyIframeEvents {
     if (
       this.#targetWindow.document.readyState === 'complete' ||
       this.#targetWindow.document.readyState === 'interactive'
-    ) this.#onceMessage();
-     else {
+    )
+      this.#onceMessage();
+    else {
       this.#targetWindow.addEventListener('load', this._boundOnceMessage, false);
       this.#targetWindow.addEventListener('DOMContentLoaded', this._boundOnceMessage, false);
     }

@@ -65,9 +65,9 @@ Creates a new communication instance.
 
 | Name           | Type                     | Description                                        |
 | -------------- | ------------------------ | -------------------------------------------------- |
-| `url`          | `string \| WindowProxy?` | URL to open in popup, or existing window reference |
-| `name`         | `string?`                | Name of the popup window                           |
-| `features`     | `string?`                | `window.open` features string                      |
+| `url`          | `string?`                | URL to open in popup.                              |
+| `name`         | `string?`                | Name of the popup window .                         |
+| `features`     | `string?`                | `window.open` features string.                     |
 | `targetOrigin` | `string?`                | Expected origin (defaults to current origin)       |
 
 ❗ `name: '_blank'` is **not allowed** for popup tracking.

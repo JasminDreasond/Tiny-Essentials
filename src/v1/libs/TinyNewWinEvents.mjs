@@ -4,7 +4,7 @@ import TinyEvents from './TinyEvents.mjs';
  * Stores polling intervals associated with window references.
  * Used to detect when the window is closed.
  *
- * @type {WeakMap<Window|WindowProxy, NodeJS.Timeout>}
+ * @type {WeakMap<Window, NodeJS.Timeout>}
  */
 const pollClosedInterval = new WeakMap();
 
@@ -213,7 +213,7 @@ class TinyNewWinEvents {
 
   ///////////////////////////////////////////////////
 
-  /** @type {Window|WindowProxy|null} Reference to the opened or parent window */
+  /** @type {Window|null} Reference to the opened or parent window */
   #windowRef;
 
   /** @type {string} Expected origin for postMessage communication */
@@ -240,14 +240,29 @@ class TinyNewWinEvents {
   /**
    * Initializes a TinyNewWinEvents instance for communication.
    *
-   * @param {Object} [settings={}] Configuration object
-   * @param {string} [settings.targetOrigin] Origin to enforce in postMessage
-   * @param {string|WindowProxy} [settings.url] URL string to open, or a reference to an existing window
-   * @param {string} [settings.name] Window name (required if opening a new window)
-   * @param {string} [settings.features=''] Features string for window.open
+   * @param {Object} [settings={}] Configuration object.
+   * @param {string} [settings.targetOrigin] Origin to enforce in postMessage.
+   * @param {string} [settings.url] URL string to open.
+   * @param {string} [settings.name] Window name (required if opening a new window).
+   * @param {string} [settings.features] Features string for `window.open`.
+   *
+   * @throws {Error} If `name` is "_blank", which is not allowed.
+   * @throws {TypeError} If `targetOrigin`, `url`, or `features` are not strings (when provided).
+   * @throws {Error} If the window reference is invalid or already being tracked.
    */
   constructor({ targetOrigin, url, name, features } = {}) {
-    if (name === '_blank') throw new Error('Window name "_blank" is not allowed.');
+    if (typeof name === 'string' && name === '_blank')
+      throw new Error(
+        'TinyNewWinEvents: The window name "_blank" is not supported. Please use a custom name to allow tracking.',
+      );
+    if (typeof targetOrigin !== 'undefined' && typeof targetOrigin !== 'string')
+      throw new TypeError('TinyNewWinEvents: The "targetOrigin" option must be a string.');
+    if (typeof url !== 'undefined' && typeof url !== 'string')
+      throw new TypeError(
+        'TinyNewWinEvents: The "url" option must be a string.',
+      );
+    if (typeof features !== 'undefined' && typeof features !== 'string')
+      throw new TypeError('TinyNewWinEvents: The "features" option must be a string if provided.');
 
     // Open Page
     if (typeof url === 'undefined') this.#windowRef = window.opener;
@@ -273,7 +288,7 @@ class TinyNewWinEvents {
   /**
    * Returns the internal window reference.
    *
-   * @returns {Window|WindowProxy|null}
+   * @returns {Window|null}
    */
   getWin() {
     return this.#windowRef;
