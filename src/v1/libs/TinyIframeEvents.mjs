@@ -226,6 +226,22 @@ class TinyIframeEvents {
   /** @type {boolean} */
   #isDestroyed = false;
 
+  /** @type {boolean} */
+  #ready = false;
+
+  /**
+   * @typedef {object} IframeEventBase
+   * @property {string} eventName - The name of the custom event route.
+   * @property {any} payload - The data being sent (can be any type).
+   * @property {'iframe' | 'parent'} direction - Indicates the sender: 'iframe' or 'parent'.
+   */
+
+  /**
+   * Queue of messages emitted before connection is ready
+   * @type {IframeEventBase[]}
+   */
+  #pendingQueue = [];
+
   /** @type {string} Internal message type for routed communication */
   #secretEventName = '__tinyIframeEvent__';
 
@@ -256,8 +272,28 @@ class TinyIframeEvents {
     if (instances.has(this.#targetWindow)) throw new Error('Duplicate window reference.');
 
     this._boundOnMessage = this.#onMessage.bind(this);
+    this._boundOnceMessage = this.#onceMessage.bind(this);
+
+    if (
+      this.#targetWindow.document.readyState === 'complete' ||
+      this.#targetWindow.document.readyState === 'interactive'
+    ) this.#onceMessage();
+     else {
+      this.#targetWindow.addEventListener('load', this._boundOnceMessage, false);
+      this.#targetWindow.addEventListener('DOMContentLoaded', this._boundOnceMessage, false);
+    }
+
     window.addEventListener('message', this._boundOnMessage, false);
     instances.set(this.#targetWindow, this);
+  }
+
+  /**
+   * Marks the communication as ready and flushes any queued messages.
+   */
+  #onceMessage() {
+    if (this.#ready) return;
+    this.#ready = true;
+    this.#flushQueue();
   }
 
   /**
@@ -297,6 +333,7 @@ class TinyIframeEvents {
     if (typeof eventName !== 'string') throw new TypeError('Event name must be a string.');
     if (this.#isDestroyed) throw new Error('Cannot emit: instance has been destroyed.');
 
+    /** @type {IframeEventBase} */
     const message = {
       [this.#secretEventName]: true,
       eventName,
@@ -304,7 +341,24 @@ class TinyIframeEvents {
       direction: this.#selfType === 'parent' ? 'iframe' : 'parent',
     };
 
+    if (!this.#ready) {
+      this.#pendingQueue.push(message);
+      return;
+    }
+
     this.#targetWindow.postMessage(message, this.#targetOrigin);
+  }
+
+  /**
+   * Sends all pending messages queued before handshake completion.
+   *
+   * @returns {void}
+   */
+  #flushQueue() {
+    while (this.#pendingQueue.length) {
+      const data = this.#pendingQueue.shift();
+      if (data) this.#targetWindow.postMessage(data, this.#targetOrigin);
+    }
   }
 
   /**
@@ -323,7 +377,10 @@ class TinyIframeEvents {
   destroy() {
     this.#isDestroyed = true;
     window.removeEventListener('message', this._boundOnMessage);
+    this.#targetWindow.removeEventListener('load', this._boundOnceMessage, false);
+    this.#targetWindow.removeEventListener('DOMContentLoaded', this._boundOnceMessage, false);
     this.#events.offAllTypes();
+    this.#pendingQueue = [];
     instances.delete(this.#targetWindow);
   }
 }

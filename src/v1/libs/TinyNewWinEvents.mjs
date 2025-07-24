@@ -307,8 +307,11 @@ class TinyNewWinEvents {
    */
   #flushQueue() {
     while (this.#pendingQueue.length) {
-      const { route, payload } = this.#pendingQueue.shift();
-      this.emit(route, payload);
+      const data = this.#pendingQueue.shift();
+      if (data) {
+        const { route, payload } = data;
+        this.emit(route, payload);
+      }
     }
   }
 
@@ -391,7 +394,7 @@ class TinyNewWinEvents {
 
   /**
    * Registers a callback for when the window is closed.
-   * 
+   *
    * @param {handler} callback Callback to run on close
    * @returns {void}
    */
@@ -401,7 +404,7 @@ class TinyNewWinEvents {
 
   /**
    * Unregisters a previously registered close callback.
-   * 
+   *
    * @param {handler} callback Callback to remove
    * @returns {void}
    */
