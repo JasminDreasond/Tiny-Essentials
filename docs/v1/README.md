@@ -45,6 +45,7 @@ This folder contains the core scripts we have worked on so far. Each file is a m
 - 📡 **[TinyEvents](./libs/TinyEvents.md)** — A lightweight and dependency-free event emitter inspired by Node.js, supporting persistent and one-time listeners, listener inspection, and max listener limits.
 - 📦 **[TinyLocalStorage](./libs/TinyLocalStorage.md)** — A tiny wrapper for `localStorage` with full support for objects, arrays, `Map`, `Set`, and typed value helpers like string, number, and boolean.
 - 🖼️ **[TinyIframeEvents](./libs/TinyIframeEvents.md)** — A structured `postMessage`-based event router for secure and reliable communication between a parent window and its embedded iframe. Supports directional filtering, origin enforcement, payload transport, and listener lifecycle.
+- 🪟 **[TinyNewWinEvents](./libs/TinyNewWinEvents.md)** — A smart, route-based `postMessage` system for structured communication between a main window and a popup (`window.open`). Includes queueing, origin enforcement, and lifecycle tracking.
 
 ### 3. **`fileManager/`**
 * 📁 **[Main](./fileManager/main.md)** — A Node.js file/directory utility module with support for JSON, backups, renaming, size analysis, and more.
