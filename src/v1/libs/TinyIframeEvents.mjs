@@ -1,6 +1,9 @@
 import { isJsonObject } from '../basics/objChecker.mjs';
 import TinyEvents from './TinyEvents.mjs';
 
+/** @type {WeakMap<Window, TinyIframeEvents>} */
+const instances = new WeakMap();
+
 /**
  * @callback handler
  * A function to handle incoming event payloads.
@@ -220,6 +223,10 @@ class TinyIframeEvents {
   /** @type {string} */
   #selfType;
 
+  /** @type {boolean} */
+  #isDestroyed = false;
+
+  /** @type {string} Internal message type for routed communication */
   #secretEventName = '__tinyIframeEvent__';
 
   /**
@@ -246,9 +253,11 @@ class TinyIframeEvents {
     this.#targetWindow = targetIframe?.contentWindow ?? window.parent;
     this.#targetOrigin = targetOrigin ?? window.location.origin;
     this.#selfType = !targetIframe ? 'iframe' : 'parent';
+    if (instances.has(this.#targetWindow)) throw new Error('Duplicate window reference.');
 
     this._boundOnMessage = this.#onMessage.bind(this);
     window.addEventListener('message', this._boundOnMessage, false);
+    instances.set(this.#targetWindow, this);
   }
 
   /**
@@ -286,6 +295,7 @@ class TinyIframeEvents {
    */
   emit(eventName, payload) {
     if (typeof eventName !== 'string') throw new TypeError('Event name must be a string.');
+    if (this.#isDestroyed) throw new Error('Cannot emit: instance has been destroyed.');
 
     const message = {
       [this.#secretEventName]: true,
@@ -298,12 +308,23 @@ class TinyIframeEvents {
   }
 
   /**
+   * Checks if the communication instance has been destroyed.
+   *
+   * @returns {boolean}
+   */
+  isDestroyed() {
+    return this.#isDestroyed;
+  }
+
+  /**
    * Unsubscribes all registered event listeners and removes the message handler.
    * Call this when the instance is no longer needed to prevent memory leaks.
    */
   destroy() {
+    this.#isDestroyed = true;
     window.removeEventListener('message', this._boundOnMessage);
     this.#events.offAllTypes();
+    instances.delete(this.#targetWindow);
   }
 }
 

@@ -1,46 +1,62 @@
-/** @type {WeakMap<Window|WindowProxy, NodeJS.Timeout>} */
+/**
+ * Stores polling intervals associated with window references.
+ * Used to detect when the window is closed.
+ *
+ * @type {WeakMap<Window|WindowProxy, NodeJS.Timeout>}
+ */
 const pollClosedInterval = new WeakMap();
 
 /**
+ * TinyNewWinEvents provides structured communication between a main window
+ * and a child window (created using window.open) using postMessage.
+ *
+ * It supports routing, queuing messages until handshake is ready,
+ * connection status checks, and close detection.
+ *
  * @class
  */
 class TinyNewWinEvents {
-  /** @type {Window|WindowProxy|null} */
+  /** @type {Window|WindowProxy|null} Reference to the opened or parent window */
   #windowRef;
 
-  /** @type {string} */
+  /** @type {string} Expected origin for postMessage communication */
   #targetOrigin;
 
-  /** @type {Map<string, Set<Function>>} */
+  /** @type {Map<string, Set<Function>>} Registered route handlers for message events */
   #routeHandlers = new Map();
 
-  /** @type {{ route: string, payload: any }[]} */
+  /** @type {{ route: string, payload: any }[]} Queue of messages emitted before connection is ready */
   #pendingQueue = [];
 
-  /** @type {boolean} */
+  /** @type {boolean} True if handshake between windows is complete */
   #ready = false;
 
-  /** @type {boolean} */
+  /** @type {boolean} True if this instance is the main window (host) */
   #isHost = false;
 
-  /** @type {NodeJS.Timeout|null} */
+  /** @type {NodeJS.Timeout|null} Interval for polling child window closure */
   #pollClosedInterval = null;
 
-  /** @type {Set<() => void>} */
+  /** @type {Set<() => void>} Callbacks triggered when window is closed */
   #onCloseCallbacks = new Set();
 
+  /** @type {string} Internal message type for handshake */
   #readyEventName = '__TNE_READY__';
+
+  /** @type {string} Internal message type for routed communication */
   #routeEventName = '__TNE_ROUTE__';
 
   /**
-   * @param {Object} [settings={}]
-   * @param {string} [settings.targetOrigin]
-   * @param {string|WindowProxy} [settings.url]
-   * @param {string} [settings.name]
-   * @param {string} [settings.features='']
+   * Initializes a TinyNewWinEvents instance for communication.
+   *
+   * @param {Object} [settings={}] Configuration object
+   * @param {string} [settings.targetOrigin] Origin to enforce in postMessage
+   * @param {string|WindowProxy} [settings.url] URL string to open, or a reference to an existing window
+   * @param {string} [settings.name] Window name (required if opening a new window)
+   * @param {string} [settings.features=''] Features string for window.open
    */
   constructor({ targetOrigin, url, name, features } = {}) {
-    if (name === '_blank') throw new Error('');
+    if (name === '_blank') throw new Error('Window name "_blank" is not allowed.');
 
     // Open Page
     if (typeof url === 'undefined') this.#windowRef = window.opener;
@@ -50,7 +66,8 @@ class TinyNewWinEvents {
       this.#isHost = true;
     }
 
-    if (!this.#windowRef || pollClosedInterval.has(this.#windowRef)) throw new Error('');
+    if (!this.#windowRef || pollClosedInterval.has(this.#windowRef))
+      throw new Error('Invalid or duplicate window reference.');
     this.#targetOrigin = targetOrigin ?? window.location.origin;
     this._handleMessage = this.#handleMessage.bind(this);
     window.addEventListener('message', this._handleMessage, false);
@@ -62,11 +79,18 @@ class TinyNewWinEvents {
     }
   }
 
+  /**
+   * Returns the internal window reference.
+   *
+   * @returns {Window|WindowProxy|null}
+   */
   getWin() {
     return this.#windowRef;
   }
 
   /**
+   * Internal message handler.
+   *
    * @param {MessageEvent} event
    * @returns {void}
    */
@@ -89,7 +113,11 @@ class TinyNewWinEvents {
     }
   }
 
-  /** @returns {void} */
+  /**
+   * Sends all pending messages queued before handshake completion.
+   *
+   * @returns {void}
+   */
   #flushQueue() {
     while (this.#pendingQueue.length) {
       const { route, payload } = this.#pendingQueue.shift();
@@ -98,9 +126,11 @@ class TinyNewWinEvents {
   }
 
   /**
-   * @param {string} type
-   * @param {any} payload
-   * @param {string} [route='']
+   * Sends a raw postMessage with given type and payload.
+   *
+   * @param {string} type Internal message type
+   * @param {any} payload Data to send
+   * @param {string} [route=''] Optional route name
    * @returns {void}
    */
   #postRaw(type, payload, route = '') {
@@ -108,17 +138,29 @@ class TinyNewWinEvents {
     this.#windowRef?.postMessage({ type, route, payload }, this.#targetOrigin);
   }
 
+  /**
+   * Closes the child window (only allowed from the host).
+   *
+   * @returns {void}
+   */
   close() {
-    if (!this.#isHost) throw new Error('');
+    if (!this.#isHost) throw new Error('Only host can close the window.');
     if (this.#windowRef && !this.#windowRef.closed) this.#windowRef.close();
   }
 
   /**
-   * @param {string} route
-   * @param {any} payload
+   * Emits a message to the other window on a specific route.
+   * If the handshake is not yet complete, the message is queued.
+   * Throws an error if the instance has already been destroyed.
+   *
+   * @param {string} route - Route name used to identify the message handler.
+   * @param {any} payload - Data to send along with the message.
+   * @throws {Error} If the instance is already destroyed.
    * @returns {void}
    */
   emit(route, payload) {
+    if (typeof route !== 'string') throw new TypeError('Event name must be a string.');
+    if (this.isDestroyed()) throw new Error('Cannot emit: instance has been destroyed.');
     if (!this.#ready) {
       this.#pendingQueue.push({ route, payload });
       return;
@@ -152,17 +194,27 @@ class TinyNewWinEvents {
     }
   }
 
-  /** @returns {boolean} */
+  /**
+   * Checks if the connection is active and the window is still open.
+   *
+   * @returns {boolean}
+   */
   isConnected() {
     return this.#ready && this.#windowRef && !this.#windowRef.closed ? true : false;
   }
 
-  /** @returns {Window|null} */
-  getWindowRef() {
+  /**
+   * Returns the current window reference.
+   *
+   * @returns {Window|null}
+   */
+  getWinRef() {
     return this.#windowRef;
   }
 
   /**
+   * Starts polling to detect when the window is closed.
+   *
    * @returns {void}
    */
   #startCloseWatcher() {
@@ -192,12 +244,20 @@ class TinyNewWinEvents {
     this.#onCloseCallbacks.delete(callback);
   }
 
-  /** @returns {boolean} */
+  /**
+   * Checks if the communication instance has been destroyed.
+   *
+   * @returns {boolean}
+   */
   isDestroyed() {
     return !this.#windowRef;
   }
 
-  /** @returns {void} */
+  /**
+   * Destroys the communication instance, cleaning up all resources and listeners.
+   *
+   * @returns {void}
+   */
   destroy() {
     if (!this.#windowRef) return;
     window.removeEventListener('message', this._handleMessage);
