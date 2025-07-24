@@ -368,15 +368,6 @@ class TinyNewWinEvents {
   }
 
   /**
-   * Returns the current window reference.
-   *
-   * @returns {Window|null}
-   */
-  getWinRef() {
-    return this.#windowRef;
-  }
-
-  /**
    * Starts polling to detect when the window is closed.
    *
    * @returns {void}

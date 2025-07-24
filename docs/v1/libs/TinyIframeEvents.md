@@ -108,6 +108,18 @@ iframeEvents.destroy();
 
 ---
 
+### `isDestroyed()`
+
+Returns `true` if the instance has been destroyed via `.destroy()`.
+
+```js
+if (events.isDestroyed()) {
+  console.warn('Event system is no longer active.');
+}
+```
+
+---
+
 ## 🔒 Security Notes
 
 * Only messages with the flag `__tinyEvent: true` are accepted.
@@ -132,6 +144,6 @@ This class internally wraps:
 ```ts
 type handler = (
   payload: any,
-  meta: MessageEvent<any>
+  event: MessageEvent<any>
 ) => void;
 ```
