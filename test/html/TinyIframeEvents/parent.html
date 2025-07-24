@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Parent Page</title>
+    <style>
+      iframe {
+        width: 600px;
+        height: 200px;
+        border: 2px solid #333;
+      }
+      button {
+        margin: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Parent Page</h1>
+    <iframe src="./iframe.html" id="myIframe"></iframe>
+    <br />
+    <button id="sendToIframe">Send Message to Iframe</button>
+    <div id="log"></div>
+
+    <script type="module">
+      import { TinyIframeEvents } from '../src/v1/libs/TinyIframeEvents.mjs';
+
+      const iframe = document.getElementById('myIframe');
+
+      // Espera o iframe carregar para configurar a comunicação
+      iframe.onload = () => {
+        const events = new TinyIframeEvents({
+          targetIframe: iframe,
+        });
+
+        window.frameEvents = events;
+
+        // Ouve evento vindo do iframe
+        events.on('hello:fromIframe', (payload, meta) => {
+          log('📩 Received from iframe:', payload);
+          console.log('parent', payload, meta);
+        });
+
+        // Envia mensagem para o iframe ao clicar
+        document.getElementById('sendToIframe').onclick = () => {
+          events.emit('hello:fromParent', {
+            timestamp: new Date().toISOString(),
+            message: 'Olá iframe!',
+          });
+        };
+      };
+
+      function log(...args) {
+        const out = document.getElementById('log');
+        const p = document.createElement('p');
+        p.textContent = args.map((a) => JSON.stringify(a)).join(' ');
+        out.appendChild(p);
+      }
+    </script>
+  </body>
+</html>

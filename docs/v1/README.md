@@ -44,6 +44,7 @@ This folder contains the core scripts we have worked on so far. Each file is a m
 - 🌈 **[TinyColorConverter](./libs/TinyColorConverter.md)** — A complete color conversion toolkit supporting hex, RGB(A), HSL(A), and integer formats, with smooth gradient generation, color parsing, and multi-format output conversion.
 - 📡 **[TinyEvents](./libs/TinyEvents.md)** — A lightweight and dependency-free event emitter inspired by Node.js, supporting persistent and one-time listeners, listener inspection, and max listener limits.
 - 📦 **[TinyLocalStorage](./libs/TinyLocalStorage.md)** — A tiny wrapper for `localStorage` with full support for objects, arrays, `Map`, `Set`, and typed value helpers like string, number, and boolean.
+- 🖼️ **[TinyIframeEvents](./libs/TinyIframeEvents.md)** — A structured `postMessage`-based event router for secure and reliable communication between a parent window and its embedded iframe. Supports directional filtering, origin enforcement, payload transport, and listener lifecycle.
 
 ### 3. **`fileManager/`**
 * 📁 **[Main](./fileManager/main.md)** — A Node.js file/directory utility module with support for JSON, backups, renaming, size analysis, and more.

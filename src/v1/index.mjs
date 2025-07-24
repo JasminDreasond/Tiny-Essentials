@@ -129,8 +129,10 @@ import TinyColorConverter from './libs/TinyColorConverter.mjs';
 import TinyTimeout from './libs/TinyTimeout.mjs';
 import TinyEvents from './libs/TinyEvents.mjs';
 import TinyLocalStorage from './libs/TinyLocalStorage.mjs';
+import TinyIframeEvents from './libs/TinyIframeEvents.mjs';
 
 export {
+  TinyIframeEvents,
   TinyLocalStorage,
   TinyEvents,
   TinyTimeout,

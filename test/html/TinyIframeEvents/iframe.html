@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Iframe Page</title>
+    <style>
+      body {
+        background: #eef;
+        font-family: sans-serif;
+      }
+      button {
+        margin: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Iframe Page</h1>
+    <button id="sendToParent">Send Message to Parent</button>
+    <div id="log"></div>
+
+    <script type="module">
+      import { TinyIframeEvents } from '../src/v1/libs/TinyIframeEvents.mjs';
+
+      const events = new TinyIframeEvents();
+
+      // Envia mensagem ao parent
+      document.getElementById('sendToParent').onclick = () => {
+        events.emit('hello:fromIframe', {
+          timestamp: new Date().toISOString(),
+          content: 'Oi parent!',
+        });
+      };
+
+      // Ouve evento do parent
+      events.on('hello:fromParent', (payload, meta) => {
+        log('📨 Received from parent:', payload);
+        console.log('iframe', payload, meta);
+      });
+
+      function log(...args) {
+        const out = document.getElementById('log');
+        const p = document.createElement('p');
+        p.textContent = args.map((a) => JSON.stringify(a)).join(' ');
+        out.appendChild(p);
+      }
+    </script>
+  </body>
+</html>

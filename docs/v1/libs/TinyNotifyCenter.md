@@ -80,7 +80,7 @@ TinyNotifyCenter.insertTemplate();
 
 // Or insert at the end of <body>
 TinyNotifyCenter.insertTemplate('beforeend');
-````
+```
 
 ---
 
