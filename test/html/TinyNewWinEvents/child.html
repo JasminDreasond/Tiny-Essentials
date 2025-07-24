@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Child Window</title>
+  </head>
+  <body>
+    <h1>Child Window</h1>
+    <p>Waiting for messages...</p>
+    <pre id="log"></pre>
+
+    <script type="module">
+      import { TinyNewWinEvents } from '../src/v1/libs/TinyNewWinEvents.mjs';
+
+      const log = (msg) => {
+        document.querySelector('#log').textContent += msg + '\n';
+      };
+
+      window.conn = new TinyNewWinEvents();
+
+      conn.on('ping', (payload) => {
+        log('Received ping: ' + JSON.stringify(payload));
+        conn.send('pong', { from: 'child', receivedAt: Date.now() });
+      });
+
+      conn.onClose(() => {
+        log('Main window was closed');
+      });
+    </script>
+  </body>
+</html>

@@ -20,6 +20,15 @@ const publicDir = path.join(__dirname, './html');
 const imgDir = path.join(__dirname, './img');
 const projectRoot = path.join(__dirname, '../');
 
+app.use((req, res, next) => {
+  // Website you wish to allow to connect
+  res.setHeader('Access-Control-Allow-Origin', '*');
+
+  // Request methods you wish to allow
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  next();
+});
+
 app.use(
   express.static(publicDir, {
     etag: false,

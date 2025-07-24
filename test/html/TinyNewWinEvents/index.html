@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Main Window</title>
+  </head>
+  <body>
+    <h1>Main Window</h1>
+    <button id="open">Open Child</button>
+    <button id="send">Send Message</button>
+    <pre id="log"></pre>
+
+    <script type="module">
+      import { TinyNewWinEvents } from '../src/v1/libs/TinyNewWinEvents.mjs';
+
+      const log = (msg) => {
+        document.querySelector('#log').textContent += msg + '\n';
+      };
+
+      document.querySelector('#open').addEventListener('click', () => {
+        window.conn = new TinyNewWinEvents({ url: 'child.html', name: 'pudding' });
+
+        window.conn.on('pong', (payload) => {
+          log('Received pong: ' + JSON.stringify(payload));
+        });
+
+        window.conn.onClose(() => {
+          log('Child window was closed');
+        });
+      });
+
+      document.querySelector('#send').addEventListener('click', () => {
+        if (window.conn) {
+          window.conn.send('ping', { from: 'main', time: Date.now() });
+          log('Sent ping to child');
+        } else {
+          log('Connection not established.');
+        }
+      });
+    </script>
+  </body>
+</html>

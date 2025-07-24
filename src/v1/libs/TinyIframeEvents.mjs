@@ -220,6 +220,8 @@ class TinyIframeEvents {
   /** @type {string} */
   #selfType;
 
+  #secretEventName = '__tinyIframeEvent__';
+
   /**
    * Creates a new TinyIframeEvents instance to manage communication between iframe and parent.
    * Automatically determines the current context (`iframe` or `parent`) based on the `targetWindow`.
@@ -258,7 +260,7 @@ class TinyIframeEvents {
     const { data, source } = event;
 
     // Reject non-object or unrelated messages
-    if (!isJsonObject(data) || !data.__tinyEvent) return;
+    if (!isJsonObject(data) || !data[this.#secretEventName]) return;
 
     const { eventName, payload, direction } = data;
 
@@ -286,7 +288,7 @@ class TinyIframeEvents {
     if (typeof eventName !== 'string') throw new TypeError('Event name must be a string.');
 
     const message = {
-      __tinyEvent: true,
+      [this.#secretEventName]: true,
       eventName,
       payload,
       direction: this.#selfType === 'parent' ? 'iframe' : 'parent',
