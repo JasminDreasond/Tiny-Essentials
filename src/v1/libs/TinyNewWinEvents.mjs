@@ -1,3 +1,6 @@
+/** @type {WeakMap<Window|WindowProxy, NodeJS.Timeout>} */
+const pollClosedInterval = new WeakMap();
+
 /**
  * @class
  */
@@ -47,6 +50,7 @@ class TinyNewWinEvents {
       this.#isHost = true;
     }
 
+    if (!this.#windowRef || pollClosedInterval.has(this.#windowRef)) throw new Error('');
     this.#targetOrigin = targetOrigin ?? window.location.origin;
     this._handleMessage = this.#handleMessage.bind(this);
     window.addEventListener('message', this._handleMessage, false);
@@ -89,7 +93,7 @@ class TinyNewWinEvents {
   #flushQueue() {
     while (this.#pendingQueue.length) {
       const { route, payload } = this.#pendingQueue.shift();
-      this.send(route, payload);
+      this.emit(route, payload);
     }
   }
 
@@ -114,7 +118,7 @@ class TinyNewWinEvents {
    * @param {any} payload
    * @returns {void}
    */
-  send(route, payload) {
+  emit(route, payload) {
     if (!this.#ready) {
       this.#pendingQueue.push({ route, payload });
       return;
@@ -150,15 +154,17 @@ class TinyNewWinEvents {
 
   /** @returns {void} */
   destroy() {
+    if (!this.#windowRef) return;
     window.removeEventListener('message', this._handleMessage);
     this.#routeHandlers.clear();
     this.#pendingQueue = [];
-    this.#windowRef = null;
     this.#ready = false;
     if (this.#pollClosedInterval) {
       clearInterval(this.#pollClosedInterval);
       this.#pollClosedInterval = null;
+      pollClosedInterval.delete(this.#windowRef);
     }
+    this.#windowRef = null;
     this.#onCloseCallbacks.clear();
   }
 
@@ -179,13 +185,11 @@ class TinyNewWinEvents {
     if (!this.#windowRef || this.#pollClosedInterval) return;
     this.#pollClosedInterval = setInterval(() => {
       if (this.#windowRef?.closed) {
-        if (this.#pollClosedInterval) {
-          clearInterval(this.#pollClosedInterval);
-          this.#pollClosedInterval = null;
-        }
         for (const cb of this.#onCloseCallbacks) cb();
+        this.destroy();
       }
     }, 500);
+    pollClosedInterval.set(this.#windowRef, this.#pollClosedInterval);
   }
 
   /**

@@ -31,7 +31,7 @@
 
       document.querySelector('#send').addEventListener('click', () => {
         if (window.conn) {
-          window.conn.send('ping', { from: 'main', time: Date.now() });
+          window.conn.emit('ping', { from: 'main', time: Date.now() });
           log('Sent ping to child');
         } else {
           log('Connection not established.');

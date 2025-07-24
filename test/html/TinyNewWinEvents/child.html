@@ -20,7 +20,7 @@
 
       conn.on('ping', (payload) => {
         log('Received ping: ' + JSON.stringify(payload));
-        conn.send('pong', { from: 'child', receivedAt: Date.now() });
+        conn.emit('pong', { from: 'child', receivedAt: Date.now() });
       });
 
       conn.onClose(() => {
