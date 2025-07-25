@@ -30,7 +30,7 @@ const addModule = (version, entry, library, isClass = false) => {
   };
   modules.push(
     // Non-minified version
-    {
+    /** {
       ...baseConfig,
       mode: 'development',
       output: {
@@ -41,7 +41,7 @@ const addModule = (version, entry, library, isClass = false) => {
         ...baseConfig.optimization,
         minimize: false,
       },
-    },
+    }, */
     // Minified version
     {
       ...baseConfig,
