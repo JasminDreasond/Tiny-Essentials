@@ -22,6 +22,7 @@
       import { TinyIframeEvents } from '../src/v1/libs/TinyIframeEvents.mjs';
 
       const events = new TinyIframeEvents();
+      events.secretEventName = '__PUDDING__';
 
       // Envia mensagem ao parent
       document.getElementById('sendToParent').onclick = () => {

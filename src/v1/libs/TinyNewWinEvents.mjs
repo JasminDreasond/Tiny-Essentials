@@ -238,6 +238,42 @@ class TinyNewWinEvents {
   #routeEventName = '__TNE_ROUTE__';
 
   /**
+   * Gets the internal handshake event name.
+   * @returns {string}
+   */
+  get readyEventName() {
+    return this.#readyEventName;
+  }
+
+  /**
+   * Sets the internal handshake event name.
+   * @param {string} name
+   * @throws {TypeError} If the value is not a string.
+   */
+  set readyEventName(name) {
+    if (typeof name !== 'string') throw new TypeError('TinyNewWinEvents: readyEventName must be a string.');
+    this.#readyEventName = name;
+  }
+
+  /**
+   * Gets the internal route event name.
+   * @returns {string}
+   */
+  get routeEventName() {
+    return this.#routeEventName;
+  }
+
+  /**
+   * Sets the internal route event name.
+   * @param {string} name
+   * @throws {TypeError} If the value is not a string.
+   */
+  set routeEventName(name) {
+    if (typeof name !== 'string') throw new TypeError('TinyNewWinEvents: routeEventName must be a string.');
+    this.#routeEventName = name;
+  }
+
+  /**
    * Initializes a TinyNewWinEvents instance for communication.
    *
    * @param {Object} [settings={}] Configuration object.
@@ -258,9 +294,7 @@ class TinyNewWinEvents {
     if (typeof targetOrigin !== 'undefined' && typeof targetOrigin !== 'string')
       throw new TypeError('TinyNewWinEvents: The "targetOrigin" option must be a string.');
     if (typeof url !== 'undefined' && typeof url !== 'string')
-      throw new TypeError(
-        'TinyNewWinEvents: The "url" option must be a string.',
-      );
+      throw new TypeError('TinyNewWinEvents: The "url" option must be a string.');
     if (typeof features !== 'undefined' && typeof features !== 'string')
       throw new TypeError('TinyNewWinEvents: The "features" option must be a string if provided.');
 
