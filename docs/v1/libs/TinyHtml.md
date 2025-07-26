@@ -377,7 +377,7 @@ Finds the first element by CSS selector.
 ### `TinyHtml.queryAll(selector)`
 Finds all elements by CSS selector.
 
-- **Returns**: `TinyHtml[]`
+- **Returns**: `TinyHtml`
 
 ---
 
@@ -393,35 +393,54 @@ Selects an element by ID.
 ### `TinyHtml.getByClassName(selector)`
 Finds elements by class name.
 
-- **Returns**: `TinyHtml[]`
+- **Returns**: `TinyHtml`
 
 ---
 
 ### `TinyHtml.getByName(selector)`
 Finds elements by `name` attribute.
 
-- **Returns**: `TinyHtml[]`
+- **Returns**: `TinyHtml`
 
 ---
 
 ### `TinyHtml.getByTagNameNS(localName, namespaceURI?)`
 Finds elements by tag name in a namespace (defaults to XHTML).
 
-- **Returns**: `TinyHtml[]`
+- **Returns**: `TinyHtml`
 
 ---
 
 ## 🧩 Internal Element Access
 
-### `get()`
+### `exists(index)`
+Checks whether the element exists at the given index.
+
+- **Returns**: `boolean`
+
+---
+
+### `get(index)`
 Returns the raw DOM element associated with this instance.
 
 - **Returns**: `ConstructorElValues`
 
 ---
 
-### `_getElement(where)`
+### `getAll()`
+Returns the current targets held by this instance.
+
+- **Returns**: `ConstructorElValues[]`
+
+---
+
+### `_getElement(where, index)`
 Safely returns the element with error checking.
+
+---
+
+### `_getElements(where)`
+Returns the current Elements held by this instance.
 
 ---
 
