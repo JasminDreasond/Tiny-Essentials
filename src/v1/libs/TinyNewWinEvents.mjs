@@ -251,7 +251,8 @@ class TinyNewWinEvents {
    * @throws {TypeError} If the value is not a string.
    */
   set readyEventName(name) {
-    if (typeof name !== 'string') throw new TypeError('TinyNewWinEvents: readyEventName must be a string.');
+    if (typeof name !== 'string')
+      throw new TypeError('TinyNewWinEvents: readyEventName must be a string.');
     this.#readyEventName = name;
   }
 
@@ -269,7 +270,8 @@ class TinyNewWinEvents {
    * @throws {TypeError} If the value is not a string.
    */
   set routeEventName(name) {
-    if (typeof name !== 'string') throw new TypeError('TinyNewWinEvents: routeEventName must be a string.');
+    if (typeof name !== 'string')
+      throw new TypeError('TinyNewWinEvents: routeEventName must be a string.');
     this.#routeEventName = name;
   }
 

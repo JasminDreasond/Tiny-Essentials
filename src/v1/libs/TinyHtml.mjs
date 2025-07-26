@@ -239,10 +239,32 @@ class TinyHtml {
   static Utils = { ...TinyCollision };
 
   /**
+   * Creates a new TinyHtml element from a tag name and optional attributes.
+   *
+   * @param {string} tagName - The HTML tag name (e.g., 'div', 'span', 'button').
+   * @param {Record<string, string|null>} [attrs] - Optional key-value pairs representing HTML attributes.
+   *                                                If the value is `null`, the attribute will still be set with an empty value.
+   * @returns {TinyHtml} - A new instance of TinyHtml representing the created element.
+   * @throws {TypeError} - If `tagName` is not a string, or `attrs` is not a plain object when defined.
+   */
+  static createFrom(tagName, attrs) {
+    if (typeof tagName !== 'string') throw new TypeError('The "tagName" must be a string.');
+    if (typeof attrs !== 'undefined' && typeof attrs !== 'object')
+      throw new TypeError('The "attrs" must be a object.');
+    const elem = TinyHtml.createElement(tagName);
+    if (typeof attrs === 'object') {
+      for (const attrName in attrs) {
+        elem.setAttr(attrName, attrs[attrName]);
+      }
+    }
+    return elem;
+  }
+
+  /**
    * Creates a new DOM element with the specified tag name and options, then wraps it in a TinyHtml instance.
    *
    * @param {string} tagName - The tag name of the element to create (e.g., 'div', 'span').
-   * @param {ElementCreationOptions} ops - Optional settings for creating the element.
+   * @param {ElementCreationOptions} [ops] - Optional settings for creating the element.
    * @returns {TinyHtml} A TinyHtml instance wrapping the newly created DOM element.
    * @throws {TypeError} If tagName is not a string or ops is not an object.
    */
@@ -2151,7 +2173,13 @@ class TinyHtml {
     msTransition: '-ms-transition',
   };
 
-  /** @type {Record<string | symbol, string>} */
+  /**
+   * Public proxy to manage camelCase ➝ kebab-case CSS property aliasing.
+   *
+   * Modifying this object ensures that the reverse mapping in `cssPropRevAliases` is updated accordingly.
+   *
+   * @type {Record<string | symbol, string>}
+   */
   static cssPropAliases = new Proxy(TinyHtml.#cssPropAliases, {
     set(target, camelCaseKey, kebabValue) {
       target[camelCaseKey] = kebabValue;
@@ -2161,7 +2189,13 @@ class TinyHtml {
     },
   });
 
-  /** @type {Record<string | symbol, string>} */
+  /**
+   * Reverse map of `cssPropAliases`, mapping kebab-case back to camelCase CSS property names.
+   *
+   * This enables consistent bidirectional lookups of style properties.
+   *
+   * @type {Record<string | symbol, string>}
+   */
   static cssPropRevAliases = Object.fromEntries(
     Object.entries(TinyHtml.#cssPropAliases).map(([camel, kebab]) => [kebab, camel]),
   );
@@ -4343,13 +4377,76 @@ class TinyHtml {
   ///////////////////////////////////////////////////////////////
 
   /**
-   * Property name normalization similar to jQuery's propFix.
-   * @readonly
+   * Internal property name normalization map (similar to jQuery's `propFix`).
+   * Maps attribute-like names to their JavaScript DOM property equivalents.
+   *
+   * Example: `'for'` ➝ `'htmlFor'`, `'class'` ➝ `'className'`.
+   *
+   * ⚠️ Do not modify this object directly. Use `TinyHtml.propFix` to ensure reverse mapping (`attrFix`) remains in sync.
+   *
+   * @type {Record<string | symbol, string>}
    */
-  static _propFix = {
+  static #propFix = {
     for: 'htmlFor',
     class: 'className',
   };
+
+  /**
+   * Public proxy for normalized DOM property names.
+   *
+   * Setting a new entry here will also automatically update the reverse map in `TinyHtml.attrFix`.
+   *
+   * @type {Record<string | symbol, string>}
+   */
+  static propFix = new Proxy(TinyHtml.#propFix, {
+    set(target, val1, val2) {
+      target[val1] = val2;
+      // @ts-ignore
+      TinyHtml.attrFix[val2] = val1;
+      return true;
+    },
+  });
+
+  /**
+   * Reverse map of `propFix`, mapping property names back to their attribute equivalents.
+   *
+   * Used when converting DOM property names into HTML attribute names.
+   *
+   * @type {Record<string | symbol, string>}
+   */
+  static attrFix = Object.fromEntries(
+    Object.entries(TinyHtml.#propFix).map(([val1, val2]) => [val2, val1]),
+  );
+
+  /**
+   * Normalizes an attribute name to its corresponding DOM property name.
+   *
+   * Example: `'class'` ➝ `'className'`, `'for'` ➝ `'htmlFor'`.
+   * If the name is not mapped, it returns the original name.
+   *
+   * @param {string} name - The attribute name to normalize.
+   * @returns {string} - The corresponding property name.
+   */
+  static getPropName(name) {
+    // @ts-ignore
+    const propName = typeof TinyHtml.propFix[name] === 'string' ? TinyHtml.propFix[name] : name;
+    return propName;
+  }
+
+  /**
+   * Converts a DOM property name back to its corresponding attribute name.
+   *
+   * Example: `'className'` ➝ `'class'`, `'htmlFor'` ➝ `'for'`.
+   * If the name is not mapped, it returns the original name.
+   *
+   * @param {string} name - The property name to convert.
+   * @returns {string} - The corresponding attribute name.
+   */
+  static getAttrName(name) {
+    // @ts-ignore
+    const propName = typeof TinyHtml.attrFix[name] === 'string' ? TinyHtml.attrFix[name] : name;
+    return propName;
+  }
 
   /**
    * Get an attribute on an element.
@@ -4360,7 +4457,7 @@ class TinyHtml {
   static attr(el, name) {
     if (typeof name !== 'string') throw new TypeError('The "name" must be a string.');
     const elem = TinyHtml._preElem(el, 'attr');
-    return elem.getAttribute(name);
+    return elem.getAttribute(TinyHtml.getAttrName(name));
   }
 
   /**
@@ -4384,8 +4481,8 @@ class TinyHtml {
     if (value !== null && typeof value !== 'string')
       throw new TypeError('The "value" must be a string.');
     TinyHtml._preElems(el, 'setAttr').forEach((elem) => {
-      if (value === null) elem.removeAttribute(name);
-      else elem.setAttribute(name, value);
+      if (value === null) elem.removeAttribute(TinyHtml.getAttrName(name));
+      else elem.setAttribute(TinyHtml.getAttrName(name), value);
     });
     return el;
   }
@@ -4408,7 +4505,9 @@ class TinyHtml {
    */
   static removeAttr(el, name) {
     if (typeof name !== 'string') throw new TypeError('The "name" must be a string.');
-    TinyHtml._preElems(el, 'removeAttr').forEach((elem) => elem.removeAttribute(name));
+    TinyHtml._preElems(el, 'removeAttr').forEach((elem) =>
+      elem.removeAttribute(TinyHtml.getAttrName(name)),
+    );
     return el;
   }
 
@@ -4430,7 +4529,7 @@ class TinyHtml {
   static hasAttr(el, name) {
     if (typeof name !== 'string') throw new TypeError('The "name" must be a string.');
     const elem = TinyHtml._preElem(el, 'hasAttr');
-    return elem.hasAttribute(name);
+    return elem.hasAttribute(TinyHtml.getAttrName(name));
   }
 
   /**
@@ -4452,9 +4551,7 @@ class TinyHtml {
     if (typeof name !== 'string') throw new TypeError('The "name" must be a string.');
     const elem = TinyHtml._preElem(el, 'hasProp');
     // @ts-ignore
-    const propName = TinyHtml._propFix[name] || name;
-    // @ts-ignore
-    return !!elem[propName];
+    return !!elem[TinyHtml.getPropName(name)];
   }
 
   /**
@@ -4476,9 +4573,7 @@ class TinyHtml {
     if (typeof name !== 'string') throw new TypeError('The "name" must be a string.');
     TinyHtml._preElems(el, 'addProp').forEach((elem) => {
       // @ts-ignore
-      name = TinyHtml._propFix[name] || name;
-      // @ts-ignore
-      elem[name] = true;
+      elem[TinyHtml.getPropName(name)] = true;
     });
     return el;
   }
@@ -4502,9 +4597,7 @@ class TinyHtml {
     if (typeof name !== 'string') throw new TypeError('The "name" must be a string.');
     TinyHtml._preElems(el, 'removeProp').forEach((elem) => {
       // @ts-ignore
-      name = TinyHtml._propFix[name] || name;
-      // @ts-ignore
-      elem[name] = false;
+      elem[TinyHtml.getPropName(name)] = false;
     });
     return el;
   }
@@ -4530,9 +4623,7 @@ class TinyHtml {
       throw new TypeError('The "force" must be a boolean.');
     TinyHtml._preElems(el, 'toggleProp').forEach((elem) => {
       // @ts-ignore
-      const propName = TinyHtml._propFix[name] || name;
-      // @ts-ignore
-      const shouldEnable = force === undefined ? !elem[propName] : force;
+      const shouldEnable = force === undefined ? !elem[TinyHtml.getPropName(name)] : force;
       // @ts-ignore
       if (shouldEnable) TinyHtml.addProp(elem, name);
       else TinyHtml.removeProp(elem, name);

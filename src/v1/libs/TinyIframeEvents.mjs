@@ -259,7 +259,8 @@ class TinyIframeEvents {
    * @throws {TypeError} If the value is not a string.
    */
   set secretEventName(name) {
-    if (typeof name !== 'string') throw new TypeError('TinyIframeEvents: secretEventName must be a string.');
+    if (typeof name !== 'string')
+      throw new TypeError('TinyIframeEvents: secretEventName must be a string.');
     this.#secretEventName = name;
   }
 
