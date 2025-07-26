@@ -1738,6 +1738,68 @@ TinyHtml.hasScroll(element);
 
 ---
 
+## 🧠 Property Name Normalization
+
+The object `TinyHtml.propFix` maps HTML attribute names (as strings) to their corresponding JavaScript DOM property names. This works similarly to jQuery’s `propFix`.
+
+```js
+TinyHtml.propFix['for'];   // "htmlFor"
+TinyHtml.propFix['class']; // "className"
+```
+
+⚠️ **Do not modify** the internal `#propFix` object directly. Instead, use `TinyHtml.propFix` (the public proxy) to ensure the reverse mapping in `TinyHtml.attrFix` stays in sync.
+
+### ✍️ Adding a New Property Mapping
+
+To add a new property normalization:
+
+```js
+TinyHtml.propFix['readonly'] = 'readOnly';
+```
+
+This will automatically make this available:
+
+```js
+TinyHtml.attrFix['readOnly']; // "readonly"
+```
+
+---
+
+## 🔁 Attribute ↔ Property Mapping
+
+### 🧭 `TinyHtml.getPropName(name)`
+
+Normalizes an HTML attribute name to its corresponding DOM property name.
+
+```js
+TinyHtml.getPropName('for');   // "htmlFor"
+TinyHtml.getPropName('class'); // "className"
+TinyHtml.getPropName('title'); // "title" (not mapped, returns input)
+```
+
+Useful when setting DOM properties programmatically.
+
+### 🧭 `TinyHtml.getAttrName(name)`
+
+Converts a DOM property name back to its equivalent HTML attribute name.
+
+```js
+TinyHtml.getAttrName('htmlFor');   // "for"
+TinyHtml.getAttrName('className'); // "class"
+TinyHtml.getAttrName('title');     // "title" (not mapped, returns input)
+```
+
+Useful when serializing an element back to HTML or attributes.
+
+### 🔄 Behind the Scenes
+
+* `TinyHtml.propFix` (public) is a proxy of the internal `#propFix` object.
+* `TinyHtml.attrFix` is auto-generated from `#propFix`, mapping values back in reverse.
+
+These mappings are kept **in sync automatically** whenever you assign a new property to `TinyHtml.propFix`.
+
+---
+
 ## 🎨 CSS Property Aliases (`cssPropAliases`)
 
 TinyHtml provides automatic conversion between `camelCase` and `kebab-case` style properties to simplify working with inline styles in HTML elements.
