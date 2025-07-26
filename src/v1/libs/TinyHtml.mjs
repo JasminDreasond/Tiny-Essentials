@@ -316,7 +316,8 @@ class TinyHtml {
     }
 
     template.innerHTML = htmlString;
-    if (!(template.content.firstChild instanceof Element)) throw new Error('');
+    if (!(template.content.firstChild instanceof Element))
+      throw new Error('The HTML string must contain a valid HTML element.');
     return new TinyHtml(template.content.firstChild);
   }
 
@@ -446,7 +447,7 @@ class TinyHtml {
    */
   get(index) {
     if (typeof index !== 'number') throw new TypeError('The index must be a number.');
-    if (!this.#el[index]) throw new Error('');
+    if (!this.#el[index]) throw new Error(`No element found at index ${index}.`);
     return this.#el[index];
   }
 
@@ -458,7 +459,7 @@ class TinyHtml {
    */
   extract(index) {
     if (typeof index !== 'number') throw new TypeError('The index must be a number.');
-    if (!this.#el[index]) throw new Error('');
+    if (!this.#el[index]) throw new Error(`Cannot extract: no element exists at index ${index}.`);
     return new TinyHtml(this.#el[index]);
   }
 
@@ -1744,7 +1745,8 @@ class TinyHtml {
     const elem = TinyHtml._preNodeElem(el, 'insertBefore');
     const targ = TinyHtml._preNodeElem(target, 'insertBefore');
     const childNode = TinyHtml._preNodeElemWithNull(child, 'insertBefore');
-    if (!targ.parentNode) throw new Error('');
+    if (!targ.parentNode)
+      throw new Error('The target element has no parent node to insert before.');
     targ.parentNode.insertBefore(elem, childNode || targ);
     return el;
   }
@@ -1772,7 +1774,7 @@ class TinyHtml {
     const elem = TinyHtml._preNodeElem(el, 'insertAfter');
     const targ = TinyHtml._preNodeElem(target, 'insertBefore');
     const childNode = TinyHtml._preNodeElemWithNull(child, 'insertBefore');
-    if (!targ.parentNode) throw new Error('');
+    if (!targ.parentNode) throw new Error('The target element has no parent node to insert after.');
     targ.parentNode.insertBefore(elem, childNode || targ.nextSibling);
     return el;
   }
@@ -4822,14 +4824,14 @@ class TinyHtml {
     }
 
     if (typeof extraRect !== 'object' || extraRect === null || Array.isArray(extraRect))
-      throw new Error('');
+      throw new Error('extraRect must be a non-null object.');
     const { height = 0, width = 0, top = 0, bottom = 0, left = 0, right = 0 } = extraRect;
-    if (typeof height !== 'number') throw new Error('');
-    if (typeof width !== 'number') throw new Error('');
-    if (typeof top !== 'number') throw new Error('');
-    if (typeof bottom !== 'number') throw new Error('');
-    if (typeof left !== 'number') throw new Error('');
-    if (typeof right !== 'number') throw new Error('');
+    if (typeof height !== 'number') throw new Error('extraRect.height must be a number.');
+    if (typeof width !== 'number') throw new Error('extraRect.width must be a number.');
+    if (typeof top !== 'number') throw new Error('extraRect.top must be a number.');
+    if (typeof bottom !== 'number') throw new Error('extraRect.bottom must be a number.');
+    if (typeof left !== 'number') throw new Error('extraRect.left must be a number.');
+    if (typeof right !== 'number') throw new Error('extraRect.right must be a number.');
 
     // @ts-ignore
     result.height += height;
