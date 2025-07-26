@@ -224,6 +224,16 @@ const __elemCollision = {
  */
 
 /**
+ * Represents a parsed HTML element in JSON-like array form.
+ *
+ * @typedef {[
+ *   tagName: string, // The tag name of the element (e.g., 'div', 'img')
+ *   attributes: Record<string, string>, // All element attributes as key-value pairs
+ *   ...children: (string | HtmlParsed)[] // Text or nested elements
+ * ]} HtmlParsed
+ */
+
+/**
  * TinyHtml is a utility class that provides static and instance-level methods
  * for precise dimension and position computations on HTML elements.
  * It mimics some jQuery functionalities while using native browser APIs.
@@ -237,6 +247,51 @@ class TinyHtml {
   /** @typedef {import('../basics/collision.mjs').ObjRect} ObjRect */
 
   static Utils = { ...TinyCollision };
+
+  /**
+   * Parses a full HTML string into a JSON-like structure.
+   *
+   * @param {string} htmlString - Full HTML markup as a string.
+   * @returns {HtmlParsed[]} An array of parsed HTML elements in structured format.
+   */
+  static parseHTMLToJSON(htmlString) {
+    const container = document.createElement('div');
+    container.innerHTML = htmlString.trim();
+
+    const result = [];
+
+    /**
+     * @param {Node} el
+     * @returns {*}
+     */
+    const parseElement = (el) => {
+      if (el.nodeType === Node.TEXT_NODE) {
+        const text = el.textContent?.trim();
+        return text ? text : null;
+      }
+
+      if (!(el instanceof Element)) return null;
+      const tag = el.tagName.toLowerCase();
+
+      /** @type {Record<string, string>} */
+      const props = {};
+      for (const attr of el.attributes) {
+        props[attr.name] = attr.value;
+      }
+
+      const children = Array.from(el.childNodes).map(parseElement).filter(Boolean);
+
+      return children.length > 0 ? [tag, props, ...children] : [tag, props];
+    };
+
+    for (const child of container.childNodes) {
+      const parsed = parseElement(child);
+      if (parsed) result.push(parsed);
+    }
+
+    container.innerHTML = '';
+    return result;
+  }
 
   /**
    * Creates a new TinyHtml element from a tag name and optional attributes.
