@@ -78,12 +78,12 @@
         isDragging = true;
         offsetX = e.offsetX;
         offsetY = e.offsetY;
-        colliding.get().style.cursor = 'grabbing';
+        colliding.get(0).style.cursor = 'grabbing';
       });
 
       document.addEventListener('mouseup', () => {
         isDragging = false;
-        colliding.get().style.cursor = 'grab';
+        colliding.get(0).style.cursor = 'grab';
       });
 
       document.addEventListener('mousemove', (e) => {
@@ -93,7 +93,7 @@
         let x = e.clientX - containerRect.left - offsetX;
         let y = e.clientY - containerRect.top - offsetY;
 
-        const collStyle = colliding.get().style;
+        const collStyle = colliding.get(0).style;
         collStyle.left = `${x}px`;
         collStyle.top = `${y}px`;
 

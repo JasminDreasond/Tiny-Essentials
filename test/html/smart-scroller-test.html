@@ -320,7 +320,7 @@
         function createMessageElement(type = 'text', customContent = null) {
           const div = TinyHtml.createElement('div');
           div.addClass('message');
-          div.get().dataset.id = `msg-${messageCount++}`;
+          div.get(0).dataset.id = `msg-${messageCount++}`;
 
           // Conteúdo principal
           const content = TinyHtml.createElement('div');
@@ -436,7 +436,7 @@
           div.append(tools);
 
           trimOldMessages();
-          return div.get();
+          return div.get(0);
         }
 
         window.addTextMessage = () => {
