@@ -451,6 +451,18 @@ class TinyHtml {
   }
 
   /**
+   * Extracts a single DOM element from the internal list at the specified index.
+   *
+   * @param {number} index - The index of the element to extract.
+   * @returns {TinyHtml} A new TinyHtml instance wrapping the extracted element.
+   */
+  extract(index) {
+    if (typeof index !== 'number') throw new TypeError('The index must be a number.');
+    if (!this.#el[index]) throw new Error('');
+    return new TinyHtml(this.#el[index]);
+  }
+
+  /**
    * Checks whether the element exists at the given index.
    *
    * @param {number} index - The index to check.
