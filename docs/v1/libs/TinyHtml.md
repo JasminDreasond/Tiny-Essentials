@@ -461,6 +461,13 @@ Returns the raw DOM element associated with this instance.
 
 ---
 
+### `extract(index)`
+Extracts a single DOM element from the internal list at the specified index.
+
+- **Returns**: `TinyHtml`
+
+---
+
 ### `getAll()`
 Returns the current targets held by this instance.
 
