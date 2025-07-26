@@ -3920,7 +3920,7 @@ class TinyHtml {
   static _getValByType(elem, type, where) {
     if (typeof type !== 'string') throw new TypeError('The "type" must be a string.');
     if (typeof where !== 'string') throw new TypeError('The "where" must be a string.');
-    if (!(elem instanceof HTMLInputElement))
+    if (!(elem instanceof HTMLInputElement) && !(elem instanceof HTMLTextAreaElement))
       throw new Error(`Provided element is not an HTMLInputElement in ${where}().`);
     if (typeof TinyHtml._valTypes[type] !== 'function')
       throw new Error(`No handler found for type "${type}" in ${where}().`);
