@@ -310,6 +310,40 @@ HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | HTMLOptionElement
 
 ---
 
+## 🔨 Element Creation
+
+### `TinyHtml.createFrom(tagName, attrs?)`
+
+Creates a new `TinyHtml` element from a given tag name and optional attributes.
+
+* **Parameters**:
+
+  * `tagName` *(string)* — The HTML tag name (e.g., `'div'`, `'span'`, `'button'`).
+  * `attrs` *(object)* — *(optional)* Key-value pairs representing HTML attributes.
+
+* **Returns**: `TinyHtml` — A new `TinyHtml` instance representing the created element.
+
+* **Throws**:
+
+  * `TypeError` — If `tagName` is not a string.
+  * `TypeError` — If `attrs` is defined but not a plain object.
+
+### 💡 Example
+
+```js
+const div = TinyHtml.createFrom('div', { class: 'container' });
+const span = TinyHtml.createFrom('span', { id: 'my-span', title: null });
+```
+
+The method can also be aliased for convenience:
+
+```js
+const createElement = TinyHtml.createFrom;
+const button = createElement('button', { type: 'submit', class: 'btn' });
+```
+
+---
+
 ## 🔎 Static DOM Selectors
 
 These methods wrap native DOM query methods and return results as `TinyHtml` instances for consistency.
