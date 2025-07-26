@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { marked } from 'marked';
-import sass from 'sass';
+import * as sass from 'sass';
 import { build } from 'esbuild';
 
 import { arraySortPositions } from '../src/v1/index.mjs';

@@ -241,6 +241,12 @@ class TinyHtml {
   /**
    * Creates a new TinyHtml element from a tag name and optional attributes.
    *
+   * You can alias this method for convenience:
+   * ```js
+   * const createElement = TinyHtml.createFrom;
+   * const myDiv = createElement('div', { class: 'box' });
+   * ```
+   *
    * @param {string} tagName - The HTML tag name (e.g., 'div', 'span', 'button').
    * @param {Record<string, string|null>} [attrs] - Optional key-value pairs representing HTML attributes.
    *                                                If the value is `null`, the attribute will still be set with an empty value.
@@ -342,18 +348,17 @@ class TinyHtml {
    *
    * @param {string} selector - A valid CSS selector string.
    * @param {Document|Element} elem - Target element.
-   * @returns {TinyHtml[]} An array of TinyHtml instances wrapping the matched elements.
+   * @returns {TinyHtml} An array of TinyHtml instances wrapping the matched elements.
    */
   static queryAll(selector, elem = document) {
-    const newEls = elem.querySelectorAll(selector);
-    return TinyHtml.toTinyElm([...newEls]);
+    return new TinyHtml(elem.querySelectorAll(selector));
   }
 
   /**
    * Queries the element for all elements matching the CSS selector and wraps them in TinyHtml instances.
    *
    * @param {string} selector - A valid CSS selector string.
-   * @returns {TinyHtml[]} An array of TinyHtml instances wrapping the matched elements.
+   * @returns {TinyHtml} An array of TinyHtml instances wrapping the matched elements.
    */
   querySelectorAll(selector) {
     return TinyHtml.queryAll(selector, TinyHtml._preElem(this, 'queryAll'));
@@ -376,18 +381,17 @@ class TinyHtml {
    *
    * @param {string} selector - The class name to search for.
    * @param {Document|Element} elem - Target element.
-   * @returns {TinyHtml[]} An array of TinyHtml instances wrapping the found elements.
+   * @returns {TinyHtml} An array of TinyHtml instances wrapping the found elements.
    */
   static getByClassName(selector, elem = document) {
-    const newEls = elem.getElementsByClassName(selector);
-    return TinyHtml.toTinyElm([...newEls]);
+    return new TinyHtml(elem.getElementsByClassName(selector));
   }
 
   /**
    * Retrieves all elements with the specified class name and wraps them in TinyHtml instances.
    *
    * @param {string} selector - The class name to search for.
-   * @returns {TinyHtml[]} An array of TinyHtml instances wrapping the found elements.
+   * @returns {TinyHtml} An array of TinyHtml instances wrapping the found elements.
    */
   getElementsByClassName(selector) {
     return TinyHtml.getByClassName(selector, TinyHtml._preElem(this, 'getByClassName'));
@@ -397,11 +401,10 @@ class TinyHtml {
    * Retrieves all elements with the specified name attribute and wraps them in TinyHtml instances.
    *
    * @param {string} selector - The name attribute to search for.
-   * @returns {TinyHtml[]} An array of TinyHtml instances wrapping the found elements.
+   * @returns {TinyHtml} An array of TinyHtml instances wrapping the found elements.
    */
   static getByName(selector) {
-    const newEls = document.getElementsByName(selector);
-    return TinyHtml.toTinyElm([...newEls]);
+    return new TinyHtml(document.getElementsByName(selector));
   }
 
   /**
@@ -411,11 +414,10 @@ class TinyHtml {
    * @param {string} localName - The local name (tag) of the elements to search for.
    * @param {string|null} [namespaceURI='http://www.w3.org/1999/xhtml'] - The namespace URI to search within.
    * @param {Document|Element} elem - Target element.
-   * @returns {TinyHtml[]} An array of TinyHtml instances wrapping the found elements.
+   * @returns {TinyHtml} An array of TinyHtml instances wrapping the found elements.
    */
   static getByTagNameNS(localName, namespaceURI = 'http://www.w3.org/1999/xhtml', elem = document) {
-    const newEls = elem.getElementsByTagNameNS(namespaceURI, localName);
-    return TinyHtml.toTinyElm([...newEls]);
+    return new TinyHtml(elem.getElementsByTagNameNS(namespaceURI, localName));
   }
 
   /**
@@ -424,7 +426,7 @@ class TinyHtml {
    *
    * @param {string} localName - The local name (tag) of the elements to search for.
    * @param {string|null} [namespaceURI='http://www.w3.org/1999/xhtml'] - The namespace URI to search within.
-   * @returns {TinyHtml[]} An array of TinyHtml instances wrapping the found elements.
+   * @returns {TinyHtml} An array of TinyHtml instances wrapping the found elements.
    */
   getElementsByTagNameNS(localName, namespaceURI = 'http://www.w3.org/1999/xhtml') {
     return TinyHtml.getByTagNameNS(
@@ -439,85 +441,144 @@ class TinyHtml {
   /**
    * Returns the current target held by this instance.
    *
+   * @param {number} index - The index of the element to retrieve.
    * @returns {ConstructorElValues} - The instance's target element.
    */
-  get() {
-    return this.#el;
+  get(index) {
+    if (typeof index !== 'number') throw new TypeError('The index must be a number.');
+    if (!this.#el[index]) throw new Error('');
+    return this.#el[index];
+  }
+
+  /**
+   * Checks whether the element exists at the given index.
+   *
+   * @param {number} index - The index to check.
+   * @returns {boolean} - True if the element exists; otherwise, false.
+   */
+  exists(index) {
+    if (typeof index !== 'number') throw new TypeError('The index must be a number.');
+    if (!this.#el[index]) return false;
+    return true;
+  }
+
+  /**
+   * Returns the current targets held by this instance.
+   *
+   * @returns {ConstructorElValues[]} - The instance's targets element.
+   */
+  getAll() {
+    return [...this.#el];
   }
 
   /**
    * Returns the current Element held by this instance.
    *
    * @param {string} where - The method name or context calling this.
+   * @param {number} index - The index of the element to retrieve.
    * @returns {ConstructorElValues} - The instance's element.
    * @readonly
    */
-  _getElement(where) {
+  _getElement(where, index) {
     if (
-      !(this.#el instanceof Element) &&
-      !(this.#el instanceof Window) &&
-      !(this.#el instanceof Document)
+      !(this.#el[index] instanceof Element) &&
+      !(this.#el[index] instanceof Window) &&
+      !(this.#el[index] instanceof Document)
     )
       throw new Error(`[TinyHtml] Invalid Element in ${where}().`);
-    return this.#el;
+    return this.#el[index];
+  }
+
+  /**
+   * Returns the current Elements held by this instance.
+   *
+   * @param {string} where - The method name or context calling this.
+   * @returns {ConstructorElValues[]} - The instance's elements.
+   * @readonly
+   */
+  _getElements(where) {
+    if (
+      !this.#el.every(
+        (el) => el instanceof Element || el instanceof Window || el instanceof Document,
+      )
+    )
+      throw new Error(`[TinyHtml] Invalid Element in ${where}().`);
+    return [...this.#el];
   }
 
   //////////////////////////////////////////////////////
 
   /**
-   * @param {TinyElement|EventTarget|null|(TinyElement|EventTarget|null)[]} elems
-   * @param {string} where
-   * @param {any[]} TheTinyElements
-   * @param {string[]} elemName
-   * @returns {any[]}
+   * Prepares and validates multiple elements against allowed types.
+   *
+   * @param {TinyElement | EventTarget | null | (TinyElement | EventTarget | null)[]} elems - The input elements to validate.
+   * @param {string} where - The method name or context calling this.
+   * @param {any[]} TheTinyElements - The list of allowed constructors (e.g., Element, Document).
+   * @param {string[]} elemName - The list of expected element names for error reporting.
+   * @returns {any[]} - A flat array of validated elements.
+   * @throws {Error} - If any element is not an instance of one of the allowed types.
    * @readonly
    */
   static _preElemsTemplate(elems, where, TheTinyElements, elemName) {
     /** @param {(TinyElement|EventTarget|null)[]} item */
-    const checkElement = (item) =>
-      item.map((elem) => {
-        const result = elem instanceof TinyHtml ? elem._getElement(where) : elem;
-        let allowed = false;
-        for (const TheTinyElement of TheTinyElements) {
-          if (result instanceof TheTinyElement) {
-            allowed = true;
-            break;
+    const checkElement = (item) => {
+      /** @type {any[]} */
+      const results = [];
+      item.map((elem) =>
+        (elem instanceof TinyHtml ? elem._getElements(where) : [elem]).map((result) => {
+          let allowed = false;
+          for (const TheTinyElement of TheTinyElements) {
+            if (result instanceof TheTinyElement) {
+              allowed = true;
+              break;
+            }
           }
-        }
-        if (!allowed)
-          throw new Error(
-            `[TinyHtml] Invalid element of the list "${elemName.join(',')}" in ${where}().`,
-          );
-        return result;
-      });
+          if (!allowed)
+            throw new Error(
+              `[TinyHtml] Invalid element of the list "${elemName.join(',')}" in ${where}().`,
+            );
+          results.push(result);
+          return result;
+        }),
+      );
+      return results;
+    };
     if (!Array.isArray(elems)) return checkElement([elems]);
     return checkElement(elems);
   }
 
   /**
-   * @param {TinyElement|EventTarget|null|(TinyElement|EventTarget|null)[]} elems
-   * @param {string} where
-   * @param {any[]} TheTinyElements
-   * @param {string[]} elemName
-   * @param {boolean} [canNull=false]
-   * @returns {any}
+   * Prepares and validates a single element against allowed types.
+   *
+   * @param {TinyElement | EventTarget | null | (TinyElement | EventTarget | null)[]} elems - The input element or list to validate.
+   * @param {string} where - The method name or context calling this.
+   * @param {any[]} TheTinyElements - The list of allowed constructors (e.g., Element, Document).
+   * @param {string[]} elemName - The list of expected element names for error reporting.
+   * @param {boolean} [canNull=false] - Whether `null` is allowed as a valid value.
+   * @returns {any} - The validated element or `null` if allowed.
+   * @throws {Error} - If the element is not valid or if multiple elements are provided.
    * @readonly
    */
   static _preElemTemplate(elems, where, TheTinyElements, elemName, canNull = false) {
     /** @param {(TinyElement|EventTarget|null)[]} item */
     const checkElement = (item) => {
       const elem = item[0];
-      let result = elem instanceof TinyHtml ? elem._getElement(where) : elem;
+      const result = elem instanceof TinyHtml ? elem._getElements(where) : [elem];
+      if (result.length > 1)
+        throw new Error(
+          `[TinyHtml] Invalid element amount in ${where}() (Received ${result.length}/1).`,
+        );
+
       let allowed = false;
       for (const TheTinyElement of TheTinyElements) {
-        if (result instanceof TheTinyElement) {
+        if (result[0] instanceof TheTinyElement) {
           allowed = true;
           break;
         }
       }
 
-      if (canNull && (result === null || typeof result === 'undefined')) {
-        result = null;
+      if (canNull && (result[0] === null || typeof result[0] === 'undefined')) {
+        result[0] = null;
         allowed = true;
       }
 
@@ -525,7 +586,7 @@ class TinyHtml {
         throw new Error(
           `[TinyHtml] Invalid element of the list "${elemName.join(',')}" in ${where}().`,
         );
-      return result;
+      return result[0];
     };
     if (!Array.isArray(elems)) return checkElement([elems]);
     if (elems.length > 1)
@@ -818,13 +879,16 @@ class TinyHtml {
    */
   static fromTinyElm(elems) {
     /** @param {TinyElement[]} item */
-    const checkElement = (item) =>
-      item.map(
-        (elem) =>
-          /** @type {Element} */ (
-            elem instanceof TinyHtml ? elem._getElement('fromTinyElm') : elem
-          ),
+    const checkElement = (item) => {
+      /** @type {Element[]} */
+      const result = [];
+      item.map((elem) =>
+        /** @type {Element[]} */ (
+          elem instanceof TinyHtml ? elem._getElements('fromTinyElm') : [elem]
+        ).map((elem) => result.push(elem)),
       );
+      return result;
+    };
     if (!Array.isArray(elems)) return checkElement([elems]);
     return checkElement(elems);
   }
@@ -1748,28 +1812,48 @@ class TinyHtml {
 
   /**
    * The target HTML element for instance-level operations.
-   * @type {ConstructorElValues}
+   * @type {ConstructorElValues[]}
    */
   #el;
 
   /**
    * Creates an instance of TinyHtml for a specific Element.
    * Useful when you want to operate repeatedly on the same element using instance methods.
-   * @param {ConstructorElValues} el - The element to wrap and manipulate.
+   * @param {ConstructorElValues|ConstructorElValues[]|NodeListOf<Element>|HTMLCollectionOf<Element>|NodeListOf<HTMLElement>} el - The element to wrap and manipulate.
    */
   constructor(el) {
     if (el instanceof TinyHtml)
       throw new Error(
         `[TinyHtml] You are trying to put a TinyHtml inside another TinyHtml in constructor.`,
       );
-    if (
-      !(el instanceof Element) &&
-      !(el instanceof Window) &&
-      !(el instanceof Document) &&
-      !(el instanceof Text)
-    )
-      throw new Error(`[TinyHtml] Invalid Target in constructor.`);
-    this.#el = el;
+
+    /** @param {any[]} els */
+    const elCheck = (els) => {
+      if (
+        !els.every(
+          (el) =>
+            el instanceof Element ||
+            el instanceof Window ||
+            el instanceof Document ||
+            el instanceof Text,
+        )
+      )
+        throw new Error(`[TinyHtml] Invalid Target in constructor.`);
+    };
+
+    if (Array.isArray(el)) {
+      elCheck(el);
+      this.#el = el;
+    } else if (el instanceof NodeList || el instanceof HTMLCollection) {
+      const els = [...el];
+      elCheck(els);
+      this.#el = els;
+    } else {
+      const els = [el];
+      elCheck(els);
+      // @ts-ignore
+      this.#el = els;
+    }
   }
 
   /**

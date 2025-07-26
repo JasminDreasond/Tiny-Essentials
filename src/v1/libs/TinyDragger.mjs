@@ -81,7 +81,7 @@ class TinyDragger {
    * @throws {Error} If any option has an invalid type.
    */
   constructor(targetElement, options = {}) {
-    const targetElem = !(targetElement instanceof TinyHtml) ? targetElement : targetElement.get();
+    const targetElem = !(targetElement instanceof TinyHtml) ? targetElement : targetElement.get(0);
     if (!(targetElem instanceof HTMLElement))
       throw new Error('TinyDragger requires a valid target HTMLElement to initialize.');
 
