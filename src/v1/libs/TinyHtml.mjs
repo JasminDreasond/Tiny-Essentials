@@ -249,6 +249,52 @@ class TinyHtml {
   static Utils = { ...TinyCollision };
 
   /**
+   * Fetches an HTML file from the given URL, parses it to JSON.
+   *
+   * @param {string | URL | globalThis.Request} url - The URL of the HTML file.
+   * @param {RequestInit} [ops] - Optional fetch configuration (e.g., method, headers, cache, etc).
+   * @returns {Promise<HtmlParsed[]>} A promise that resolves with the parsed JSON representation of the HTML structure.
+   */
+  static async fetchHtmlFile(url, ops = { method: 'GET' }) {
+    const res = await fetch(url, ops);
+
+    const contentType = res.headers.get('Content-Type') || '';
+    if (!res.ok) throw new Error(`Failed to fetch: ${res.status} ${res.statusText}`);
+
+    // Only accept HTML responses
+    if (!contentType.includes('text/html')) {
+      throw new Error(`Invalid content type: ${contentType} (expected text/html)`);
+    }
+
+    const html = await res.text();
+    return TinyHtml.htmlToJson(html);
+  }
+
+  /**
+   * Fetches an HTML file from the given URL, parses it to JSON, then converts it to DOM nodes.
+   *
+   * @param {string} url - The URL of the HTML file.
+   * @param {RequestInit} [ops] - Optional fetch configuration (e.g., method, headers, cache, etc).
+   * @returns {Promise<(HTMLElement|Text)[]>} A promise that resolves with the DOM nodes.
+   */
+  static async fetchHtmlNodes(url, ops) {
+    const json = await TinyHtml.fetchHtmlFile(url, ops);
+    return TinyHtml.jsonToNodes(json);
+  }
+
+  /**
+   * Fetches an HTML file from the given URL, parses it to JSON, then converts it to TinyHtml instances.
+   *
+   * @param {string} url - The URL of the HTML file.
+   * @param {RequestInit} [ops] - Optional fetch configuration (e.g., method, headers, cache, etc).
+   * @returns {Promise<TinyHtml[]>} A promise that resolves with the TinyHtml instances.
+   */
+  static async fetchHtmlTinyElems(url, ops) {
+    const nodes = await TinyHtml.fetchHtmlNodes(url, ops);
+    return TinyHtml.toTinyElm(nodes);
+  }
+
+  /**
    * Parses a full HTML string into a JSON-like structure.
    *
    * @param {string} htmlString - Full HTML markup as a string.
