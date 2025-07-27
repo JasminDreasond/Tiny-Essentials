@@ -1980,6 +1980,15 @@ class TinyHtml {
   #el;
 
   /**
+   * Returns the number of elements currently stored in the internal element list.
+   *
+   * @returns {number} The total count of elements.
+   */
+  get size() {
+    return this.#el.length;
+  }
+
+  /**
    * Creates an instance of TinyHtml for a specific Element.
    * Useful when you want to operate repeatedly on the same element using instance methods.
    * @param {ConstructorElValues|ConstructorElValues[]|NodeListOf<Element>|HTMLCollectionOf<Element>|NodeListOf<HTMLElement>} el - The element to wrap and manipulate.
