@@ -254,7 +254,7 @@ class TinyHtml {
    * @param {string} htmlString - Full HTML markup as a string.
    * @returns {HtmlParsed[]} An array of parsed HTML elements in structured format.
    */
-  static parseHTMLToJSON(htmlString) {
+  static htmlToJson(htmlString) {
     const container = document.createElement('div');
     container.innerHTML = htmlString.trim();
 
@@ -276,11 +276,10 @@ class TinyHtml {
       /** @type {Record<string, string>} */
       const props = {};
       for (const attr of el.attributes) {
-        props[attr.name] = attr.value;
+        props[TinyHtml.getPropName(attr.name)] = attr.value;
       }
 
       const children = Array.from(el.childNodes).map(parseElement).filter(Boolean);
-
       return children.length > 0 ? [tag, props, ...children] : [tag, props];
     };
 
@@ -291,6 +290,40 @@ class TinyHtml {
 
     container.innerHTML = '';
     return result;
+  }
+
+  /**
+   * Converts a JSON-like HTML structure back to DOM Elements.
+   * 
+   * @param {HtmlParsed[]} jsonArray - Parsed JSON format of HTML.
+   * @returns {Node[]} List of DOM nodes.
+   */
+  static jsonToNodes(jsonArray) {
+    /**
+     * @param {HtmlParsed|string} nodeData
+     * @returns {Node}
+     */
+    const createElement = (nodeData) => {
+      if (typeof nodeData === 'string') {
+        return document.createTextNode(nodeData);
+      }
+
+      const [tag, props, ...children] = nodeData;
+      const el = document.createElement(tag);
+
+      for (const [key, value] of Object.entries(props)) {
+        el.setAttribute(TinyHtml.getAttrName(key), value);
+      }
+
+      for (const child of children) {
+        const childEl = createElement(child);
+        el.appendChild(childEl);
+      }
+
+      return el;
+    };
+
+    return jsonArray.map(createElement);
   }
 
   /**
