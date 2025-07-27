@@ -294,14 +294,14 @@ class TinyHtml {
 
   /**
    * Converts a JSON-like HTML structure back to DOM Elements.
-   * 
+   *
    * @param {HtmlParsed[]} jsonArray - Parsed JSON format of HTML.
-   * @returns {Node[]} List of DOM nodes.
+   * @returns {(HTMLElement|Text)[]} List of DOM nodes.
    */
   static jsonToNodes(jsonArray) {
     /**
      * @param {HtmlParsed|string} nodeData
-     * @returns {Node}
+     * @returns {HTMLElement|Text}
      */
     const createElement = (nodeData) => {
       if (typeof nodeData === 'string') {
@@ -324,6 +324,16 @@ class TinyHtml {
     };
 
     return jsonArray.map(createElement);
+  }
+
+  /**
+   * Converts a JSON-like HTML structure back to TinyHtml instances.
+   *
+   * @param {HtmlParsed[]} jsonArray - Parsed JSON format of HTML.
+   * @returns {TinyHtml[]} List of TinyHtml instances.
+   */
+  static jsonToTinyElems(jsonArray) {
+    return TinyHtml.toTinyElm(TinyHtml.jsonToNodes(jsonArray));
   }
 
   /**
@@ -584,7 +594,8 @@ class TinyHtml {
     if (
       !(this.#el[index] instanceof Element) &&
       !(this.#el[index] instanceof Window) &&
-      !(this.#el[index] instanceof Document)
+      !(this.#el[index] instanceof Document) &&
+      !(this.#el[index] instanceof Text)
     )
       throw new Error(`[TinyHtml] Invalid Element in ${where}().`);
     return this.#el[index];
@@ -600,7 +611,11 @@ class TinyHtml {
   _getElements(where) {
     if (
       !this.#el.every(
-        (el) => el instanceof Element || el instanceof Window || el instanceof Document,
+        (el) =>
+          el instanceof Element ||
+          el instanceof Window ||
+          el instanceof Document ||
+          el instanceof Text,
       )
     )
       throw new Error(`[TinyHtml] Invalid Element in ${where}().`);
@@ -952,11 +967,11 @@ class TinyHtml {
    * This ensures consistent access to methods of the `TinyHtml` class regardless
    * of the input form.
    *
-   * @param {TinyElement|TinyElement[]} elems - A single element or an array of elements (DOM or TinyHtml).
+   * @param {TinyElement|Text|(TinyElement|Text)[]} elems - A single element or an array of elements (DOM or TinyHtml).
    * @returns {TinyHtml[]} An array of TinyHtml instances corresponding to the input elements.
    */
   static toTinyElm(elems) {
-    /** @param {TinyElement[]} item */
+    /** @param {(TinyElement|Text)[]} item */
     const checkElement = (item) =>
       item.map((elem) => (!(elem instanceof TinyHtml) ? new TinyHtml(elem) : elem));
     if (!Array.isArray(elems)) return checkElement([elems]);
