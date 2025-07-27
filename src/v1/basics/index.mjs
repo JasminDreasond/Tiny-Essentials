@@ -9,6 +9,7 @@ import {
   installWindowHiddenScript,
   readFileBlob,
   readBase64Blob,
+  fetchText,
 } from './html.mjs';
 import {
   areHtmlElsColliding,
@@ -82,6 +83,7 @@ export {
   getHtmlElMargin,
   getHtmlElPadding,
   fetchJson,
+  fetchText,
   readJsonBlob,
   readFileBlob,
   readBase64Blob,

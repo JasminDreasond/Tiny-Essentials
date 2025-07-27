@@ -50,6 +50,7 @@ import {
   installWindowHiddenScript,
   readFileBlob,
   readBase64Blob,
+  fetchText,
 } from './basics/html.mjs';
 import {
   getHtmlElBorders,
@@ -189,6 +190,7 @@ export {
   getHtmlElPadding,
   getLatestBackupPath,
   fetchJson,
+  fetchText,
   readJsonBlob,
   readFileBlob,
   readBase64Blob,

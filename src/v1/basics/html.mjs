@@ -217,7 +217,7 @@ async function fetchTemplate(
  * Loads and parses a JSON from a remote URL using Fetch API.
  *
  * @param {string} url - The full URL to fetch JSON from.
- * @param {Object} [options] - Optional settings.
+ * @param {FetchTemplateOptions} [options] - Optional settings.
  * @returns {Promise<any[] | Record<string | number | symbol, unknown>>} Parsed JSON object.
  * @throws {Error} Throws if fetch fails, times out, or returns invalid JSON.
  */
@@ -244,7 +244,7 @@ export async function fetchJson(url, options) {
  * Loads a remote file as a Blob using Fetch API.
  *
  * @param {string} url - The full URL to fetch the file from.
- * @param {Object} [options] - Optional fetch options.
+ * @param {FetchTemplateOptions} [options] - Optional fetch options.
  * @param {string[]} [allowedMimeTypes] - Optional list of accepted MIME types (e.g., ['image/jpeg']).
  * @returns {Promise<Blob>} - The fetched file as a Blob.
  * @throws {Error} Throws if fetch fails, response is not ok, or MIME type is not allowed.
@@ -264,6 +264,36 @@ export async function fetchBlob(url, allowedMimeTypes, options) {
         }
 
         const data = await res.blob();
+        return resolve(data);
+      })
+      .catch(reject);
+  });
+}
+
+/**
+ * Loads a remote file as a text using Fetch API.
+ *
+ * @param {string} url - The full URL to fetch the file from.
+ * @param {FetchTemplateOptions} [options] - Optional fetch options.
+ * @param {string[]} [allowedMimeTypes] - Optional list of accepted MIME types (e.g., ['image/jpeg']).
+ * @returns {Promise<string>} - The fetched file as a text.
+ * @throws {Error} Throws if fetch fails, response is not ok, or MIME type is not allowed.
+ */
+export async function fetchText(url, allowedMimeTypes, options) {
+  return new Promise((resolve, reject) => {
+    fetchTemplate(url, options)
+      .then(async (res) => {
+        const contentType = res.headers.get('content-type') || '';
+
+        if (
+          Array.isArray(allowedMimeTypes) &&
+          allowedMimeTypes.length > 0 &&
+          !allowedMimeTypes.some((type) => contentType.includes(type))
+        ) {
+          throw new Error(`Blocked MIME type: ${contentType}`);
+        }
+
+        const data = await res.text();
         return resolve(data);
       })
       .catch(reject);
