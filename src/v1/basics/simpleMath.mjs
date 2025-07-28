@@ -38,16 +38,34 @@ export function ruleOfThree(val1, val2, val3, inverse = false) {
 }
 
 /**
- * Calculates a percentage of a given base value.
- * @param {number} price - The base value.
- * @param {number} percentage - The percentage to apply.
- * @returns {number} The result of the percentage calculation.
+ * Calculates the actual value that corresponds to a percentage of a base number.
+ * Unlike `getPercentage`, which tells how much something represents in percent,
+ * this function tells how much a given percentage *is worth* in value.
+ *
+ * @param {number} price - The base number to apply the percentage to.
+ * @param {number} percentage - The percentage to calculate from the base.
+ * @returns {number} The resulting value of the percentage.
  *
  * @example
  * getSimplePerc(200, 15); // 30
  */
 export function getSimplePerc(price, percentage) {
   return price * (percentage / 100);
+}
+
+/**
+ * Calculates how much percent a partial value represents of the total value.
+ *
+ * @param {number} part - The partial value to compare.
+ * @param {number} total - The total or maximum value.
+ * @returns {number} The percentage that 'part' represents of 'total'.
+ *
+ * @example
+ * getPercentage(5, 100); // 5
+ */
+export function getPercentage(part, total) {
+  if (total === 0) return 0;
+  return (part / total) * 100;
 }
 
 /**
