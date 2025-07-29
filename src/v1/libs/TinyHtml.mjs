@@ -295,6 +295,51 @@ class TinyHtml {
   }
 
   /**
+   * Converts the content of a <template> to an array of HtmlParsed.
+   *
+   * @param {HTMLTemplateElement} nodes
+   * @returns {HtmlParsed[]}
+   */
+  static templateToJson(nodes) {
+    return TinyHtml.htmlToJson(
+      [...nodes.content.childNodes]
+        .map((node) =>
+          node instanceof Element ? node.getHTML() : node instanceof Text ? node.textContent : '',
+        )
+        .join(''),
+    );
+  }
+
+  /**
+   * Converts the content of a <template> to real DOM nodes.
+   *
+   * @param {HTMLTemplateElement} nodes
+   * @returns {(Element|Text)[]}
+   */
+  static templateToNodes(nodes) {
+    /** @type {(Element|Text)[]} */
+    const result = [];
+    [...nodes.content.cloneNode(true).childNodes].map((node) => {
+      if (!(node instanceof Element) && !(node instanceof Text) && !(node instanceof Comment))
+        throw new Error(
+          `Expected only Element nodes in <template>, but found: ${node.constructor.name}`,
+        );
+      if (!(node instanceof Comment)) result.push(node);
+    });
+    return result;
+  }
+
+  /**
+   * Converts the content of a <template> to an array of TinyHtml elements.
+   *
+   * @param {HTMLTemplateElement} nodes
+   * @returns {TinyHtml[]}
+   */
+  static templateToTinyElems(nodes) {
+    return TinyHtml.toTinyElm(TinyHtml.templateToNodes(nodes));
+  }
+
+  /**
    * Parses a full HTML string into a JSON-like structure.
    *
    * @param {string} htmlString - Full HTML markup as a string.
@@ -311,7 +356,8 @@ class TinyHtml {
      * @returns {*}
      */
     const parseElement = (el) => {
-      if (el.nodeType === Node.TEXT_NODE) {
+      if (el instanceof Comment) return null;
+      if (el instanceof Text) {
         const text = el.textContent?.trim();
         return text ? text : null;
       }
@@ -354,6 +400,7 @@ class TinyHtml {
         return document.createTextNode(nodeData);
       }
 
+      if (!Array.isArray(nodeData)) return document.createTextNode('');
       const [tag, props, ...children] = nodeData;
       const el = document.createElement(tag);
 
@@ -363,13 +410,14 @@ class TinyHtml {
 
       for (const child of children) {
         const childEl = createElement(child);
+        if (childEl instanceof Comment) continue;
         el.appendChild(childEl);
       }
 
       return el;
     };
 
-    return jsonArray.map(createElement);
+    return jsonArray.map(createElement).filter((node) => !(node instanceof Comment));
   }
 
   /**
