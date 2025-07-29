@@ -142,11 +142,11 @@ saveJsonFile('yasmin.json', data);
 
 ### 🌐 `fetchTemplate(...)`
 
-Loads data from a remote URL using Fetch API, with support for custom HTTP methods, retries, timeouts, headers, and even external abort controllers.
+Loads data from a remote URL using the Fetch API, with support for custom HTTP methods, retries, timeouts, headers, and even external abort controllers.
 
 #### 📥 Parameters
 
-* `url` *(string)*: The full URL to fetch JSON from (must start with `http://`, `https://`, `/`, `./`, or `../`).
+* `url` *(string)*: The full URL to fetch from (must start with `http://`, `https://`, `/`, `./`, or `../`).
 * `options` *(object)* *(optional)*:
 
   * `signal` *(`AbortSignal` | `null`)*: Custom abort signal.
@@ -156,42 +156,88 @@ Loads data from a remote URL using Fetch API, with support for custom HTTP metho
   * `headers` *(object)*: Additional headers to include in the request.
   * `body` *(object)*: Request body. If the value is a plain object, it will be automatically stringified as JSON.
 
-#### `fetchJson(url, options?): Promise<any[] | Record<string | number | symbol, unknown>>`
+#### `fetchJson(url, options?)`
 
-Loads and parses a JSON.
+Loads and parses a remote JSON file.
 
-* `url` *(string)*: The full URL to fetch JSON from (must start with `http://`, `https://`, `/`, `./`, or `../`).
-* `options` *(object)* *(optional)*:
+* **Parameters**:
 
-#### `fetchBlob(url, options?): Promise<any[] | Record<string | number | symbol, unknown>>`
+  * `url` *(string)*: URL to fetch the JSON from.
+  * `options` *(object)* *(optional)*: Same structure as `fetchTemplate`.
 
-Loads a remote file as a Blob.
+* **Returns**:
+  `Promise<any[] | Record<string | number | symbol, unknown>>` — The parsed JSON data.
 
-* `url` *(string)*: The full URL to fetch JSON from (must start with `http://`, `https://`, `/`, `./`, or `../`).
-* `allowedMimeTypes` Optional list of accepted MIME types (e.g., ['image/jpeg']).
-* `options` *(object)* *(optional)*:
+* **Throws**:
 
-##### `signal` (`AbortSignal` | `null`) — *optional*
+  * `Error` if the fetch fails, times out, or returns invalid JSON.
+  * `Error` if the `Content-Type` is not `application/json`.
 
-Custom abort signal. If set:
+---
 
-* The internal timeout mechanism is **disabled**
-* Retry logic is **disabled**
-* Abortion is handled externally
+#### `fetchBlob(url, allowedMimeTypes?, options?)`
 
-#### 📤 Returns
+Loads a remote file as a Blob object.
 
-* `Promise<any>`: Resolves with the parsed JSON data.
+* **Parameters**:
+
+  * `url` *(string)*: URL of the remote file.
+  * `allowedMimeTypes` *(string\[])* *(optional)*: List of accepted MIME types.
+  * `options` *(object)* *(optional)*: Same structure as `fetchTemplate`.
+
+* **Returns**:
+  `Promise<Blob>`
+
+* **Throws**:
+
+  * `Error` if fetch fails or the MIME type is not allowed.
+  * `Error` if the response is not OK.
+
+---
+
+#### `fetchText(url, allowedMimeTypes?, options?)`
+
+Loads a remote file as **plain text** using the Fetch API.
+
+* **Parameters**:
+
+  * `url` *(string)*: Full URL of the file to fetch.
+  * `allowedMimeTypes` *(string\[])* *(optional)*: List of accepted MIME types (e.g., `['text/plain']`).
+  * `options` *(object)* *(optional)*: Same structure as `fetchTemplate`.
+
+* **Returns**:
+  `Promise<string>` — The content of the file as a text string.
+
+* **Throws**:
+
+  * `Error` if the fetch fails or the response is not OK.
+  * `Error` if the MIME type is not in the allowed list (when provided).
+
+---
+
+#### 📤 Returns (for all helpers)
+
+* `Promise<any>` — Depends on the function:
+
+  * `fetchJson`: Parsed JSON
+  * `fetchBlob`: File as a Blob
+  * `fetchText`: File as plain text
+
+---
 
 #### ⚠️ Throws
 
-* `Error` if the fetch fails or exceeds the timeout
-* `Error` if the response is not `application/json`
-* `Error` if the result is not a plain JSON object
+All functions may throw the following:
+
+* `Error` if the request fails or the response times out.
+* `Error` if `Content-Type` does not match expected type (JSON, Blob, Text, etc).
+* `Error` if response is malformed or rejected by MIME type filter.
+
+---
 
 #### 🧠 Tip
 
-If you pass your own `signal`, this disables both `timeout` and `retries`. Use it when you're managing cancellation manually (e.g. in UI components or async workflows).
+Using a custom `signal` disables both `timeout` and `retries`. This is useful when you want to handle cancellation yourself, like in user interfaces or abortable workflows.
 
 #### 🧪 Example
 
@@ -208,6 +254,16 @@ const data = await fetchJson('https://api.example.com/data', {
   retries: 2,
   signal: controller.signal, // optional
 });
+```
+
+```js
+const text = await fetchText('/example.txt', ['text/plain'], {
+  timeout: 3000,
+});
+```
+
+```js
+const blob = await fetchBlob('/image.jpg', ['image/jpeg']);
 ```
 
 ---

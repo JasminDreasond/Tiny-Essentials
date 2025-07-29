@@ -445,6 +445,139 @@ Finds elements by tag name in a namespace (defaults to XHTML).
 
 ---
 
+## 📑 HTML Parser
+
+### Type Definition
+
+A parsed HTML element represented as an array:
+
+```ts
+type HtmlParsed = [
+  tagName: string,                 // e.g., 'div', 'span', 'img'
+  attributes: Record<string, string>, // Key-value map of all element attributes
+  ...children: (string | HtmlParsed)[] // Nested elements or text content
+];
+```
+
+---
+
+### `fetchHtmlFile(url, ops?)`
+
+Fetches an HTML file from a URL and parses it into a JSON-like structure.
+
+```ts
+static async fetchHtmlFile(url: string | URL | Request, ops?: RequestInit): Promise<HtmlParsed[]>
+```
+
+* **url**: The URL of the HTML file.
+* **ops**: (Optional) `fetch()` options (method, headers, etc).
+* **Returns**: Promise of parsed JSON structure (`HtmlParsed[]`).
+* Throws if content-type is not `text/html`.
+
+---
+
+### `fetchHtmlNodes(url, ops?)`
+
+Fetches an HTML file and returns it as DOM nodes.
+
+```ts
+static async fetchHtmlNodes(url: string, ops?: RequestInit): Promise<(HTMLElement | Text)[]>
+```
+
+* **Returns**: Array of real DOM nodes (`HTMLElement | Text`).
+
+---
+
+### `fetchHtmlTinyElems(url, ops?)`
+
+Fetches HTML and converts it into an array of `TinyHtml` instances.
+
+```ts
+static async fetchHtmlTinyElems(url: string, ops?: RequestInit): Promise<TinyHtml[]>
+```
+
+* **Returns**: `TinyHtml[]` (custom wrapper elements).
+
+---
+
+### `templateToJson(template)`
+
+Converts the contents of a `<template>` to JSON format.
+
+```ts
+static templateToJson(template: HTMLTemplateElement): HtmlParsed[]
+```
+
+* **Returns**: Structured JSON representation (`HtmlParsed[]`).
+
+---
+
+### `templateToNodes(template)`
+
+Converts `<template>` content into real DOM nodes.
+
+```ts
+static templateToNodes(template: HTMLTemplateElement): (Element | Text)[]
+```
+
+* **Returns**: Cloned nodes excluding comments.
+* Throws error if unexpected node types are encountered.
+
+---
+
+### `templateToTinyElems(template)`
+
+Converts a `<template>` into `TinyHtml` instances.
+
+```ts
+static templateToTinyElems(template: HTMLTemplateElement): TinyHtml[]
+```
+
+* **Returns**: Array of `TinyHtml` objects.
+
+---
+
+### `htmlToJson(htmlString)`
+
+Parses an HTML string into structured JSON (`HtmlParsed[]`).
+
+```ts
+static htmlToJson(htmlString: string): HtmlParsed[]
+```
+
+* **Returns**: Parsed representation as an array of `[tag, attributes, ...children]`.
+
+---
+
+### `jsonToNodes(jsonArray)`
+
+Converts parsed JSON back into actual DOM nodes.
+
+```ts
+static jsonToNodes(jsonArray: HtmlParsed[]): (HTMLElement | Text)[]
+```
+
+* **Returns**: Array of DOM elements/text nodes.
+* Skips comments.
+
+---
+
+### `jsonToTinyElems(jsonArray)`
+
+Converts parsed JSON back into `TinyHtml` instances.
+
+```ts
+static jsonToTinyElems(jsonArray: HtmlParsed[]): TinyHtml[]
+```
+
+* **Returns**: TinyHtml-wrapped elements.
+
+---
+
+💡 **Tip**: All conversion methods rely on a consistent internal format (`HtmlParsed[]`). That means you can seamlessly switch between representations (JSON ⇄ DOM ⇄ TinyHtml)!
+
+---
+
 ## 🧩 Internal Element Access
 
 ### `exists(index)`
@@ -458,6 +591,13 @@ Checks whether the element exists at the given index.
 Returns the raw DOM element associated with this instance.
 
 - **Returns**: `ConstructorElValues`
+
+---
+
+### `size`
+Returns the number of elements currently stored in the internal element list.
+
+- **Returns**: `number`
 
 ---
 

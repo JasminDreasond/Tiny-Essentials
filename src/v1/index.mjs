@@ -29,6 +29,7 @@ import {
   formatBytes,
   genFibonacciSeq,
   getAge,
+  getPercentage,
   getSimplePerc,
   ruleOfThree,
 } from './basics/simpleMath.mjs';
@@ -156,6 +157,7 @@ export {
   ColorSafeStringify,
   TinyPromiseQueue,
   TinyLevelUp,
+  getPercentage,
   areElsCollTop,
   areElsCollBottom,
   areElsCollLeft,

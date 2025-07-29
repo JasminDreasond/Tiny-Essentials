@@ -36,15 +36,33 @@ ruleOfThree(2, 6, 3, true); // → 4
 
 ### 💯 `getSimplePerc(price, percentage)`
 
-**Calculates the percentage of a given base value.**
+**Calculates the actual value that corresponds to a percentage of a base number.**
 
-- **`price`**: The base value (for example, the original price of an item).
-- **`percentage`**: The percentage to calculate from the base value.
+Unlike `getPercentage`, which tells how much something represents in percent,  
+this function tells how much a given percentage *is worth* in actual value.
+
+- **`price`**: The base number to apply the percentage to.  
+- **`percentage`**: The percentage to calculate from the base.
 
 #### Example:
-
 ```js
 getSimplePerc(200, 15); // → 30
+```
+
+---
+
+### 📊 `getPercentage(part, total)`
+
+**Calculates how much percent a partial value represents of the total value.**
+
+This function is useful when you want to know what fraction of the total a value is, in percentage form.
+
+- **`part`**: The partial value to compare.  
+- **`total`**: The total or maximum value.
+
+#### Example:
+```js
+getPercentage(5, 100); // → 5
 ```
 
 ---

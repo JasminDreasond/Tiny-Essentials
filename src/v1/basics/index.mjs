@@ -31,7 +31,7 @@ import {
   onFullScreenChange,
   offFullScreenChange,
 } from './fullScreen.mjs';
-import { formatBytes, genFibonacciSeq, getAge, getSimplePerc, ruleOfThree } from './simpleMath.mjs';
+import { formatBytes, genFibonacciSeq, getAge, getPercentage, getSimplePerc, ruleOfThree } from './simpleMath.mjs';
 import { addAiMarkerShortcut, safeTextTrim, toTitleCase, toTitleCaseLowerFirst } from './text.mjs';
 import {
   areElsCollTop,
@@ -55,6 +55,7 @@ import {
 } from './collision.mjs';
 
 export {
+  getPercentage,
   areElsCollTop,
   areElsCollBottom,
   areElsCollLeft,
