@@ -273,6 +273,11 @@ class TinySmartScroller {
   /** @type {null|EventListenerOrEventListenerObject} */
   #handler = null;
 
+  #isPastAtBottom = false;
+  #isPastAtTop = false;
+  #isPastAtCustomTop = false;
+  #isPastAtCustomBottom = false;
+
   #isAtBottom = false;
   #isAtTop = false;
   #isAtCustomTop = false;
@@ -637,6 +642,12 @@ class TinySmartScroller {
     else if (atCustomTop) atCustomResult = 'top';
     else if (atCustomBottom) atCustomResult = 'bottom';
 
+    this.#isPastAtTop = this.#isAtTop ?? false;
+    this.#isPastAtBottom = this.#isAtBottom ?? false;
+
+    this.#isPastAtCustomTop = this.#isAtCustomTop ?? false;
+    this.#isPastAtCustomBottom = this.#isAtCustomBottom ?? false;
+
     this.#isAtTop = atTop;
     this.#isAtBottom = atBottom;
 
@@ -966,6 +977,79 @@ class TinySmartScroller {
    *
    * @returns {boolean}
    */
+  isAtCustomBottom() {
+    return this.#isAtCustomBottom;
+  }
+
+  /**
+   * Checks if the user is within the defined extra scroll boundary from the top.
+   *
+   * @returns {boolean}
+   */
+  isAtCustomTop() {
+    return this.#isAtCustomTop;
+  }
+
+  /**
+   * Returns true if the user is currently scrolled to the bottom of the element.
+   *
+   * @returns {boolean}
+   */
+  isAtBottom() {
+    return this.#isAtBottom;
+  }
+
+  /**
+   * Returns true if the user is currently scrolled to the top of the element.
+   *
+   * @returns {boolean}
+   */
+  isAtTop() {
+    return this.#isAtTop;
+  }
+
+  /**
+   * Returns true if the user has already passed beyond the bottom boundary at some point.
+   *
+   * @returns {boolean}
+   */
+  isPastAtBottom() {
+    return this.#isPastAtBottom;
+  }
+
+  /**
+   * Returns true if the user has already passed beyond the top boundary at some point.
+   *
+   * @returns {boolean}
+   */
+  isPastAtTop() {
+    return this.#isPastAtTop;
+  }
+
+  /**
+   * Returns true if the user has passed beyond the defined extra scroll boundary from the top at some point.
+   *
+   * @returns {boolean}
+   */
+  isPastAtCustomTop() {
+    return this.#isPastAtCustomTop;
+  }
+
+  /**
+   * Returns true if the user has passed beyond the defined extra scroll boundary from the bottom at some point.
+   *
+   * @returns {boolean}
+   */
+  isPastAtCustomBottom() {
+    return this.#isPastAtCustomBottom;
+  }
+
+  /**
+   * Checks if the user is within the defined extra scroll boundary from the bottom.
+   *
+   * @returns {boolean}
+   * @deprecated - Use isAtCustomBottom instead.
+   */
   isUserAtCustomBottom() {
     return this.#isAtCustomBottom;
   }
@@ -974,6 +1058,7 @@ class TinySmartScroller {
    * Checks if the user is within the defined extra scroll boundary from the top.
    *
    * @returns {boolean}
+   * @deprecated - Use isAtCustomTop instead.
    */
   isUserAtCustomTop() {
     return this.#isAtCustomTop;
@@ -983,6 +1068,7 @@ class TinySmartScroller {
    * Returns true if the user is currently scrolled to the bottom of the element.
    *
    * @returns {boolean}
+   * @deprecated - Use isAtBottom instead.
    */
   isUserAtBottom() {
     return this.#isAtBottom;
@@ -992,6 +1078,7 @@ class TinySmartScroller {
    * Returns true if the user is currently scrolled to the top of the element.
    *
    * @returns {boolean}
+   * @deprecated - Use isAtTop instead.
    */
   isUserAtTop() {
     return this.#isAtTop;

@@ -442,19 +442,19 @@ Scrolls the target all the way to the top immediately.
 
 ## 🧭 Scroll Position Status
 
-### 🔚 `isUserAtCustomBottom()`
+### 🔚 `isAtCustomBottom()`
 
 Returns `true` if the user is within the custom boundary of the bottom.
 
-### 🔝 `isUserAtCustomTop()`
+### 🔝 `isAtCustomTop()`
 
 Returns `true` if the user is within the custom boundary of the top.
 
-### 🧨 `isUserAtBottom()`
+### 🧨 `isAtBottom()`
 
 Returns `true` if user is currently scrolled to the actual bottom.
 
-### 🧷 `isUserAtTop()`
+### 🧷 `isAtTop()`
 
 Returns `true` if user is currently scrolled to the actual top.
 

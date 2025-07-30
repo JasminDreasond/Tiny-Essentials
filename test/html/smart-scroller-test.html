@@ -10,6 +10,9 @@
       import { TinyHtml } from './src/v1/libs/TinyHtml.mjs';
       import { TinySmartScroller } from './src/v1/libs/TinySmartScroller.mjs';
       import { UltraRandomMsgGen } from './src/v1/libs/UltraRandomMsgGen.mjs';
+      import { TinyTextarea } from './src/v1/libs/TinyTextarea.mjs';
+
+      window.TinyTextarea = TinyTextarea;
       window.TinySmartScroller = TinySmartScroller;
       window.UltraRandomMsgGen = UltraRandomMsgGen;
       window.TinyDomReadyManager = TinyDomReadyManager;
@@ -133,10 +136,19 @@
     </div>
 
     <div id="chat" tabindex="0" role="log" aria-label="Chat container"></div>
-
+    <div id="manualMessage" style="padding: 10px; background: #ddd; display: flex; gap: 10px">
+      <textarea
+        id="manualInput"
+        rows="3"
+        placeholder="Type your message..."
+        style="flex: 1; resize: vertical; padding: 6px"
+      ></textarea>
+      <button onclick="sendManualMessage()">Send</button>
+    </div>
     <div id="log" aria-live="polite" role="log" aria-atomic="true"></div>
 
     <script type="module">
+      // Prepare test data
       const blackImageBase64 =
         'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
       let tinyAvatar;
@@ -158,6 +170,34 @@
             .catch(reject);
         }),
       );
+
+      // Prepare Log tester
+      const logEl = document.getElementById('log');
+      const log = (msg) => {
+        const time = new Date().toLocaleTimeString();
+        logEl.textContent += `[${time}] ${msg}\n`;
+        logEl.scrollTop = logEl.scrollHeight;
+      };
+
+      // Tiny Textarea tester
+      const fixOnTxtInput = () => {
+        if (window.tinyScroller && window.tinyScroller.isAtBottom())
+          window.tinyScroller.scrollToBottom();
+      };
+
+      const txtInput = TinyHtml.getById('manualInput');
+      const tiny = new TinyTextarea(txtInput.get(0), {
+        maxRows: 6,
+        onResize: ({ extraHeight, extraWidth, rows }) => {
+          log(`Textarea Extra: ${extraHeight}px height / ${extraWidth}px width. Rows: ${rows}`);
+          fixOnTxtInput();
+        },
+        onInput: () => fixOnTxtInput(),
+      });
+
+      fixOnTxtInput();
+
+      // Smart Scroller test
       tinyReady.onReady(() => {
         let autoMessageInterval = null;
         const maxVisibleMessages = 100; // limite de mensagens visíveis
@@ -232,7 +272,6 @@
 
         const chat = document.getElementById('chat');
         const statusText = document.getElementById('statusText');
-        const logEl = document.getElementById('log');
         const toggleAutoScroll = document.getElementById('toggleAutoScroll');
         const selectAnchor = document.getElementById('selectAnchor');
         const randomText = new UltraRandomMsgGen({
@@ -262,22 +301,18 @@
           debounceTime: 80,
         });
 
+        window.tinyScroller = scroller;
+
         window.scroller = scroller;
         window.randomText = randomText;
 
         scroller.setExtraScrollBoundary(500);
         scroller.addSimpleOnHeight([]);
 
-        const log = (msg) => {
-          const time = new Date().toLocaleTimeString();
-          logEl.textContent += `[${time}] ${msg}\n`;
-          logEl.scrollTop = logEl.scrollHeight;
-        };
-
         const updateStatus = () => {
           const state = [
-            scroller.isUserAtTop() ? 'TOP' : '',
-            scroller.isUserAtBottom() ? 'BOTTOM' : '',
+            scroller.isAtTop() ? 'TOP' : '',
+            scroller.isAtBottom() ? 'BOTTOM' : '',
             scroller.isScrollPaused() ? 'PAUSED' : 'AUTO',
           ]
             .filter(Boolean)
@@ -501,6 +536,22 @@
             scroller.scrollToTop();
           } else {
             scroller.scrollToBottom();
+          }
+        });
+
+        window.sendManualMessage = () => {
+          const textarea = TinyHtml.getById('manualInput');
+          const text = textarea.val().trim();
+          if (!text) return;
+          const messageEl = createMessageElement('text', text);
+          chat.appendChild(messageEl);
+          textarea.setVal('');
+        };
+
+        txtInput.on('keydown', (e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault(); // Prevent line break
+            sendManualMessage();
           }
         });
 
