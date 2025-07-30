@@ -141,7 +141,7 @@
         id="manualInput"
         rows="1"
         placeholder="Type your message..."
-        style="flex: 1; padding: 6px"
+        style="flex: 1; padding: 6px;"
       ></textarea>
       <button onclick="sendManualMessage()">Send</button>
     </div>
@@ -188,7 +188,7 @@
       const txtInput = TinyHtml.getById('manualInput');
       const tiny = new TinyTextarea(txtInput.get(0), {
         maxRows: 6,
-        extraHeight: 2,
+        extraHeight: 0,
         onResize: ({ extraHeight, rows }) => {
           console.log(`Textarea Extra: ${extraHeight}px height. Rows: ${rows}`);
           log(`Textarea Extra: ${extraHeight}px height. Rows: ${rows}`);

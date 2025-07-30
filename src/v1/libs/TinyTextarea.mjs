@@ -78,13 +78,11 @@ class TinyTextarea {
     const style = window.getComputedStyle(this.#textarea);
     const paddingTop = parseFloat(style.paddingTop) || 0;
     const paddingBottom = parseFloat(style.paddingBottom) || 0;
-    const marginTop = parseFloat(style.marginTop) || 0;
-    const marginBottom = parseFloat(style.marginBottom) || 0;
 
     const scrollHeight = this.#textarea.scrollHeight;
     const maxHeight = this.#lineHeight * this.#maxRows;
     const newHeight =
-      Math.min(scrollHeight, maxHeight) - paddingTop - paddingBottom - marginTop - marginBottom + this.#extraHeight;
+      Math.min(scrollHeight, maxHeight) - paddingTop - paddingBottom + this.#extraHeight;
 
     const rows = Math.round(newHeight / this.#lineHeight);
     this.#textarea.style.height = `${newHeight}px`;
