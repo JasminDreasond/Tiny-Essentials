@@ -1,9 +1,9 @@
 /**
- * @typedef {{ extraHeight: number, rows: number }} OnResizeInfo
+ * @typedef {{ baseHeight: number, height: number, rows: number }} OnResizeInfo
  */
 
 /**
- * @typedef {{ scrollHeight: number, maxHeight: number, lineHeight: number, maxRows: number, rows: number }} OnInputInfo
+ * @typedef {{ height: number, scrollHeight: number, maxHeight: number, lineHeight: number, maxRows: number, rows: number }} OnInputInfo
  */
 
 class TinyTextarea {
@@ -39,10 +39,10 @@ class TinyTextarea {
     this.onInput = options.onInput ?? null;
 
     this.#lineHeight = this.#getLineHeight();
-    this.#baseHeight = this.#calculateBaseHeight();
 
     textarea.style.overflowY = 'hidden';
     textarea.style.resize = 'none';
+    this.#baseHeight = this.#calculateBaseHeight();
 
     this._handleInput = () => this.#resize();
     textarea.addEventListener('input', this._handleInput);
@@ -59,15 +59,27 @@ class TinyTextarea {
       throw new Error('TinyTextarea: Provided element clone is not a <textarea>.');
 
     clone.style.visibility = 'hidden';
-    clone.style.position = 'absolute';
     clone.style.height = 'auto';
     clone.style.minHeight = '0';
     clone.rows = 1;
+    clone.value = '';
 
     document.body.appendChild(clone);
-    const height = clone.scrollHeight;
+    const style = window.getComputedStyle(clone);
+    const paddingTop = parseFloat(style.paddingTop) || 0;
+    const paddingBottom = parseFloat(style.paddingBottom) || 0;
+
+    const scrollHeight = clone.scrollHeight;
+    const maxHeight = this.#lineHeight * this.#maxRows;
+    const newHeight =
+      Math.ceil(
+        Math.ceil(
+          Math.min(scrollHeight, maxHeight) - paddingTop - paddingBottom + this.#extraHeight,
+        ),
+      ) / Number(this.#maxRows - 1);
+
     document.body.removeChild(clone);
-    return height;
+    return newHeight;
   }
 
   /**
@@ -81,8 +93,9 @@ class TinyTextarea {
 
     const scrollHeight = this.#textarea.scrollHeight;
     const maxHeight = this.#lineHeight * this.#maxRows;
-    const newHeight =
-      Math.min(scrollHeight, maxHeight) - paddingTop - paddingBottom + this.#extraHeight;
+    const newHeight = Math.ceil(
+      Math.min(scrollHeight, maxHeight) - paddingTop - paddingBottom + this.#extraHeight,
+    );
 
     const rows = Math.round(newHeight / this.#lineHeight);
     this.#textarea.style.height = `${newHeight}px`;
@@ -91,11 +104,12 @@ class TinyTextarea {
 
     if (rows !== this.#lastKnownRows) {
       this.#lastKnownRows = rows;
-      if (typeof this.onResize === 'function') this.onResize(this.getExtraSize());
+      if (typeof this.onResize === 'function') this.onResize(this.getData());
     }
     if (typeof this.onInput === 'function')
       this.onInput({
         rows,
+        height: newHeight,
         scrollHeight,
         maxHeight,
         lineHeight: this.#lineHeight,
@@ -118,8 +132,12 @@ class TinyTextarea {
    * Return extra size compared to the base height.
    * @returns {OnResizeInfo}
    */
-  getExtraSize() {
-    return {};
+  getData() {
+    return { 
+      rows: this.#lastKnownRows,
+      height: this.#lastKnownHeight,
+      baseHeight: this.#baseHeight * this.#lastKnownRows,
+    };
   }
 
   /**
