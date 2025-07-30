@@ -188,9 +188,10 @@
       const txtInput = TinyHtml.getById('manualInput');
       const tiny = new TinyTextarea(txtInput.get(0), {
         maxRows: 6,
-        onResize: ({ extraHeight, extraWidth, rows }) => {
-          console.log(`Textarea extra:`, extraHeight, extraWidth, rows);
-          log(`Textarea Extra: ${extraHeight}px height / ${extraWidth}px width. Rows: ${rows}`);
+        extraHeight: 2,
+        onResize: ({ extraHeight, rows }) => {
+          console.log(`Textarea Extra: ${extraHeight}px height. Rows: ${rows}`);
+          log(`Textarea Extra: ${extraHeight}px height. Rows: ${rows}`);
           fixOnTxtInput();
         },
         onInput: ({ scrollHeight, maxHeight, lineHeight, maxRows, rows }) => {
