@@ -2,8 +2,12 @@
  * @typedef {{ extraHeight: number, extraWidth: number, rows: number }} OnResizeInfo
  */
 
+/**
+ * @typedef {{ scrollHeight: number, maxHeight: number, lineHeight: number, maxRows: number, rows: number }} OnInputInfo
+ */
+
 class TinyTextarea {
-  #lastKnownRows = 1;
+  #lastKnownRows = 0;
   #lineHeight;
   #baseHeight;
   #maxRows;
@@ -16,7 +20,7 @@ class TinyTextarea {
    * @param {{
    *   maxRows?: number,
    *   onResize?: (info: OnResizeInfo) => void,
-   *   onInput?: () => void
+   *   onInput?: (info: OnInputInfo) => void
    * }} [options]
    */
   constructor(textarea, options = {}) {
@@ -66,10 +70,16 @@ class TinyTextarea {
    */
   #resize() {
     this.#textarea.style.height = 'auto';
+    const style = window.getComputedStyle(this.#textarea);
+    const paddingTop = parseFloat(style.paddingTop) || 0;
+    const paddingBottom = parseFloat(style.paddingBottom) || 0;
+    const marginTop = parseFloat(style.marginTop) || 0;
+    const marginBottom = parseFloat(style.marginBottom) || 0;
 
     const scrollHeight = this.#textarea.scrollHeight;
     const maxHeight = this.#lineHeight * this.#maxRows;
-    const newHeight = Math.min(scrollHeight, maxHeight);
+    const newHeight =
+      Math.min(scrollHeight, maxHeight) - paddingTop - paddingBottom - marginTop - marginBottom;
 
     const rows = Math.round(newHeight / this.#lineHeight);
     this.#textarea.style.height = `${newHeight}px`;
@@ -79,7 +89,14 @@ class TinyTextarea {
       this.#lastKnownRows = rows;
       if (typeof this.onResize === 'function') this.onResize(this.getExtraSize());
     }
-    if (typeof this.onInput === 'function') this.onInput();
+    if (typeof this.onInput === 'function')
+      this.onInput({
+        rows,
+        scrollHeight,
+        maxHeight,
+        lineHeight: this.#lineHeight,
+        maxRows: this.#maxRows,
+      });
   }
 
   /**

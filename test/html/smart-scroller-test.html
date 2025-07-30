@@ -139,7 +139,7 @@
     <div id="manualMessage" style="padding: 10px; background: #ddd; display: flex; gap: 10px">
       <textarea
         id="manualInput"
-        rows="3"
+        rows="1"
         placeholder="Type your message..."
         style="flex: 1; padding: 6px"
       ></textarea>
@@ -193,7 +193,12 @@
           log(`Textarea Extra: ${extraHeight}px height / ${extraWidth}px width. Rows: ${rows}`);
           fixOnTxtInput();
         },
-        onInput: () => fixOnTxtInput(),
+        onInput: ({ scrollHeight, maxHeight, lineHeight, maxRows, rows }) => {
+          console.log(
+            `scrollHeight: ${scrollHeight}, maxHeight: ${maxHeight}, lineHeight: ${lineHeight}, maxRows: ${maxRows}, rows: ${rows}`,
+          );
+          fixOnTxtInput();
+        },
       });
 
       fixOnTxtInput();
