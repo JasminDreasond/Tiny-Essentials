@@ -1,7 +1,32 @@
 /**
- * @typedef {{ breakLines: number, height: number, scrollHeight: number, maxHeight: number, lineHeight: number, maxRows: number, rows: number }} OnInputInfo
+ * @typedef {Object} OnInputInfo
+ * @property {number} breakLines - Total number of `\n` line breaks in the textarea value.
+ * @property {number} height - Final calculated height (in pixels) applied to the textarea.
+ * @property {number} scrollHeight - Internal scrollHeight before limiting.
+ * @property {number} maxHeight - Maximum allowed height before scrolling is forced.
+ * @property {number} lineHeight - Height of one line of text, computed from CSS.
+ * @property {number} maxRows - Maximum number of visible rows allowed.
+ * @property {number} rows - Effective number of visual rows being used.
  */
 
+/**
+ * A lightweight utility class that automatically adjusts the height of a `<textarea>`
+ * element based on its content. It prevents scrollbars by expanding vertically as needed,
+ * up to a configurable maximum number of visible rows.
+ *
+ * Features:
+ * - Automatically resizes the textarea as the user types
+ * - Prevents vertical scrollbars until a maximum row limit is reached
+ * - Supports additional height padding
+ * - Provides real-time callbacks for input and resize events
+ * - Allows manual refresh and cleanup of behavior
+ *
+ * Ideal for chat inputs, note editors, or any form where dynamic space usage
+ * is preferred without relying on scrollbars too early.
+ * 
+ * @class
+ * @beta
+ */
 class TinyTextarea {
   #lineHeight;
   #maxRows;
@@ -14,13 +39,24 @@ class TinyTextarea {
   #textarea;
 
   /**
-   * @param {HTMLTextAreaElement} textarea - The target textarea element.
-   * @param {{
-   *   maxRows?: number,
-   *   extraHeight?: number,
-   *   onResize?: (info: OnInputInfo) => void,
-   *   onInput?: (info: OnInputInfo) => void
-   * }} [options]
+   * @type {((info: OnInputInfo) => void) | null}
+   */
+  onResize = null;
+
+  /**
+   * @type {((info: OnInputInfo) => void) | null}
+   */
+  onInput = null;
+
+  /**
+   * Creates a new TinyTextarea instance.
+   *
+   * @param {HTMLTextAreaElement} textarea - The `<textarea>` element to enhance.
+   * @param {Object} [options={}] - Optional configuration parameters.
+   * @param {number} [options.maxRows] - Maximum number of visible rows before scrolling.
+   * @param {number} [options.extraHeight] - Additional pixels to add to final height.
+   * @param {(info: OnInputInfo) => void} [options.onResize] - Callback when the number of rows changes.
+   * @param {(info: OnInputInfo) => void} [options.onInput] - Callback on every input event.
    */
   constructor(textarea, options = {}) {
     if (!(textarea instanceof HTMLTextAreaElement)) {
@@ -44,10 +80,13 @@ class TinyTextarea {
   }
 
   /**
-   * Resize the textarea based on its content.
+   * Automatically resize the textarea based on its content and notify listeners.
+   * Triggers `onResize` if the number of rows has changed.
+   * Always triggers `onInput`.
    */
   #resize() {
     this.#textarea.style.height = 'auto';
+
     const style = window.getComputedStyle(this.#textarea);
     const paddingTop = parseFloat(style.paddingTop) || 0;
     const paddingBottom = parseFloat(style.paddingBottom) || 0;
@@ -62,38 +101,37 @@ class TinyTextarea {
     // const rows = Math.round(newHeight / this.#lineHeight);
     const maxRows = this.#maxRows - 1;
     const rows = breakLines < maxRows ? breakLines + 1 : maxRows;
+
     this.#textarea.style.height = `${newHeight}px`;
     this.#textarea.style.overflowY = scrollHeight > maxHeight ? 'auto' : 'hidden';
     this.#lastKnownHeight = newHeight;
 
+    const info = {
+      breakLines,
+      rows,
+      height: newHeight,
+      scrollHeight,
+      maxHeight,
+      lineHeight: this.#lineHeight,
+      maxRows,
+    };
+
     if (rows !== this.#lastKnownRows) {
       this.#lastKnownRows = rows;
-      if (typeof this.onResize === 'function')
-        this.onResize({
-          breakLines,
-          rows,
-          height: newHeight,
-          scrollHeight,
-          maxHeight,
-          lineHeight: this.#lineHeight,
-          maxRows,
-        });
+      if (typeof this.onResize === 'function') {
+        this.onResize({ ...info });
+      }
     }
-    if (typeof this.onInput === 'function')
-      this.onInput({
-        breakLines,
-        rows,
-        height: newHeight,
-        scrollHeight,
-        maxHeight,
-        lineHeight: this.#lineHeight,
-        maxRows,
-      });
+
+    if (typeof this.onInput === 'function') {
+      this.onInput(info);
+    }
   }
 
   /**
-   * Get computed line height from styles.
-   * @returns {number}
+   * Computes the current line height from the textarea's computed styles.
+   * Falls back to `fontSize * 1.2` if lineHeight is not a number.
+   * @returns {number} - The computed line height in pixels.
    */
   #getLineHeight() {
     const style = window.getComputedStyle(this.#textarea);
@@ -103,8 +141,8 @@ class TinyTextarea {
   }
 
   /**
-   * Return extra size compared to the base height.
-   * @returns {{ height: number, rows: number }}
+   * Returns the latest height and row count of the textarea.
+   * @returns {{ height: number, rows: number }} - Last known resize state.
    */
   getData() {
     return {
@@ -114,14 +152,14 @@ class TinyTextarea {
   }
 
   /**
-   * Force a manual size check.
+   * Manually trigger a resize check.
    */
   refresh() {
     this.#resize();
   }
 
   /**
-   * Remove all listeners and restore behavior.
+   * Cleans up internal listeners and disables dynamic behavior.
    */
   destroy() {
     this.#textarea.removeEventListener('input', this._handleInput);
