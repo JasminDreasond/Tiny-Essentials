@@ -133,8 +133,10 @@ import TinyEvents from './libs/TinyEvents.mjs';
 import TinyLocalStorage from './libs/TinyLocalStorage.mjs';
 import TinyIframeEvents from './libs/TinyIframeEvents.mjs';
 import TinyNewWinEvents from './libs/TinyNewWinEvents.mjs';
+import TinyTextarea from './libs/TinyTextarea.mjs';
 
 export {
+  TinyTextarea,
   TinyNewWinEvents,
   TinyIframeEvents,
   TinyLocalStorage,

@@ -41,12 +41,12 @@ class TinyTextarea {
   /**
    * @type {((info: OnInputInfo) => void) | null}
    */
-  onResize = null;
+  #onResize = null;
 
   /**
    * @type {((info: OnInputInfo) => void) | null}
    */
-  onInput = null;
+  #onInput = null;
 
   /**
    * Creates a new TinyTextarea instance.
@@ -66,8 +66,8 @@ class TinyTextarea {
     this.#textarea = textarea;
     this.#maxRows = (options.maxRows ?? 5) + 1;
     this.#extraHeight = options.extraHeight ?? 0;
-    this.onResize = options.onResize ?? null;
-    this.onInput = options.onInput ?? null;
+    this.#onResize = options.onResize ?? null;
+    this.#onInput = options.onInput ?? null;
 
     this.#lineHeight = this.#getLineHeight();
 
@@ -118,13 +118,13 @@ class TinyTextarea {
 
     if (rows !== this.#lastKnownRows) {
       this.#lastKnownRows = rows;
-      if (typeof this.onResize === 'function') {
-        this.onResize({ ...info });
+      if (typeof this.#onResize === 'function') {
+        this.#onResize({ ...info });
       }
     }
 
-    if (typeof this.onInput === 'function') {
-      this.onInput(info);
+    if (typeof this.#onInput === 'function') {
+      this.#onInput(info);
     }
   }
 

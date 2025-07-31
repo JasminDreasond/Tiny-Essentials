@@ -84,5 +84,6 @@ addModule(1, './src/v1/build/TinyEvents.mjs', 'TinyEvents', true);
 addModule(1, './src/v1/build/TinyLocalStorage.mjs', 'TinyLocalStorage', true);
 addModule(1, './src/v1/build/TinyIframeEvents.mjs', 'TinyIframeEvents', true);
 addModule(1, './src/v1/build/TinyNewWinEvents.mjs', 'TinyNewWinEvents', true);
+addModule(1, './src/v1/build/TinyTextarea.mjs', 'TinyTextarea', true);
 
 export default modules;
