@@ -187,17 +187,21 @@
 
       const txtInput = TinyHtml.getById('manualInput');
       const tiny = new TinyTextarea(txtInput.get(0), {
-        maxRows: 6,
+        maxRows: 16,
         extraHeight: 0,
-        onResize: ({ extraHeight, rows }) => {
-          console.log(`Textarea Extra: ${extraHeight}px height. Rows: ${rows}`);
-          log(`Textarea Extra: ${extraHeight}px height. Rows: ${rows}`);
+        onResize: ({ rows, height, scrollHeight, maxHeight, lineHeight, maxRows, breakLines }) => {
+          console.log(`Textarea Extra:`, {
+            breakLines,
+            rows,
+            height,
+            scrollHeight,
+            maxHeight,
+            lineHeight,
+            maxRows,
+          });
           fixOnTxtInput();
         },
-        onInput: ({ scrollHeight, maxHeight, lineHeight, maxRows, rows }) => {
-          console.log(
-            `scrollHeight: ${scrollHeight}, maxHeight: ${maxHeight}, lineHeight: ${lineHeight}, maxRows: ${maxRows}, rows: ${rows}`,
-          );
+        onInput: () => {
           fixOnTxtInput();
         },
       });
