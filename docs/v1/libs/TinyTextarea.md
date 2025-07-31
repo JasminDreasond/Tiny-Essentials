@@ -88,6 +88,51 @@ autoResize.destroy();
 
 ---
 
+### 🔍 Getters
+
+TinyTextarea exposes several readonly properties to let you inspect the current configuration and state of the managed `<textarea>`.
+
+#### 📏 `lineHeight: number`
+
+Returns the height in pixels of a single line of text in the textarea, computed from its current CSS styles.
+Useful for calculating exact space usage or aligning UI elements.
+
+---
+
+#### 📐 `maxRows: number`
+
+Returns the maximum number of visible text rows allowed before the textarea begins to scroll.
+This value reflects the limit set via `options.maxRows`.
+
+---
+
+#### ➕ `extraHeight: number`
+
+Returns the number of extra pixels added to the calculated height of the textarea.
+This is useful for custom padding or visual adjustments.
+
+---
+
+#### 📏 `currentHeight: number`
+
+Returns the most recently applied height (in pixels) that was set on the `<textarea>` after resizing.
+
+---
+
+#### 📊 `currentRows: number`
+
+Returns the most recent number of visible text rows that the textarea is currently using.
+This value is calculated dynamically and may change as the user types.
+
+---
+
+#### 🧩 `textarea: HTMLTextAreaElement`
+
+Returns the original `<textarea>` DOM element that was enhanced by this instance.
+You can use this for direct styling, value changes, or other DOM-level operations.
+
+---
+
 ## 📤 Event Payload: `OnInputInfo`
 
 Whenever `onResize` or `onInput` is triggered, the following object is passed:

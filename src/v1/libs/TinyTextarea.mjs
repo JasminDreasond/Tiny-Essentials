@@ -49,6 +49,54 @@ class TinyTextarea {
   #onInput = null;
 
   /**
+   * Returns the computed line height in pixels.
+   * @returns {number}
+   */
+  get lineHeight() {
+    return this.#lineHeight;
+  }
+
+  /**
+   * Returns the maximum number of rows allowed.
+   * @returns {number}
+   */
+  get maxRows() {
+    return this.#maxRows - 1;
+  }
+
+  /**
+   * Returns the additional height added to the textarea.
+   * @returns {number}
+   */
+  get extraHeight() {
+    return this.#extraHeight;
+  }
+
+  /**
+   * Returns the most recently applied height.
+   * @returns {number}
+   */
+  get currentHeight() {
+    return this.#lastKnownHeight;
+  }
+
+  /**
+   * Returns the most recently calculated row count.
+   * @returns {number}
+   */
+  get currentRows() {
+    return this.#lastKnownRows;
+  }
+
+  /**
+   * Returns the original textarea element managed by this instance.
+   * @returns {HTMLTextAreaElement}
+   */
+  get textarea() {
+    return this.#textarea;
+  }
+
+  /**
    * Creates a new TinyTextarea instance.
    *
    * @param {HTMLTextAreaElement} textarea - The `<textarea>` element to enhance.
