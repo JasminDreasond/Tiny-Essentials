@@ -23,7 +23,7 @@
  *
  * Ideal for chat inputs, note editors, or any form where dynamic space usage
  * is preferred without relying on scrollbars too early.
- * 
+ *
  * @class
  * @beta
  */
@@ -57,11 +57,22 @@ class TinyTextarea {
    * @param {number} [options.extraHeight] - Additional pixels to add to final height.
    * @param {(info: OnInputInfo) => void} [options.onResize] - Callback when the number of rows changes.
    * @param {(info: OnInputInfo) => void} [options.onInput] - Callback on every input event.
+   * @throws {Error} If `textarea` is not a valid `<textarea>` element.
+   * @throws {TypeError} If provided options are of invalid types.
    */
   constructor(textarea, options = {}) {
-    if (!(textarea instanceof HTMLTextAreaElement)) {
+    if (!(textarea instanceof HTMLTextAreaElement))
       throw new Error('TinyTextarea: Provided element is not a <textarea>.');
-    }
+    if (typeof options !== 'object' || options === null)
+      throw new TypeError('TinyTextarea: Options must be an object if provided.');
+    if ('maxRows' in options && typeof options.maxRows !== 'number')
+      throw new TypeError('TinyTextarea: `maxRows` must be a number.');
+    if ('extraHeight' in options && typeof options.extraHeight !== 'number')
+      throw new TypeError('TinyTextarea: `extraHeight` must be a number.');
+    if ('onResize' in options && typeof options.onResize !== 'function')
+      throw new TypeError('TinyTextarea: `onResize` must be a function.');
+    if ('onInput' in options && typeof options.onInput !== 'function')
+      throw new TypeError('TinyTextarea: `onInput` must be a function.');
 
     this.#textarea = textarea;
     this.#maxRows = (options.maxRows ?? 5) + 1;
