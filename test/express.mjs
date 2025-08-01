@@ -180,7 +180,7 @@ const readScss = async (filePath, fileName, req, res) => {
 
 // Middleware personalizado para .mjs
 const sources = ['src', 'dist'];
-const versions = ['legacy', 'v1'];
+const versions = ['legacy', '_', 'v1'];
 for (const src of sources) {
   for (const v of versions) {
     const tinyRegex = new RegExp(`^\\/${src}\\/${v}\\/(.*)$`);
