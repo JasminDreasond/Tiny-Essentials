@@ -85,10 +85,21 @@ class TinyGamepad {
       const key = `button${index}`;
       const prev = this.#lastButtonStates[index]?.pressed || false;
 
-      if (btn.pressed && !prev) this._handleInput(key, 'gamepad-button', 1, 'down');
-      else if (!btn.pressed && prev) this._handleInput(key, 'gamepad-button', 0, 'up');
-      else if (btn.pressed && prev) this._handleInput(key, 'gamepad-button', 1, 'hold');
+      const source = 'gamepad-button';
+      let value;
+      let type;
+      if (btn.pressed && !prev) {
+        value = 1;
+        type = 'down';
+      } else if (!btn.pressed && prev) {
+        value = 0;
+        type = 'up';
+      } else if (btn.pressed && prev) {
+        value = 1;
+        type = 'hold';
+      }
 
+      if (value && type) this._handleInput({ key, source, value, type, gp });
       this.#lastButtonStates[index] = { pressed: btn.pressed };
     });
 
@@ -98,7 +109,13 @@ class TinyGamepad {
       const key = `axis${index}`;
       const prev = this.#lastAxes[index] ?? 0;
       if (val !== prev) {
-        this._handleInput(key, 'gamepad-analog', val, 'change');
+        this._handleInput({
+          key,
+          source: 'gamepad-analog',
+          value: val,
+          type: 'change',
+          gp,
+        });
       }
       this.#lastAxes[index] = val;
     });
@@ -111,24 +128,21 @@ class TinyGamepad {
     window.addEventListener('keydown', (e) => {
       if (!this.#heldKeys.has(e.code)) {
         this.#heldKeys.add(e.code);
-        this._handleInput(e.code, 'keyboard', 1, 'down');
+        this._handleInput({ key: e.code, source: 'keyboard', value: 1, type: 'down' });
       }
     });
 
     window.addEventListener('keyup', (e) => {
       if (this.#heldKeys.has(e.code)) {
         this.#heldKeys.delete(e.code);
-        this._handleInput(e.code, 'keyboard', 0, 'up');
+        this._handleInput({ key: e.code, source: 'keyboard', value: 0, type: 'up' });
       }
     });
 
     // Opcional: checagem contínua para "hold"
     this._mouseKeyboardHoldLoop = requestAnimationFrame(() => {
       for (const key of this.#heldKeys) {
-        this._handleInput(key, 'keyboard', 1, 'hold');
-      }
-      for (const btn of this.#heldMouseButtons) {
-        this._handleInput(btn, 'mouse', 1, 'hold');
+        this._handleInput({ key, source: 'keyboard', value: 1, type: 'hold' });
       }
     });
   }
@@ -159,18 +173,19 @@ class TinyGamepad {
     this.#callbacks.get(logicalName).push(callback);
   }
 
-  _handleInput(rawInput, source, analogValue = null, type = null) {
+  _handleInput({ key, source, value, type, gp } = {}) {
     const globalCbs = this.#callbacks.get('*') || [];
     for (const [logical, physical] of this.#inputMap.entries()) {
-      if (physical === '*' || physical === rawInput) {
+      if (physical === '*' || physical === key) {
         const cbs = this.#callbacks.get(logical) || [];
         if (cbs.length < 1) continue;
         const payload = {
           type,
-          type: source,
-          input: rawInput,
+          source,
+          key,
           logicalName: logical,
-          value: analogValue,
+          value,
+          gp,
         };
         for (const cb of globalCbs) cb(payload);
         for (const cb of cbs) cb(payload);

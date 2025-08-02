@@ -147,7 +147,7 @@
         for (const [logical, physical] of Object.entries(defaultBindings)) {
           tg.mapInput(logical, physical);
           tg.onInput(logical, (evt) => {
-            log(`Mapped input "${logical}" triggered via ${evt.type} (${evt.input})`);
+            log(`Mapped input "${logical}" triggered via ${evt.type} (${evt.key})`);
           });
         }
       };
@@ -181,7 +181,7 @@
 
         /** tg.onInput('*', (evt) => {
           console.log(
-            `Input (*) "${evt.logicalName}" from ${evt.type} (${evt.input}) ${evt.value !== null ? `: ${evt.value}` : ''}`,
+            `Input (*) "${evt.logicalName}" from ${evt.type} (${evt.key}) ${evt.value !== null ? `: ${evt.value}` : ''}`,
           );
         }); */
 
