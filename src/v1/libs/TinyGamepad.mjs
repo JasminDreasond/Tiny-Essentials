@@ -33,7 +33,6 @@ class TinyGamepad {
       this._initKeyboardMouse();
     } else {
       this._initGamepadEvents();
-      this._initSensors();
     }
   }
 
@@ -258,76 +257,9 @@ class TinyGamepad {
     }
   }
 
-  ///////////////////////////////////////////
-
-  _initSensors() {
-    if (typeof AbsoluteOrientationSensor !== 'undefined') {
-      this.orientationSensor = new AbsoluteOrientationSensor({ frequency: 60 });
-      this.orientationSensor.addEventListener('reading', () => {
-        this._emit('sensor', {
-          type: 'orientation',
-          quaternion: this.orientationSensor.quaternion,
-        });
-      });
-      this.orientationSensor.start();
-    }
-
-    if (typeof Accelerometer !== 'undefined') {
-      this.accelerometer = new Accelerometer({ frequency: 60 });
-      this.accelerometer.addEventListener('reading', () => {
-        this._emit('sensor', {
-          type: 'accelerometer',
-          x: this.accelerometer.x,
-          y: this.accelerometer.y,
-          z: this.accelerometer.z,
-        });
-      });
-      this.accelerometer.start();
-    }
-
-    if (typeof Gyroscope !== 'undefined') {
-      this.gyroscope = new Gyroscope({ frequency: 60 });
-      this.gyroscope.addEventListener('reading', () => {
-        this._emit('sensor', {
-          type: 'gyroscope',
-          x: this.gyroscope.x,
-          y: this.gyroscope.y,
-          z: this.gyroscope.z,
-        });
-      });
-      this.gyroscope.start();
-    }
-
-    if (typeof Magnetometer !== 'undefined') {
-      this.magnetometer = new Magnetometer({ frequency: 60 });
-      this.magnetometer.addEventListener('reading', () => {
-        this._emit('sensor', {
-          type: 'magnetometer',
-          x: this.magnetometer.x,
-          y: this.magnetometer.y,
-          z: this.magnetometer.z,
-        });
-      });
-      this.magnetometer.start();
-    }
-  }
-
   ////////////////////////////////////
 
-  _stopSensors() {
-    for (const sensor of [
-      this.orientationSensor,
-      this.accelerometer,
-      this.gyroscope,
-      this.magnetometer,
-    ]) {
-      if (sensor?.stop) sensor.stop();
-    }
-  }
-
-  destroy() {
-    this._stopSensors();
-  }
+  destroy() {}
 }
 
 export default TinyGamepad;
