@@ -2,6 +2,10 @@
  * @typedef {{ pressed: boolean }} KeyStatus
  */
 
+/**
+ * @typedef {'gamepad-only' | 'keyboard-only' | 'both'} InputMode
+ */
+
 /** @typedef {(payload: InputPayload|InputAnalogPayload) => void} PayloadCallback */
 
 /** @typedef {(payload: ConnectionPayload) => void} ConnectionCallback */
@@ -82,8 +86,8 @@ class TinyGamepad {
   /** @type {null|number} */
   #mouseKeyboardHoldLoop = null;
 
-  /** @type {boolean} */
-  #useKeyboardMouse;
+  /** @type {InputMode} */
+  #inputMode;
 
   /** @type {Set<string>} */
   #ignoreIds;
@@ -97,25 +101,22 @@ class TinyGamepad {
   /**
    * @param {Object} options
    * @param {string|null} [options.expectedId=null] ID exata do controle esperado
-   * @param {boolean} [options.useKeyboardMouse=false] Se usar teclado/mouse em vez do gamepad
+   * @param {InputMode} [options.inputMode='both']
    * @param {string[]} [options.ignoreIds=[]] Lista de IDs a ignorar
    * @param {number} [options.deadZone=0.1] Zona morta para os analógicos
    */
-  constructor({
-    expectedId = null,
-    useKeyboardMouse = false,
-    ignoreIds = [],
-    deadZone = 0.1,
-  } = {}) {
+  constructor({ expectedId = null, inputMode = 'both', ignoreIds = [], deadZone = 0.1 } = {}) {
     this.#expectedId = expectedId;
-    this.#useKeyboardMouse = useKeyboardMouse;
+    this.#inputMode = inputMode;
     this.#ignoreIds = new Set(ignoreIds);
     this.#deadZone = deadZone;
 
-    if (this.#useKeyboardMouse) {
-      this.#initKeyboardMouse();
-    } else {
+    if (['gamepad-only', 'both'].includes(this.#inputMode)) {
       this.#initGamepadEvents();
+    }
+
+    if (['keyboard-only', 'both'].includes(this.#inputMode)) {
+      this.#initKeyboardMouse();
     }
   }
 
@@ -457,10 +458,12 @@ class TinyGamepad {
     if (this.#animationFrame) cancelAnimationFrame(this.#animationFrame);
     if (this.#mouseKeyboardHoldLoop) cancelAnimationFrame(this.#mouseKeyboardHoldLoop);
 
-    if (this.#useKeyboardMouse) {
+    if (['keyboard-only', 'both'].includes(this.#inputMode)) {
       window.removeEventListener('keydown', this.#keydown);
       window.removeEventListener('keyup', this.#keyup);
-    } else {
+    }
+
+    if (['gamepad-only', 'both'].includes(this.#inputMode)) {
       window.removeEventListener('gamepadconnected', this.#gamepadConnected);
       window.removeEventListener('gamepaddisconnected', this.#gamepadDisconnected);
     }

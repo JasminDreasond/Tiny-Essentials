@@ -167,7 +167,7 @@
           expectedId,
           ignoreIds,
           deadZone,
-          useKeyboardMouse,
+          inputMode: useKeyboardMouse ? 'both' : 'gamepad-only',
         });
         window.tg = tg;
 
