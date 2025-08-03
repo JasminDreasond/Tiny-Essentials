@@ -20,6 +20,7 @@
  * @property {number} value
  * @property {boolean} pressed
  * @property {boolean} prevPressed
+ * @property {number} timestamp
  * @property {Gamepad} [gp]
  */
 
@@ -30,6 +31,7 @@
  * @property {string} key
  * @property {string} logicalName
  * @property {number} value
+ * @property {number} timestamp
  * @property {Gamepad} [gp]
  */
 
@@ -42,6 +44,7 @@
  * @property {boolean} isPressure
  * @property {boolean} pressed
  * @property {boolean} prevPressed
+ * @property {number} timestamp
  * @property {Gamepad} [gp]
  */
 
@@ -51,12 +54,14 @@
  * @property {string} source
  * @property {number} value
  * @property {string} type
+ * @property {number} timestamp
  * @property {Gamepad} [gp]
  */
 
 /**
  * @typedef {Object} ConnectionPayload
  * @property {string} id
+ * @property {number} timestamp
  * @property {Gamepad} gp
  */
 
@@ -145,7 +150,7 @@ class TinyGamepad {
       this.#expectedId = gamepad.id;
 
       this.#startPolling();
-      this.#emit('connected', { id: gamepad.id, gp: gamepad });
+      this.#emit('connected', { id: gamepad.id, gp: gamepad, timestamp: gamepad.timestamp });
     }
   }
 
@@ -157,7 +162,7 @@ class TinyGamepad {
         cancelAnimationFrame(this.#animationFrame);
         this.#animationFrame = null;
       }
-      this.#emit('disconnected', { id: gamepad.id, gp: gamepad });
+      this.#emit('disconnected', { id: gamepad.id, gp: gamepad, timestamp: gamepad.timestamp });
     }
   }
 
@@ -169,8 +174,6 @@ class TinyGamepad {
     };
     loop();
   }
-
-  ///////////////////////////////////////
 
   #checkGamepadState() {
     const pads = navigator.getGamepads();
@@ -213,6 +216,7 @@ class TinyGamepad {
           isPressure,
           pressed: btn.pressed,
           prevPressed: prev,
+          timestamp: gp.timestamp,
         });
       this.#lastButtonStates[index] = { pressed: btn.pressed };
     });
@@ -228,6 +232,7 @@ class TinyGamepad {
           source: 'gamepad-analog',
           value: val,
           type: 'change',
+          timestamp: gp.timestamp,
           gp,
         });
       }
@@ -248,6 +253,7 @@ class TinyGamepad {
         type: 'down',
         pressed: true,
         prevPressed: this.#lastKeyStates[e.code]?.pressed ?? false,
+        timestamp: NaN,
       });
       this.#lastKeyStates[e.code] = { pressed: true };
     }
@@ -264,6 +270,7 @@ class TinyGamepad {
         type: 'up',
         pressed: false,
         prevPressed: this.#lastKeyStates[e.code]?.pressed ?? false,
+        timestamp: NaN,
       });
       this.#lastKeyStates[e.code] = { pressed: false };
     }
@@ -285,6 +292,7 @@ class TinyGamepad {
           type: 'hold',
           pressed: true,
           prevPressed: data.pressed,
+          timestamp: NaN,
         });
       });
       this.#mouseKeyboardHoldLoop = requestAnimationFrame(loop);
