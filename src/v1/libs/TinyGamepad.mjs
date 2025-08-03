@@ -45,27 +45,27 @@ class TinyGamepad {
     this.deadZone = deadZone;
 
     if (this.useKeyboardMouse) {
-      this._initKeyboardMouse();
+      this.#initKeyboardMouse();
     } else {
-      this._initGamepadEvents();
+      this.#initGamepadEvents();
     }
   }
 
   //////////////////////////////////////////
 
   /** @type {(this: Window, ev: GamepadEvent) => any} */
-  #gamepadConnected = (e) => this._onGamepadConnect(e.gamepad);
+  #gamepadConnected = (e) => this.#onGamepadConnect(e.gamepad);
 
   /** @type {(this: Window, ev: GamepadEvent) => any} */
-  #gamepadDisconnected = (e) => this._onGamepadDisconnect(e.gamepad);
+  #gamepadDisconnected = (e) => this.#onGamepadDisconnect(e.gamepad);
 
-  _initGamepadEvents() {
+  #initGamepadEvents() {
     window.addEventListener('gamepadconnected', this.#gamepadConnected);
     window.addEventListener('gamepaddisconnected', this.#gamepadDisconnected);
   }
 
   /** @param {Gamepad} gamepad */
-  _onGamepadConnect(gamepad) {
+  #onGamepadConnect(gamepad) {
     if (this.ignoreIds.has(gamepad.id)) return;
     if (this.expectedId && gamepad.id !== this.expectedId) return;
 
@@ -73,13 +73,13 @@ class TinyGamepad {
       this.#connectedGamepad = gamepad;
       this.expectedId = gamepad.id;
 
-      this._startPolling();
+      this.#startPolling();
       this._emit('connected', { id: gamepad.id });
     }
   }
 
   /** @param {Gamepad} gamepad */
-  _onGamepadDisconnect(gamepad) {
+  #onGamepadDisconnect(gamepad) {
     if (this.#connectedGamepad && gamepad.id === this.#connectedGamepad.id) {
       this.#connectedGamepad = null;
       if (this.#animationFrame) cancelAnimationFrame(this.#animationFrame);
@@ -87,9 +87,9 @@ class TinyGamepad {
     }
   }
 
-  _startPolling() {
+  #startPolling() {
     const loop = () => {
-      this._checkGamepadState();
+      this.#checkGamepadState();
       if (this.#animationFrame) cancelAnimationFrame(this.#animationFrame);
       this.#animationFrame = requestAnimationFrame(loop);
     };
@@ -98,7 +98,7 @@ class TinyGamepad {
 
   ///////////////////////////////////////
 
-  _checkGamepadState() {
+  #checkGamepadState() {
     const pads = navigator.getGamepads();
     const gp = Array.from(pads).find((g) => g && g.id === this.expectedId);
     if (!gp) return;
@@ -124,7 +124,7 @@ class TinyGamepad {
       }
 
       if (typeof value === 'number' && typeof type === 'string')
-        this._handleInput({
+        this.#handleInput({
           key,
           source,
           value,
@@ -142,7 +142,7 @@ class TinyGamepad {
       const key = `axis${index}`;
       const prev = this.#lastAxes[index] ?? 0;
       if (val !== prev) {
-        this._handleInput({
+        this.#handleInput({
           key,
           source: 'gamepad-analog',
           value: val,
@@ -160,7 +160,7 @@ class TinyGamepad {
   #keydown = (e) => {
     if (!this.#heldKeys.has(e.code)) {
       this.#heldKeys.add(e.code);
-      this._handleInput({
+      this.#handleInput({
         key: e.code,
         source: 'keyboard',
         value: 1,
@@ -176,7 +176,7 @@ class TinyGamepad {
   #keyup = (e) => {
     if (this.#heldKeys.has(e.code)) {
       this.#heldKeys.delete(e.code);
-      this._handleInput({
+      this.#handleInput({
         key: e.code,
         source: 'keyboard',
         value: 0,
@@ -188,7 +188,7 @@ class TinyGamepad {
     }
   };
 
-  _initKeyboardMouse() {
+  #initKeyboardMouse() {
     // Keyboard
     window.addEventListener('keydown', this.#keydown);
     window.addEventListener('keyup', this.#keyup);
@@ -196,7 +196,7 @@ class TinyGamepad {
     // Opcional: checagem contínua para "hold"
     this.#mouseKeyboardHoldLoop = requestAnimationFrame(() => {
       for (const key of this.#heldKeys) {
-        this._handleInput({
+        this.#handleInput({
           key,
           source: 'keyboard',
           value: 1,
@@ -238,7 +238,7 @@ class TinyGamepad {
     this.#callbacks.get(logicalName).push(callback);
   }
 
-  _handleInput({ key, source, value, type, gp, pressed, prevPressed } = {}) {
+  #handleInput({ key, source, value, type, gp, pressed, prevPressed } = {}) {
     const globalCbs = this.#callbacks.get('*') || [];
     for (const [logical, physical] of this.#inputMap.entries()) {
       if (physical === '*' || physical === key) {
