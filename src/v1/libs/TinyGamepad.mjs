@@ -142,7 +142,7 @@ class TinyGamepad {
       this.#expectedId = gamepad.id;
 
       this.#startPolling();
-      this._emit('connected', { id: gamepad.id, gp: gamepad });
+      this.#emit('connected', { id: gamepad.id, gp: gamepad });
     }
   }
 
@@ -151,7 +151,7 @@ class TinyGamepad {
     if (this.#connectedGamepad && gamepad.id === this.#connectedGamepad.id) {
       this.#connectedGamepad = null;
       if (this.#animationFrame) cancelAnimationFrame(this.#animationFrame);
-      this._emit('disconnected', { id: gamepad.id, gp: gamepad });
+      this.#emit('disconnected', { id: gamepad.id, gp: gamepad });
     }
   }
 
@@ -367,7 +367,7 @@ class TinyGamepad {
   }
 
   /**
-   * @param {(payload: ConnectionPayload) => void} callback
+   * @param {ConnectionCallback} callback
    */
   onConnected(callback) {
     let callbacks = this.#callbacks.get('connected');
@@ -379,7 +379,7 @@ class TinyGamepad {
   }
 
   /**
-   * @param {(payload: ConnectionPayload) => void} callback
+   * @param {ConnectionCallback} callback
    */
   onDisconnected(callback) {
     let callbacks = this.#callbacks.get('disconnected');
@@ -394,7 +394,7 @@ class TinyGamepad {
    * @param {string} event
    * @param {*} data
    */
-  _emit(event, data) {
+  #emit(event, data) {
     const cbs = this.#callbacks.get(event) || [];
     for (const cb of cbs) cb(data);
   }
@@ -420,9 +420,10 @@ class TinyGamepad {
 
   /**
    * Exporta a configuração atual como JSON
+   * @param {number} [spaces=2]
    * @returns {string}
    */
-  exportConfig() {
+  exportConfig(spaces = 2) {
     return JSON.stringify(
       {
         expectedId: this.#expectedId,
@@ -431,7 +432,7 @@ class TinyGamepad {
         inputMap: Array.from(this.#inputMap.entries()),
       },
       null,
-      2,
+      spaces,
     );
   }
 
