@@ -35,6 +35,9 @@ class TinyGamepad {
   /** @type {number} */
   #deadZone;
 
+  /** @type {string|null} */
+  #expectedId;
+
   /**
    * @param {Object} options
    * @param {string|null} [options.expectedId=null] ID exata do controle esperado
@@ -48,7 +51,7 @@ class TinyGamepad {
     ignoreIds = [],
     deadZone = 0.1,
   } = {}) {
-    this.expectedId = expectedId;
+    this.#expectedId = expectedId;
     this.#useKeyboardMouse = useKeyboardMouse;
     this.#ignoreIds = new Set(ignoreIds);
     this.#deadZone = deadZone;
@@ -76,11 +79,11 @@ class TinyGamepad {
   /** @param {Gamepad} gamepad */
   #onGamepadConnect(gamepad) {
     if (this.#ignoreIds.has(gamepad.id)) return;
-    if (this.expectedId && gamepad.id !== this.expectedId) return;
+    if (this.#expectedId && gamepad.id !== this.#expectedId) return;
 
     if (!this.#connectedGamepad) {
       this.#connectedGamepad = gamepad;
-      this.expectedId = gamepad.id;
+      this.#expectedId = gamepad.id;
 
       this.#startPolling();
       this._emit('connected', { id: gamepad.id });
@@ -109,7 +112,7 @@ class TinyGamepad {
 
   #checkGamepadState() {
     const pads = navigator.getGamepads();
-    const gp = Array.from(pads).find((g) => g && g.id === this.expectedId);
+    const gp = Array.from(pads).find((g) => g && g.id === this.#expectedId);
     if (!gp) return;
 
     this.#connectedGamepad = gp;
@@ -342,7 +345,7 @@ class TinyGamepad {
   exportConfig() {
     return JSON.stringify(
       {
-        expectedId: this.expectedId,
+        expectedId: this.#expectedId,
         ignoreIds: Array.from(this.#ignoreIds),
         deadZone: this.#deadZone,
         inputMap: Array.from(this.#inputMap.entries()),
@@ -359,7 +362,7 @@ class TinyGamepad {
   importConfig(json) {
     const config = typeof json === 'string' ? JSON.parse(json) : json;
 
-    if (config.expectedId) this.expectedId = config.expectedId;
+    if (config.expectedId) this.#expectedId = config.expectedId;
     if (Array.isArray(config.ignoreIds)) this.#ignoreIds = new Set(config.ignoreIds);
     if (typeof config.deadZone === 'number') this.#deadZone = config.deadZone;
     if (Array.isArray(config.#inputMap)) {
