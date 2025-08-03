@@ -1,5 +1,49 @@
 /**
- * @typedef {{ pressed: boolean }} keyStatus
+ * @typedef {{ pressed: boolean }} KeyStatus
+ */
+
+/**
+ * @typedef {Object} InputPayload
+ * @property {string} type
+ * @property {string} source
+ * @property {string} key
+ * @property {boolean} isPressure
+ * @property {string} logicalName
+ * @property {number} value
+ * @property {boolean} pressed
+ * @property {boolean} prevPressed
+ * @property {Gamepad} [gp]
+*/
+
+/**
+ * @typedef {Object} InputAnalogPayload
+ * @property {string} type
+ * @property {string} source
+ * @property {string} key
+ * @property {string} logicalName
+ * @property {number} value
+ * @property {Gamepad} [gp]
+*/
+
+/**
+ * @typedef {Object} InputEvents
+ * @property {string} key
+ * @property {string} source
+ * @property {number} value
+ * @property {string} type
+ * @property {boolean} isPressure
+ * @property {boolean} pressed
+ * @property {boolean} prevPressed
+ * @property {Gamepad} [gp]
+ */
+
+/**
+ * @typedef {Object} InputAnalogEvents
+ * @property {string} key
+ * @property {string} source
+ * @property {number} value
+ * @property {string} type
+ * @property {Gamepad} [gp]
  */
 
 class TinyGamepad {
@@ -11,10 +55,10 @@ class TinyGamepad {
   /** @type {null|Gamepad} */
   #connectedGamepad = null;
 
-  /** @type {keyStatus[]} */
+  /** @type {KeyStatus[]} */
   #lastButtonStates = [];
 
-  /** @type {Record<string|number, keyStatus>} */
+  /** @type {Record<string|number, KeyStatus>} */
   #lastKeyStates = {};
 
   /** @type {number[]} */
@@ -124,6 +168,7 @@ class TinyGamepad {
       const source = 'gamepad-button';
       let value;
       let type;
+      let isPressure = false;
       if (btn.pressed && !prev) {
         value = 1;
         type = 'down';
@@ -135,6 +180,11 @@ class TinyGamepad {
         type = 'hold';
       }
 
+      if (btn.pressed && btn.value > 0 && btn.value < 1 && btn.value !== 1) {
+        value = btn.value;
+        isPressure = true;
+      }
+
       if (typeof value === 'number' && typeof type === 'string')
         this.#handleInput({
           key,
@@ -142,6 +192,7 @@ class TinyGamepad {
           value,
           type,
           gp,
+          isPressure,
           pressed: btn.pressed,
           prevPressed: prev,
         });
@@ -178,7 +229,7 @@ class TinyGamepad {
         value: 1,
         type: 'down',
         pressed: true,
-        prevPressed: this.#lastKeyStates[e.code],
+        prevPressed: this.#lastKeyStates[e.code].pressed,
       });
       this.#lastKeyStates[e.code] = { pressed: true };
     }
@@ -194,7 +245,7 @@ class TinyGamepad {
         value: 0,
         type: 'up',
         pressed: false,
-        prevPressed: this.#lastKeyStates[e.code],
+        prevPressed: this.#lastKeyStates[e.code].pressed,
       });
       this.#lastKeyStates[e.code] = { pressed: false };
     }
@@ -214,7 +265,7 @@ class TinyGamepad {
           value: 1,
           type: 'hold',
           pressed: true,
-          prevPressed: this.#lastKeyStates[key],
+          prevPressed: this.#lastKeyStates[key].pressed,
         });
         this.#lastKeyStates[key] = { pressed: true };
       }
@@ -223,22 +274,17 @@ class TinyGamepad {
 
   //////////////////////////////////
 
-  #handleInput({ key, source, value, type, gp, pressed, prevPressed } = {}) {
+  /**
+   * @param {InputEvents|InputAnalogEvents} settings
+   */
+  #handleInput(settings) {
     const globalCbs = this.#callbacks.get('*') || [];
     for (const [logical, physical] of this.#inputMap.entries()) {
-      if (physical === '*' || physical === key) {
+      if (physical === '*' || physical === settings.key) {
         const cbs = this.#callbacks.get(logical) || [];
         if (cbs.length < 1) continue;
-        const payload = {
-          type,
-          source,
-          key,
-          logicalName: logical,
-          value,
-          pressed,
-          prevPressed,
-          gp,
-        };
+        /** @type {InputPayload|InputAnalogPayload} */
+        const payload = { ...settings, logicalName: logical };
         for (const cb of globalCbs) cb(payload);
         for (const cb of cbs) cb(payload);
       }
@@ -264,6 +310,7 @@ class TinyGamepad {
 
   /**
    * Registra um callback para um input lógico
+   * @param {string} logicalName
    */
   onInput(logicalName, callback) {
     if (!this.#callbacks.has(logicalName)) {
