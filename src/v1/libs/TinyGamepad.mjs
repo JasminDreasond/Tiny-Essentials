@@ -374,13 +374,28 @@ class TinyGamepad {
   }
 
   /**
+   * @returns {boolean}
+   */
+  hasHapticEffect() {
+    const gp = this.#connectedGamepad;
+    if (!gp) return false;
+    const vibrationActuator = gp.vibrationActuator;
+    if (!(vibrationActuator instanceof GamepadHapticActuator)) return false;
+    return true;
+  }
+
+  /**
    * @param {GamepadEffectParameters} [params]
    * @param {GamepadHapticEffectType} [type]
+   * @returns {Promise<GamepadHapticsResult>}
    */
   vibrate(params, type) {
     const gp = this.#connectedGamepad;
-    if (!gp?.vibrationActuator) return false;
-    return gp.vibrationActuator.playEffect(type ?? this.#defaultHapticEffect.type, {
+    if (!gp) return new Promise((resolve) => resolve('complete'));
+    const vibrationActuator = gp.vibrationActuator;
+    if (!(vibrationActuator instanceof GamepadHapticActuator))
+      return new Promise((resolve) => resolve('complete'));
+    return vibrationActuator.playEffect(type ?? this.#defaultHapticEffect.type, {
       ...this.#defaultHapticEffect.params,
       ...params,
     });

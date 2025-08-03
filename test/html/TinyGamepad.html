@@ -221,7 +221,7 @@
 
       document.getElementById('vibrateBtn').addEventListener('click', () => {
         if (!tg) return;
-        const success = tg.vibrate?.();
+        const success = tg.vibrate?.({ duration: 200 });
         log(success ? 'Vibration triggered.' : 'Vibration not supported.');
       });
     </script>
