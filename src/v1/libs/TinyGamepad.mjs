@@ -151,7 +151,10 @@ class TinyGamepad {
   #onGamepadDisconnect(gamepad) {
     if (this.#connectedGamepad && gamepad.id === this.#connectedGamepad.id) {
       this.#connectedGamepad = null;
-      if (this.#animationFrame) cancelAnimationFrame(this.#animationFrame);
+      if (this.#animationFrame) {
+        cancelAnimationFrame(this.#animationFrame);
+        this.#animationFrame = null;
+      }
       this.#emit('disconnected', { id: gamepad.id, gp: gamepad });
     }
   }
@@ -159,7 +162,6 @@ class TinyGamepad {
   #startPolling() {
     const loop = () => {
       this.#checkGamepadState();
-      if (this.#animationFrame) cancelAnimationFrame(this.#animationFrame);
       this.#animationFrame = requestAnimationFrame(loop);
     };
     loop();
@@ -242,7 +244,7 @@ class TinyGamepad {
         value: 1,
         type: 'down',
         pressed: true,
-        prevPressed: this.#lastKeyStates[e.code].pressed,
+        prevPressed: this.#lastKeyStates[e.code]?.pressed ?? false,
       });
       this.#lastKeyStates[e.code] = { pressed: true };
     }
@@ -258,7 +260,7 @@ class TinyGamepad {
         value: 0,
         type: 'up',
         pressed: false,
-        prevPressed: this.#lastKeyStates[e.code].pressed,
+        prevPressed: this.#lastKeyStates[e.code]?.pressed ?? false,
       });
       this.#lastKeyStates[e.code] = { pressed: false };
     }
@@ -270,19 +272,20 @@ class TinyGamepad {
     window.addEventListener('keyup', this.#keyup);
 
     // Opcional: checagem contínua para "hold"
-    this.#mouseKeyboardHoldLoop = requestAnimationFrame(() => {
-      for (const key of this.#heldKeys) {
+    const loop = () => {
+      this.#heldKeys.forEach((data, key) => {
         this.#handleInput({
           key,
           source: 'keyboard',
           value: 1,
           type: 'hold',
           pressed: true,
-          prevPressed: this.#lastKeyStates[key].pressed,
+          prevPressed: data.pressed,
         });
-        this.#lastKeyStates[key] = { pressed: true };
-      }
-    });
+      });
+      this.#mouseKeyboardHoldLoop = requestAnimationFrame(loop);
+    };
+    loop();
   }
 
   //////////////////////////////////
@@ -291,10 +294,10 @@ class TinyGamepad {
    * @param {InputEvents|InputAnalogEvents} settings
    */
   #handleInput(settings) {
-    const globalCbs = this.#callbacks.get('*') || [];
+    const globalCbs = this.#callbacks.get('input-*') || [];
     for (const [logical, physical] of this.#inputMap.entries()) {
       if (physical === '*' || physical === settings.key) {
-        const cbs = this.#callbacks.get(logical) || [];
+        const cbs = this.#callbacks.get(`input-${logical}`) || [];
         if (cbs.length < 1) continue;
         /** @type {InputPayload|InputAnalogPayload} */
         const payload = { ...settings, logicalName: logical };
@@ -327,10 +330,10 @@ class TinyGamepad {
    * @param {PayloadCallback} callback
    */
   onInput(logicalName, callback) {
-    let callbacks = this.#callbacks.get(logicalName);
+    let callbacks = this.#callbacks.get(`input-${logicalName}`);
     if (!Array.isArray(callbacks)) {
       callbacks = [];
-      this.#callbacks.set(logicalName, callbacks);
+      this.#callbacks.set(`input-${logicalName}`, callbacks);
     }
     callbacks.push(callback);
   }
@@ -457,6 +460,8 @@ class TinyGamepad {
   destroy() {
     if (this.#animationFrame) cancelAnimationFrame(this.#animationFrame);
     if (this.#mouseKeyboardHoldLoop) cancelAnimationFrame(this.#mouseKeyboardHoldLoop);
+    this.#animationFrame = null;
+    this.#mouseKeyboardHoldLoop = null;
 
     if (['keyboard-only', 'both'].includes(this.#inputMode)) {
       window.removeEventListener('keydown', this.#keydown);
