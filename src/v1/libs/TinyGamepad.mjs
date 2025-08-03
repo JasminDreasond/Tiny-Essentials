@@ -61,6 +61,8 @@
  */
 
 class TinyGamepad {
+  #isDestroyed = false;
+
   #heldKeys = new Set();
 
   #inputMap = new Map(); // ex: "Jump" => "button1"
@@ -161,6 +163,7 @@ class TinyGamepad {
 
   #startPolling() {
     const loop = () => {
+      if (this.#isDestroyed) return;
       this.#checkGamepadState();
       this.#animationFrame = requestAnimationFrame(loop);
     };
@@ -273,6 +276,7 @@ class TinyGamepad {
 
     // Opcional: checagem contínua para "hold"
     const loop = () => {
+      if (this.#isDestroyed) return;
       this.#heldKeys.forEach((data, key) => {
         this.#handleInput({
           key,
@@ -457,7 +461,17 @@ class TinyGamepad {
 
   ////////////////////////////////////
 
+  /**
+   *  @returns {boolean}
+   */
+  isDestroyed() {
+    return this.#isDestroyed;
+  }
+
   destroy() {
+    if (this.#isDestroyed) return;
+    this.#isDestroyed = true;
+
     if (this.#animationFrame) cancelAnimationFrame(this.#animationFrame);
     if (this.#mouseKeyboardHoldLoop) cancelAnimationFrame(this.#mouseKeyboardHoldLoop);
     this.#animationFrame = null;
