@@ -153,6 +153,7 @@
       };
 
       document.getElementById('initBtn').addEventListener('click', () => {
+        if (tg) return;
         const expectedId = document.getElementById('expectedId').value || null;
         const ignoreRaw = document.getElementById('ignoreIds').value;
         const ignoreIds = ignoreRaw
@@ -168,6 +169,7 @@
           deadZone,
           useKeyboardMouse,
         });
+        window.tg = tg;
 
         tg.on('connected', (e) => log(`Gamepad connected: ${e.id}`));
         tg.on('disconnected', (e) => log(`Gamepad disconnected: ${e.id}`));

@@ -26,6 +26,15 @@ class TinyGamepad {
   /** @type {null|number} */
   #mouseKeyboardHoldLoop = null;
 
+  /** @type {boolean} */
+  #useKeyboardMouse;
+
+  /** @type {Set<string>} */
+  #ignoreIds;
+
+  /** @type {number} */
+  #deadZone;
+
   /**
    * @param {Object} options
    * @param {string|null} [options.expectedId=null] ID exata do controle esperado
@@ -40,11 +49,11 @@ class TinyGamepad {
     deadZone = 0.1,
   } = {}) {
     this.expectedId = expectedId;
-    this.useKeyboardMouse = useKeyboardMouse;
-    this.ignoreIds = new Set(ignoreIds);
-    this.deadZone = deadZone;
+    this.#useKeyboardMouse = useKeyboardMouse;
+    this.#ignoreIds = new Set(ignoreIds);
+    this.#deadZone = deadZone;
 
-    if (this.useKeyboardMouse) {
+    if (this.#useKeyboardMouse) {
       this.#initKeyboardMouse();
     } else {
       this.#initGamepadEvents();
@@ -66,7 +75,7 @@ class TinyGamepad {
 
   /** @param {Gamepad} gamepad */
   #onGamepadConnect(gamepad) {
-    if (this.ignoreIds.has(gamepad.id)) return;
+    if (this.#ignoreIds.has(gamepad.id)) return;
     if (this.expectedId && gamepad.id !== this.expectedId) return;
 
     if (!this.#connectedGamepad) {
@@ -137,7 +146,7 @@ class TinyGamepad {
     });
 
     gp.axes.forEach((val, index) => {
-      if (Math.abs(val) < this.deadZone) val = 0;
+      if (Math.abs(val) < this.#deadZone) val = 0;
 
       const key = `axis${index}`;
       const prev = this.#lastAxes[index] ?? 0;
@@ -281,7 +290,7 @@ class TinyGamepad {
    * @param {string} id
    */
   ignoreId(id) {
-    this.ignoreIds.add(id);
+    this.#ignoreIds.add(id);
   }
 
   /**
@@ -289,7 +298,7 @@ class TinyGamepad {
    * @param {string} id
    */
   unignoreId(id) {
-    this.ignoreIds.delete(id);
+    this.#ignoreIds.delete(id);
   }
 
   /**
@@ -317,8 +326,8 @@ class TinyGamepad {
     return JSON.stringify(
       {
         expectedId: this.expectedId,
-        ignoreIds: Array.from(this.ignoreIds),
-        deadZone: this.deadZone,
+        ignoreIds: Array.from(this.#ignoreIds),
+        deadZone: this.#deadZone,
         inputMap: Array.from(this.#inputMap.entries()),
       },
       null,
@@ -334,8 +343,8 @@ class TinyGamepad {
     const config = typeof json === 'string' ? JSON.parse(json) : json;
 
     if (config.expectedId) this.expectedId = config.expectedId;
-    if (Array.isArray(config.ignoreIds)) this.ignoreIds = new Set(config.ignoreIds);
-    if (typeof config.deadZone === 'number') this.deadZone = config.deadZone;
+    if (Array.isArray(config.ignoreIds)) this.#ignoreIds = new Set(config.ignoreIds);
+    if (typeof config.deadZone === 'number') this.#deadZone = config.deadZone;
     if (Array.isArray(config.#inputMap)) {
       this.#inputMap = new Map(config.#inputMap);
     }
@@ -347,7 +356,7 @@ class TinyGamepad {
     if (this.#animationFrame) cancelAnimationFrame(this.#animationFrame);
     if (this.#mouseKeyboardHoldLoop) cancelAnimationFrame(this.#mouseKeyboardHoldLoop);
 
-    if (this.useKeyboardMouse) {
+    if (this.#useKeyboardMouse) {
       window.removeEventListener('keydown', this.#keydown);
       window.removeEventListener('keyup', this.#keyup);
     } else {
