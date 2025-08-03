@@ -352,15 +352,37 @@ class TinyGamepad {
 
   ////////////////////////////////////////////////
 
-  vibrate(duration = 200, weakMagnitude = 0.5, strongMagnitude = 1.0) {
+  #defaultHapticEffect = {
+    /** @type {GamepadHapticEffectType} */
+    type: 'dual-rumble',
+    /** @type {GamepadEffectParameters} */
+    params: {
+      startDelay: 0,
+      duration: 200,
+      weakMagnitude: 0.5,
+      strongMagnitude: 1.0,
+    },
+  };
+
+  /**
+   * @param {GamepadHapticEffectType} type
+   * @param {GamepadEffectParameters} params
+   */
+  setDefaultHapticEffect(type, params) {
+    this.#defaultHapticEffect.type = type;
+    this.#defaultHapticEffect.params = params;
+  }
+
+  /**
+   * @param {GamepadEffectParameters} [params]
+   * @param {GamepadHapticEffectType} [type]
+   */
+  vibrate(params, type) {
     const gp = this.#connectedGamepad;
     if (!gp?.vibrationActuator) return false;
-
-    return gp.vibrationActuator.playEffect('dual-rumble', {
-      duration,
-      startDelay: 0,
-      weakMagnitude,
-      strongMagnitude,
+    return gp.vibrationActuator.playEffect(type ?? this.#defaultHapticEffect.type, {
+      ...this.#defaultHapticEffect.params,
+      ...params,
     });
   }
 
