@@ -8,6 +8,7 @@ class TinyGamepad {
   #inputMap = new Map(); // ex: "Jump" => "button1"
   #callbacks = new Map(); // ex: "Jump" => [fn1, fn2]
 
+  /** @type {null|Gamepad} */
   #connectedGamepad = null;
 
   /** @type {keyStatus[]} */
@@ -16,9 +17,14 @@ class TinyGamepad {
   /** @type {Record<string|number, keyStatus>} */
   #lastKeyStates = {};
 
+  /** @type {number[]} */
   #lastAxes = [];
 
+  /** @type {null|number} */
   #animationFrame = null;
+
+  /** @type {null|number} */
+  #mouseKeyboardHoldLoop = null;
 
   /**
    * @param {Object} options
@@ -47,11 +53,18 @@ class TinyGamepad {
 
   //////////////////////////////////////////
 
+  /** @type {(this: Window, ev: GamepadEvent) => any} */
+  #gamepadConnected = (e) => this._onGamepadConnect(e.gamepad);
+
+  /** @type {(this: Window, ev: GamepadEvent) => any} */
+  #gamepadDisconnected = (e) => this._onGamepadDisconnect(e.gamepad);
+
   _initGamepadEvents() {
-    window.addEventListener('gamepadconnected', (e) => this._onGamepadConnect(e.gamepad));
-    window.addEventListener('gamepaddisconnected', (e) => this._onGamepadDisconnect(e.gamepad));
+    window.addEventListener('gamepadconnected', this.#gamepadConnected);
+    window.addEventListener('gamepaddisconnected', this.#gamepadDisconnected);
   }
 
+  /** @param {Gamepad} gamepad */
   _onGamepadConnect(gamepad) {
     if (this.ignoreIds.has(gamepad.id)) return;
     if (this.expectedId && gamepad.id !== this.expectedId) return;
@@ -65,10 +78,11 @@ class TinyGamepad {
     }
   }
 
+  /** @param {Gamepad} gamepad */
   _onGamepadDisconnect(gamepad) {
     if (this.#connectedGamepad && gamepad.id === this.#connectedGamepad.id) {
       this.#connectedGamepad = null;
-      cancelAnimationFrame(this.#animationFrame);
+      if (this.#animationFrame) cancelAnimationFrame(this.#animationFrame);
       this._emit('disconnected', { id: gamepad.id });
     }
   }
@@ -76,6 +90,7 @@ class TinyGamepad {
   _startPolling() {
     const loop = () => {
       this._checkGamepadState();
+      if (this.#animationFrame) cancelAnimationFrame(this.#animationFrame);
       this.#animationFrame = requestAnimationFrame(loop);
     };
     loop();
@@ -141,40 +156,45 @@ class TinyGamepad {
 
   ///////////////////////////////////
 
+  /** @type {(this: Window, ev: KeyboardEvent) => any} */
+  #keydown = (e) => {
+    if (!this.#heldKeys.has(e.code)) {
+      this.#heldKeys.add(e.code);
+      this._handleInput({
+        key: e.code,
+        source: 'keyboard',
+        value: 1,
+        type: 'down',
+        pressed: true,
+        prevPressed: this.#lastKeyStates[e.code],
+      });
+      this.#lastKeyStates[e.code] = { pressed: true };
+    }
+  };
+
+  /** @type {(this: Window, ev: KeyboardEvent) => any} */
+  #keyup = (e) => {
+    if (this.#heldKeys.has(e.code)) {
+      this.#heldKeys.delete(e.code);
+      this._handleInput({
+        key: e.code,
+        source: 'keyboard',
+        value: 0,
+        type: 'up',
+        pressed: false,
+        prevPressed: this.#lastKeyStates[e.code],
+      });
+      this.#lastKeyStates[e.code] = { pressed: false };
+    }
+  };
+
   _initKeyboardMouse() {
     // Keyboard
-    window.addEventListener('keydown', (e) => {
-      if (!this.#heldKeys.has(e.code)) {
-        this.#heldKeys.add(e.code);
-        this._handleInput({
-          key: e.code,
-          source: 'keyboard',
-          value: 1,
-          type: 'down',
-          pressed: true,
-          prevPressed: this.#lastKeyStates[e.code],
-        });
-        this.#lastKeyStates[e.code] = { pressed: true };
-      }
-    });
-
-    window.addEventListener('keyup', (e) => {
-      if (this.#heldKeys.has(e.code)) {
-        this.#heldKeys.delete(e.code);
-        this._handleInput({
-          key: e.code,
-          source: 'keyboard',
-          value: 0,
-          type: 'up',
-          pressed: false,
-          prevPressed: this.#lastKeyStates[e.code],
-        });
-        this.#lastKeyStates[e.code] = { pressed: false };
-      }
-    });
+    window.addEventListener('keydown', this.#keydown);
+    window.addEventListener('keyup', this.#keyup);
 
     // Opcional: checagem contínua para "hold"
-    this._mouseKeyboardHoldLoop = requestAnimationFrame(() => {
+    this.#mouseKeyboardHoldLoop = requestAnimationFrame(() => {
       for (const key of this.#heldKeys) {
         this._handleInput({
           key,
@@ -193,6 +213,8 @@ class TinyGamepad {
 
   /**
    * Atribui uma entrada a um nome lógico (ex: "Jump" => "button1")
+   * @param {string} logicalName
+   * @param {string} physicalInput
    */
   mapInput(logicalName, physicalInput) {
     this.#inputMap.set(logicalName, physicalInput);
@@ -200,6 +222,7 @@ class TinyGamepad {
 
   /**
    * Remove uma entrada lógica
+   * @param {string} logicalName
    */
   unmapInput(logicalName) {
     this.#inputMap.delete(logicalName);
@@ -255,6 +278,7 @@ class TinyGamepad {
 
   /**
    * Adiciona uma ID à lista de ignoradas
+   * @param {string} id
    */
   ignoreId(id) {
     this.ignoreIds.add(id);
@@ -262,6 +286,7 @@ class TinyGamepad {
 
   /**
    * Remove uma ID da lista de ignoradas
+   * @param {string} id
    */
   unignoreId(id) {
     this.ignoreIds.delete(id);
@@ -318,7 +343,18 @@ class TinyGamepad {
 
   ////////////////////////////////////
 
-  destroy() {}
+  destroy() {
+    if (this.#animationFrame) cancelAnimationFrame(this.#animationFrame);
+    if (this.#mouseKeyboardHoldLoop) cancelAnimationFrame(this.#mouseKeyboardHoldLoop);
+
+    if (this.useKeyboardMouse) {
+      window.removeEventListener('keydown', this.#keydown);
+      window.removeEventListener('keyup', this.#keyup);
+    } else {
+      window.removeEventListener('gamepadconnected', this.#gamepadConnected);
+      window.removeEventListener('gamepaddisconnected', this.#gamepadDisconnected);
+    }
+  }
 }
 
 export default TinyGamepad;
