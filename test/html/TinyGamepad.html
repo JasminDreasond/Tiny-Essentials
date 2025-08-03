@@ -171,12 +171,8 @@
         });
         window.tg = tg;
 
-        tg.on('connected', (e) => log(`Gamepad connected: ${e.id}`));
-        tg.on('disconnected', (e) => log(`Gamepad disconnected: ${e.id}`));
-        tg.on('sensor', (data) => {
-          const out = document.getElementById('sensorOutput');
-          out.textContent = JSON.stringify(data, null, 2);
-        });
+        tg.onConnected((e) => log(`Gamepad connected: ${e.id}`));
+        tg.onDisconnected((e) => log(`Gamepad disconnected: ${e.id}`));
 
         tg.mapInput('All', '*');
         tg.onInput('All', (evt) => console.log(`Input (ALL)`, evt));

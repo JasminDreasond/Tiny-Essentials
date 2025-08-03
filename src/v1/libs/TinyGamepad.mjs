@@ -4,6 +4,8 @@
 
 /** @typedef {(payload: InputPayload|InputAnalogPayload) => void} PayloadCallback */
 
+/** @typedef {(payload: ConnectionPayload) => void} ConnectionCallback */
+
 /**
  * @typedef {Object} InputPayload
  * @property {string} type
@@ -48,12 +50,18 @@
  * @property {Gamepad} [gp]
  */
 
+/**
+ * @typedef {Object} ConnectionPayload
+ * @property {string} id
+ * @property {Gamepad} gp
+ */
+
 class TinyGamepad {
   #heldKeys = new Set();
 
   #inputMap = new Map(); // ex: "Jump" => "button1"
 
-  /** @type {Map<string, PayloadCallback[]>} */
+  /** @type {Map<string, Function[]>} */
   #callbacks = new Map(); // ex: "Jump" => [fn1, fn2]
 
   /** @type {null|Gamepad} */
@@ -134,7 +142,7 @@ class TinyGamepad {
       this.#expectedId = gamepad.id;
 
       this.#startPolling();
-      this._emit('connected', { id: gamepad.id });
+      this._emit('connected', { id: gamepad.id, gp: gamepad });
     }
   }
 
@@ -143,7 +151,7 @@ class TinyGamepad {
     if (this.#connectedGamepad && gamepad.id === this.#connectedGamepad.id) {
       this.#connectedGamepad = null;
       if (this.#animationFrame) cancelAnimationFrame(this.#animationFrame);
-      this._emit('disconnected', { id: gamepad.id });
+      this._emit('disconnected', { id: gamepad.id, gp: gamepad });
     }
   }
 
@@ -359,17 +367,33 @@ class TinyGamepad {
   }
 
   /**
-   * Eventos genéricos como conectado/desconectado
+   * @param {(payload: ConnectionPayload) => void} callback
    */
-  on(event, callback) {
-    let callbacks = this.#callbacks.get(event);
+  onConnected(callback) {
+    let callbacks = this.#callbacks.get('connected');
     if (!Array.isArray(callbacks)) {
       callbacks = [];
-      this.#callbacks.set(event, callbacks);
+      this.#callbacks.set('connected', callbacks);
     }
     callbacks.push(callback);
   }
 
+  /**
+   * @param {(payload: ConnectionPayload) => void} callback
+   */
+  onDisconnected(callback) {
+    let callbacks = this.#callbacks.get('disconnected');
+    if (!Array.isArray(callbacks)) {
+      callbacks = [];
+      this.#callbacks.set('disconnected', callbacks);
+    }
+    callbacks.push(callback);
+  }
+
+  /**
+   * @param {string} event
+   * @param {*} data
+   */
   _emit(event, data) {
     const cbs = this.#callbacks.get(event) || [];
     for (const cb of cbs) cb(data);
