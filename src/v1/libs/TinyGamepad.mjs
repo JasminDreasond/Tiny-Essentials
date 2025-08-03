@@ -220,6 +220,28 @@ class TinyGamepad {
 
   //////////////////////////////////
 
+  #handleInput({ key, source, value, type, gp, pressed, prevPressed } = {}) {
+    const globalCbs = this.#callbacks.get('*') || [];
+    for (const [logical, physical] of this.#inputMap.entries()) {
+      if (physical === '*' || physical === key) {
+        const cbs = this.#callbacks.get(logical) || [];
+        if (cbs.length < 1) continue;
+        const payload = {
+          type,
+          source,
+          key,
+          logicalName: logical,
+          value,
+          pressed,
+          prevPressed,
+          gp,
+        };
+        for (const cb of globalCbs) cb(payload);
+        for (const cb of cbs) cb(payload);
+      }
+    }
+  }
+
   /**
    * Atribui uma entrada a um nome lógico (ex: "Jump" => "button1")
    * @param {string} logicalName
@@ -245,28 +267,6 @@ class TinyGamepad {
       this.#callbacks.set(logicalName, []);
     }
     this.#callbacks.get(logicalName).push(callback);
-  }
-
-  #handleInput({ key, source, value, type, gp, pressed, prevPressed } = {}) {
-    const globalCbs = this.#callbacks.get('*') || [];
-    for (const [logical, physical] of this.#inputMap.entries()) {
-      if (physical === '*' || physical === key) {
-        const cbs = this.#callbacks.get(logical) || [];
-        if (cbs.length < 1) continue;
-        const payload = {
-          type,
-          source,
-          key,
-          logicalName: logical,
-          value,
-          pressed,
-          prevPressed,
-          gp,
-        };
-        for (const cb of globalCbs) cb(payload);
-        for (const cb of cbs) cb(payload);
-      }
-    }
   }
 
   ////////////////////////////////////////////////
@@ -314,6 +314,23 @@ class TinyGamepad {
   _emit(event, data) {
     const cbs = this.#callbacks.get(event) || [];
     for (const cb of cbs) cb(data);
+  }
+
+  //////////////////////////////////////////
+
+  /**
+   * @returns {boolean}
+   */
+  hasGamepad() {
+    return this.#connectedGamepad instanceof Gamepad;
+  }
+
+  /**
+   * @returns {Gamepad}
+   */
+  getGamepad() {
+    if (!this.#connectedGamepad) throw new Error('');
+    return this.#connectedGamepad;
   }
 
   //////////////////////////////////////////
