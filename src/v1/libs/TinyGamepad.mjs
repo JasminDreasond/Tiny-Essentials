@@ -2,6 +2,8 @@
  * @typedef {{ pressed: boolean }} KeyStatus
  */
 
+/** @typedef {(payload: InputPayload|InputAnalogPayload) => void} PayloadCallback */
+
 /**
  * @typedef {Object} InputPayload
  * @property {string} type
@@ -13,7 +15,7 @@
  * @property {boolean} pressed
  * @property {boolean} prevPressed
  * @property {Gamepad} [gp]
-*/
+ */
 
 /**
  * @typedef {Object} InputAnalogPayload
@@ -23,7 +25,7 @@
  * @property {string} logicalName
  * @property {number} value
  * @property {Gamepad} [gp]
-*/
+ */
 
 /**
  * @typedef {Object} InputEvents
@@ -50,6 +52,8 @@ class TinyGamepad {
   #heldKeys = new Set();
 
   #inputMap = new Map(); // ex: "Jump" => "button1"
+
+  /** @type {Map<string, PayloadCallback[]>} */
   #callbacks = new Map(); // ex: "Jump" => [fn1, fn2]
 
   /** @type {null|Gamepad} */
@@ -311,12 +315,15 @@ class TinyGamepad {
   /**
    * Registra um callback para um input lógico
    * @param {string} logicalName
+   * @param {PayloadCallback} callback
    */
   onInput(logicalName, callback) {
-    if (!this.#callbacks.has(logicalName)) {
-      this.#callbacks.set(logicalName, []);
+    let callbacks = this.#callbacks.get(logicalName);
+    if (!Array.isArray(callbacks)) {
+      callbacks = [];
+      this.#callbacks.set(logicalName, callbacks);
     }
-    this.#callbacks.get(logicalName).push(callback);
+    callbacks.push(callback);
   }
 
   ////////////////////////////////////////////////
@@ -355,10 +362,12 @@ class TinyGamepad {
    * Eventos genéricos como conectado/desconectado
    */
   on(event, callback) {
-    if (!this.#callbacks.has(event)) {
-      this.#callbacks.set(event, []);
+    let callbacks = this.#callbacks.get(event);
+    if (!Array.isArray(callbacks)) {
+      callbacks = [];
+      this.#callbacks.set(event, callbacks);
     }
-    this.#callbacks.get(event).push(callback);
+    callbacks.push(callback);
   }
 
   _emit(event, data) {
