@@ -140,6 +140,9 @@ class TinyGamepad {
   /** @type {boolean} */
   #allowMouse;
 
+  /** @type {Window|Element} */
+  #elementBase;
+
   /**
    * Initializes a new instance of TinyGamepad with customizable input behavior.
    *
@@ -153,6 +156,7 @@ class TinyGamepad {
    * @param {string[]} [options.ignoreIds=[]] - List of device IDs to ignore.
    * @param {number} [options.deadZone=0.1] - Analog stick dead zone threshold.
    * @param {boolean} [options.allowMouse=false] - Whether mouse events should be treated as input triggers.
+   * @param {Window|Element} [options.elementBase=window] - The DOM element or window to bind keyboard and mouse events to.
    */
   constructor({
     expectedId = null,
@@ -160,12 +164,14 @@ class TinyGamepad {
     ignoreIds = [],
     deadZone = 0.1,
     allowMouse = false,
+    elementBase = window,
   } = {}) {
     this.#expectedId = expectedId;
     this.#inputMode = inputMode;
     this.#ignoreIds = new Set(ignoreIds);
     this.#deadZone = deadZone;
     this.#allowMouse = allowMouse;
+    this.#elementBase = elementBase;
 
     if (['gamepad-only', 'both'].includes(this.#inputMode)) {
       this.#initGamepadEvents();
@@ -317,9 +323,11 @@ class TinyGamepad {
    * Avoids duplicate presses while the key remains down.
    * Reports the input as a 'keyboard' source.
    *
-   * @type {(this: Window, ev: KeyboardEvent) => any}
+   * @type {EventListener}
    */
   #keydown = (e) => {
+    if (!(e instanceof KeyboardEvent))
+      throw new Error('Expected KeyboardEvent in keydown listener.');
     if (!this.#heldKeys.has(e.code)) {
       this.#heldKeys.add(e.code);
       this.#handleInput({
@@ -341,9 +349,10 @@ class TinyGamepad {
    * Triggers when a key is released and removes it from the held list.
    * Reports the input as a 'keyboard' source.
    *
-   * @type {(this: Window, ev: KeyboardEvent) => any}
+   * @type {EventListener}
    */
   #keyup = (e) => {
+    if (!(e instanceof KeyboardEvent)) throw new Error('Expected KeyboardEvent in keyup listener.');
     if (this.#heldKeys.has(e.code)) {
       this.#heldKeys.delete(e.code);
       this.#handleInput({
@@ -365,9 +374,10 @@ class TinyGamepad {
    * Fires when a mouse button is pressed.
    * Identifies each button as 'Mouse<button>' and tracks its held state.
    *
-   * @type {(this: Window, ev: MouseEvent) => any}
+   * @type {EventListener}
    */
   #mousedown = (e) => {
+    if (!(e instanceof MouseEvent)) throw new Error('Expected MouseEvent in mousedown listener.');
     const key = `Mouse${e.button}`;
     this.#heldKeys.add(key);
     this.#handleInput({
@@ -388,9 +398,10 @@ class TinyGamepad {
    * Fires when a mouse button is released.
    * Stops tracking the held state of the given button.
    *
-   * @type {(this: Window, ev: MouseEvent) => any}
+   * @type {EventListener}
    */
   #mouseup = (e) => {
+    if (!(e instanceof MouseEvent)) throw new Error('Expected MouseEvent in mouseup listener.');
     const key = `Mouse${e.button}`;
     this.#heldKeys.delete(key);
     this.#handleInput({
@@ -411,9 +422,10 @@ class TinyGamepad {
    * Tracks relative movement of the mouse using movementX and movementY.
    * Used to simulate analog movement via mouse input.
    *
-   * @type {(this: Window, ev: MouseEvent) => any}
+   * @type {EventListener}
    */
   #mousemove = (e) => {
+    if (!(e instanceof MouseEvent)) throw new Error('Expected MouseEvent in mousemove listener.');
     if (e.movementX !== 0 || e.movementY !== 0) {
       const key = 'MouseMove';
       /** @type {KeyStatus} */
@@ -437,12 +449,12 @@ class TinyGamepad {
    */
   #initKeyboardMouse() {
     // Keyboard
-    window.addEventListener('keydown', this.#keydown);
-    window.addEventListener('keyup', this.#keyup);
+    this.#elementBase.addEventListener('keydown', this.#keydown);
+    this.#elementBase.addEventListener('keyup', this.#keyup);
     if (this.#allowMouse) {
-      window.addEventListener('mousedown', this.#mousedown);
-      window.addEventListener('mouseup', this.#mouseup);
-      window.addEventListener('mousemove', this.#mousemove);
+      this.#elementBase.addEventListener('mousedown', this.#mousedown);
+      this.#elementBase.addEventListener('mouseup', this.#mouseup);
+      this.#elementBase.addEventListener('mousemove', this.#mousemove);
     }
 
     // Opcional: checagem contínua para "hold"
@@ -1071,12 +1083,12 @@ class TinyGamepad {
     this.#mouseKeyboardHoldLoop = null;
 
     if (['keyboard-only', 'both'].includes(this.#inputMode)) {
-      window.removeEventListener('keydown', this.#keydown);
-      window.removeEventListener('keyup', this.#keyup);
+      this.#elementBase.removeEventListener('keydown', this.#keydown);
+      this.#elementBase.removeEventListener('keyup', this.#keyup);
       if (this.#allowMouse) {
-        window.removeEventListener('mousedown', this.#mousedown);
-        window.removeEventListener('mouseup', this.#mouseup);
-        window.removeEventListener('mousemove', this.#mousemove);
+        this.#elementBase.removeEventListener('mousedown', this.#mousedown);
+        this.#elementBase.removeEventListener('mouseup', this.#mouseup);
+        this.#elementBase.removeEventListener('mousemove', this.#mousemove);
       }
     }
 
