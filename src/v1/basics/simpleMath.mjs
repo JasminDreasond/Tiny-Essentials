@@ -182,15 +182,15 @@ export function genFibonacciSeq({
 /**
  * Calculates the new price of a coin when the market cap changes.
  * @param {number} originalMarketCap - The original market cap.
- * @param {number} newMarketCap - The new market cap.
  * @param {number} circulatingSupply - The circulating supply.
+ * @param {number} [newMarketCap] - The new market cap (optional).
  * @returns {{
  *   originalPrice: number,
  *   newPrice: number,
  *   priceChangePercent: number
  * }}
  */
-export function calculatePriceChange(originalMarketCap, circulatingSupply, newMarketCap) {
+export function calculateMarketcap(originalMarketCap, circulatingSupply, newMarketCap) {
   if (Number.isNaN(originalMarketCap) || !Number.isFinite(originalMarketCap))
     throw new TypeError('Original market cap must be a number.');
   if (

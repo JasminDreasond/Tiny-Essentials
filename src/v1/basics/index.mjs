@@ -32,7 +32,7 @@ import {
   offFullScreenChange,
 } from './fullScreen.mjs';
 import {
-  calculatePriceChange,
+  calculateMarketcap,
   formatBytes,
   genFibonacciSeq,
   getAge,
@@ -63,7 +63,7 @@ import {
 } from './collision.mjs';
 
 export {
-  calculatePriceChange,
+  calculateMarketcap,
   getPercentage,
   areElsCollTop,
   areElsCollBottom,

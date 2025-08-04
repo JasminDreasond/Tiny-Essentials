@@ -168,14 +168,14 @@ An array representing the generated sequence.
 
 ---
 
-### 📊 `calculatePriceChange`
+### 📊 `calculateMarketcap`
 
 Calculates the price change of a stuff when its **market cap changes**.
 
 #### 🧩 Function Signature
 
 ```js
-calculatePriceChange(originalMarketCap, circulatingSupply, newMarketCap)
+calculateMarketcap(originalMarketCap, circulatingSupply, newMarketCap)
 ```
 
 #### 📥 Parameters
