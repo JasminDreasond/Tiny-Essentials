@@ -582,6 +582,21 @@ class TinyGamepad {
   }
 
   /**
+   * Registers a one-time callback for a logical input.
+   * The callback is removed after the first invocation.
+   * @param {string} logicalName
+   * @param {PayloadCallback} callback
+   */
+  onceInput(logicalName, callback) {
+    /** @type {PayloadCallback} */
+    const wrapper = (payload) => {
+      this.offInput(logicalName, wrapper);
+      callback(payload);
+    };
+    this.onInput(logicalName, wrapper);
+  }
+
+  /**
    * Prepends a callback to the input event list.
    * @param {string} logicalName
    * @param {PayloadCallback} callback
@@ -620,6 +635,20 @@ class TinyGamepad {
       this.#callbacks.set(`input-down-${logicalName}`, callbacks);
     }
     callbacks.push(callback);
+  }
+
+  /**
+   * Registers a one-time callback for the "input-start" event.
+   * @param {string} logicalName
+   * @param {PayloadCallback} callback
+   */
+  onceInputStart(logicalName, callback) {
+    /** @type {PayloadCallback} */
+    const wrapper = (payload) => {
+      this.offInputStart(logicalName, wrapper);
+      callback(payload);
+    };
+    this.onInputStart(logicalName, wrapper);
   }
 
   /**
@@ -664,6 +693,20 @@ class TinyGamepad {
   }
 
   /**
+   * Registers a one-time callback for the "input-end" event.
+   * @param {string} logicalName
+   * @param {PayloadCallback} callback
+   */
+  onceInputEnd(logicalName, callback) {
+    /** @type {PayloadCallback} */
+    const wrapper = (payload) => {
+      this.offInputEnd(logicalName, wrapper);
+      callback(payload);
+    };
+    this.onInputEnd(logicalName, wrapper);
+  }
+
+  /**
    * Prepends a callback to the "input-end" event list.
    * @param {string} logicalName
    * @param {PayloadCallback} callback
@@ -702,6 +745,20 @@ class TinyGamepad {
       this.#callbacks.set(`input-hold-${logicalName}`, callbacks);
     }
     callbacks.push(callback);
+  }
+
+  /**
+   * Registers a one-time callback for the "input-hold" event.
+   * @param {string} logicalName
+   * @param {PayloadCallback} callback
+   */
+  onceInputHold(logicalName, callback) {
+    /** @type {PayloadCallback} */
+    const wrapper = (payload) => {
+      this.offInputHold(logicalName, wrapper);
+      callback(payload);
+    };
+    this.onInputHold(logicalName, wrapper);
   }
 
   /**
