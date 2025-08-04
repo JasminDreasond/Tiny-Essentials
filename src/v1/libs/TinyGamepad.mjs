@@ -88,6 +88,7 @@
 class TinyGamepad {
   #isDestroyed = false;
 
+  /** @type {Set<string>} */
   #heldKeys = new Set();
 
   /** @type {Map<string, string|string[]>} */
@@ -419,7 +420,7 @@ class TinyGamepad {
     // Opcional: checagem contínua para "hold"
     const loop = () => {
       if (this.#isDestroyed) return;
-      this.#heldKeys.forEach((data, key) => {
+      this.#heldKeys.forEach((key) => {
         this.#handleInput({
           key,
           source: !key.startsWith('mouse-') ? 'keyboard' : 'mouse',
@@ -427,7 +428,7 @@ class TinyGamepad {
           value2: NaN,
           type: 'hold',
           pressed: true,
-          prevPressed: data.pressed,
+          prevPressed: this.#lastKeyStates[key]?.pressed ?? false,
           timestamp: NaN,
         });
       });
