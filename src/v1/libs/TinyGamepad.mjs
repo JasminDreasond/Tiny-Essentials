@@ -1,9 +1,8 @@
 /**
- * @typedef {{
- * pressed: boolean;
- * value?: number;
- * value2?: number;
- * }} KeyStatus
+ * @typedef {Object} KeyStatus
+ * @property {boolean} pressed
+ * @property {number} [value]
+ * @property {number} [value2]
  */
 
 /**
@@ -78,10 +77,11 @@ class TinyGamepad {
 
   #heldKeys = new Set();
 
-  #inputMap = new Map(); // ex: "Jump" => "button1"
+  /** @type {Map<string, string|string[]>} */
+  #inputMap = new Map();
 
   /** @type {Map<string, Function[]>} */
-  #callbacks = new Map(); // ex: "Jump" => [fn1, fn2]
+  #callbacks = new Map();
 
   /** @type {null|Gamepad} */
   #connectedGamepad = null;
@@ -378,14 +378,23 @@ class TinyGamepad {
   #handleInput(settings) {
     const globalCbs = this.#callbacks.get('input-*') || [];
     for (const [logical, physical] of this.#inputMap.entries()) {
-      if (physical === '*' || physical === settings.key) {
-        const cbs = this.#callbacks.get(`input-${logical}`) || [];
-        if (cbs.length < 1) continue;
-        /** @type {InputPayload|InputAnalogPayload} */
-        const payload = { ...settings, logicalName: logical };
-        for (const cb of globalCbs) cb(payload);
-        for (const cb of cbs) cb(payload);
-      }
+      const matches =
+        physical === '*' ||
+        physical === settings.key ||
+        (Array.isArray(physical) && physical.includes(settings.key));
+
+      if (!matches) continue;
+      const cbs = this.#callbacks.get(`input-${logical}`) || [];
+      if (cbs.length < 1) continue;
+      /** @type {InputPayload|InputAnalogPayload} */
+      const payload = { ...settings, logicalName: logical };
+      for (const cb of globalCbs) cb(payload);
+      for (const cb of cbs) cb(payload);
+
+      // ➕ Separated events:
+      const eventKey = `input${settings.type ? `-${settings.type}` : ''}-${logical}`;
+      const typeCbs = this.#callbacks.get(eventKey) || [];
+      for (const cb of typeCbs) cb(payload);
     }
   }
 
@@ -416,6 +425,48 @@ class TinyGamepad {
     if (!Array.isArray(callbacks)) {
       callbacks = [];
       this.#callbacks.set(`input-${logicalName}`, callbacks);
+    }
+    callbacks.push(callback);
+  }
+
+  /**
+   * Registra um callback para o evento "input-start" de um nome lógico
+   * @param {string} logicalName
+   * @param {PayloadCallback} callback
+   */
+  onInputStart(logicalName, callback) {
+    let callbacks = this.#callbacks.get(`input-down-${logicalName}`);
+    if (!Array.isArray(callbacks)) {
+      callbacks = [];
+      this.#callbacks.set(`input-down-${logicalName}`, callbacks);
+    }
+    callbacks.push(callback);
+  }
+
+  /**
+   * Registra um callback para o evento "input-end" de um nome lógico
+   * @param {string} logicalName
+   * @param {PayloadCallback} callback
+   */
+  onInputEnd(logicalName, callback) {
+    let callbacks = this.#callbacks.get(`input-up-${logicalName}`);
+    if (!Array.isArray(callbacks)) {
+      callbacks = [];
+      this.#callbacks.set(`input-up-${logicalName}`, callbacks);
+    }
+    callbacks.push(callback);
+  }
+
+  /**
+   * Registra um callback para o evento "input-hold" de um nome lógico
+   * @param {string} logicalName
+   * @param {PayloadCallback} callback
+   */
+  onInputHold(logicalName, callback) {
+    let callbacks = this.#callbacks.get(`input-hold-${logicalName}`);
+    if (!Array.isArray(callbacks)) {
+      callbacks = [];
+      this.#callbacks.set(`input-hold-${logicalName}`, callbacks);
     }
     callbacks.push(callback);
   }
