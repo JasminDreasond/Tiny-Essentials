@@ -513,6 +513,14 @@ class TinyGamepad {
   }
 
   /**
+   * Returns the number of logical inputs currently mapped.
+   * @returns {number}
+   */
+  getMappedInputCount() {
+    return this.#inputMap.size;
+  }
+
+  /**
    * Clears all mappings for all logical inputs.
    */
   clearMapInputs() {
@@ -716,6 +724,31 @@ class TinyGamepad {
     if (prefix) this.#callbacks.delete(`${prefix}${logicalName}`);
   }
 
+  /**
+   * Returns the number of registered callbacks for a specific logical input and type.
+   * @param {string} logicalName
+   * @param {'all' | 'start' | 'end' | 'hold'} [type='all']
+   * @returns {number}
+   */
+  getCallbackSize(logicalName, type = 'all') {
+    const prefix = {
+      all: 'input-',
+      start: 'input-down-',
+      end: 'input-up-',
+      hold: 'input-hold-',
+    }[type];
+    const list = this.#callbacks.get(`${prefix}${logicalName}`);
+    return Array.isArray(list) ? list.length : 0;
+  }
+
+  /**
+   * Returns the total number of unique event keys currently registered.
+   * @returns {number}
+   */
+  getEventCount() {
+    return this.#callbacks.size;
+  }
+
   ////////////////////////////////////////////////
 
   /**
@@ -849,6 +882,15 @@ class TinyGamepad {
   }
 
   /**
+   * Returns the number of callbacks registered for the "connected" event.
+   * @returns {number}
+   */
+  getConnectedCallbackSize() {
+    const list = this.#callbacks.get('connected');
+    return Array.isArray(list) ? list.length : 0;
+  }
+
+  /**
    * Registers a callback for the "disconnected" event
    * @param {ConnectionCallback} callback
    */
@@ -901,6 +943,15 @@ class TinyGamepad {
     // @ts-ignore
     const list = this.#callbacks.get('disconnected');
     return Array.isArray(list) ? [...list] : [];
+  }
+
+  /**
+   * Returns the number of callbacks registered for the "disconnected" event.
+   * @returns {number}
+   */
+  getDisconnectedCallbackSize() {
+    const list = this.#callbacks.get('disconnected');
+    return Array.isArray(list) ? list.length : 0;
   }
 
   /**
