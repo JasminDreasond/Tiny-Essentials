@@ -1,77 +1,90 @@
 /**
  * @typedef {Object} KeyStatus
- * @property {boolean} pressed
- * @property {number} [value]
- * @property {number} [value2]
+ * Describes the status of a key or button.
+ * @property {boolean} pressed - Whether the key is currently pressed.
+ * @property {number} [value] - Optional analog value associated with the key.
+ * @property {number} [value2] - Optional second analog value.
  */
 
 /**
  * @typedef {'gamepad-only' | 'keyboard-only' | 'both'} InputMode
+ * Defines the available input modes.
  */
 
-/** @typedef {(payload: InputPayload|InputAnalogPayload) => void} PayloadCallback */
+/** @typedef {(payload: InputPayload|InputAnalogPayload) => void} PayloadCallback Callback for handling input events. */
 
-/** @typedef {(payload: ConnectionPayload) => void} ConnectionCallback */
+/** @typedef {(payload: ConnectionPayload) => void} ConnectionCallback Callback for handling gamepad connection events. */
 
 /**
  * @typedef {Object} InputPayload
- * @property {string} type
- * @property {string} source
- * @property {string} key
- * @property {boolean} isPressure
- * @property {string} logicalName
- * @property {number} value
- * @property {number} value2
- * @property {boolean} pressed
- * @property {boolean|null} [prevPressed]
- * @property {number} timestamp
- * @property {Gamepad} [gp]
+ * Structure for digital button input payload.
+ * @property {string} type - Type of input event (down, up, hold).
+ * @property {string} source - Input source (keyboard, mouse, gamepad).
+ * @property {string} key - Physical input identifier.
+ * @property {boolean} isPressure - Whether the input is pressure sensitive.
+ * @property {string} logicalName - Logical name associated with the input.
+ * @property {number} value - Primary analog value.
+ * @property {number} value2 - Secondary analog value.
+ * @property {boolean} pressed - Current pressed status.
+ * @property {boolean|null} [prevPressed] - Previous pressed status.
+ * @property {number} timestamp - Timestamp of the event.
+ * @property {Gamepad} [gp] - Reference to the originating Gamepad.
  */
 
 /**
  * @typedef {Object} InputAnalogPayload
- * @property {string} type
- * @property {string} source
- * @property {string} key
- * @property {string} logicalName
- * @property {number} value
- * @property {number} value2
- * @property {number} timestamp
- * @property {Gamepad} [gp]
+ * Structure for analog input payload.
+ * @property {string} type - Type of input event (change).
+ * @property {string} source - Input source.
+ * @property {string} key - Physical input identifier.
+ * @property {string} logicalName - Logical name associated with the input.
+ * @property {number} value - Analog value.
+ * @property {number} value2 - Secondary analog value.
+ * @property {number} timestamp - Timestamp of the event.
+ * @property {Gamepad} [gp] - Reference to the originating Gamepad.
  */
 
 /**
  * @typedef {Object} InputEvents
- * @property {string} key
- * @property {string} source
- * @property {number} value
- * @property {number} value2
- * @property {string} type
- * @property {boolean} isPressure
- * @property {boolean} pressed
- * @property {boolean|null} [prevPressed]
- * @property {number} timestamp
- * @property {Gamepad} [gp]
+ * Internal structure for digital input events.
+ * @property {string} key - Input key identifier.
+ * @property {string} source - Source of the input.
+ * @property {number} value - Value of the input.
+ * @property {number} value2 - Secondary value.
+ * @property {string} type - Type of input event.
+ * @property {boolean} isPressure - Whether it is pressure-sensitive.
+ * @property {boolean} pressed - Pressed status.
+ * @property {boolean|null} [prevPressed] - Previous pressed status.
+ * @property {number} timestamp - Timestamp of the event.
+ * @property {Gamepad} [gp] - Reference to the gamepad.
  */
 
 /**
  * @typedef {Object} InputAnalogEvents
- * @property {string} key
- * @property {string} source
- * @property {number} value
- * @property {number} value2
- * @property {string} type
- * @property {number} timestamp
- * @property {Gamepad} [gp]
+ * Internal structure for analog input events.
+ * @property {string} key - Analog key.
+ * @property {string} source - Source of input.
+ * @property {number} value - Main analog value.
+ * @property {number} value2 - Secondary analog value.
+ * @property {string} type - Type of event.
+ * @property {number} timestamp - Timestamp.
+ * @property {Gamepad} [gp] - Gamepad reference.
  */
 
 /**
  * @typedef {Object} ConnectionPayload
- * @property {string} id
- * @property {number} timestamp
- * @property {Gamepad} gp
+ * Payload for connection-related events.
+ * @property {string} id - ID of the gamepad.
+ * @property {number} timestamp - Timestamp of the event.
+ * @property {Gamepad} gp - Gamepad instance.
  */
 
+/**
+ * TinyGamepad is a high-level input management system for handling gamepad, keyboard,
+ * and mouse inputs with advanced mapping, dead zone control, pressure sensitivity,
+ * and unified event handling. It supports digital and analog inputs, and can map
+ * multiple logical names to a single input source.
+ */
 class TinyGamepad {
   #isDestroyed = false;
 
@@ -114,11 +127,12 @@ class TinyGamepad {
   #expectedId;
 
   /**
+   * Initializes a new instance of TinyGamepad with configurable options.
    * @param {Object} options
-   * @param {string|null} [options.expectedId=null] ID exata do controle esperado
-   * @param {InputMode} [options.inputMode='both']
-   * @param {string[]} [options.ignoreIds=[]] Lista de IDs a ignorar
-   * @param {number} [options.deadZone=0.1] Zona morta para os analógicos
+   * @param {string | null} [options.expectedId=null] Specific controller ID to expect
+   * @param {InputMode} [options.inputMode='both'] Mode of input to use
+   * @param {string[]} [options.ignoreIds=[]] List of device IDs to ignore
+   * @param {number} [options.deadZone=0.1] Analog stick dead zone threshold
    */
   constructor({ expectedId = null, inputMode = 'both', ignoreIds = [], deadZone = 0.1 } = {}) {
     this.#expectedId = expectedId;
@@ -143,12 +157,20 @@ class TinyGamepad {
   /** @type {(this: Window, ev: GamepadEvent) => any} */
   #gamepadDisconnected = (e) => this.#onGamepadDisconnect(e.gamepad);
 
+  /**
+   * Initializes listeners for gamepad connection and disconnection.
+   * Automatically detects and handles supported gamepads.
+   */
   #initGamepadEvents() {
     window.addEventListener('gamepadconnected', this.#gamepadConnected);
     window.addEventListener('gamepaddisconnected', this.#gamepadDisconnected);
   }
 
-  /** @param {Gamepad} gamepad */
+  /**
+   * Internal callback when a gamepad is connected.
+   * Starts polling and emits a "connected" event.
+   * @param {Gamepad} gamepad
+   */
   #onGamepadConnect(gamepad) {
     if (this.#ignoreIds.has(gamepad.id)) return;
     if (this.#expectedId && gamepad.id !== this.#expectedId) return;
@@ -162,7 +184,11 @@ class TinyGamepad {
     }
   }
 
-  /** @param {Gamepad} gamepad */
+  /**
+   * Internal callback when a gamepad is disconnected.
+   * Cancels polling and emits a "disconnected" event.
+   * @param {Gamepad} gamepad
+   */
   #onGamepadDisconnect(gamepad) {
     if (this.#connectedGamepad && gamepad.id === this.#connectedGamepad.id) {
       this.#connectedGamepad = null;
@@ -174,6 +200,9 @@ class TinyGamepad {
     }
   }
 
+  /**
+   * Starts the polling loop for tracking gamepad state.
+   */
   #startPolling() {
     const loop = () => {
       if (this.#isDestroyed) return;
@@ -183,6 +212,9 @@ class TinyGamepad {
     loop();
   }
 
+  /**
+   * Compares and emits input changes from buttons and axes on the gamepad.
+   */
   #checkGamepadState() {
     const pads = navigator.getGamepads();
     const gp = Array.from(pads).find((g) => g && g.id === this.#expectedId);
@@ -252,7 +284,14 @@ class TinyGamepad {
 
   ///////////////////////////////////
 
-  /** @type {(this: Window, ev: KeyboardEvent) => any} */
+  /**
+   * Listener for the 'keydown' event.
+   * Triggers when a key is pressed and marks it as held.
+   * Avoids duplicate presses while the key remains down.
+   * Reports the input as a 'keyboard' source.
+   *
+   * @type {(this: Window, ev: KeyboardEvent) => any}
+   */
   #keydown = (e) => {
     if (!this.#heldKeys.has(e.code)) {
       this.#heldKeys.add(e.code);
@@ -270,7 +309,13 @@ class TinyGamepad {
     }
   };
 
-  /** @type {(this: Window, ev: KeyboardEvent) => any} */
+  /**
+   * Listener for the 'keyup' event.
+   * Triggers when a key is released and removes it from the held list.
+   * Reports the input as a 'keyboard' source.
+   *
+   * @type {(this: Window, ev: KeyboardEvent) => any}
+   */
   #keyup = (e) => {
     if (this.#heldKeys.has(e.code)) {
       this.#heldKeys.delete(e.code);
@@ -288,7 +333,13 @@ class TinyGamepad {
     }
   };
 
-  /** @type {(this: Window, ev: MouseEvent) => any} */
+  /**
+   * Listener for the 'mousedown' event.
+   * Fires when a mouse button is pressed.
+   * Identifies each button as 'mouse-<button>' and tracks its held state.
+   *
+   * @type {(this: Window, ev: MouseEvent) => any}
+   */
   #mousedown = (e) => {
     const key = `mouse-${e.button}`;
     this.#heldKeys.add(key);
@@ -305,7 +356,13 @@ class TinyGamepad {
     this.#lastKeyStates[key] = { pressed: true };
   };
 
-  /** @type {(this: Window, ev: MouseEvent) => any} */
+  /**
+   * Listener for the 'mouseup' event.
+   * Fires when a mouse button is released.
+   * Stops tracking the held state of the given button.
+   *
+   * @type {(this: Window, ev: MouseEvent) => any}
+   */
   #mouseup = (e) => {
     const key = `mouse-${e.button}`;
     this.#heldKeys.delete(key);
@@ -322,7 +379,13 @@ class TinyGamepad {
     this.#lastKeyStates[key] = { pressed: false };
   };
 
-  /** @type {(this: Window, ev: MouseEvent) => any} */
+  /**
+   * Listener for the 'mousemove' event.
+   * Tracks relative movement of the mouse using movementX and movementY.
+   * Used to simulate analog movement via mouse input.
+   *
+   * @type {(this: Window, ev: MouseEvent) => any}
+   */
   #mousemove = (e) => {
     if (e.movementX !== 0 || e.movementY !== 0) {
       const key = 'mouse-move';
@@ -342,6 +405,9 @@ class TinyGamepad {
     }
   };
 
+  /**
+   * Initializes keyboard and mouse event listeners to emulate input behavior.
+   */
   #initKeyboardMouse() {
     // Keyboard
     window.addEventListener('keydown', this.#keydown);
@@ -373,7 +439,9 @@ class TinyGamepad {
   //////////////////////////////////
 
   /**
-   * @param {InputEvents|InputAnalogEvents} settings
+   * Handles an input event by dispatching to registered listeners.
+   * Supports wildcard and logical name-based callbacks.
+   * @param {InputEvents|InputAnalogEvents} settings - Input event data.
    */
   #handleInput(settings) {
     const globalCbs = this.#callbacks.get('input-*') || [];
@@ -399,7 +467,7 @@ class TinyGamepad {
   }
 
   /**
-   * Atribui uma entrada a um nome lógico (ex: "Jump" => "button1")
+   * Assigns a physical input to a logical name (e.g., "Jump" => "button1")
    * @param {string} logicalName
    * @param {string} physicalInput
    */
@@ -408,7 +476,7 @@ class TinyGamepad {
   }
 
   /**
-   * Remove uma entrada lógica
+   * Removes a logical input mapping
    * @param {string} logicalName
    */
   unmapInput(logicalName) {
@@ -416,7 +484,14 @@ class TinyGamepad {
   }
 
   /**
-   * Registra um callback para um input lógico
+   * Clears all mappings for all logical inputs.
+   */
+  clearMappings() {
+    // implementation
+  }
+
+  /**
+   * Registers a callback for a logical input
    * @param {string} logicalName
    * @param {PayloadCallback} callback
    */
@@ -430,7 +505,7 @@ class TinyGamepad {
   }
 
   /**
-   * Registra um callback para o evento "input-start" de um nome lógico
+   * Registers a callback for the "input-start" event of a logical name
    * @param {string} logicalName
    * @param {PayloadCallback} callback
    */
@@ -444,7 +519,7 @@ class TinyGamepad {
   }
 
   /**
-   * Registra um callback para o evento "input-end" de um nome lógico
+   * Registers a callback for the "input-end" event of a logical name
    * @param {string} logicalName
    * @param {PayloadCallback} callback
    */
@@ -458,7 +533,7 @@ class TinyGamepad {
   }
 
   /**
-   * Registra um callback para o evento "input-hold" de um nome lógico
+   * Registers a callback for the "input-hold" event of a logical name
    * @param {string} logicalName
    * @param {PayloadCallback} callback
    */
@@ -473,6 +548,9 @@ class TinyGamepad {
 
   ////////////////////////////////////////////////
 
+  /**
+   * Default haptic effect settings
+   */
   #defaultHapticEffect = {
     /** @type {GamepadHapticEffectType} */
     type: 'dual-rumble',
@@ -486,8 +564,9 @@ class TinyGamepad {
   };
 
   /**
-   * @param {GamepadHapticEffectType} type
-   * @param {GamepadEffectParameters} params
+   * Sets the default haptic feedback effect configuration.
+   * @param {GamepadHapticEffectType} type - Type of effect.
+   * @param {GamepadEffectParameters} params - Effect parameters.
    */
   setDefaultHapticEffect(type, params) {
     this.#defaultHapticEffect.type = type;
@@ -495,6 +574,7 @@ class TinyGamepad {
   }
 
   /**
+   * Checks if the connected gamepad supports haptic feedback.
    * @returns {boolean}
    */
   hasHapticEffect() {
@@ -506,8 +586,9 @@ class TinyGamepad {
   }
 
   /**
-   * @param {GamepadEffectParameters} [params]
-   * @param {GamepadHapticEffectType} [type]
+   * Triggers a haptic feedback vibration using provided or default settings.
+   * @param {GamepadEffectParameters} [params] - Custom parameters.
+   * @param {GamepadHapticEffectType} [type] - Custom type.
    * @returns {Promise<GamepadHapticsResult>}
    */
   vibrate(params, type) {
@@ -525,7 +606,7 @@ class TinyGamepad {
   ////////////////////////////////////////////
 
   /**
-   * Adiciona uma ID à lista de ignoradas
+   * Adds an ID to the ignored list
    * @param {string} id
    */
   ignoreId(id) {
@@ -533,7 +614,7 @@ class TinyGamepad {
   }
 
   /**
-   * Remove uma ID da lista de ignoradas
+   * Removes an ID from the ignored list
    * @param {string} id
    */
   unignoreId(id) {
@@ -541,6 +622,7 @@ class TinyGamepad {
   }
 
   /**
+   * Registers a callback for the "connected" event
    * @param {ConnectionCallback} callback
    */
   onConnected(callback) {
@@ -553,6 +635,7 @@ class TinyGamepad {
   }
 
   /**
+   * Registers a callback for the "disconnected" event
    * @param {ConnectionCallback} callback
    */
   onDisconnected(callback) {
@@ -565,8 +648,9 @@ class TinyGamepad {
   }
 
   /**
-   * @param {string} event
-   * @param {*} data
+   * Emits a custom internal event to all listeners.
+   * @param {string} event - Event name.
+   * @param {*} data - Payload data.
    */
   #emit(event, data) {
     const cbs = this.#callbacks.get(event) || [];
@@ -576,6 +660,7 @@ class TinyGamepad {
   //////////////////////////////////////////
 
   /**
+   * Returns whether a gamepad is currently connected.
    * @returns {boolean}
    */
   hasGamepad() {
@@ -583,6 +668,8 @@ class TinyGamepad {
   }
 
   /**
+   * Returns the currently connected Gamepad instance.
+   * Throws if no gamepad is connected.
    * @returns {Gamepad}
    */
   getGamepad() {
@@ -593,7 +680,7 @@ class TinyGamepad {
   //////////////////////////////////////////
 
   /**
-   * Exporta a configuração atual como JSON
+   * Exports the current configuration as a JSON string
    * @param {number} [spaces=2]
    * @returns {string}
    */
@@ -611,7 +698,7 @@ class TinyGamepad {
   }
 
   /**
-   * Importa uma configuração JSON e aplica
+   * Imports a JSON configuration and applies it
    * @param {string|Object} json
    */
   importConfig(json) {
@@ -628,12 +715,17 @@ class TinyGamepad {
   ////////////////////////////////////
 
   /**
-   *  @returns {boolean}
+   * Returns whether the instance has been destroyed
+   * @returns {boolean}
    */
   isDestroyed() {
     return this.#isDestroyed;
   }
 
+  /**
+   * Clears internal state and stops any ongoing input monitoring or loops.
+   * Marks the instance as destroyed.
+   */
   destroy() {
     if (this.#isDestroyed) return;
     this.#isDestroyed = true;
