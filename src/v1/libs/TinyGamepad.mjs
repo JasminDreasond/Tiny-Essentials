@@ -486,8 +486,8 @@ class TinyGamepad {
   /**
    * Clears all mappings for all logical inputs.
    */
-  clearMappings() {
-    // implementation
+  clearMapInputs() {
+    this.#inputMap.clear();
   }
 
   /**
@@ -747,6 +747,13 @@ class TinyGamepad {
       window.removeEventListener('gamepadconnected', this.#gamepadConnected);
       window.removeEventListener('gamepaddisconnected', this.#gamepadDisconnected);
     }
+
+    this.#inputMap.clear();
+    this.#callbacks.clear();
+    this.#heldKeys.clear();
+    this.#ignoreIds.clear();
+    this.#lastButtonStates = [];
+    this.#lastAxes = [];
   }
 }
 
