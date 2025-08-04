@@ -935,6 +935,20 @@ class TinyGamepad {
   }
 
   /**
+   * Registers a one-time callback for the "connected" event.
+   * The callback will be automatically removed after it runs once.
+   * @param {ConnectionCallback} callback
+   */
+  onceConnected(callback) {
+    /** @type {ConnectionCallback} */
+    const wrapper = (device) => {
+      this.offConnected(wrapper);
+      callback(device);
+    };
+    this.onConnected(wrapper);
+  }
+
+  /**
    * Prepends a callback to the "connected" event.
    * @param {ConnectionCallback} callback
    */
@@ -998,6 +1012,20 @@ class TinyGamepad {
       this.#callbacks.set('disconnected', callbacks);
     }
     callbacks.push(callback);
+  }
+
+  /**
+   * Registers a one-time callback for the "disconnected" event.
+   * The callback will be automatically removed after it runs once.
+   * @param {ConnectionCallback} callback
+   */
+  onceDisconnected(callback) {
+    /** @type {ConnectionCallback} */
+    const wrapper = (device) => {
+      this.offDisconnected(wrapper);
+      callback(device);
+    };
+    this.onDisconnected(wrapper);
   }
 
   /**
