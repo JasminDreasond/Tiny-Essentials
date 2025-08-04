@@ -363,12 +363,12 @@ class TinyGamepad {
   /**
    * Listener for the 'mousedown' event.
    * Fires when a mouse button is pressed.
-   * Identifies each button as 'mouse-<button>' and tracks its held state.
+   * Identifies each button as 'mouse<button>' and tracks its held state.
    *
    * @type {(this: Window, ev: MouseEvent) => any}
    */
   #mousedown = (e) => {
-    const key = `mouse-${e.button}`;
+    const key = `mouse${e.button}`;
     this.#heldKeys.add(key);
     this.#handleInput({
       key,
@@ -391,7 +391,7 @@ class TinyGamepad {
    * @type {(this: Window, ev: MouseEvent) => any}
    */
   #mouseup = (e) => {
-    const key = `mouse-${e.button}`;
+    const key = `mouse${e.button}`;
     this.#heldKeys.delete(key);
     this.#handleInput({
       key,
@@ -415,7 +415,7 @@ class TinyGamepad {
    */
   #mousemove = (e) => {
     if (e.movementX !== 0 || e.movementY !== 0) {
-      const key = 'mouse-move';
+      const key = 'mouseMove';
       /** @type {KeyStatus} */
       const old = this.#lastKeyStates[key] ?? { pressed: false, value: 0, value2: 0 };
       this.#handleInput({
@@ -451,7 +451,7 @@ class TinyGamepad {
       this.#heldKeys.forEach((key) => {
         this.#handleInput({
           key,
-          source: !key.startsWith('mouse-') ? 'keyboard' : 'mouse',
+          source: !key.startsWith('mouse') ? 'keyboard' : 'mouse',
           value: 1,
           value2: NaN,
           type: 'hold',
