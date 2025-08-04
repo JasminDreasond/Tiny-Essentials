@@ -18,8 +18,9 @@
  * @property {boolean} isPressure
  * @property {string} logicalName
  * @property {number} value
+ * @property {number} value2
  * @property {boolean} pressed
- * @property {boolean} prevPressed
+ * @property {boolean|null} [prevPressed]
  * @property {number} timestamp
  * @property {Gamepad} [gp]
  */
@@ -31,6 +32,7 @@
  * @property {string} key
  * @property {string} logicalName
  * @property {number} value
+ * @property {number} value2
  * @property {number} timestamp
  * @property {Gamepad} [gp]
  */
@@ -40,10 +42,11 @@
  * @property {string} key
  * @property {string} source
  * @property {number} value
+ * @property {number} value2
  * @property {string} type
  * @property {boolean} isPressure
  * @property {boolean} pressed
- * @property {boolean} prevPressed
+ * @property {boolean|null} [prevPressed]
  * @property {number} timestamp
  * @property {Gamepad} [gp]
  */
@@ -53,6 +56,7 @@
  * @property {string} key
  * @property {string} source
  * @property {number} value
+ * @property {number} value2
  * @property {string} type
  * @property {number} timestamp
  * @property {Gamepad} [gp]
@@ -211,6 +215,7 @@ class TinyGamepad {
           key,
           source,
           value,
+          value2: NaN,
           type,
           gp,
           isPressure,
@@ -231,6 +236,7 @@ class TinyGamepad {
           key,
           source: 'gamepad-analog',
           value: val,
+          value2: NaN,
           type: 'change',
           timestamp: gp.timestamp,
           gp,
@@ -250,6 +256,7 @@ class TinyGamepad {
         key: e.code,
         source: 'keyboard',
         value: 1,
+        value2: NaN,
         type: 'down',
         pressed: true,
         prevPressed: this.#lastKeyStates[e.code]?.pressed ?? false,
@@ -267,6 +274,7 @@ class TinyGamepad {
         key: e.code,
         source: 'keyboard',
         value: 0,
+        value2: NaN,
         type: 'up',
         pressed: false,
         prevPressed: this.#lastKeyStates[e.code]?.pressed ?? false,
@@ -276,10 +284,63 @@ class TinyGamepad {
     }
   };
 
+  /** @type {(this: Window, ev: MouseEvent) => any} */
+  #mousedown = (e) => {
+    const key = `mouse-${e.button}`;
+    this.#heldKeys.add(key);
+    this.#handleInput({
+      key,
+      source: 'mouse',
+      value: 1,
+      value2: NaN,
+      type: 'down',
+      pressed: true,
+      prevPressed: this.#lastKeyStates[key]?.pressed ?? false,
+      timestamp: NaN,
+    });
+    this.#lastKeyStates[key] = { pressed: true };
+  };
+
+  /** @type {(this: Window, ev: MouseEvent) => any} */
+  #mouseup = (e) => {
+    const key = `mouse-${e.button}`;
+    this.#heldKeys.delete(key);
+    this.#handleInput({
+      key,
+      source: 'mouse',
+      value: 0,
+      value2: NaN,
+      type: 'up',
+      pressed: false,
+      prevPressed: this.#lastKeyStates[key]?.pressed ?? false,
+      timestamp: NaN,
+    });
+    this.#lastKeyStates[key] = { pressed: false };
+  };
+
+  /** @type {(this: Window, ev: MouseEvent) => any} */
+  #mousemove = (e) => {
+    if (e.movementX !== 0 || e.movementY !== 0) {
+      this.#handleInput({
+        key: 'mouse-move',
+        source: 'mouse',
+        value: e.movementX,
+        value2: e.movementY,
+        type: 'move',
+        pressed: true,
+        prevPressed: null,
+        timestamp: NaN,
+      });
+    }
+  };
+
   #initKeyboardMouse() {
     // Keyboard
     window.addEventListener('keydown', this.#keydown);
     window.addEventListener('keyup', this.#keyup);
+    window.addEventListener('mousedown', this.#mousedown);
+    window.addEventListener('mouseup', this.#mouseup);
+    window.addEventListener('mousemove', this.#mousemove);
 
     // Opcional: checagem contínua para "hold"
     const loop = () => {
@@ -287,8 +348,9 @@ class TinyGamepad {
       this.#heldKeys.forEach((data, key) => {
         this.#handleInput({
           key,
-          source: 'keyboard',
+          source: !key.startsWith('mouse-') ? 'keyboard' : 'mouse',
           value: 1,
+          value2: NaN,
           type: 'hold',
           pressed: true,
           prevPressed: data.pressed,
@@ -525,6 +587,9 @@ class TinyGamepad {
     if (['keyboard-only', 'both'].includes(this.#inputMode)) {
       window.removeEventListener('keydown', this.#keydown);
       window.removeEventListener('keyup', this.#keyup);
+      window.removeEventListener('mousedown', this.#mousedown);
+      window.removeEventListener('mouseup', this.#mouseup);
+      window.removeEventListener('mousemove', this.#mousemove);
     }
 
     if (['gamepad-only', 'both'].includes(this.#inputMode)) {

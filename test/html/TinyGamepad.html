@@ -163,6 +163,9 @@
         const deadZone = parseFloat(document.getElementById('deadZone').value);
         const useKeyboardMouse = document.getElementById('useKeyboardMouse').checked;
 
+        if (useKeyboardMouse)
+          document.addEventListener('contextmenu', (event) => event.preventDefault());
+
         tg = new TinyGamepad({
           expectedId,
           ignoreIds,
