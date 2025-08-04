@@ -250,7 +250,7 @@ class TinyGamepad {
     this.#connectedGamepad = gp;
 
     gp.buttons.forEach((btn, index) => {
-      const key = `button${index}`;
+      const key = `Button${index}`;
       const prev = this.#lastButtonStates[index]?.pressed || false;
 
       const source = 'gamepad-button';
@@ -292,7 +292,7 @@ class TinyGamepad {
     gp.axes.forEach((val, index) => {
       if (Math.abs(val) < this.#deadZone) val = 0;
 
-      const key = `axis${index}`;
+      const key = `Axis${index}`;
       const prev = this.#lastAxes[index] ?? 0;
       if (val !== prev) {
         this.#handleInput({
@@ -363,12 +363,12 @@ class TinyGamepad {
   /**
    * Listener for the 'mousedown' event.
    * Fires when a mouse button is pressed.
-   * Identifies each button as 'mouse<button>' and tracks its held state.
+   * Identifies each button as 'Mouse<button>' and tracks its held state.
    *
    * @type {(this: Window, ev: MouseEvent) => any}
    */
   #mousedown = (e) => {
-    const key = `mouse${e.button}`;
+    const key = `Mouse${e.button}`;
     this.#heldKeys.add(key);
     this.#handleInput({
       key,
@@ -391,7 +391,7 @@ class TinyGamepad {
    * @type {(this: Window, ev: MouseEvent) => any}
    */
   #mouseup = (e) => {
-    const key = `mouse${e.button}`;
+    const key = `Mouse${e.button}`;
     this.#heldKeys.delete(key);
     this.#handleInput({
       key,
@@ -415,7 +415,7 @@ class TinyGamepad {
    */
   #mousemove = (e) => {
     if (e.movementX !== 0 || e.movementY !== 0) {
-      const key = 'mouseMove';
+      const key = 'MouseMove';
       /** @type {KeyStatus} */
       const old = this.#lastKeyStates[key] ?? { pressed: false, value: 0, value2: 0 };
       this.#handleInput({
@@ -451,7 +451,7 @@ class TinyGamepad {
       this.#heldKeys.forEach((key) => {
         this.#handleInput({
           key,
-          source: !key.startsWith('mouse') ? 'keyboard' : 'mouse',
+          source: !key.startsWith('Mouse') ? 'keyboard' : 'mouse',
           value: 1,
           value2: NaN,
           type: 'hold',
@@ -502,7 +502,7 @@ class TinyGamepad {
   }
 
   /**
-   * Assigns a physical input to a logical name (e.g., "Jump" => "button1")
+   * Assigns a physical input to a logical name (e.g., "Jump" => "Button1")
    * @param {string} logicalName
    * @param {string} physicalInput
    */
