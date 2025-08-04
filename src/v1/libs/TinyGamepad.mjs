@@ -94,7 +94,7 @@ class TinyGamepad {
   /** @type {Map<string, string|string[]>} */
   #inputMap = new Map();
 
-  /** @type {Map<string, Function[]>} */
+  /** @type {Map<string, (ConnectionCallback|PayloadCallback)[]>} */
   #callbacks = new Map();
 
   /** @type {null|Gamepad} */
@@ -445,6 +445,8 @@ class TinyGamepad {
    * @param {InputEvents|InputAnalogEvents} settings - Input event data.
    */
   #handleInput(settings) {
+    /** @type {PayloadCallback[]} */
+    // @ts-ignore
     const globalCbs = this.#callbacks.get('input-*') || [];
     for (const [logical, physical] of this.#inputMap.entries()) {
       const matches =
@@ -453,6 +455,8 @@ class TinyGamepad {
         (Array.isArray(physical) && physical.includes(settings.key));
 
       if (!matches) continue;
+      /** @type {PayloadCallback[]} */
+      // @ts-ignore
       const cbs = this.#callbacks.get(`input-${logical}`) || [];
       if (cbs.length < 1) continue;
       /** @type {InputPayload|InputAnalogPayload} */
@@ -462,6 +466,8 @@ class TinyGamepad {
 
       // ➕ Separated events:
       const eventKey = `input${settings.type ? `-${settings.type}` : ''}-${logical}`;
+      /** @type {PayloadCallback[]} */
+      // @ts-ignore
       const typeCbs = this.#callbacks.get(eventKey) || [];
       for (const cb of typeCbs) cb(payload);
     }
@@ -547,7 +553,7 @@ class TinyGamepad {
   }
 
   /**
-   * Prepends a callback to the input-start event list.
+   * Prepends a callback to the "input-start" event list.
    * @param {string} logicalName
    * @param {PayloadCallback} callback
    */
@@ -559,7 +565,7 @@ class TinyGamepad {
   }
 
   /**
-   * Removes a callback from a specific logical input event.
+   * Removes a callback from a specific logical "input-start" event.
    * @param {string} logicalName
    * @param {PayloadCallback} callback
    */
@@ -588,7 +594,7 @@ class TinyGamepad {
   }
 
   /**
-   * Prepends a callback to the input-end event list.
+   * Prepends a callback to the "input-end" event list.
    * @param {string} logicalName
    * @param {PayloadCallback} callback
    */
@@ -600,7 +606,7 @@ class TinyGamepad {
   }
 
   /**
-   * Removes a callback from a specific logical input event.
+   * Removes a callback from a specific logical "input-end" event.
    * @param {string} logicalName
    * @param {PayloadCallback} callback
    */
@@ -629,7 +635,7 @@ class TinyGamepad {
   }
 
   /**
-   * Prepends a callback to the input-hold event list.
+   * Prepends a callback to the "input-hold" event list.
    * @param {string} logicalName
    * @param {PayloadCallback} callback
    */
@@ -641,7 +647,7 @@ class TinyGamepad {
   }
 
   /**
-   * Removes a callback from a specific logical input event.
+   * Removes a callback from a specific logical "input-hold" event.
    * @param {string} logicalName
    * @param {PayloadCallback} callback
    */
@@ -777,6 +783,18 @@ class TinyGamepad {
   }
 
   /**
+   * Prepends a callback to the "connected" event.
+   * @param {ConnectionCallback} callback
+   */
+  prependConnected(callback) {
+    /** @type {ConnectionCallback[]} */
+    // @ts-ignore
+    const list = this.#callbacks.get('connected') ?? [];
+    list.unshift(callback);
+    this.#callbacks.set('connected', list);
+  }
+
+  /**
    * Removes a callback from the "connected" event.
    * @param {ConnectionCallback} callback
    */
@@ -788,6 +806,24 @@ class TinyGamepad {
         list.filter((cb) => cb !== callback),
       );
     }
+  }
+
+  /**
+   * Removes all callbacks from the "connected" event.
+   */
+  offAllConnected() {
+    this.#callbacks.delete('connected');
+  }
+
+  /**
+   * Returns a cloned list of the "connected" event callbacks.
+   * @returns {ConnectionCallback[]}
+   */
+  getClonedConnectedCallbacks() {
+    /** @type {ConnectionCallback[]} */
+    // @ts-ignore
+    const list = this.#callbacks.get('connected');
+    return Array.isArray(list) ? [...list] : [];
   }
 
   /**
@@ -804,6 +840,16 @@ class TinyGamepad {
   }
 
   /**
+   * Prepends a callback to the "disconnected" event.
+   * @param {ConnectionCallback} callback
+   */
+  prependDisconnected(callback) {
+    const list = this.#callbacks.get('disconnected') ?? [];
+    list.unshift(callback);
+    this.#callbacks.set('disconnected', list);
+  }
+
+  /**
    * Removes a callback from the "disconnected" event.
    * @param {ConnectionCallback} callback
    */
@@ -815,6 +861,24 @@ class TinyGamepad {
         list.filter((cb) => cb !== callback),
       );
     }
+  }
+
+  /**
+   * Removes all callbacks from the "disconnected" event.
+   */
+  offAllDisconnected() {
+    this.#callbacks.delete('disconnected');
+  }
+
+  /**
+   * Returns a cloned list of the "disconnected" event callbacks.
+   * @returns {ConnectionCallback[]}
+   */
+  getClonedDisconnectedCallbacks() {
+    /** @type {ConnectionCallback[]} */
+    // @ts-ignore
+    const list = this.#callbacks.get('disconnected');
+    return Array.isArray(list) ? [...list] : [];
   }
 
   /**
