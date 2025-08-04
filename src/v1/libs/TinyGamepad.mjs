@@ -491,6 +491,28 @@ class TinyGamepad {
   }
 
   /**
+   * Checks if a logical name is mapped to any physical input.
+   * @param {string} logicalName
+   * @returns {boolean}
+   */
+  hasMappedInput(logicalName) {
+    return this.#inputMap.has(logicalName);
+  }
+
+  /**
+   * Returns a shallow clone of all logical-to-physical input mappings as a plain object.
+   * @returns {{ [logicalName: string]: string | string[] }}
+   */
+  getClonedMappedInputs() {
+    /** @type {{ [logicalName: string]: string | string[] }} */
+    const result = {};
+    for (const [logicalName, physicalInput] of this.#inputMap.entries()) {
+      result[logicalName] = physicalInput;
+    }
+    return result;
+  }
+
+  /**
    * Clears all mappings for all logical inputs.
    */
   clearMapInputs() {
