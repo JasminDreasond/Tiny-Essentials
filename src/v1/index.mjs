@@ -26,6 +26,7 @@ import {
   offFullScreenChange,
 } from './basics/fullScreen.mjs';
 import {
+  calculatePriceChange,
   formatBytes,
   genFibonacciSeq,
   getAge,
@@ -159,6 +160,7 @@ export {
   ColorSafeStringify,
   TinyPromiseQueue,
   TinyLevelUp,
+  calculatePriceChange,
   getPercentage,
   areElsCollTop,
   areElsCollBottom,

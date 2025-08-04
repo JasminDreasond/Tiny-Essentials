@@ -165,3 +165,46 @@ genFibonacciSeq({
 An array representing the generated sequence.
 
 > 🔖 **Beta** – Still experimental and fun to tweak!
+
+---
+
+### 📊 `calculatePriceChange`
+
+Calculates the price change of a stuff when its **market cap changes**.
+
+#### 🧩 Function Signature
+
+```js
+calculatePriceChange(originalMarketCap, circulatingSupply, newMarketCap)
+```
+
+#### 📥 Parameters
+
+| Parameter           | Type     | Description                                                                 |
+| ------------------- | -------- | --------------------------------------------------------------------------- |
+| `originalMarketCap` | `number` | 💰 The original market capitalization. Must be a valid, finite number.      |
+| `circulatingSupply` | `number` | 🔄 The circulating supply of the coin. Must be a positive number.           |
+| `newMarketCap`      | `number` | 📉 The new market capitalization. Optional. Must be a valid number if used. |
+
+#### 📤 Returns
+
+An object with the following fields:
+
+```js
+{
+  originalPrice: number,       // 💵 Price before market cap changed
+  newPrice: number,            // 💸 Price after market cap changed (NaN if not provided)
+  priceChangePercent: number  // 📈 Percentage change in price (NaN if newMarketCap not provided)
+}
+```
+
+#### ⚠️ Validation Rules
+
+* Throws a `TypeError` if any of the numeric inputs are not finite numbers.
+* Throws an `Error` if `circulatingSupply` is less than or equal to zero.
+* If `newMarketCap` is omitted or not a number, `newPrice` and `priceChangePercent` will be `NaN`.
+
+#### 📝 Notes
+
+* Useful for estimating the effect of market cap fluctuations on token price.
+* Ideal for financial dashboards, token simulations, or educational tools.
