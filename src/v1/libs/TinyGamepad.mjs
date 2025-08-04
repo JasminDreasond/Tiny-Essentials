@@ -506,6 +506,33 @@ class TinyGamepad {
   }
 
   /**
+   * Prepends a callback to the input event list.
+   * @param {string} logicalName
+   * @param {PayloadCallback} callback
+   */
+  prependInput(logicalName, callback) {
+    const key = `input-${logicalName}`;
+    const list = this.#callbacks.get(key) ?? [];
+    list.unshift(callback);
+    this.#callbacks.set(key, list);
+  }
+
+  /**
+   * Removes a callback from a specific logical input event.
+   * @param {string} logicalName
+   * @param {PayloadCallback} callback
+   */
+  offInput(logicalName, callback) {
+    const list = this.#callbacks.get(`input-${logicalName}`);
+    if (Array.isArray(list)) {
+      this.#callbacks.set(
+        `input-${logicalName}`,
+        list.filter((cb) => cb !== callback),
+      );
+    }
+  }
+
+  /**
    * Registers a callback for the "input-start" event of a logical name
    * @param {string} logicalName
    * @param {PayloadCallback} callback
@@ -517,6 +544,33 @@ class TinyGamepad {
       this.#callbacks.set(`input-down-${logicalName}`, callbacks);
     }
     callbacks.push(callback);
+  }
+
+  /**
+   * Prepends a callback to the input-start event list.
+   * @param {string} logicalName
+   * @param {PayloadCallback} callback
+   */
+  prependInputStart(logicalName, callback) {
+    const key = `input-down-${logicalName}`;
+    const list = this.#callbacks.get(key) ?? [];
+    list.unshift(callback);
+    this.#callbacks.set(key, list);
+  }
+
+  /**
+   * Removes a callback from a specific logical input event.
+   * @param {string} logicalName
+   * @param {PayloadCallback} callback
+   */
+  offInputStart(logicalName, callback) {
+    const list = this.#callbacks.get(`input-down-${logicalName}`);
+    if (Array.isArray(list)) {
+      this.#callbacks.set(
+        `input-down-${logicalName}`,
+        list.filter((cb) => cb !== callback),
+      );
+    }
   }
 
   /**
@@ -534,6 +588,33 @@ class TinyGamepad {
   }
 
   /**
+   * Prepends a callback to the input-end event list.
+   * @param {string} logicalName
+   * @param {PayloadCallback} callback
+   */
+  prependInputEnd(logicalName, callback) {
+    const key = `input-up-${logicalName}`;
+    const list = this.#callbacks.get(key) ?? [];
+    list.unshift(callback);
+    this.#callbacks.set(key, list);
+  }
+
+  /**
+   * Removes a callback from a specific logical input event.
+   * @param {string} logicalName
+   * @param {PayloadCallback} callback
+   */
+  offInputEnd(logicalName, callback) {
+    const list = this.#callbacks.get(`input-up-${logicalName}`);
+    if (Array.isArray(list)) {
+      this.#callbacks.set(
+        `input-up-${logicalName}`,
+        list.filter((cb) => cb !== callback),
+      );
+    }
+  }
+
+  /**
    * Registers a callback for the "input-hold" event of a logical name
    * @param {string} logicalName
    * @param {PayloadCallback} callback
@@ -545,6 +626,66 @@ class TinyGamepad {
       this.#callbacks.set(`input-hold-${logicalName}`, callbacks);
     }
     callbacks.push(callback);
+  }
+
+  /**
+   * Prepends a callback to the input-hold event list.
+   * @param {string} logicalName
+   * @param {PayloadCallback} callback
+   */
+  prependInputHold(logicalName, callback) {
+    const key = `input-hold-${logicalName}`;
+    const list = this.#callbacks.get(key) ?? [];
+    list.unshift(callback);
+    this.#callbacks.set(key, list);
+  }
+
+  /**
+   * Removes a callback from a specific logical input event.
+   * @param {string} logicalName
+   * @param {PayloadCallback} callback
+   */
+  offInputHold(logicalName, callback) {
+    const list = this.#callbacks.get(`input-hold-${logicalName}`);
+    if (Array.isArray(list)) {
+      this.#callbacks.set(
+        `input-hold-${logicalName}`,
+        list.filter((cb) => cb !== callback),
+      );
+    }
+  }
+
+  /**
+   * Returns a shallow clone of the callback list for a given logical input and event type.
+   * @param {string} logicalName
+   * @param {'all' | 'start' | 'end' | 'hold'} [type='all']
+   * @returns {Function[]}
+   */
+  getClonedCallbacks(logicalName, type = 'all') {
+    const prefix = {
+      all: 'input-',
+      start: 'input-down-',
+      end: 'input-up-',
+      hold: 'input-hold-',
+    }[type];
+    const key = `${prefix}${logicalName}`;
+    const list = this.#callbacks.get(key);
+    return Array.isArray(list) ? [...list] : [];
+  }
+
+  /**
+   * Removes all callbacks for a specific logical input event.
+   * @param {string} logicalName
+   * @param {'all'| 'start' | 'end' | 'hold'} [type='all']
+   */
+  offAllInputs(logicalName, type = 'all') {
+    const prefix = {
+      all: 'input-',
+      start: 'input-down-',
+      end: 'input-up-',
+      hold: 'input-hold-',
+    }[type];
+    if (prefix) this.#callbacks.delete(`${prefix}${logicalName}`);
   }
 
   ////////////////////////////////////////////////
@@ -636,6 +777,20 @@ class TinyGamepad {
   }
 
   /**
+   * Removes a callback from the "connected" event.
+   * @param {ConnectionCallback} callback
+   */
+  offConnected(callback) {
+    const list = this.#callbacks.get('connected');
+    if (Array.isArray(list)) {
+      this.#callbacks.set(
+        'connected',
+        list.filter((cb) => cb !== callback),
+      );
+    }
+  }
+
+  /**
    * Registers a callback for the "disconnected" event
    * @param {ConnectionCallback} callback
    */
@@ -646,6 +801,20 @@ class TinyGamepad {
       this.#callbacks.set('disconnected', callbacks);
     }
     callbacks.push(callback);
+  }
+
+  /**
+   * Removes a callback from the "disconnected" event.
+   * @param {ConnectionCallback} callback
+   */
+  offDisconnected(callback) {
+    const list = this.#callbacks.get('disconnected');
+    if (Array.isArray(list)) {
+      this.#callbacks.set(
+        'disconnected',
+        list.filter((cb) => cb !== callback),
+      );
+    }
   }
 
   /**
