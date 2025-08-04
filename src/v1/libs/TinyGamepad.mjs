@@ -80,10 +80,20 @@
  */
 
 /**
- * TinyGamepad is a high-level input management system for handling gamepad, keyboard,
- * and mouse inputs with advanced mapping, dead zone control, pressure sensitivity,
- * and unified event handling. It supports digital and analog inputs, and can map
- * multiple logical names to a single input source.
+ * TinyGamepad is a high-level and extensible input management system
+ * designed for professional-level control schemes in games or applications.
+ *
+ * It supports input from gamepads, keyboards, and optionally mouse devices.
+ * Key features include:
+ * - Input mapping from physical controls to logical action names
+ * - Pressure-sensitive trigger and button support
+ * - Dead zone configuration for analog inputs
+ * - Event-based input handling (start, hold, end)
+ * - Multiple logical names per input binding
+ * - Unified control model for both digital and analog inputs
+ *
+ * TinyGamepad allows seamless integration of fallback control types,
+ * detailed input feedback, and JSON-based profile serialization for saving and restoring mappings.
  */
 class TinyGamepad {
   #isDestroyed = false;
@@ -127,19 +137,35 @@ class TinyGamepad {
   /** @type {string|null} */
   #expectedId;
 
+  /** @type {boolean} */
+  #allowMouse;
+
   /**
-   * Initializes a new instance of TinyGamepad with configurable options.
-   * @param {Object} options
-   * @param {string | null} [options.expectedId=null] Specific controller ID to expect
-   * @param {InputMode} [options.inputMode='both'] Mode of input to use
-   * @param {string[]} [options.ignoreIds=[]] List of device IDs to ignore
-   * @param {number} [options.deadZone=0.1] Analog stick dead zone threshold
+   * Initializes a new instance of TinyGamepad with customizable input behavior.
+   *
+   * This constructor allows configuring the expected device ID, the type of inputs to listen for
+   * (keyboard, gamepad, or both), analog dead zone sensitivity, and whether to allow mouse input.
+   * It also supports filtering out specific devices by ID.
+   *
+   * @param {Object} options - Configuration object for TinyGamepad behavior.
+   * @param {string | null} [options.expectedId=null] - Specific controller ID to expect.
+   * @param {InputMode} [options.inputMode='both'] - Mode of input to use.
+   * @param {string[]} [options.ignoreIds=[]] - List of device IDs to ignore.
+   * @param {number} [options.deadZone=0.1] - Analog stick dead zone threshold.
+   * @param {boolean} [options.allowMouse=false] - Whether mouse events should be treated as input triggers.
    */
-  constructor({ expectedId = null, inputMode = 'both', ignoreIds = [], deadZone = 0.1 } = {}) {
+  constructor({
+    expectedId = null,
+    inputMode = 'both',
+    ignoreIds = [],
+    deadZone = 0.1,
+    allowMouse = false,
+  } = {}) {
     this.#expectedId = expectedId;
     this.#inputMode = inputMode;
     this.#ignoreIds = new Set(ignoreIds);
     this.#deadZone = deadZone;
+    this.#allowMouse = allowMouse;
 
     if (['gamepad-only', 'both'].includes(this.#inputMode)) {
       this.#initGamepadEvents();
@@ -413,9 +439,11 @@ class TinyGamepad {
     // Keyboard
     window.addEventListener('keydown', this.#keydown);
     window.addEventListener('keyup', this.#keyup);
-    window.addEventListener('mousedown', this.#mousedown);
-    window.addEventListener('mouseup', this.#mouseup);
-    window.addEventListener('mousemove', this.#mousemove);
+    if (this.#allowMouse) {
+      window.addEventListener('mousedown', this.#mousedown);
+      window.addEventListener('mouseup', this.#mouseup);
+      window.addEventListener('mousemove', this.#mousemove);
+    }
 
     // Opcional: checagem contínua para "hold"
     const loop = () => {
@@ -1045,9 +1073,11 @@ class TinyGamepad {
     if (['keyboard-only', 'both'].includes(this.#inputMode)) {
       window.removeEventListener('keydown', this.#keydown);
       window.removeEventListener('keyup', this.#keyup);
-      window.removeEventListener('mousedown', this.#mousedown);
-      window.removeEventListener('mouseup', this.#mouseup);
-      window.removeEventListener('mousemove', this.#mousemove);
+      if (this.#allowMouse) {
+        window.removeEventListener('mousedown', this.#mousedown);
+        window.removeEventListener('mouseup', this.#mouseup);
+        window.removeEventListener('mousemove', this.#mousemove);
+      }
     }
 
     if (['gamepad-only', 'both'].includes(this.#inputMode)) {
