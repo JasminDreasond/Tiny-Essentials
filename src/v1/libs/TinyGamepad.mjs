@@ -1,5 +1,9 @@
 /**
- * @typedef {{ pressed: boolean }} KeyStatus
+ * @typedef {{
+ * pressed: boolean;
+ * value?: number;
+ * value2?: number;
+ * }} KeyStatus
  */
 
 /**
@@ -321,16 +325,20 @@ class TinyGamepad {
   /** @type {(this: Window, ev: MouseEvent) => any} */
   #mousemove = (e) => {
     if (e.movementX !== 0 || e.movementY !== 0) {
+      const key = 'mouse-move';
+      /** @type {KeyStatus} */
+      const old = this.#lastKeyStates[key] ?? { pressed: false, value: 0, value2: 0 };
       this.#handleInput({
-        key: 'mouse-move',
+        key,
         source: 'mouse',
-        value: e.movementX,
-        value2: e.movementY,
+        value: e.movementX + (old.value ?? 0),
+        value2: e.movementY + (old.value ?? 0),
         type: 'move',
         pressed: true,
         prevPressed: null,
         timestamp: NaN,
       });
+      this.#lastKeyStates[key] = { pressed: false, value: e.movementX, value2: e.movementY };
     }
   };
 
