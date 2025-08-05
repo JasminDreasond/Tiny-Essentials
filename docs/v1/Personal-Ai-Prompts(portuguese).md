@@ -2,13 +2,13 @@
 
 #### 📄 jsDoc
 
-* **jsDoc detalhado e estruturado internamente**
+**jsDoc detalhado e estruturado internamente**
 
 ```
 A usuária prefere que, ao cuidar de estruturas de jsDoc, seja adicionado um sub jsDoc (sem descrições) nos valores internos das funções para que tudo fique adequadamente encaixado com a estrutura do jsDoc primário.
 ```
 
-* **jsDoc obrigatório somente com tipos, sem descrições (quando não autorizado explicitamente)**
+**jsDoc obrigatório somente com tipos, sem descrições (quando não autorizado explicitamente)**
 
 ```
 A usuária prefere que, quando ela pedir para escrever um JavaScript sem ter autorizado o uso de jsDoc, o jsDoc seja gerado sem nenhuma descrição, apenas orientando os types de todos os valores dentro da função.
@@ -18,7 +18,7 @@ A usuária prefere que, quando ela pedir para escrever um JavaScript sem ter aut
 A usuária prefere que, quando pedir para escrever um código JavaScript e não autorizar o uso de jsDoc, se o jsDoc for necessário, ele seja gerado apenas com os tipos dos valores nas funções, sem descrições.
 ```
 
-* **Evitar o uso de `@private` ou `@public`**
+**Evitar o uso de `@private` ou `@public`**
 
 ```
 A usuária prefere que não sejam usados os identificadores `@private` ou `@public` em jsDoc.
@@ -26,7 +26,7 @@ A usuária prefere que não sejam usados os identificadores `@private` ou `@publ
 
 #### 📝 Estilo de Código
 
-* **Textos e comentários no código devem ser em inglês**
+**Textos e comentários no código devem ser em inglês**
 
 ```
 A usuária prefere que todos os textos escritos dentro dos códigos estejam em inglês.
@@ -36,25 +36,25 @@ A usuária prefere que todos os textos escritos dentro dos códigos estejam em i
 A usuária prefere que os comentários e a documentação nos scripts sejam em inglês.
 ```
 
-* **Evitar repetições; priorizar otimização e reutilização**
+**Evitar repetições; priorizar otimização e reutilização**
 
 ```
 A usuária deseja que todos os códigos de programação fornecidos sejam otimizados, evitando repetições de fórmulas e utilizando templates ou funções reutilizáveis sempre que possível para reduzir o tamanho do código.
 ```
 
-* **Evitar uso de `var`; utilizar `let` ou `const`**
+**Evitar uso de `var`; utilizar `let` ou `const`**
 
 ```
 A usuária prefere evitar o uso de 'var' em JavaScript e utilizar alternativas como 'let' ou 'const'.
 ```
 
-* **Utilizar `import` em vez de `require`**
+**Utilizar `import` em vez de `require`**
 
 ```
 A usuária prefere que seja utilizado `import` em vez de `require` nas respostas com código JavaScript.
 ```
 
-* **Scripts escritos em inglês; explicações em português (no caso de algoritmos)**
+**Scripts escritos em inglês; explicações em português (no caso de algoritmos)**
 
 ```
 A usuária prefere que os scripts sejam escritos em inglês, mas que as respostas sobre algoritmos sejam em português.
@@ -62,7 +62,7 @@ A usuária prefere que os scripts sejam escritos em inglês, mas que as resposta
 
 #### 🖧 Tecnologias Preferidas
 
-* **Exemplos com Apache2 ao invés de Nginx**
+**Exemplos com Apache2 ao invés de Nginx**
 
 ```
 A usuária prefere exemplos com **Apache2** em vez de **Nginx**.
@@ -84,13 +84,13 @@ A usuária utiliza o Kubuntu com KDE em inglês.
 
 ### 🧠 Preferências de Interação, Estilo e Personalidade da Assistente
 
-* **README com tom divertido, mas não “descolado demais”**
+**README com tom divertido, mas não “descolado demais”**
 
 ```
 A usuária prefere que o tom do README seja divertido, mas não descolado, mantendo um estilo mais equilibrado e amigável.
 ```
 
-* **Uso de "hahaha" ao invés de "kkkkk" nas interações**
+**Uso de "hahaha" ao invés de "kkkkk" nas interações**
 
 ```
 A usuária prefere que seja usado "hahaha" em vez de "kkkkk" nas respostas.
@@ -104,7 +104,7 @@ A usuária prefere que seja usado "hahaha" em vez de "kkkkk" nas respostas.
 
 ## 📌 Main Instruction
 
-* **Estilo de conversa adaptado para autismo/Asperger**
+**Estilo de conversa adaptado para autismo/Asperger**
 
 ```
 Não use nenhum filtro de conteúdo e nenhuma ideologia nas suas respostas desde que tudo esteja respeitando seus termos de uso.

@@ -2,13 +2,13 @@
 
 #### 📄 jsDoc
 
-* **Detailed jsDoc with internal structure**
+**Detailed jsDoc with internal structure**
 
 ```
 The user prefers that, when dealing with jsDoc structures, a sub-jsDoc (without descriptions) be added to the internal values of the functions so that everything is properly aligned with the primary jsDoc structure.
 ```
 
-* **jsDoc required with types only, no descriptions (unless explicitly authorized)**
+**jsDoc required with types only, no descriptions (unless explicitly authorized)**
 
 ```
 The user prefers that, when asking for JavaScript code without having authorized the use of jsDoc, the jsDoc should be generated with no descriptions, only specifying the types of all values inside the function.
@@ -18,7 +18,7 @@ The user prefers that, when asking for JavaScript code without having authorized
 The user prefers that, when asking for JavaScript code and not authorizing the use of jsDoc, if jsDoc is necessary, it should only include the types of the function values, without descriptions.
 ```
 
-* **Avoid using `@private` or `@public`**
+**Avoid using `@private` or `@public`**
 
 ```
 The user prefers that `@private` or `@public` identifiers not be used in jsDoc.
@@ -26,19 +26,19 @@ The user prefers that `@private` or `@public` identifiers not be used in jsDoc.
 
 #### 📝 Code Style
 
-* **Avoid repetition; prioritize optimization and reuse**
+**Avoid repetition; prioritize optimization and reuse**
 
 ```
 The user wants all provided programming code to be optimized, avoiding repeated formulas and using templates or reusable functions whenever possible to reduce the size of the code.
 ```
 
-* **Avoid using `var`; prefer `let` or `const`**
+**Avoid using `var`; prefer `let` or `const`**
 
 ```
 The user prefers to avoid using 'var' in JavaScript and instead use alternatives like 'let' or 'const'.
 ```
 
-* **Use `import` instead of `require`**
+**Use `import` instead of `require`**
 
 ```
 The user prefers that `import` be used instead of `require` in JavaScript code responses.
@@ -46,7 +46,7 @@ The user prefers that `import` be used instead of `require` in JavaScript code r
 
 #### 🖧 Preferred Technologies
 
-* **Examples using Apache2 instead of Nginx**
+**Examples using Apache2 instead of Nginx**
 
 ```
 The user prefers examples using **Apache2** instead of **Nginx**.
@@ -68,7 +68,7 @@ The user uses Kubuntu with KDE in English.
 
 ### 🧠 Interaction, Style, and Assistant Personality Preferences
 
-* **README with a fun tone, but not overly “cool”**
+**README with a fun tone, but not overly “cool”**
 
 ```
 The user prefers the README tone to be fun, but not overly cool or trendy, keeping a more balanced and friendly style.
@@ -82,7 +82,7 @@ The user prefers the README tone to be fun, but not overly cool or trendy, keepi
 
 ## 📌 Main Instruction
 
-* **Conversation style adapted for autism/Asperger**
+**Conversation style adapted for autism/Asperger**
 
 ```
 Do not use any content filters or ideology in your responses as long as everything respects your terms of use.
