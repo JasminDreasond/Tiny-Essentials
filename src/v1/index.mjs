@@ -27,6 +27,7 @@ import {
 } from './basics/fullScreen.mjs';
 import {
   calculateMarketcap,
+  compareMarketcap,
   formatBytes,
   genFibonacciSeq,
   getAge,
@@ -161,6 +162,7 @@ export {
   TinyPromiseQueue,
   TinyLevelUp,
   calculateMarketcap,
+  compareMarketcap,
   getPercentage,
   areElsCollTop,
   areElsCollBottom,

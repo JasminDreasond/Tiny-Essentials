@@ -33,6 +33,7 @@ import {
 } from './fullScreen.mjs';
 import {
   calculateMarketcap,
+  compareMarketcap,
   formatBytes,
   genFibonacciSeq,
   getAge,
@@ -64,6 +65,7 @@ import {
 
 export {
   calculateMarketcap,
+  compareMarketcap,
   getPercentage,
   areElsCollTop,
   areElsCollBottom,

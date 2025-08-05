@@ -180,33 +180,42 @@ export function genFibonacciSeq({
 }
 
 /**
+ * Calculates the unit price of a coin or token based on the market capitalization and circulating supply.
+ *
+ * This function is typically used in financial contexts to determine the price
+ * of an asset by dividing its total market capitalization by its circulating supply.
+ *
+ * @param {number} originalMarketCap - The total market capitalization (e.g., in USD).
+ * @param {number} circulatingSupply - The number of coins/tokens currently in circulation.
+ * @returns {number} The calculated price per unit of the asset.
+ */
+export function calculateMarketcap(originalMarketCap, circulatingSupply) {
+  if (Number.isNaN(originalMarketCap) || !Number.isFinite(originalMarketCap))
+    throw new TypeError('Original market cap must be a number.');
+  if (Number.isNaN(circulatingSupply) || !Number.isFinite(circulatingSupply))
+    throw new TypeError('Circulating supply must be a number.');
+  if (circulatingSupply <= 0) throw new Error('Circulating supply must be greater than zero.');
+  return originalMarketCap / circulatingSupply;
+}
+
+/**
  * Calculates the new price of a coin when the market cap changes.
  * @param {number} originalMarketCap - The original market cap.
  * @param {number} circulatingSupply - The circulating supply.
- * @param {number} [newMarketCap] - The new market cap (optional).
+ * @param {number} newMarketCap - The new market cap.
  * @returns {{
  *   originalPrice: number,
  *   newPrice: number,
  *   priceChangePercent: number
  * }}
  */
-export function calculateMarketcap(originalMarketCap, circulatingSupply, newMarketCap) {
-  if (Number.isNaN(originalMarketCap) || !Number.isFinite(originalMarketCap))
-    throw new TypeError('Original market cap must be a number.');
-  if (
-    typeof newMarketCap !== 'undefined' &&
-    (Number.isNaN(newMarketCap) || !Number.isFinite(newMarketCap))
-  )
+export function compareMarketcap(originalMarketCap, circulatingSupply, newMarketCap) {
+  if (Number.isNaN(newMarketCap) || !Number.isFinite(newMarketCap))
     throw new TypeError('New market cap must be a number.');
-  if (Number.isNaN(circulatingSupply) || !Number.isFinite(circulatingSupply))
-    throw new TypeError('Circulating supply must be a number.');
-  if (circulatingSupply <= 0) throw new Error('Circulating supply must be greater than zero.');
-
-  const originalPrice = originalMarketCap / circulatingSupply;
+  const originalPrice = calculateMarketcap(originalMarketCap, circulatingSupply);
   const newPrice = typeof newMarketCap === 'number' ? newMarketCap / circulatingSupply : NaN;
   const priceChangePercent =
     typeof newMarketCap === 'number' ? ((newPrice - originalPrice) / originalPrice) * 100 : NaN;
-
   return {
     originalPrice,
     newPrice,

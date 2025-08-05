@@ -168,14 +168,14 @@ An array representing the generated sequence.
 
 ---
 
-### 📊 `calculateMarketcap`
+### 📊 `compareMarketcap`
 
 Calculates the price change of a stuff when its **market cap changes**.
 
 #### 🧩 Function Signature
 
 ```js
-calculateMarketcap(originalMarketCap, circulatingSupply, newMarketCap)
+compareMarketcap(originalMarketCap, circulatingSupply, newMarketCap)
 ```
 
 #### 📥 Parameters
@@ -208,3 +208,33 @@ An object with the following fields:
 
 * Useful for estimating the effect of market cap fluctuations on token price.
 * Ideal for financial dashboards, token simulations, or educational tools.
+
+---
+
+### 📈 `calculateMarketcap(originalMarketCap, circulatingSupply)`
+
+Calculates the **unit price** of a coin or token based on its **market capitalization** and **circulating supply**.
+
+This function is commonly used in financial applications to estimate the price per asset unit (e.g., per token or coin).
+
+#### 🧮 Formula
+
+```
+price = originalMarketCap / circulatingSupply
+```
+
+#### 📥 Parameters
+
+| Name                | Type     | Description                                                |
+| ------------------- | -------- | ---------------------------------------------------------- |
+| `originalMarketCap` | `number` | The total market capitalization (e.g., in USD) 💵.         |
+| `circulatingSupply` | `number` | The number of tokens or coins currently in circulation 🪙. |
+
+#### 📤 Returns
+
+* `number` – The calculated **unit price** of the asset 🔢.
+
+#### ⚠️ Throws
+
+* `TypeError` – If either parameter is not a finite number ❌.
+* `Error` – If `circulatingSupply` is less than or equal to zero 🚫.
