@@ -37,17 +37,6 @@ npm install tiny-essentials
 
 Or download the scripts directly from this repository.
 
-## 🗃️ Legacy Code
-
-Some scripts in this repository have been preserved for backwards compatibility. These include modules like:
-
-- `@tinypudding/firebase-lib`
-- `@tinypudding/discord-oauth2`
-- `@tinypudding/mysql-connector`
-- `@tinypudding/puddy-lib`
-
-These modules have been updated to work with modern environments but may not be actively developed further.
-
 ## 🧪 Module Versions
 
 The core version of Tiny Essentials (version 1) is located in the folder [`/src/v1`](./src/v1).  
@@ -80,6 +69,19 @@ Check out the full documentation here:
 Although not part of Tiny Essentials, we recommend using [**JsStore**](https://www.npmjs.com/package/jsstore) if you're looking for a well-maintained and developer-friendly solution to interact with **IndexedDB** using SQL-like syntax.
 
 > 💬 *This is a personal recommendation. This project is not sponsored or affiliated with JsStore.*
+
+---
+
+## 🗃️ Legacy Code
+
+Some scripts in this repository have been preserved for backwards compatibility. These include modules like:
+
+- `@tinypudding/firebase-lib`
+- `@tinypudding/discord-oauth2`
+- `@tinypudding/mysql-connector`
+- `@tinypudding/puddy-lib`
+
+These modules have been updated to work with modern environments but may not be actively developed further.
 
 ---
 
