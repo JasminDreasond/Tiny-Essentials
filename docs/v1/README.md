@@ -65,29 +65,6 @@ Feel free to suggest changes, improvements, or additional features. You can fork
 
 ---
 
-## 🤖 About AI Usage in This Project
-
-Some parts of this project were assisted by AI, but all the core decisions and logic come directly from me. Here's how I usually balance things:
-
-* 🧠 **Ideas and Logic**:
-  All the concepts, how the system works, and the reasoning behind each part of the code are my own. I use AI mostly as a helper to speed things up or explore alternatives, but I’m always the one guiding and correcting everything.
-
-* 📄 **jsDocs and Type Structures**:
-  I take care of the structure and typing in the documentation myself. When it comes to writing the descriptions, I might use AI to help word things better, but the meaning and context are always mine.
-
-* 🧪 **HTML Test Files**:
-  For testing interfaces, I usually let AI generate the base since it's faster to describe what I need than build it all from scratch. It helps me quickly test the behavior of what I’ve programmed.
-
-* ✍️ **Text (Messages, Descriptions, etc.)**:
-  I often ask AI to help me write or polish messages, explanations, or descriptions. It's great for keeping things clear and readable, but I always review and adjust it to match the logic and personality I want.
-
-* 🌸 **Style and Personality**:
-  I love using emojis and I’ve set up my system to guide how AI writes with my personal style. That includes tone, formatting, and the little details that make the project feel like mine.
-
-This approach is consistent across all my projects. It lets me stay focused on what really matters to me — logic, structure, and creativity — while still using AI as a practical tool when it makes sense.
-
----
-
 ## 📘 Want to Know How I Use AI in My Projects?
 
 If you're curious about how I integrate AI into my development workflow — including how I manage prompts, avoid context drift, and keep control over logic and documentation — feel free to check out the [**AI Tips & Workflow**](./Ai-Tips.md) guide!
