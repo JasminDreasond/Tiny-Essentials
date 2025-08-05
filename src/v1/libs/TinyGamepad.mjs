@@ -545,7 +545,7 @@ class TinyGamepad {
   /**
    * Assigns a physical input to a logical name (e.g., "Jump" => "Button1")
    * @param {string} logicalName
-   * @param {string} physicalInput
+   * @param {string|string[]} physicalInput
    */
   mapInput(logicalName, physicalInput) {
     this.#inputMap.set(logicalName, physicalInput);
