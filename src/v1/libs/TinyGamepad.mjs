@@ -16,10 +16,36 @@
 /** @typedef {(payload: ConnectionPayload) => void} ConnectionCallback Callback for handling gamepad connection events. */
 
 /**
+ * Represents a specific input source from a gamepad.
+ * - 'gamepad-analog' refers to analog sticks or analog triggers.
+ * - 'gamepad-button' refers to digital buttons on the gamepad.
+ * @typedef {'gamepad-analog'|'gamepad-button'} GamepadDeviceSource
+ */
+
+/**
+ * Represents any possible physical device source that can be used for input.
+ * - 'mouse': Input from a mouse.
+ * - 'keyboard': Input from a keyboard.
+ * - 'gamepad-analog': Analog input from a gamepad (e.g., sticks, triggers).
+ * - 'gamepad-button': Digital button input from a gamepad.
+ * @typedef {'mouse'|'keyboard'|GamepadDeviceSource} DeviceSource
+ */
+
+/**
+ * Represents the type of input interaction detected.
+ * - 'up': Input was released.
+ * - 'down': Input was pressed.
+ * - 'hold': Input is being held.
+ * - 'change': Input value changed (e.g., pressure or axis).
+ * - 'move': Analog movement detected (e.g., joystick motion).
+ * @typedef {'up'|'down'|'hold'|'change'|'move'} DeviceInputType
+ */
+
+/**
  * @typedef {Object} InputPayload
  * Structure for digital button input payload.
- * @property {string} type - Type of input event (down, up, hold).
- * @property {string} source - Input source (keyboard, mouse, gamepad).
+ * @property {DeviceInputType} type - Type of input event (down, up, hold).
+ * @property {DeviceSource} source - Input source (keyboard, mouse, gamepad).
  * @property {string} key - Physical input identifier.
  * @property {boolean} isPressure - Whether the input is pressure sensitive.
  * @property {string} logicalName - Logical name associated with the input.
@@ -34,8 +60,8 @@
 /**
  * @typedef {Object} InputAnalogPayload
  * Structure for analog input payload.
- * @property {string} type - Type of input event (change).
- * @property {string} source - Input source.
+ * @property {DeviceInputType} type - Type of input event (change).
+ * @property {DeviceSource} source - Input source.
  * @property {string} key - Physical input identifier.
  * @property {string} logicalName - Logical name associated with the input.
  * @property {number} value - Analog value.
@@ -48,10 +74,10 @@
  * @typedef {Object} InputEvents
  * Internal structure for digital input events.
  * @property {string} key - Input key identifier.
- * @property {string} source - Source of the input.
+ * @property {DeviceSource} source - Source of the input.
  * @property {number} value - Value of the input.
  * @property {number} value2 - Secondary value.
- * @property {string} type - Type of input event.
+ * @property {DeviceInputType} type - Type of input event.
  * @property {boolean} isPressure - Whether it is pressure-sensitive.
  * @property {boolean} pressed - Pressed status.
  * @property {boolean|null} [prevPressed] - Previous pressed status.
@@ -63,10 +89,10 @@
  * @typedef {Object} InputAnalogEvents
  * Internal structure for analog input events.
  * @property {string} key - Analog key.
- * @property {string} source - Source of input.
+ * @property {DeviceSource} source - Source of input.
  * @property {number} value - Main analog value.
  * @property {number} value2 - Secondary analog value.
- * @property {string} type - Type of event.
+ * @property {DeviceInputType} type - Type of event.
  * @property {number} timestamp - Timestamp.
  * @property {Gamepad} [gp] - Gamepad reference.
  */
@@ -259,9 +285,11 @@ class TinyGamepad {
       const key = `Button${index}`;
       const prev = this.#lastButtonStates[index]?.pressed || false;
 
+      /** @type {DeviceInputType} */
+      let type;
+
       const source = 'gamepad-button';
       let value;
-      let type;
       let isPressure = false;
       if (btn.pressed && !prev) {
         value = 1;
@@ -279,6 +307,7 @@ class TinyGamepad {
         isPressure = true;
       }
 
+      // @ts-ignore
       if (typeof value === 'number' && typeof type === 'string')
         this.#handleInput({
           key,
