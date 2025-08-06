@@ -616,28 +616,78 @@ class TinyGamepad {
 
       if (!matches) continue;
 
-      /**
-       * Prepare callbacks
-       * @type {PayloadCallback[]}
-       */
+      // Prepare callbacks
+
+      const eventKey = `input-${settings.type}-${logical}`;
+      /** @type {PayloadCallback[]} */
+      // @ts-ignore
+      const typeCbs = this.#callbacks.get(eventKey) || [];
+
+      /** @type {PayloadCallback[]} */
       // @ts-ignore
       const cbs = this.#callbacks.get(`input-${logical}`) || [];
-      if (cbs.length < 1) continue;
+
+      // Check callbacks
+      if (cbs.length < 1 && typeCbs.length < 1 && globalCbs.length < 1) continue;
+
+      // Send payloads
       /** @type {InputPayload|InputAnalogPayload} */
       const payload = { ...settings, logicalName: logical };
       for (const cb of globalCbs) cb(payload);
       for (const cb of cbs) cb(payload);
 
       // ➕ Separated events:
-      const eventKey = `input${settings.type ? `-${settings.type}` : ''}-${logical}`;
-      /** @type {PayloadCallback[]} */
-      // @ts-ignore
-      const typeCbs = this.#callbacks.get(eventKey) || [];
       for (const cb of typeCbs) cb(payload);
     }
   }
 
   ///////////////////////////////////////////////////
+
+  /**
+   * Waits for the user to press a set of unique inputs and returns them in an array.
+   * Useful for allowing the user to define custom control mappings in real-time.
+   *
+   * @param {TinyGamepad} tg - An instance of TinyGamepad
+   * @param {object} [options]
+   * @param {number} [options.timeout=10000] - Timeout in milliseconds to stop waiting
+   * @param {string} [options.eventName='MappingInput']
+   * @returns {Promise<{ key: string|null; source: DeviceSource|null; gp?: Gamepad; }>} A promise that resolves with the selected input names
+   */
+  static awaitInputMapping(tg, { timeout = 10000, eventName = 'MappingInput' } = {}) {
+    return new Promise((resolve) => {
+      /** @type {{ key: string|null; source: DeviceSource|null; gp?: Gamepad; }} */
+      const result = { key: null, source: null };
+
+      /** @type {PayloadCallback} */
+      const inputCallback = ({ key, source, gp }) => {
+        if (key === 'MouseMove') return;
+        result.key = key;
+        result.source = source;
+        result.gp = gp;
+        clearTimeout(timer);
+        tg.offInputStart(eventName, inputCallback);
+        resolve(result);
+      };
+
+      // Time limit to auto-cancel input collection
+      const timer = setTimeout(() => resolve(result), timeout);
+
+      tg.mapInput(eventName, '*');
+      tg.onInputStart(eventName, inputCallback);
+    });
+  }
+
+  /**
+   * Waits for the user to press a set of unique inputs and returns them in an array.
+   * Useful for allowing the user to define custom control mappings in real-time.
+   *
+   * @param {object} [options]
+   * @param {number} [options.timeout=10000] - Timeout in milliseconds to stop waiting
+   * @returns {Promise<{ key: string|null; source: DeviceSource|null; gp?: Gamepad; }>} A promise that resolves with the selected input names
+   */
+  awaitInputMapping(options) {
+    return TinyGamepad.awaitInputMapping(this, options);
+  }
 
   /**
    * Assigns a physical input to a logical name (e.g., "Jump" => "Button1")
@@ -697,7 +747,7 @@ class TinyGamepad {
 
   /**
    * Registers a sequence of logical inputs that triggers a specific callback.
-   * @param {string[]} sequence - Ordered list of logical input names (e.g., ['Button1', 'Button2'])
+   * @param {string[]} sequence - Ordered list of logical input names (e.g., ['Jump', 'Action'])
    * @param {InputSequenceCallback} callback - Function to invoke when the sequence is fully held
    */
   registerInputSequence(sequence, callback) {
