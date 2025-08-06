@@ -1918,6 +1918,69 @@ class TinyGamepad {
   ////////////////////////////////////
 
   /**
+   * Returns a shallow clone of the set of ignored device IDs.
+   * @returns {string[]}
+   */
+  getIgnoredDeviceIds() {
+    return [...this.#ignoreIds];
+  }
+
+  /**
+   * Returns a shallow clone of the currently held keys.
+   * @returns {string[]}
+   */
+  getHeldKeys() {
+    return [...this.#heldKeys];
+  }
+
+  ////////////////////////////////////
+
+  /**
+   * Returns the expected device ID, or null if any is accepted.
+   * @returns {string|null}
+   */
+  get expectedId() {
+    return this.#expectedId;
+  }
+
+  /**
+   * Returns the current input mode (e.g., 'keyboard', 'gamepad', or 'both').
+   * @returns {InputMode}
+   */
+  get inputMode() {
+    return this.#inputMode;
+  }
+
+  /**
+   * Returns the base element or window used for event binding.
+   * @returns {Window|Element}
+   */
+  get elementBase() {
+    return this.#elementBase;
+  }
+
+  /**
+   * Returns the current dead zone threshold for analog inputs.
+   * @returns {number}
+   */
+  get deadZone() {
+    return this.#deadZone;
+  }
+
+  /**
+   * Sets a new dead zone threshold for analog inputs.
+   * Must be a number between 0 and 1.
+   * @param {number} value
+   */
+  set deadZone(value) {
+    if (typeof value !== 'number' || value < 0 || value > 1)
+      throw new RangeError('Dead zone must be a number between 0 and 1.');
+    this.#deadZone = value;
+  }
+
+  ////////////////////////////////////
+
+  /**
    * Returns whether the instance has been destroyed
    * @returns {boolean}
    */
