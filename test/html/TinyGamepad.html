@@ -198,7 +198,12 @@
         tg.mapInput('All', '*');
         if (debugAllInputs) tg.onInput('All', (evt) => console.log(`Input (ALL)`, evt));
         tg.onMappedInputStart((evt) =>
-          console.log(`Mapped Input Start`, evt, tg.getActiveMappedInputs()),
+          console.log(
+            `Mapped Input Start`,
+            evt,
+            tg.getActiveMappedInputs(),
+            tg.getComboMappedInputs(),
+          ),
         );
         tg.onMappedInputEnd((evt) =>
           console.log(`Mapped Input End`, evt, tg.getActiveMappedInputs()),

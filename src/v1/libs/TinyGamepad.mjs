@@ -17,7 +17,7 @@
  * This function receives the logical name associated with the input (e.g., "Jump", "Shoot", "Menu")
  * and can be used to handle input-related actions such as triggering game mechanics or UI behavior.
  *
- * @typedef {(payload: { logicalName: string, timestamp: number }) => void} MappedInputCallback
+ * @typedef {(payload: { logicalName: string, activeTime: number, comboTime: number }) => void} MappedInputCallback
  */
 
 /**
@@ -191,6 +191,16 @@ class TinyGamepad {
   /** @type {Window|Element} */
   #elementBase;
 
+  /** @type {number} */
+  #timeoutComboInputs;
+
+  /** @type {string[]} */
+  #comboInputs = [];
+  #timeComboInputs = 0;
+
+  /** @type {NodeJS.Timeout|null} */
+  #intervalComboInputs = null;
+
   #timeMappedInputs = 0;
 
   /**
@@ -218,6 +228,7 @@ class TinyGamepad {
    * @param {string[]} [options.ignoreIds=[]] - List of device IDs to ignore.
    * @param {number} [options.deadZone=0.1] - Analog stick dead zone threshold.
    * @param {boolean} [options.allowMouse=false] - Whether mouse events should be treated as input triggers.
+   * @param {number} [options.timeoutComboInputs=500] - Maximum time (in milliseconds) allowed between inputs in a combo sequence before the reset time.
    * @param {Window|Element} [options.elementBase=window] - The DOM element or window to bind keyboard and mouse events to.
    */
   constructor({
@@ -225,6 +236,7 @@ class TinyGamepad {
     inputMode = 'both',
     ignoreIds = [],
     deadZone = 0.1,
+    timeoutComboInputs = 500,
     allowMouse = false,
     elementBase = window,
   } = {}) {
@@ -234,6 +246,7 @@ class TinyGamepad {
     this.#deadZone = deadZone;
     this.#allowMouse = allowMouse;
     this.#elementBase = elementBase;
+    this.#timeoutComboInputs = timeoutComboInputs;
 
     if (['gamepad-only', 'both'].includes(this.#inputMode)) {
       this.#initGamepadEvents();
@@ -576,10 +589,24 @@ class TinyGamepad {
           if (!this.#activeMappedInputs.has(logical)) {
             if (this.#timeMappedInputs === 0) this.#timeMappedInputs = Date.now();
             this.#activeMappedInputs.add(logical);
+
+            if (this.#timeComboInputs === 0) this.#timeComboInputs = Date.now();
+            if (this.#intervalComboInputs) clearTimeout(this.#intervalComboInputs);
+            this.#comboInputs.push(logical);
+            this.#intervalComboInputs = setTimeout(
+              () => this.resetComboMappedInputs(),
+              this.#timeoutComboInputs,
+            );
+
             /** @type {MappedInputCallback[]} */
             // @ts-ignore
             const cbs = this.#callbacks.get('mapped-input-start') ?? [];
-            for (const cb of cbs) cb({ logicalName: logical, timestamp: this.#timeMappedInputs });
+            for (const cb of cbs)
+              cb({
+                logicalName: logical,
+                activeTime: this.#timeMappedInputs,
+                comboTime: this.#timeComboInputs,
+              });
           }
         } else {
           if (this.#activeMappedInputs.has(logical)) {
@@ -588,7 +615,12 @@ class TinyGamepad {
             /** @type {MappedInputCallback[]} */
             // @ts-ignore
             const cbs = this.#callbacks.get('mapped-input-end') ?? [];
-            for (const cb of cbs) cb({ logicalName: logical, timestamp: this.#timeMappedInputs });
+            for (const cb of cbs)
+              cb({
+                logicalName: logical,
+                activeTime: this.#timeMappedInputs,
+                comboTime: this.#timeComboInputs,
+              });
           }
         }
 
@@ -822,6 +854,26 @@ class TinyGamepad {
    */
   getActiveMappedInputs() {
     return [...this.#activeMappedInputs];
+  }
+
+  ////////////////////////////////////////////////////////
+
+  /**
+   * Resets the currently held combo logical inputs.
+   */
+  resetComboMappedInputs() {
+    if (this.#intervalComboInputs) clearTimeout(this.#intervalComboInputs);
+    this.#comboInputs = [];
+    this.#intervalComboInputs = null;
+    this.#timeComboInputs = 0;
+  }
+
+  /**
+   * Returns a clone of currently held combo logical inputs.
+   * @returns {string[]}
+   */
+  getComboMappedInputs() {
+    return [...this.#comboInputs];
   }
 
   /////////////////////////////////////////////////////////////////
@@ -1609,6 +1661,7 @@ class TinyGamepad {
       window.removeEventListener('gamepaddisconnected', this.#gamepadDisconnected);
     }
 
+    this.resetComboMappedInputs();
     this.#inputMap.clear();
     this.#callbacks.clear();
     this.#heldKeys.clear();
