@@ -1975,6 +1975,46 @@ class TinyGamepad {
   }
 
   /**
+   * Returns the timestamp of the last mapped input combo.
+   * @returns {number}
+   */
+  get timeComboInputs() {
+    return this.#timeComboInputs;
+  }
+
+  /**
+   * Returns the timestamp of the last raw key combo.
+   * @returns {number}
+   */
+  get timeComboKeys() {
+    return this.#timeComboKeys;
+  }
+
+  /**
+   * Returns the timestamp of the last mapped input activity.
+   * @returns {number}
+   */
+  get timeMappedInputs() {
+    return this.#timeMappedInputs;
+  }
+
+  /**
+   * Returns the timeout duration (in milliseconds) before mapped input combos are reset.
+   * @returns {number}
+   */
+  get timeoutComboInputs() {
+    return this.#timeoutComboInputs;
+  }
+
+  /**
+   * Returns the timeout duration (in milliseconds) before raw key combos are reset.
+   * @returns {number}
+   */
+  get timeoutComboKeys() {
+    return this.#timeoutComboKeys;
+  }
+
+  /**
    * Returns the current dead zone threshold for analog inputs.
    * @returns {number}
    */
