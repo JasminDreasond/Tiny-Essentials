@@ -204,7 +204,9 @@
           console.log(`Mapped Input End`, evt, tg.getActiveMappedInputs()),
         );
 
-        tg.registerInputSequence(['Chat', 'Action'], () => console.log('Chat + Action'));
+        tg.registerInputSequence(['Chat', 'Action'], (timestamp) =>
+          console.log('Chat + Action', timestamp),
+        );
 
         /** tg.onInput('*', (evt) => {
           console.log(

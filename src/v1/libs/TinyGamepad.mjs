@@ -17,7 +17,7 @@
  * This function receives the logical name associated with the input (e.g., "Jump", "Shoot", "Menu")
  * and can be used to handle input-related actions such as triggering game mechanics or UI behavior.
  *
- * @typedef {(logicalName: string) => void} MappedInputCallback
+ * @typedef {(payload: { logicalName: string, timestamp: number }) => void} MappedInputCallback
  */
 
 /**
@@ -183,6 +183,20 @@ class TinyGamepad {
 
   /** @type {Window|Element} */
   #elementBase;
+
+  #timeMappedInputs = 0;
+
+  /**
+   * Active logical input map (currently held)
+   * @type {Set<string>}
+   */
+  #activeMappedInputs = new Set();
+
+  /**
+   * Stores all registered input sequences.
+   * @type {Map<string, { sequence: string[], callback: (timestamp: number) => void, triggered: boolean }>}
+   */
+  #inputSequences = new Map();
 
   /**
    * Initializes a new instance of TinyGamepad with customizable input behavior.
@@ -524,18 +538,6 @@ class TinyGamepad {
   //////////////////////////////////
 
   /**
-   * Active logical input map (currently held)
-   * @type {Set<string>}
-   */
-  #activeMappedInputs = new Set();
-
-  /**
-   * Stores all registered input sequences.
-   * @type {Map<string, { sequence: string[], callback: () => void, triggered: boolean }>}
-   */
-  #inputSequences = new Map();
-
-  /**
    * Handles an input event by dispatching to registered listeners.
    * Supports wildcard and logical name-based callbacks.
    * @param {InputEvents|InputAnalogEvents} settings - Input event data.
@@ -556,19 +558,21 @@ class TinyGamepad {
         // Manage input list
         if (pressed) {
           if (!this.#activeMappedInputs.has(logical)) {
+            if (this.#timeMappedInputs === 0) this.#timeMappedInputs = Date.now();
             this.#activeMappedInputs.add(logical);
             /** @type {MappedInputCallback[]} */
             // @ts-ignore
             const cbs = this.#callbacks.get('mapped-input-start') ?? [];
-            for (const cb of cbs) cb(logical);
+            for (const cb of cbs) cb({ logicalName: logical, timestamp: this.#timeMappedInputs });
           }
         } else {
           if (this.#activeMappedInputs.has(logical)) {
             this.#activeMappedInputs.delete(logical);
+            if (this.#activeMappedInputs.size < 1) this.#timeMappedInputs = 0;
             /** @type {MappedInputCallback[]} */
             // @ts-ignore
             const cbs = this.#callbacks.get('mapped-input-end') ?? [];
-            for (const cb of cbs) cb(logical);
+            for (const cb of cbs) cb({ logicalName: logical, timestamp: this.#timeMappedInputs });
           }
         }
 
@@ -581,7 +585,7 @@ class TinyGamepad {
           const allPressed = sequence.every((name, index) => activeSequence[index] === name);
           if (allPressed && !triggered) {
             inputSequence.triggered = true;
-            callback();
+            callback(this.#timeMappedInputs);
           } else if (!allPressed && triggered) {
             inputSequence.triggered = false;
           }
@@ -616,6 +620,8 @@ class TinyGamepad {
       for (const cb of typeCbs) cb(payload);
     }
   }
+
+  ///////////////////////////////////////////////////
 
   /**
    * Assigns a physical input to a logical name (e.g., "Jump" => "Button1")
@@ -671,6 +677,8 @@ class TinyGamepad {
     this.#inputMap.clear();
   }
 
+  //////////////////////////////////////////////////////////////
+
   /**
    * Registers a sequence of logical inputs that triggers a specific callback.
    * @param {string[]} sequence - Ordered list of logical input names (e.g., ['Button1', 'Button2'])
@@ -691,7 +699,7 @@ class TinyGamepad {
 
   /**
    * Registers a callback for when a mapped input is activated (pressed down)
-   * @param {(logicalName: string) => void} callback
+   * @param {MappedInputCallback} callback
    */
   onMappedInputStart(callback) {
     let list = this.#callbacks.get('mapped-input-start');
@@ -704,7 +712,7 @@ class TinyGamepad {
 
   /**
    * Registers a callback for when a mapped input is deactivated (released)
-   * @param {(logicalName: string) => void} callback
+   * @param {MappedInputCallback} callback
    */
   onMappedInputEnd(callback) {
     let list = this.#callbacks.get('mapped-input-end');
@@ -714,6 +722,8 @@ class TinyGamepad {
     }
     list.push(callback);
   }
+
+  /////////////////////////////////////////////////////////////
 
   /**
    * Registers a callback for a logical input
@@ -771,6 +781,8 @@ class TinyGamepad {
     }
   }
 
+  /////////////////////////////////////////////////////////
+
   /**
    * Registers a callback for the "input-start" event of a logical name
    * @param {string} logicalName
@@ -825,6 +837,8 @@ class TinyGamepad {
       );
     }
   }
+
+  /////////////////////////////////////////////////////////////////////////
 
   /**
    * Registers a callback for the "input-end" event of a logical name
@@ -881,6 +895,8 @@ class TinyGamepad {
     }
   }
 
+  ///////////////////////////////////////////////////////////////////
+
   /**
    * Registers a callback for the "input-hold" event of a logical name
    * @param {string} logicalName
@@ -935,6 +951,8 @@ class TinyGamepad {
       );
     }
   }
+
+  ////////////////////////////////////////////////////////////
 
   /**
    * Returns a shallow clone of the callback list for a given logical input and event type.
