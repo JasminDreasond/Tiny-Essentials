@@ -32,7 +32,7 @@
 
 /**
  * A callback function that is triggered when a registered input sequence is fully activated.
- * 
+ *
  * @callback InputSequenceCallback
  * @param {number} timestamp - The moment in milliseconds when the sequence was successfully detected.
  */
@@ -267,6 +267,7 @@ class TinyGamepad {
    * @param {Gamepad} gamepad
    */
   #onGamepadConnect(gamepad) {
+    if (this.#isDestroyed) return;
     if (this.#ignoreIds.has(gamepad.id)) return;
     if (this.#expectedId && gamepad.id !== this.#expectedId) return;
 
@@ -285,6 +286,7 @@ class TinyGamepad {
    * @param {Gamepad} gamepad
    */
   #onGamepadDisconnect(gamepad) {
+    if (this.#isDestroyed) return;
     if (this.#connectedGamepad && gamepad.id === this.#connectedGamepad.id) {
       this.#connectedGamepad = null;
       if (this.#animationFrame) {
@@ -311,6 +313,7 @@ class TinyGamepad {
    * Compares and emits input changes from buttons and axes on the gamepad.
    */
   #checkGamepadState() {
+    if (this.#isDestroyed) return;
     const pads = navigator.getGamepads();
     const gp = Array.from(pads).find((g) => g && g.id === this.#expectedId);
     if (!gp) return;
@@ -391,6 +394,7 @@ class TinyGamepad {
    * @type {EventListener}
    */
   #keydown = (e) => {
+    if (this.#isDestroyed) return;
     if (!(e instanceof KeyboardEvent))
       throw new Error('Expected KeyboardEvent in keydown listener.');
     if (!this.#heldKeys.has(e.code)) {
@@ -417,6 +421,7 @@ class TinyGamepad {
    * @type {EventListener}
    */
   #keyup = (e) => {
+    if (this.#isDestroyed) return;
     if (!(e instanceof KeyboardEvent)) throw new Error('Expected KeyboardEvent in keyup listener.');
     if (this.#heldKeys.has(e.code)) {
       this.#heldKeys.delete(e.code);
@@ -442,6 +447,7 @@ class TinyGamepad {
    * @type {EventListener}
    */
   #mousedown = (e) => {
+    if (this.#isDestroyed) return;
     if (!(e instanceof MouseEvent)) throw new Error('Expected MouseEvent in mousedown listener.');
     const key = `Mouse${e.button}`;
     this.#heldKeys.add(key);
@@ -466,6 +472,7 @@ class TinyGamepad {
    * @type {EventListener}
    */
   #mouseup = (e) => {
+    if (this.#isDestroyed) return;
     if (!(e instanceof MouseEvent)) throw new Error('Expected MouseEvent in mouseup listener.');
     const key = `Mouse${e.button}`;
     this.#heldKeys.delete(key);
@@ -490,6 +497,7 @@ class TinyGamepad {
    * @type {EventListener}
    */
   #mousemove = (e) => {
+    if (this.#isDestroyed) return;
     if (!(e instanceof MouseEvent)) throw new Error('Expected MouseEvent in mousemove listener.');
     if (e.movementX !== 0 || e.movementY !== 0) {
       const key = 'MouseMove';
@@ -550,6 +558,7 @@ class TinyGamepad {
    * @param {InputEvents|InputAnalogEvents} settings - Input event data.
    */
   #handleInput(settings) {
+    if (this.#isDestroyed) return;
     /** @type {PayloadCallback[]} */
     // @ts-ignore
     const globalCbs = this.#callbacks.get('input-*') || [];
@@ -1536,9 +1545,16 @@ class TinyGamepad {
     this.#inputMap.clear();
     this.#callbacks.clear();
     this.#heldKeys.clear();
+    this.#activeMappedInputs.clear();
+    this.#inputSequences.clear();
     this.#ignoreIds.clear();
     this.#lastButtonStates = [];
     this.#lastAxes = [];
+    this.#lastKeyStates = {};
+    this.#connectedGamepad = null;
+    this.#expectedId = null;
+    this.#allowMouse = false;
+    this.#timeMappedInputs = 0;
   }
 }
 
