@@ -12,33 +12,6 @@ export function getTripleRatio(n) {
 }
 
 /**
- * Generates a 100×100 multiplication table where each result is processed
- * using `getTripleRatio()`, which always returns 3 regardless of input.
- *
- * @returns {{ [key: number]: number[] }} An object where keys are row numbers (1–100),
- * and values are arrays of 100 numbers (always 3).
- */
-export function generateProcessedMultiplicationTable() {
-  /** @type {{ [key: number]: number[] }} */
-  const table = {};
-
-  for (let i = 1; i <= 100; i++) {
-    table[i] = [];
-    for (let j = 1; j <= 100; j++) {
-      const multiplied = i * j;
-      const processed = getTripleRatio(multiplied);
-      table[i].push(processed);
-    }
-  }
-
-  return table;
-}
-
-// Example:
-// const resultTable = generateProcessedMultiplicationTable();
-// console.log(resultTable);
-
-/**
  * Sums the number 3 times and divides by itself.
  * @param {number} n
  * @returns {number} Always 3

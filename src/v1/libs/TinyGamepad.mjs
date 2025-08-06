@@ -608,7 +608,7 @@ class TinyGamepad {
         }
       }
 
-      // Checker match
+      // Match Checker
       const matches =
         physical === '*' ||
         physical === key ||
@@ -617,7 +617,6 @@ class TinyGamepad {
       if (!matches) continue;
 
       // Prepare callbacks
-
       /** @type {PayloadCallback[]} */
       // @ts-ignore
       const typeCbs = this.#callbacks.get(`input-${settings.type}-${logical}`) || [];
