@@ -618,10 +618,9 @@ class TinyGamepad {
 
       // Prepare callbacks
 
-      const eventKey = `input-${settings.type}-${logical}`;
       /** @type {PayloadCallback[]} */
       // @ts-ignore
-      const typeCbs = this.#callbacks.get(eventKey) || [];
+      const typeCbs = this.#callbacks.get(`input-${settings.type}-${logical}`) || [];
 
       /** @type {PayloadCallback[]} */
       // @ts-ignore
