@@ -228,6 +228,11 @@
           console.log('Chat + Action', tg.getActiveMappedInputs(), timestamp),
         );
 
+        tg.registerKeySequence(
+          ['KeyP', 'KeyU', 'KeyD', 'KeyD', 'KeyI', 'KeyN', 'KeyG'],
+          (timestamp) => console.log('Pudding cheat!', timestamp),
+        );
+
         /** tg.onInput('*', (evt) => {
           console.log(
             `Input (*) "${evt.logicalName}" from ${evt.type} (${evt.key}) ${evt.value !== null ? `: ${evt.value}` : ''}`,

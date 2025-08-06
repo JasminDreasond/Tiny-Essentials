@@ -242,7 +242,7 @@ class TinyGamepad {
   #inputSequences = new Map();
 
   /**
-   * Stores all registered input sequences.
+   * Stores all registered key sequences.
    * @type {Map<string, { sequence: string[], callback: KeySequenceCallback, triggered: boolean }>}
    */
   #keySequences = new Map();
@@ -639,6 +639,20 @@ class TinyGamepad {
             key,
             activeTime: this.#timeComboKeys,
           });
+      }
+
+      // Check sequences
+      for (const { sequence, callback, triggered } of this.#keySequences.values()) {
+        const keySequence = this.#keySequences.get(sequence.join('+'));
+        if (!keySequence) continue;
+        // Execute sequences
+        const allPressed = sequence.every((name, index) => this.#comboKeys[index] === name);
+        if (allPressed && !triggered) {
+          keySequence.triggered = true;
+          callback(this.#timeComboKeys);
+        } else if (!allPressed && triggered) {
+          keySequence.triggered = false;
+        }
       }
     }
 
