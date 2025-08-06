@@ -216,19 +216,11 @@
         );
 
         if (debugAllInputs) {
-          tg.onMappedKeyInputStart((evt) =>
-            console.log(
-              `Mapped Key Input Start`,
-              evt,
-              tg.getKeyComboMappedInputs(),
-            ),
+          tg.onMappedKeyStart((evt) =>
+            console.log(`Mapped Key Input Start`, evt, tg.getComboMappedKeys()),
           );
-          tg.onMappedKeyInputEnd((evt) =>
-            console.log(
-              `Mapped Key Input End`,
-              evt,
-              tg.getKeyComboMappedInputs(),
-            ),
+          tg.onMappedKeyEnd((evt) =>
+            console.log(`Mapped Key Input End`, evt, tg.getComboMappedKeys()),
           );
         }
 
