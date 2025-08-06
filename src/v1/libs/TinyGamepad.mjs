@@ -160,90 +160,105 @@
  * detailed input feedback, and JSON-based profile serialization for saving and restoring mappings.
  */
 class TinyGamepad {
+  /** @type {boolean} Indicates whether this instance has been destroyed and is no longer usable. */
   #isDestroyed = false;
 
-  /** @type {Set<string>} */
+  /** @type {Set<string>} Currently held physical key/input identifiers. */
   #heldKeys = new Set();
 
-  /** @type {Map<string, string|string[]>} */
+  /** @type {Map<string, string|string[]>} Maps logical input names to one or more physical input identifiers. */
   #inputMap = new Map();
 
-  /** @type {Map<string, (ConnectionCallback|PayloadCallback|MappedInputCallback|MappedKeyCallback)[]>} */
+  /**
+   * @type {Map<string, (ConnectionCallback|PayloadCallback|MappedInputCallback|MappedKeyCallback)[]>}
+   * Stores all event callback arrays for different input-related events.
+   */
   #callbacks = new Map();
 
-  /** @type {null|Gamepad} */
+  /** @type {null|Gamepad} Holds the currently connected Gamepad instance, or null if none is connected. */
   #connectedGamepad = null;
 
-  /** @type {KeyStatus[]} */
+  /** @type {KeyStatus[]} Stores the previous button states for the connected gamepad to detect changes. */
   #lastButtonStates = [];
 
-  /** @type {Record<string|number, KeyStatus>} */
+  /** @type {Record<string|number, KeyStatus>} Tracks the previous state of each key or button (keyboard/mouse/gamepad). */
   #lastKeyStates = {};
 
-  /** @type {number[]} */
+  /** @type {number[]} Stores the last known values of all gamepad analog axes. */
   #lastAxes = [];
 
-  /** @type {null|number} */
+  /** @type {null|number} Holds the requestAnimationFrame ID for the gamepad update loop. */
   #animationFrame = null;
 
-  /** @type {null|number} */
+  /** @type {null|number} Holds the setInterval ID for keyboard and mouse hold tracking. */
   #mouseKeyboardHoldLoop = null;
 
-  /** @type {InputMode} */
+  /** @type {InputMode} Defines the current input mode (keyboard, gamepad, or both). */
   #inputMode;
 
-  /** @type {Set<string>} */
+  /** @type {Set<string>} A list of controller IDs to ignore during gamepad scanning. */
   #ignoreIds;
 
-  /** @type {number} */
+  /** @type {number} Dead zone threshold for analog stick sensitivity. */
   #deadZone;
 
-  /** @type {string|null} */
+  /** @type {string|null} The expected gamepad ID (if filtering by specific controller model). */
   #expectedId;
 
-  /** @type {boolean} */
+  /** @type {boolean} Whether mouse inputs are accepted and mapped like other inputs. */
   #allowMouse;
 
-  /** @type {Window|Element} */
+  /** @type {Window|Element} The element or window that receives input events (keyboard/mouse). */
   #elementBase;
 
-  /** @type {number} */
+  /**
+   * @type {number}
+   * Time in milliseconds before resetting a combination of mapped inputs (used for sequences like fighting game combos).
+   */
   #timeoutComboInputs;
 
-  /** @type {number} */
+  /**
+   * @type {number}
+   * Time in milliseconds before resetting a combination of raw keys (used for basic key sequences).
+   */
   #timeoutComboKeys;
 
-  /** @type {string[]} */
+  /** @type {string[]} Temporarily holds the current sequence of mapped inputs being pressed. */
   #comboInputs = [];
+
+  /** @type {number} Timestamp of the last mapped input combo trigger. */
   #timeComboInputs = 0;
 
-  /** @type {NodeJS.Timeout|null} */
+  /** @type {NodeJS.Timeout|null} Timer for auto-resetting the mapped input combo sequence. */
   #intervalComboInputs = null;
 
+  /** @type {number} Timestamp of the last mapped input. */
   #timeMappedInputs = 0;
 
-  /** @type {string[]} */
+  /** @type {string[]} Temporarily holds the current sequence of raw keys being pressed. */
   #comboKeys = [];
+
+  /** @type {number} Timestamp of the last key combo trigger. */
   #timeComboKeys = 0;
 
-  /** @type {NodeJS.Timeout|null} */
+  /** @type {NodeJS.Timeout|null} Timer for auto-resetting the raw key combo sequence. */
   #intervalComboKeys = null;
 
   /**
-   * Active logical input map (currently held)
    * @type {Set<string>}
+   * Set of currently active logical inputs (used to track which mapped actions are being held).
    */
   #activeMappedInputs = new Set();
 
   /**
-   * Stores all registered input sequences.
    * @type {Map<string, { sequence: string[], callback: InputSequenceCallback, triggered: boolean }>}
+   * Stores all registered logical input sequences and their associated callbacks.
    */
   #inputSequences = new Map();
 
   /**
-   * Stores all registered key sequences.
    * @type {Map<string, { sequence: string[], callback: KeySequenceCallback, triggered: boolean }>}
+   * Stores all registered raw key sequences and their associated callbacks.
    */
   #keySequences = new Map();
 
