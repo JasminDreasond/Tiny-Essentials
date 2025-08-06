@@ -1876,7 +1876,8 @@ class TinyGamepad {
    * @returns {Gamepad}
    */
   getGamepad() {
-    if (!this.#connectedGamepad) throw new Error('');
+    if (!this.#connectedGamepad) 
+      throw new Error('No gamepad is currently connected.');
     return this.#connectedGamepad;
   }
 
