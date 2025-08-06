@@ -21,6 +21,15 @@
  */
 
 /**
+ * A callback function that is invoked when a mapped key input is activated or deactivated.
+ *
+ * This function receives the key name associated with the input (e.g., "KeyA", "KeyB", "KeyC")
+ * and can be used to handle input-related actions such as triggering game mechanics or UI behavior.
+ *
+ * @typedef {(payload: { key: string, activeTime: number }) => void} MappedKeyInputCallback
+ */
+
+/**
  * @typedef {(payload: InputPayload|InputAnalogPayload) => void} PayloadCallback
  * Callback for handling input events.
  */
@@ -152,7 +161,7 @@ class TinyGamepad {
   /** @type {Map<string, string|string[]>} */
   #inputMap = new Map();
 
-  /** @type {Map<string, (ConnectionCallback|PayloadCallback|MappedInputCallback)[]>} */
+  /** @type {Map<string, (ConnectionCallback|PayloadCallback|MappedInputCallback|MappedKeyInputCallback)[]>} */
   #callbacks = new Map();
 
   /** @type {null|Gamepad} */
@@ -194,6 +203,9 @@ class TinyGamepad {
   /** @type {number} */
   #timeoutComboInputs;
 
+  /** @type {number} */
+  #timeoutKeyComboInputs;
+
   /** @type {string[]} */
   #comboInputs = [];
   #timeComboInputs = 0;
@@ -202,6 +214,13 @@ class TinyGamepad {
   #intervalComboInputs = null;
 
   #timeMappedInputs = 0;
+
+  /** @type {string[]} */
+  #keyComboInputs = [];
+  #timeKeyComboInputs = 0;
+
+  /** @type {NodeJS.Timeout|null} */
+  #intervalKeyComboInputs = null;
 
   /**
    * Active logical input map (currently held)
@@ -229,6 +248,7 @@ class TinyGamepad {
    * @param {number} [options.deadZone=0.1] - Analog stick dead zone threshold.
    * @param {boolean} [options.allowMouse=false] - Whether mouse events should be treated as input triggers.
    * @param {number} [options.timeoutComboInputs=500] - Maximum time (in milliseconds) allowed between inputs in a combo sequence before the reset time.
+   * @param {number} [options.timeoutKeyComboInputs=500] - Maximum time (in milliseconds) allowed between inputs in a key sequence before the reset time.
    * @param {Window|Element} [options.elementBase=window] - The DOM element or window to bind keyboard and mouse events to.
    */
   constructor({
@@ -237,6 +257,7 @@ class TinyGamepad {
     ignoreIds = [],
     deadZone = 0.1,
     timeoutComboInputs = 500,
+    timeoutKeyComboInputs = 500,
     allowMouse = false,
     elementBase = window,
   } = {}) {
@@ -247,6 +268,7 @@ class TinyGamepad {
     this.#allowMouse = allowMouse;
     this.#elementBase = elementBase;
     this.#timeoutComboInputs = timeoutComboInputs;
+    this.#timeoutKeyComboInputs = timeoutKeyComboInputs;
 
     if (['gamepad-only', 'both'].includes(this.#inputMode)) {
       this.#initGamepadEvents();
@@ -577,6 +599,36 @@ class TinyGamepad {
     const globalCbs = this.#callbacks.get('input-*') || [];
     // @ts-ignore
     const { pressed, key } = settings;
+    if (settings.type !== 'move' && settings.type !== 'hold') {
+      if (pressed) {
+        if (this.#timeKeyComboInputs === 0) this.#timeKeyComboInputs = Date.now();
+        if (this.#intervalKeyComboInputs) clearTimeout(this.#intervalKeyComboInputs);
+        this.#keyComboInputs.push(key);
+        this.#intervalKeyComboInputs = setTimeout(
+          () => this.resetKeyComboMappedInputs(),
+          this.#timeoutKeyComboInputs,
+        );
+
+        /** @type {MappedKeyInputCallback[]} */
+        // @ts-ignore
+        const cbs = this.#callbacks.get('mapped-key-input-start') ?? [];
+        for (const cb of cbs)
+          cb({
+            key,
+            activeTime: this.#timeKeyComboInputs,
+          });
+      } else {
+        /** @type {MappedKeyInputCallback[]} */
+        // @ts-ignore
+        const cbs = this.#callbacks.get('mapped-key-input-end') ?? [];
+        for (const cb of cbs)
+          cb({
+            key,
+            activeTime: this.#timeKeyComboInputs,
+          });
+      }
+    }
+
     for (const [logical, physical] of this.#inputMap.entries()) {
       // Active Mapped inputs script
       if (
@@ -698,8 +750,8 @@ class TinyGamepad {
       const result = { key: null, source: null };
 
       /** @type {PayloadCallback} */
-      const inputCallback = ({ key, source, gp }) => {
-        if (key === 'MouseMove') return;
+      const inputCallback = ({ key, type, source, gp }) => {
+        if (type === 'move') return;
         result.key = key;
         result.source = source;
         result.gp = gp;
@@ -854,6 +906,186 @@ class TinyGamepad {
    */
   getActiveMappedInputs() {
     return [...this.#activeMappedInputs];
+  }
+
+  ////////////////////////////////////////////////////////
+
+  /**
+   * Resets the currently held key combo logical inputs.
+   */
+  resetKeyComboMappedInputs() {
+    if (this.#intervalKeyComboInputs) clearTimeout(this.#intervalKeyComboInputs);
+    this.#keyComboInputs = [];
+    this.#intervalKeyComboInputs = null;
+    this.#timeKeyComboInputs = 0;
+  }
+
+  /**
+   * Returns a clone of currently held key combo logical inputs.
+   * @returns {string[]}
+   */
+  getKeyComboMappedInputs() {
+    return [...this.#keyComboInputs];
+  }
+
+  /////////////////////////////////////////////////////////////////
+
+  /**
+   * Registers a callback for when a mapped key input is activated (pressed down)
+   * @param {MappedInputCallback} callback
+   */
+  onMappedKeyInputStart(callback) {
+    let list = this.#callbacks.get('mapped-key-input-start');
+    if (!Array.isArray(list)) {
+      list = [];
+      this.#callbacks.set('mapped-key-input-start', list);
+    }
+    list.push(callback);
+  }
+
+  /**
+   * Registers a one-time callback for the "mapped-key-input-start" event.
+   * The callback will be automatically removed after it runs once.
+   * @param {MappedInputCallback} callback
+   */
+  onceMappedKeyInputStart(callback) {
+    /** @type {MappedInputCallback} */
+    const wrapper = (logicalName) => {
+      this.offMappedInputStart(wrapper);
+      callback(logicalName);
+    };
+    this.onMappedInputStart(wrapper);
+  }
+
+  /**
+   * Prepends a callback to the "mapped-key-input-start" event.
+   * @param {MappedInputCallback} callback
+   */
+  prependMappedKeyInputStart(callback) {
+    const list = this.#callbacks.get('mapped-key-input-start') ?? [];
+    list.unshift(callback);
+    this.#callbacks.set('mapped-key-input-start', list);
+  }
+
+  /**
+   * Removes a callback from the "mapped-key-input-start" event.
+   * @param {MappedInputCallback} callback
+   */
+  offMappedKeyInputStart(callback) {
+    const list = this.#callbacks.get('mapped-key-input-start');
+    if (Array.isArray(list)) {
+      this.#callbacks.set(
+        'mapped-key-input-start',
+        list.filter((cb) => cb !== callback),
+      );
+    }
+  }
+
+  /**
+   * Removes all callbacks from the "mapped-key-input-start" event.
+   */
+  offAllMappedKeyInputStart() {
+    this.#callbacks.delete('mapped-key-input-start');
+  }
+
+  /**
+   * Returns a cloned list of the "mapped-key-input-start" event callbacks.
+   * @returns {MappedInputCallback[]}
+   */
+  getClonedMappedKeyInputStartCallbacks() {
+    /** @type {MappedInputCallback[]} */
+    // @ts-ignore
+    const list = this.#callbacks.get('mapped-key-input-start');
+    return Array.isArray(list) ? [...list] : [];
+  }
+
+  /**
+   * Returns the number of callbacks registered for the "mapped-key-input-start" event.
+   * @returns {number}
+   */
+  getMappedKeyInputStartCallbackSize() {
+    const list = this.#callbacks.get('mapped-key-input-start');
+    return Array.isArray(list) ? list.length : 0;
+  }
+
+  //////////////////////////////////////////////////////////////////
+
+  /**
+   * Registers a callback for when a mapped key input is deactivated (released)
+   * @param {MappedInputCallback} callback
+   */
+  onMappedKeyInputEnd(callback) {
+    let list = this.#callbacks.get('mapped-key-input-end');
+    if (!Array.isArray(list)) {
+      list = [];
+      this.#callbacks.set('mapped-key-input-end', list);
+    }
+    list.push(callback);
+  }
+
+  /**
+   * Registers a one-time callback for the "mapped-key-input-end" event.
+   * The callback will be automatically removed after it runs once.
+   * @param {MappedInputCallback} callback
+   */
+  onceMappedKeyInputEnd(callback) {
+    /** @type {MappedInputCallback} */
+    const wrapper = (logicalName) => {
+      this.offMappedInputEnd(wrapper);
+      callback(logicalName);
+    };
+    this.onMappedInputEnd(wrapper);
+  }
+
+  /**
+   * Prepends a callback to the "mapped-key-input-end" event.
+   * @param {MappedInputCallback} callback
+   */
+  prependMappedKeyInputEnd(callback) {
+    const list = this.#callbacks.get('mapped-key-input-end') ?? [];
+    list.unshift(callback);
+    this.#callbacks.set('mapped-key-input-end', list);
+  }
+
+  /**
+   * Removes a callback from the "mapped-key-input-end" event.
+   * @param {MappedInputCallback} callback
+   */
+  offMappedKeyInputEnd(callback) {
+    const list = this.#callbacks.get('mapped-key-input-end');
+    if (Array.isArray(list)) {
+      this.#callbacks.set(
+        'mapped-key-input-end',
+        list.filter((cb) => cb !== callback),
+      );
+    }
+  }
+
+  /**
+   * Removes all callbacks from the "mapped-key-input-end" event.
+   */
+  offAllMappedKeyInputEnd() {
+    this.#callbacks.delete('mapped-key-input-end');
+  }
+
+  /**
+   * Returns a cloned list of the "mapped-key-input-end" event callbacks.
+   * @returns {MappedInputCallback[]}
+   */
+  getClonedMappedKeyInputEndCallbacks() {
+    /** @type {MappedInputCallback[]} */
+    // @ts-ignore
+    const list = this.#callbacks.get('mapped-key-input-end');
+    return Array.isArray(list) ? [...list] : [];
+  }
+
+  /**
+   * Returns the number of callbacks registered for the "mapped-key-input-end" event.
+   * @returns {number}
+   */
+  getMappedKeyInputEndCallbackSize() {
+    const list = this.#callbacks.get('mapped-key-input-end');
+    return Array.isArray(list) ? list.length : 0;
   }
 
   ////////////////////////////////////////////////////////
@@ -1662,6 +1894,7 @@ class TinyGamepad {
     }
 
     this.resetComboMappedInputs();
+    this.resetKeyComboMappedInputs();
     this.#inputMap.clear();
     this.#callbacks.clear();
     this.#heldKeys.clear();
