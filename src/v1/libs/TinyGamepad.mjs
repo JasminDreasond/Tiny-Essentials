@@ -734,7 +734,6 @@ class TinyGamepad {
    * input source, and the Gamepad object if applicable. If no input is received before the timeout,
    * the promise resolves with a `null` key and source.
    *
-   * @param {TinyGamepad} tg - An instance of TinyGamepad from which input events will be captured.
    * @param {object} [options] - Optional configuration for input capture behavior.
    * @param {number} [options.timeout=10000] - Timeout in milliseconds before the promise resolves automatically with null values.
    * @param {string} [options.eventName='MappingInput'] - The temporary logical event name used internally to listen for input.
@@ -744,7 +743,7 @@ class TinyGamepad {
    *   - `source`: the origin of the input ("keyboard", "mouse", "gamepad-button", or "gamepad-analog"),
    *   - `gp`: the Gamepad object (only if the input source is a gamepad).
    */
-  static awaitInputMapping(tg, { timeout = 10000, eventName = 'MappingInput' } = {}) {
+  awaitInputMapping({ timeout = 10000, eventName = 'MappingInput' } = {}) {
     return new Promise((resolve) => {
       /** @type {{ key: string|null; source: DeviceSource|null; gp?: Gamepad; }} */
       const result = { key: null, source: null };
@@ -756,38 +755,16 @@ class TinyGamepad {
         result.source = source;
         result.gp = gp;
         clearTimeout(timer);
-        tg.offInputStart(eventName, inputCallback);
+        this.offInputStart(eventName, inputCallback);
         resolve(result);
       };
 
       // Time limit to auto-cancel input collection
       const timer = setTimeout(() => resolve(result), timeout);
 
-      tg.mapInput(eventName, '*');
-      tg.onInputStart(eventName, inputCallback);
+      this.mapInput(eventName, '*');
+      this.onInputStart(eventName, inputCallback);
     });
-  }
-
-  /**
-   * Waits for a single input event from the user and resolves with detailed input information.
-   * This is typically used in control configuration screens to allow the user to choose an input
-   * (keyboard, mouse, or gamepad) that will be mapped to a logical action.
-   *
-   * The function listens for the first eligible input (ignores 'MouseMove') and returns the key,
-   * input source, and the Gamepad object if applicable. If no input is received before the timeout,
-   * the promise resolves with a `null` key and source.
-   *
-   * @param {object} [options] - Optional configuration for input capture behavior.
-   * @param {number} [options.timeout=10000] - Timeout in milliseconds before the promise resolves automatically with null values.
-   * @param {string} [options.eventName='MappingInput'] - The temporary logical event name used internally to listen for input.
-   * @returns {Promise<{ key: string | null, source: DeviceSource | null, gp?: Gamepad }>}
-   * A promise that resolves with an object containing:
-   *   - `key`: the identifier of the pressed input (e.g., "KeyW", "Button0", "LeftClick"),
-   *   - `source`: the origin of the input ("keyboard", "mouse", "gamepad-button", or "gamepad-analog"),
-   *   - `gp`: the Gamepad object (only if the input source is a gamepad).
-   */
-  awaitInputMapping(options) {
-    return TinyGamepad.awaitInputMapping(this, options);
   }
 
   /**
