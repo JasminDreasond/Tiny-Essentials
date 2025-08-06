@@ -11,9 +11,24 @@
  * Defines the available input modes.
  */
 
-/** @typedef {(payload: InputPayload|InputAnalogPayload) => void} PayloadCallback Callback for handling input events. */
+/**
+ * A callback function that is invoked when a mapped logical input is activated or deactivated.
+ *
+ * This function receives the logical name associated with the input (e.g., "Jump", "Shoot", "Menu")
+ * and can be used to handle input-related actions such as triggering game mechanics or UI behavior.
+ *
+ * @typedef {(logicalName: string) => void} MappedInputCallback
+ */
 
-/** @typedef {(payload: ConnectionPayload) => void} ConnectionCallback Callback for handling gamepad connection events. */
+/**
+ * @typedef {(payload: InputPayload|InputAnalogPayload) => void} PayloadCallback
+ * Callback for handling input events.
+ */
+
+/**
+ * @typedef {(payload: ConnectionPayload) => void} ConnectionCallback
+ * Callback for handling gamepad connection events.
+ */
 
 /**
  * Represents a specific input source from a gamepad.
@@ -130,7 +145,7 @@ class TinyGamepad {
   /** @type {Map<string, string|string[]>} */
   #inputMap = new Map();
 
-  /** @type {Map<string, (ConnectionCallback|PayloadCallback)[]>} */
+  /** @type {Map<string, (ConnectionCallback|PayloadCallback|MappedInputCallback)[]>} */
   #callbacks = new Map();
 
   /** @type {null|Gamepad} */
@@ -509,6 +524,18 @@ class TinyGamepad {
   //////////////////////////////////
 
   /**
+   * Active logical input map (currently held)
+   * @type {Set<string>}
+   */
+  #activeMappedInputs = new Set();
+
+  /**
+   * Stores all registered input sequences.
+   * @type {Map<string, { sequence: string[], callback: () => void, triggered: boolean }>}
+   */
+  #inputSequences = new Map();
+
+  /**
    * Handles an input event by dispatching to registered listeners.
    * Supports wildcard and logical name-based callbacks.
    * @param {InputEvents|InputAnalogEvents} settings - Input event data.
@@ -517,14 +544,62 @@ class TinyGamepad {
     /** @type {PayloadCallback[]} */
     // @ts-ignore
     const globalCbs = this.#callbacks.get('input-*') || [];
+    // @ts-ignore
+    const { pressed, key } = settings;
     for (const [logical, physical] of this.#inputMap.entries()) {
+      // Active Mapped inputs script
+      if (
+        typeof pressed === 'boolean' &&
+        ((typeof physical === 'string' && key === physical) ||
+          (Array.isArray(physical) && physical.findIndex((value, i) => key === physical[i]) > -1))
+      ) {
+        // Manage input list
+        if (pressed) {
+          if (!this.#activeMappedInputs.has(logical)) {
+            this.#activeMappedInputs.add(logical);
+            /** @type {MappedInputCallback[]} */
+            // @ts-ignore
+            const cbs = this.#callbacks.get('mapped-input-start') ?? [];
+            for (const cb of cbs) cb(logical);
+          }
+        } else {
+          if (this.#activeMappedInputs.has(logical)) {
+            this.#activeMappedInputs.delete(logical);
+            /** @type {MappedInputCallback[]} */
+            // @ts-ignore
+            const cbs = this.#callbacks.get('mapped-input-end') ?? [];
+            for (const cb of cbs) cb(logical);
+          }
+        }
+
+        // Check sequences
+        for (const { sequence, callback, triggered } of this.#inputSequences.values()) {
+          const inputSequence = this.#inputSequences.get(sequence.join('+'));
+          if (!inputSequence) continue;
+          // Execute sequences
+          const activeSequence = Array.from(this.#activeMappedInputs);
+          const allPressed = sequence.every((name, index) => activeSequence[index] === name);
+          if (allPressed && !triggered) {
+            inputSequence.triggered = true;
+            callback();
+          } else if (!allPressed && triggered) {
+            inputSequence.triggered = false;
+          }
+        }
+      }
+
+      // Checker match
       const matches =
         physical === '*' ||
-        physical === settings.key ||
+        physical === key ||
         (Array.isArray(physical) && physical.includes(settings.key));
 
       if (!matches) continue;
-      /** @type {PayloadCallback[]} */
+
+      /**
+       * Prepare callbacks
+       * @type {PayloadCallback[]}
+       */
       // @ts-ignore
       const cbs = this.#callbacks.get(`input-${logical}`) || [];
       if (cbs.length < 1) continue;
@@ -594,6 +669,50 @@ class TinyGamepad {
    */
   clearMapInputs() {
     this.#inputMap.clear();
+  }
+
+  /**
+   * Registers a sequence of logical inputs that triggers a specific callback.
+   * @param {string[]} sequence - Ordered list of logical input names (e.g., ['Button1', 'Button2'])
+   * @param {() => void} callback - Function to invoke when the sequence is fully held
+   */
+  registerInputSequence(sequence, callback) {
+    const key = sequence.join('+');
+    this.#inputSequences.set(key, { sequence, callback, triggered: false });
+  }
+
+  /**
+   * Returns a clone of currently held mapped logical inputs.
+   * @returns {string[]}
+   */
+  getActiveMappedInputs() {
+    return [...this.#activeMappedInputs];
+  }
+
+  /**
+   * Registers a callback for when a mapped input is activated (pressed down)
+   * @param {(logicalName: string) => void} callback
+   */
+  onMappedInputStart(callback) {
+    let list = this.#callbacks.get('mapped-input-start');
+    if (!Array.isArray(list)) {
+      list = [];
+      this.#callbacks.set('mapped-input-start', list);
+    }
+    list.push(callback);
+  }
+
+  /**
+   * Registers a callback for when a mapped input is deactivated (released)
+   * @param {(logicalName: string) => void} callback
+   */
+  onMappedInputEnd(callback) {
+    let list = this.#callbacks.get('mapped-input-end');
+    if (!Array.isArray(list)) {
+      list = [];
+      this.#callbacks.set('mapped-input-end', list);
+    }
+    list.push(callback);
   }
 
   /**

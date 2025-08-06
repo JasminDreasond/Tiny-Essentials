@@ -87,6 +87,7 @@
         <input id="deadZone" type="number" step="0.01" min="0" max="1" value="0.1" />
       </label>
       <label> <input id="useKeyboardMouse" type="checkbox" /> Use Keyboard & Mouse Instead </label>
+      <label> <input id="debugAllInputs" type="checkbox" /> Debug all inputs </label>
       <button id="initBtn">Initialize TinyGamepad</button>
     </div>
 
@@ -153,6 +154,8 @@
           MoveUp: 'Axis1-',
           MoveDown: 'Axis1+',
           Reload: ['KeyR', 'ShiftLeft'],
+          Chat: 'KeyT',
+          Action: 'KeyF',
           Dash: 'Mouse1',
         };
 
@@ -175,6 +178,7 @@
           .filter(Boolean);
         const deadZone = parseFloat(document.getElementById('deadZone').value);
         const useKeyboardMouse = document.getElementById('useKeyboardMouse').checked;
+        const debugAllInputs = document.getElementById('debugAllInputs').checked;
 
         if (useKeyboardMouse)
           document.addEventListener('contextmenu', (event) => event.preventDefault());
@@ -192,7 +196,15 @@
         tg.onDisconnected((e) => log(`Gamepad disconnected: ${e.id}`));
 
         tg.mapInput('All', '*');
-        tg.onInput('All', (evt) => console.log(`Input (ALL)`, evt));
+        if (debugAllInputs) tg.onInput('All', (evt) => console.log(`Input (ALL)`, evt));
+        tg.onMappedInputStart((evt) =>
+          console.log(`Mapped Input Start`, evt, tg.getActiveMappedInputs()),
+        );
+        tg.onMappedInputEnd((evt) =>
+          console.log(`Mapped Input End`, evt, tg.getActiveMappedInputs()),
+        );
+
+        tg.registerInputSequence(['Chat', 'Action'], () => console.log('Chat + Action'));
 
         /** tg.onInput('*', (evt) => {
           console.log(
@@ -204,6 +216,8 @@
         updateMappings();
         log('TinyGamepad initialized with default configuration.');
         initBtn.setAttribute('disabled', true);
+        document.getElementById('debugAllInputs').setAttribute('disabled', true);
+        document.getElementById('useKeyboardMouse').setAttribute('disabled', true);
       });
 
       document.getElementById('mapInputBtn').addEventListener('click', () => {
