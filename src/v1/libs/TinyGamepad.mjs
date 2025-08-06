@@ -31,6 +31,13 @@
  */
 
 /**
+ * A callback function that is triggered when a registered input sequence is fully activated.
+ * 
+ * @callback InputSequenceCallback
+ * @param {number} timestamp - The moment in milliseconds when the sequence was successfully detected.
+ */
+
+/**
  * Represents a specific input source from a gamepad.
  * - 'gamepad-analog' refers to analog sticks or analog triggers.
  * - 'gamepad-button' refers to digital buttons on the gamepad.
@@ -194,7 +201,7 @@ class TinyGamepad {
 
   /**
    * Stores all registered input sequences.
-   * @type {Map<string, { sequence: string[], callback: (timestamp: number) => void, triggered: boolean }>}
+   * @type {Map<string, { sequence: string[], callback: InputSequenceCallback, triggered: boolean }>}
    */
   #inputSequences = new Map();
 
@@ -682,11 +689,55 @@ class TinyGamepad {
   /**
    * Registers a sequence of logical inputs that triggers a specific callback.
    * @param {string[]} sequence - Ordered list of logical input names (e.g., ['Button1', 'Button2'])
-   * @param {() => void} callback - Function to invoke when the sequence is fully held
+   * @param {InputSequenceCallback} callback - Function to invoke when the sequence is fully held
    */
   registerInputSequence(sequence, callback) {
     const key = sequence.join('+');
     this.#inputSequences.set(key, { sequence, callback, triggered: false });
+  }
+
+  /**
+   * Unregisters a previously registered input sequence.
+   * @param {string[]} sequence - The sequence to remove from detection
+   */
+  unregisterInputSequence(sequence) {
+    const key = sequence.join('+');
+    this.#inputSequences.delete(key);
+  }
+
+  /**
+   * Removes all registered input sequences.
+   */
+  unregisterAllInputSequences() {
+    this.#inputSequences.clear();
+  }
+
+  /**
+   * Checks whether a given input sequence is currently registered.
+   * @param {string[]} sequence - The sequence to check
+   * @returns {boolean}
+   */
+  hasInputSequence(sequence) {
+    const key = sequence.join('+');
+    return this.#inputSequences.has(key);
+  }
+
+  /**
+   * Returns the number of input sequences currently registered.
+   * @returns {number}
+   */
+  getInputSequenceCount() {
+    return this.#inputSequences.size;
+  }
+
+  /**
+   * Returns a shallow clone of all input sequences and their associated data.
+   * @returns {InputSequenceCallback[]}
+   */
+  getClonedInputSequences() {
+    const result = [];
+    for (const [, data] of this.#inputSequences.entries()) result.push(data.callback);
+    return result;
   }
 
   /**
@@ -696,6 +747,8 @@ class TinyGamepad {
   getActiveMappedInputs() {
     return [...this.#activeMappedInputs];
   }
+
+  /////////////////////////////////////////////////////////////////
 
   /**
    * Registers a callback for when a mapped input is activated (pressed down)
@@ -711,6 +764,73 @@ class TinyGamepad {
   }
 
   /**
+   * Registers a one-time callback for the "mapped-input-start" event.
+   * The callback will be automatically removed after it runs once.
+   * @param {MappedInputCallback} callback
+   */
+  onceMappedInputStart(callback) {
+    /** @type {MappedInputCallback} */
+    const wrapper = (logicalName) => {
+      this.offMappedInputStart(wrapper);
+      callback(logicalName);
+    };
+    this.onMappedInputStart(wrapper);
+  }
+
+  /**
+   * Prepends a callback to the "mapped-input-start" event.
+   * @param {MappedInputCallback} callback
+   */
+  prependMappedInputStart(callback) {
+    const list = this.#callbacks.get('mapped-input-start') ?? [];
+    list.unshift(callback);
+    this.#callbacks.set('mapped-input-start', list);
+  }
+
+  /**
+   * Removes a callback from the "mapped-input-start" event.
+   * @param {MappedInputCallback} callback
+   */
+  offMappedInputStart(callback) {
+    const list = this.#callbacks.get('mapped-input-start');
+    if (Array.isArray(list)) {
+      this.#callbacks.set(
+        'mapped-input-start',
+        list.filter((cb) => cb !== callback),
+      );
+    }
+  }
+
+  /**
+   * Removes all callbacks from the "mapped-input-start" event.
+   */
+  offAllMappedInputStart() {
+    this.#callbacks.delete('mapped-input-start');
+  }
+
+  /**
+   * Returns a cloned list of the "mapped-input-start" event callbacks.
+   * @returns {MappedInputCallback[]}
+   */
+  getClonedMappedInputStartCallbacks() {
+    /** @type {MappedInputCallback[]} */
+    // @ts-ignore
+    const list = this.#callbacks.get('mapped-input-start');
+    return Array.isArray(list) ? [...list] : [];
+  }
+
+  /**
+   * Returns the number of callbacks registered for the "mapped-input-start" event.
+   * @returns {number}
+   */
+  getMappedInputStartCallbackSize() {
+    const list = this.#callbacks.get('mapped-input-start');
+    return Array.isArray(list) ? list.length : 0;
+  }
+
+  //////////////////////////////////////////////////////////////////
+
+  /**
    * Registers a callback for when a mapped input is deactivated (released)
    * @param {MappedInputCallback} callback
    */
@@ -721,6 +841,71 @@ class TinyGamepad {
       this.#callbacks.set('mapped-input-end', list);
     }
     list.push(callback);
+  }
+
+  /**
+   * Registers a one-time callback for the "mapped-input-end" event.
+   * The callback will be automatically removed after it runs once.
+   * @param {MappedInputCallback} callback
+   */
+  onceMappedInputEnd(callback) {
+    /** @type {MappedInputCallback} */
+    const wrapper = (logicalName) => {
+      this.offMappedInputEnd(wrapper);
+      callback(logicalName);
+    };
+    this.onMappedInputEnd(wrapper);
+  }
+
+  /**
+   * Prepends a callback to the "mapped-input-end" event.
+   * @param {MappedInputCallback} callback
+   */
+  prependMappedInputEnd(callback) {
+    const list = this.#callbacks.get('mapped-input-end') ?? [];
+    list.unshift(callback);
+    this.#callbacks.set('mapped-input-end', list);
+  }
+
+  /**
+   * Removes a callback from the "mapped-input-end" event.
+   * @param {MappedInputCallback} callback
+   */
+  offMappedInputEnd(callback) {
+    const list = this.#callbacks.get('mapped-input-end');
+    if (Array.isArray(list)) {
+      this.#callbacks.set(
+        'mapped-input-end',
+        list.filter((cb) => cb !== callback),
+      );
+    }
+  }
+
+  /**
+   * Removes all callbacks from the "mapped-input-end" event.
+   */
+  offAllMappedInputEnd() {
+    this.#callbacks.delete('mapped-input-end');
+  }
+
+  /**
+   * Returns a cloned list of the "mapped-input-end" event callbacks.
+   * @returns {MappedInputCallback[]}
+   */
+  getClonedMappedInputEndCallbacks() {
+    /** @type {MappedInputCallback[]} */
+    // @ts-ignore
+    const list = this.#callbacks.get('mapped-input-end');
+    return Array.isArray(list) ? [...list] : [];
+  }
+
+  /**
+   * Returns the number of callbacks registered for the "mapped-input-end" event.
+   * @returns {number}
+   */
+  getMappedInputEndCallbackSize() {
+    const list = this.#callbacks.get('mapped-input-end');
+    return Array.isArray(list) ? list.length : 0;
   }
 
   /////////////////////////////////////////////////////////////
