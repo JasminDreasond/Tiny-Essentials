@@ -136,8 +136,10 @@ import TinyLocalStorage from './libs/TinyLocalStorage.mjs';
 import TinyIframeEvents from './libs/TinyIframeEvents.mjs';
 import TinyNewWinEvents from './libs/TinyNewWinEvents.mjs';
 import TinyTextarea from './libs/TinyTextarea.mjs';
+import TinyGamepad from './libs/TinyGamepad.mjs';
 
 export {
+  TinyGamepad,
   TinyTextarea,
   TinyNewWinEvents,
   TinyIframeEvents,
