@@ -246,6 +246,12 @@ class TinyGamepad {
 
   /**
    * @type {Set<string>}
+   * Set of currently active logical keys (used to track which mapped actions are being held).
+   */
+  #activeMappedKeys = new Set();
+
+  /**
+   * @type {Set<string>}
    * Set of currently active logical inputs (used to track which mapped actions are being held).
    */
   #activeMappedInputs = new Set();
@@ -627,33 +633,65 @@ class TinyGamepad {
     const globalCbs = this.#callbacks.get('input-*') || [];
     // @ts-ignore
     const { pressed, key } = settings;
-    if (settings.type !== 'move' && settings.type !== 'hold') {
-      if (pressed) {
-        if (this.#timeComboKeys === 0) this.#timeComboKeys = Date.now();
-        if (this.#intervalComboKeys) clearTimeout(this.#intervalComboKeys);
-        this.#comboKeys.push(key);
-        this.#intervalComboKeys = setTimeout(
-          () => this.resetComboMappedKeys(),
-          this.#timeoutComboKeys,
-        );
 
-        /** @type {MappedKeyCallback[]} */
-        // @ts-ignore
-        const cbs = this.#callbacks.get('mapped-key-input-start') ?? [];
-        for (const cb of cbs)
-          cb({
-            key,
-            activeTime: this.#timeComboKeys,
-          });
+    // Key Map
+    if (settings.type !== 'move' && settings.type !== 'hold') {
+      const isAxis = key.startsWith('Axis');
+      const activeKey = !isAxis
+        ? key
+        : `${key}${settings.value > 0 ? 'P' : settings.value < 0 ? 'N' : ''}`;
+
+      if (pressed || (isAxis && settings.value !== 0)) {
+        if (
+          // Normal
+          (!isAxis && !this.#activeMappedKeys.has(key)) ||
+          // Axis
+          (isAxis &&
+            !this.#activeMappedKeys.has(key) &&
+            !this.#activeMappedKeys.has(`${key}P`) &&
+            !this.#activeMappedKeys.has(`${key}N`))
+        ) {
+          if (this.#timeComboKeys === 0) this.#timeComboKeys = Date.now();
+          this.#activeMappedKeys.add(activeKey);
+
+          if (this.#intervalComboKeys) clearTimeout(this.#intervalComboKeys);
+          this.#comboKeys.push(activeKey);
+          this.#intervalComboKeys = setTimeout(
+            () => this.resetComboMappedKeys(),
+            this.#timeoutComboKeys,
+          );
+
+          /** @type {MappedKeyCallback[]} */
+          // @ts-ignore
+          const cbs = this.#callbacks.get('mapped-key-input-start') ?? [];
+          for (const cb of cbs)
+            cb({
+              key: activeKey,
+              activeTime: this.#timeComboKeys,
+            });
+        }
       } else {
-        /** @type {MappedKeyCallback[]} */
-        // @ts-ignore
-        const cbs = this.#callbacks.get('mapped-key-input-end') ?? [];
-        for (const cb of cbs)
-          cb({
-            key,
-            activeTime: this.#timeComboKeys,
-          });
+        if (
+          // Normal
+          (!isAxis && this.#activeMappedKeys.has(key)) ||
+          // Axis
+          (isAxis &&
+            (this.#activeMappedKeys.has(key) ||
+              this.#activeMappedKeys.has(`${key}P`) ||
+              this.#activeMappedKeys.has(`${key}N`)))
+        ) {
+          this.#activeMappedKeys.delete(key);
+          this.#activeMappedKeys.delete(`${key}P`);
+          this.#activeMappedKeys.delete(`${key}N`);
+          /** @type {MappedKeyCallback[]} */
+          // @ts-ignore
+          const cbs = this.#callbacks.get('mapped-key-input-end') ?? [];
+          for (const cb of cbs)
+            cb({
+              key: activeKey,
+              activeTime: this.#timeComboKeys,
+            });
+        }
       }
 
       // Check sequences
@@ -671,6 +709,7 @@ class TinyGamepad {
       }
     }
 
+    // Input Map
     for (const [logical, physical] of this.#inputMap.entries()) {
       // Active Mapped inputs script
       if (
