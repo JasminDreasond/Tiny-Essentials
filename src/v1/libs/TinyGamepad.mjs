@@ -2017,14 +2017,6 @@ class TinyGamepad {
   ////////////////////////////////////
 
   /**
-   * Returns the expected device ID, or null if any is accepted.
-   * @returns {string|null}
-   */
-  get expectedId() {
-    return this.#expectedId;
-  }
-
-  /**
    * Returns the current input mode (e.g., 'keyboard', 'gamepad', or 'both').
    * @returns {InputMode}
    */
@@ -2073,11 +2065,33 @@ class TinyGamepad {
   }
 
   /**
+   * Sets the timeout duration (in milliseconds) before mapped input combos are reset.
+   * Must be a positive number.
+   * @param {number} value
+   */
+  set timeoutComboInputs(value) {
+    if (typeof value !== 'number' || value < 0 || !Number.isFinite(value))
+      throw new TypeError('timeoutComboInputs must be a non-negative finite number.');
+    this.#timeoutComboInputs = value;
+  }
+
+  /**
    * Returns the timeout duration (in milliseconds) before raw key combos are reset.
    * @returns {number}
    */
   get timeoutComboKeys() {
     return this.#timeoutComboKeys;
+  }
+
+  /**
+   * Sets the timeout duration (in milliseconds) before raw key combos are reset.
+   * Must be a positive number.
+   * @param {number} value
+   */
+  set timeoutComboKeys(value) {
+    if (typeof value !== 'number' || value < 0 || !Number.isFinite(value))
+      throw new TypeError('timeoutComboKeys must be a non-negative finite number.');
+    this.#timeoutComboKeys = value;
   }
 
   /**
@@ -2124,6 +2138,23 @@ class TinyGamepad {
     if (typeof value !== 'number' || value < 0 || value > 1)
       throw new RangeError('Dead zone must be a number between 0 and 1.');
     this.#deadZone = value;
+  }
+
+  /**
+   * Returns the expected device ID, or null if any is accepted.
+   * @returns {string|null}
+   */
+  get expectedId() {
+    return this.#expectedId;
+  }
+
+  /**
+   * Sets the expected device ID.
+   * @returns {string}
+   */
+  set expectedId(value) {
+    if (typeof value !== 'string') throw new TypeError('Expected device id be a string.');
+    this.#expectedId = value;
   }
 
   ////////////////////////////////////
