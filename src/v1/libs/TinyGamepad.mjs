@@ -641,7 +641,7 @@ class TinyGamepad {
       (isAxis &&
         (settings.value > this.#axisActiveSensitivity ||
           settings.value < -Math.abs(this.#axisActiveSensitivity)));
-    
+
     const activeKey = !isAxis
       ? key
       : `${key}${settings.value > 0 ? '+' : settings.value < 0 ? '-' : ''}`;
@@ -670,7 +670,7 @@ class TinyGamepad {
 
           /** @type {MappedKeyCallback[]} */
           // @ts-ignore
-          const cbs = this.#callbacks.get('mapped-key-input-start') ?? [];
+          const cbs = this.#callbacks.get('mapped-key-start') ?? [];
           for (const cb of cbs)
             cb({
               key: activeKey,
@@ -692,7 +692,7 @@ class TinyGamepad {
           this.#activeMappedKeys.delete(`${key}-`);
           /** @type {MappedKeyCallback[]} */
           // @ts-ignore
-          const cbs = this.#callbacks.get('mapped-key-input-end') ?? [];
+          const cbs = this.#callbacks.get('mapped-key-end') ?? [];
           for (const cb of cbs)
             cb({
               key: activeKey,
@@ -725,7 +725,8 @@ class TinyGamepad {
       // Active Mapped inputs script
       if (
         (typeof physical === 'string' && activeKey === physical) ||
-        (Array.isArray(physical) && physical.findIndex((value, i) =>  activeKey === physical[i]) > -1)
+        (Array.isArray(physical) &&
+          physical.findIndex((value, i) => activeKey === physical[i]) > -1)
       ) {
         // Manage input list
         if (isPressed) {
@@ -1059,16 +1060,16 @@ class TinyGamepad {
    * @param {MappedInputCallback} callback
    */
   onMappedKeyStart(callback) {
-    let list = this.#callbacks.get('mapped-key-input-start');
+    let list = this.#callbacks.get('mapped-key-start');
     if (!Array.isArray(list)) {
       list = [];
-      this.#callbacks.set('mapped-key-input-start', list);
+      this.#callbacks.set('mapped-key-start', list);
     }
     list.push(callback);
   }
 
   /**
-   * Registers a one-time callback for the "mapped-key-input-start" event.
+   * Registers a one-time callback for the "mapped-key-start" event.
    * The callback will be automatically removed after it runs once.
    * @param {MappedInputCallback} callback
    */
@@ -1082,53 +1083,53 @@ class TinyGamepad {
   }
 
   /**
-   * Prepends a callback to the "mapped-key-input-start" event.
+   * Prepends a callback to the "mapped-key-start" event.
    * @param {MappedInputCallback} callback
    */
   prependMappedKeyStart(callback) {
-    const list = this.#callbacks.get('mapped-key-input-start') ?? [];
+    const list = this.#callbacks.get('mapped-key-start') ?? [];
     list.unshift(callback);
-    this.#callbacks.set('mapped-key-input-start', list);
+    this.#callbacks.set('mapped-key-start', list);
   }
 
   /**
-   * Removes a callback from the "mapped-key-input-start" event.
+   * Removes a callback from the "mapped-key-start" event.
    * @param {MappedInputCallback} callback
    */
   offMappedKeyStart(callback) {
-    const list = this.#callbacks.get('mapped-key-input-start');
+    const list = this.#callbacks.get('mapped-key-start');
     if (Array.isArray(list)) {
       this.#callbacks.set(
-        'mapped-key-input-start',
+        'mapped-key-start',
         list.filter((cb) => cb !== callback),
       );
     }
   }
 
   /**
-   * Removes all callbacks from the "mapped-key-input-start" event.
+   * Removes all callbacks from the "mapped-key-start" event.
    */
   offAllMappedKeyStart() {
-    this.#callbacks.delete('mapped-key-input-start');
+    this.#callbacks.delete('mapped-key-start');
   }
 
   /**
-   * Returns a cloned list of the "mapped-key-input-start" event callbacks.
+   * Returns a cloned list of the "mapped-key-start" event callbacks.
    * @returns {MappedInputCallback[]}
    */
   getClonedMappedKeyStartCallbacks() {
     /** @type {MappedInputCallback[]} */
     // @ts-ignore
-    const list = this.#callbacks.get('mapped-key-input-start');
+    const list = this.#callbacks.get('mapped-key-start');
     return Array.isArray(list) ? [...list] : [];
   }
 
   /**
-   * Returns the number of callbacks registered for the "mapped-key-input-start" event.
+   * Returns the number of callbacks registered for the "mapped-key-start" event.
    * @returns {number}
    */
   getMappedKeyStartCallbackSize() {
-    const list = this.#callbacks.get('mapped-key-input-start');
+    const list = this.#callbacks.get('mapped-key-start');
     return Array.isArray(list) ? list.length : 0;
   }
 
@@ -1139,16 +1140,16 @@ class TinyGamepad {
    * @param {MappedInputCallback} callback
    */
   onMappedKeyEnd(callback) {
-    let list = this.#callbacks.get('mapped-key-input-end');
+    let list = this.#callbacks.get('mapped-key-end');
     if (!Array.isArray(list)) {
       list = [];
-      this.#callbacks.set('mapped-key-input-end', list);
+      this.#callbacks.set('mapped-key-end', list);
     }
     list.push(callback);
   }
 
   /**
-   * Registers a one-time callback for the "mapped-key-input-end" event.
+   * Registers a one-time callback for the "mapped-key-end" event.
    * The callback will be automatically removed after it runs once.
    * @param {MappedInputCallback} callback
    */
@@ -1162,53 +1163,53 @@ class TinyGamepad {
   }
 
   /**
-   * Prepends a callback to the "mapped-key-input-end" event.
+   * Prepends a callback to the "mapped-key-end" event.
    * @param {MappedInputCallback} callback
    */
   prependMappedKeyEnd(callback) {
-    const list = this.#callbacks.get('mapped-key-input-end') ?? [];
+    const list = this.#callbacks.get('mapped-key-end') ?? [];
     list.unshift(callback);
-    this.#callbacks.set('mapped-key-input-end', list);
+    this.#callbacks.set('mapped-key-end', list);
   }
 
   /**
-   * Removes a callback from the "mapped-key-input-end" event.
+   * Removes a callback from the "mapped-key-end" event.
    * @param {MappedInputCallback} callback
    */
   offMappedKeyEnd(callback) {
-    const list = this.#callbacks.get('mapped-key-input-end');
+    const list = this.#callbacks.get('mapped-key-end');
     if (Array.isArray(list)) {
       this.#callbacks.set(
-        'mapped-key-input-end',
+        'mapped-key-end',
         list.filter((cb) => cb !== callback),
       );
     }
   }
 
   /**
-   * Removes all callbacks from the "mapped-key-input-end" event.
+   * Removes all callbacks from the "mapped-key-end" event.
    */
   offAllMappedKeyEnd() {
-    this.#callbacks.delete('mapped-key-input-end');
+    this.#callbacks.delete('mapped-key-end');
   }
 
   /**
-   * Returns a cloned list of the "mapped-key-input-end" event callbacks.
+   * Returns a cloned list of the "mapped-key-end" event callbacks.
    * @returns {MappedInputCallback[]}
    */
   getClonedMappedKeyEndCallbacks() {
     /** @type {MappedInputCallback[]} */
     // @ts-ignore
-    const list = this.#callbacks.get('mapped-key-input-end');
+    const list = this.#callbacks.get('mapped-key-end');
     return Array.isArray(list) ? [...list] : [];
   }
 
   /**
-   * Returns the number of callbacks registered for the "mapped-key-input-end" event.
+   * Returns the number of callbacks registered for the "mapped-key-end" event.
    * @returns {number}
    */
   getMappedKeyEndCallbackSize() {
-    const list = this.#callbacks.get('mapped-key-input-end');
+    const list = this.#callbacks.get('mapped-key-end');
     return Array.isArray(list) ? list.length : 0;
   }
 
