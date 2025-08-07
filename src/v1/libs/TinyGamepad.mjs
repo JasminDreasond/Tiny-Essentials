@@ -729,21 +729,13 @@ class TinyGamepad {
       ) {
         // Manage input list
         if (isPressed) {
-          if (
-            // Normal
-            (!isAxis && !this.#activeMappedInputs.has(logical)) ||
-            // Axis
-            (isAxis &&
-              !this.#activeMappedInputs.has(logical) &&
-              !this.#activeMappedInputs.has(`${logical}+`) &&
-              !this.#activeMappedInputs.has(`${logical}-`))
-          ) {
+          if (!this.#activeMappedInputs.has(logical)) {
             if (this.#timeMappedInputs === 0) this.#timeMappedInputs = Date.now();
-            this.#activeMappedInputs.add(activeLogical);
+            this.#activeMappedInputs.add(logical);
 
             if (this.#timeComboInputs === 0) this.#timeComboInputs = Date.now();
             if (this.#intervalComboInputs) clearTimeout(this.#intervalComboInputs);
-            this.#comboInputs.push(activeLogical);
+            this.#comboInputs.push(logical);
             this.#intervalComboInputs = setTimeout(
               () => this.resetComboMappedInputs(),
               this.#timeoutComboInputs,
@@ -754,31 +746,21 @@ class TinyGamepad {
             const cbs = this.#callbacks.get('mapped-input-start') ?? [];
             for (const cb of cbs)
               cb({
-                logicalName: activeLogical,
+                logicalName: logical,
                 activeTime: this.#timeMappedInputs,
                 comboTime: this.#timeComboInputs,
               });
           }
         } else {
-          if (
-            // Normal
-            (!isAxis && this.#activeMappedInputs.has(logical)) ||
-            // Axis
-            (isAxis &&
-              (this.#activeMappedInputs.has(logical) ||
-                this.#activeMappedInputs.has(`${logical}+`) ||
-                this.#activeMappedInputs.has(`${logical}-`)))
-          ) {
+          if (this.#activeMappedInputs.has(logical)) {
             this.#activeMappedInputs.delete(logical);
-            this.#activeMappedInputs.delete(`${logical}+`);
-            this.#activeMappedInputs.delete(`${logical}-`);
             if (this.#activeMappedInputs.size < 1) this.#timeMappedInputs = 0;
             /** @type {MappedInputCallback[]} */
             // @ts-ignore
             const cbs = this.#callbacks.get('mapped-input-end') ?? [];
             for (const cb of cbs)
               cb({
-                logicalName: activeLogical,
+                logicalName: logical,
                 activeTime: this.#timeMappedInputs,
                 comboTime: this.#timeComboInputs,
               });
