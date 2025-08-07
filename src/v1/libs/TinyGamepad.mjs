@@ -223,6 +223,13 @@ class TinyGamepad {
    */
   #timeoutComboKeys;
 
+  /**
+   * Axis movement threshold to consider an axis active combo.
+   * Value range: 0 (most sensitive) to 1 (least sensitive).
+   * @type {number}
+   */
+  #axisActiveSensitivity;
+
   /** @type {string[]} Temporarily holds the current sequence of mapped inputs being pressed. */
   #comboInputs = [];
 
@@ -283,6 +290,7 @@ class TinyGamepad {
    * @param {boolean} [options.allowMouse=false] - Whether mouse events should be treated as input triggers.
    * @param {number} [options.timeoutComboInputs=500] - Maximum time (in milliseconds) allowed between inputs in a combo sequence before the reset time.
    * @param {number} [options.timeoutComboKeys=500] - Maximum time (in milliseconds) allowed between inputs in a key sequence before the reset time.
+   * @param {number} [options.axisActiveSensitivity=0.3] - Threshold to detect meaningful axis movement (0 = most sensitive, 1 = least sensitive).
    * @param {Window|Element} [options.elementBase=window] - The DOM element or window to bind keyboard and mouse events to.
    */
   constructor({
@@ -290,6 +298,7 @@ class TinyGamepad {
     inputMode = 'both',
     ignoreIds = [],
     deadZone = 0.1,
+    axisActiveSensitivity = 0.3,
     timeoutComboInputs = 500,
     timeoutComboKeys = 500,
     allowMouse = false,
@@ -303,6 +312,7 @@ class TinyGamepad {
     this.#elementBase = elementBase;
     this.#timeoutComboInputs = timeoutComboInputs;
     this.#timeoutComboKeys = timeoutComboKeys;
+    this.#axisActiveSensitivity = axisActiveSensitivity;
 
     if (['gamepad-only', 'both'].includes(this.#inputMode)) {
       this.#initGamepadEvents();
@@ -620,8 +630,6 @@ class TinyGamepad {
   }
 
   //////////////////////////////////
-
-  #axisActiveSensitivity = 0.5;
 
   /**
    * Handles an input event by dispatching to registered listeners.
@@ -1031,6 +1039,14 @@ class TinyGamepad {
     const result = [];
     for (const [, data] of this.#keySequences.entries()) result.push(data.callback);
     return result;
+  }
+
+  /**
+   * Returns a clone of currently held mapped logical keys.
+   * @returns {string[]}
+   */
+  getActiveMappedKeys() {
+    return [...this.#activeMappedKeys];
   }
 
   ////////////////////////////////////////////////////////
@@ -2065,6 +2081,33 @@ class TinyGamepad {
   }
 
   /**
+   * Gets the sensitivity threshold used to detect when an axis (like a thumbstick or trigger)
+   * is considered "actively moved". This helps distinguish minor noise from intentional input.
+   *
+   * A value of 0 means even the slightest movement is detected; a value closer to 1 means only strong input is accepted.
+   *
+   * @returns {number} The current axis activity sensitivity (between 0 and 1).
+   */
+  get axisActiveSensitivity() {
+    return this.#axisActiveSensitivity;
+  }
+
+  /**
+   * Sets the sensitivity threshold used to detect active axis input.
+   * This value defines how far an analog axis (such as a thumbstick or trigger) must move from its rest position
+   * before being considered as a valid input.
+   *
+   * Values must be between 0 and 1. An error is thrown if the value is outside this range or not a number.
+   *
+   * @param {number} value - The new sensitivity value between 0 and 1.
+   */
+  set axisActiveSensitivity(value) {
+    if (typeof value !== 'number' || value < 0 || value > 1)
+      throw new RangeError('Axis sensitivity must be a number between 0 and 1.');
+    this.#axisActiveSensitivity = value;
+  }
+
+  /**
    * Returns the current dead zone threshold for analog inputs.
    * @returns {number}
    */
@@ -2127,6 +2170,7 @@ class TinyGamepad {
     this.#callbacks.clear();
     this.#heldKeys.clear();
     this.#activeMappedInputs.clear();
+    this.#activeMappedKeys.clear();
     this.#inputSequences.clear();
     this.#keySequences.clear();
     this.#ignoreIds.clear();
