@@ -160,8 +160,8 @@
         box-shadow: 0 0 15px rgba(0, 255, 0, 0.15);
         font-weight: 600;
         user-select: none;
-        height: 200px;
-        max-height: 200px;
+        height: 220px;
+        max-height: 220px;
         margin-bottom: 20px;
         overflow-y: auto;
       }
@@ -180,6 +180,9 @@
         color: #c5e1a5;
         overflow-wrap: anywhere;
         min-height: 1.2em;
+        white-space: pre-wrap;
+        max-height: 180px;
+        overflow-y: auto;
       }
 
       /* Analog axes container */
@@ -311,6 +314,11 @@
           <span class="status-label">Combo Keys</span>
           <span id="comboKeys" class="status-value">-</span>
         </div>
+        <!-- Novo cartão para pressão dos botões -->
+        <div class="status-card">
+          <span class="status-label">Pressure Buttons (isPressure)</span>
+          <span id="pressureButtons" class="status-value">-</span>
+        </div>
       </div>
       <div id="analogsContainer">
         <h3>Analog Axes</h3>
@@ -383,6 +391,24 @@
           ? tg.getGamepad().id
           : 'None';
 
+        // --- Atualização dos botões isPressure no Real-Time Status ---
+        let pressureData = '-';
+        if (tg.hasGamepad()) {
+          const gp = tg.getGamepad();
+          const buttons = gp.buttons;
+          const pressedPressureButtons = [];
+          buttons.forEach((btn, idx) => {
+            // tinyGamepad adiciona isPressure? Vamos checar pressionamento sensível
+            // O gamepad padrão tem btn.value e btn.pressed, mas "isPressure" não é nativo.
+            // Vamos considerar botão com valor > 0.1 e não booleano puro como pressão:
+            if (btn.pressed && btn.value !== undefined && btn.value > 0.1) {
+              pressedPressureButtons.push(`Button${idx}: ${btn.value.toFixed(2)}`);
+            }
+          });
+          pressureData = pressedPressureButtons.length ? pressedPressureButtons.join('\n') : 'None';
+        }
+        document.getElementById('pressureButtons').textContent = pressureData;
+
         // Atualiza eixos analógicos
         const analogsContainer = document.getElementById('analogsContainer');
 
@@ -446,9 +472,71 @@
         }
       };
 
+      // Atualiza o feed de sensores (giroscópio, acelerômetro, bússola se houver)
+      const updateSensorFeed = () => {
+        if (!tg) return;
+
+        const sensorOutput = document.getElementById('sensorOutput');
+
+        if (!tg.hasGamepad()) {
+          sensorOutput.textContent = 'No gamepad connected to display sensor data.';
+          return;
+        }
+
+        const gp = tg.getGamepad();
+        const sensors = tg.getGamepadSensors?.() || {};
+
+        // Monta objeto com dados principais:
+        const data = {
+          timestamp: Date.now(),
+          mouse: {
+            x: lastMouseX ?? null,
+            y: lastMouseY ?? null,
+          },
+          axes: gp.axes.map((v) => Number(v.toFixed(3))),
+          buttons: gp.buttons.map((b) => ({
+            pressed: b.pressed,
+            value: Number(b.value.toFixed(3)),
+          })),
+          sensors: {},
+        };
+
+        // Se TinyGamepad implementa sensores
+        if (sensors.gyroscope) {
+          data.sensors.gyroscope = {
+            x: sensors.gyroscope.x.toFixed(3),
+            y: sensors.gyroscope.y.toFixed(3),
+            z: sensors.gyroscope.z.toFixed(3),
+          };
+        }
+        if (sensors.accelerometer) {
+          data.sensors.accelerometer = {
+            x: sensors.accelerometer.x.toFixed(3),
+            y: sensors.accelerometer.y.toFixed(3),
+            z: sensors.accelerometer.z.toFixed(3),
+          };
+        }
+        if (sensors.compass) {
+          data.sensors.compass = {
+            heading: sensors.compass.heading.toFixed(3),
+          };
+        }
+
+        sensorOutput.textContent = JSON.stringify(data, null, 2);
+      };
+
+      let lastMouseX = null;
+      let lastMouseY = null;
+      window.addEventListener('mousemove', (e) => {
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+      });
+
+      // Loop para atualizar UI e sensor feed continuamente
       const startLiveUI = () => {
         const update = () => {
           updateUI();
+          updateSensorFeed();
           requestAnimationFrame(update);
         };
         update();
@@ -619,10 +707,6 @@
         if (!tg) return;
         const success = tg.vibrate?.({ duration: 200 });
         log(success ? 'Vibration triggered.' : 'Vibration not supported.');
-      });
-
-      window.addEventListener('mousemove', (e) => {
-        document.getElementById('sensorOutput').textContent = `Mouse: (${e.clientX}, ${e.clientY})`;
       });
     </script>
   </body>
