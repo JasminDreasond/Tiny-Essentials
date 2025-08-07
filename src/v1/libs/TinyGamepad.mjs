@@ -1052,6 +1052,14 @@ class TinyGamepad {
   ////////////////////////////////////////////////////////
 
   /**
+   * Renew the currently held combo logical keys.
+   */
+  renewComboMappedKeys() {
+    if (this.#intervalComboKeys) clearTimeout(this.#intervalComboKeys);
+    this.#intervalComboKeys = setTimeout(() => this.resetComboMappedKeys(), this.#timeoutComboKeys);
+  }
+
+  /**
    * Resets the currently held key combo logical inputs.
    */
   resetComboMappedKeys() {
@@ -1230,6 +1238,17 @@ class TinyGamepad {
   }
 
   ////////////////////////////////////////////////////////
+
+  /**
+   * Renew the currently held combo logical inputs.
+   */
+  renewComboMappedInputs() {
+    if (this.#intervalComboInputs) clearTimeout(this.#intervalComboInputs);
+    this.#intervalComboInputs = setTimeout(
+      () => this.resetComboMappedInputs(),
+      this.#timeoutComboInputs,
+    );
+  }
 
   /**
    * Resets the currently held combo logical inputs.
