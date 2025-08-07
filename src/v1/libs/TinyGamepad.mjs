@@ -635,28 +635,28 @@ class TinyGamepad {
     const globalCbs = this.#callbacks.get('input-*') || [];
     // @ts-ignore
     const { pressed, key } = settings;
+    const isAxis = key.startsWith('Axis');
+    const isPressed =
+      (typeof pressed === 'boolean' && pressed) ||
+      (isAxis &&
+        (settings.value > this.#axisActiveSensitivity ||
+          settings.value < -Math.abs(this.#axisActiveSensitivity)));
+    
+    const activeKey = !isAxis
+      ? key
+      : `${key}${settings.value > 0 ? '+' : settings.value < 0 ? '-' : ''}`;
 
     // Key Map
     if (settings.type !== 'move' && settings.type !== 'hold') {
-      const isAxis = key.startsWith('Axis');
-      const activeKey = !isAxis
-        ? key
-        : `${key}${settings.value > 0 ? 'P' : settings.value < 0 ? 'N' : ''}`;
-
-      if (
-        pressed ||
-        (isAxis &&
-          (settings.value > this.#axisActiveSensitivity ||
-            settings.value < -Math.abs(this.#axisActiveSensitivity)))
-      ) {
+      if (isPressed) {
         if (
           // Normal
           (!isAxis && !this.#activeMappedKeys.has(key)) ||
           // Axis
           (isAxis &&
             !this.#activeMappedKeys.has(key) &&
-            !this.#activeMappedKeys.has(`${key}P`) &&
-            !this.#activeMappedKeys.has(`${key}N`))
+            !this.#activeMappedKeys.has(`${key}+`) &&
+            !this.#activeMappedKeys.has(`${key}-`))
         ) {
           if (this.#timeComboKeys === 0) this.#timeComboKeys = Date.now();
           this.#activeMappedKeys.add(activeKey);
@@ -684,12 +684,12 @@ class TinyGamepad {
           // Axis
           (isAxis &&
             (this.#activeMappedKeys.has(key) ||
-              this.#activeMappedKeys.has(`${key}P`) ||
-              this.#activeMappedKeys.has(`${key}N`)))
+              this.#activeMappedKeys.has(`${key}+`) ||
+              this.#activeMappedKeys.has(`${key}-`)))
         ) {
           this.#activeMappedKeys.delete(key);
-          this.#activeMappedKeys.delete(`${key}P`);
-          this.#activeMappedKeys.delete(`${key}N`);
+          this.#activeMappedKeys.delete(`${key}+`);
+          this.#activeMappedKeys.delete(`${key}-`);
           /** @type {MappedKeyCallback[]} */
           // @ts-ignore
           const cbs = this.#callbacks.get('mapped-key-input-end') ?? [];
@@ -718,21 +718,32 @@ class TinyGamepad {
 
     // Input Map
     for (const [logical, physical] of this.#inputMap.entries()) {
+      const activeLogical = !isAxis
+        ? logical
+        : `${logical}${settings.value > 0 ? '+' : settings.value < 0 ? '-' : ''}`;
+
       // Active Mapped inputs script
       if (
-        typeof pressed === 'boolean' &&
-        ((typeof physical === 'string' && key === physical) ||
-          (Array.isArray(physical) && physical.findIndex((value, i) => key === physical[i]) > -1))
+        (typeof physical === 'string' && activeKey === physical) ||
+        (Array.isArray(physical) && physical.findIndex((value, i) =>  activeKey === physical[i]) > -1)
       ) {
         // Manage input list
-        if (pressed) {
-          if (!this.#activeMappedInputs.has(logical)) {
+        if (isPressed) {
+          if (
+            // Normal
+            (!isAxis && !this.#activeMappedInputs.has(logical)) ||
+            // Axis
+            (isAxis &&
+              !this.#activeMappedInputs.has(logical) &&
+              !this.#activeMappedInputs.has(`${logical}+`) &&
+              !this.#activeMappedInputs.has(`${logical}-`))
+          ) {
             if (this.#timeMappedInputs === 0) this.#timeMappedInputs = Date.now();
-            this.#activeMappedInputs.add(logical);
+            this.#activeMappedInputs.add(activeLogical);
 
             if (this.#timeComboInputs === 0) this.#timeComboInputs = Date.now();
             if (this.#intervalComboInputs) clearTimeout(this.#intervalComboInputs);
-            this.#comboInputs.push(logical);
+            this.#comboInputs.push(activeLogical);
             this.#intervalComboInputs = setTimeout(
               () => this.resetComboMappedInputs(),
               this.#timeoutComboInputs,
@@ -743,21 +754,31 @@ class TinyGamepad {
             const cbs = this.#callbacks.get('mapped-input-start') ?? [];
             for (const cb of cbs)
               cb({
-                logicalName: logical,
+                logicalName: activeLogical,
                 activeTime: this.#timeMappedInputs,
                 comboTime: this.#timeComboInputs,
               });
           }
         } else {
-          if (this.#activeMappedInputs.has(logical)) {
+          if (
+            // Normal
+            (!isAxis && this.#activeMappedInputs.has(logical)) ||
+            // Axis
+            (isAxis &&
+              (this.#activeMappedInputs.has(logical) ||
+                this.#activeMappedInputs.has(`${logical}+`) ||
+                this.#activeMappedInputs.has(`${logical}-`)))
+          ) {
             this.#activeMappedInputs.delete(logical);
+            this.#activeMappedInputs.delete(`${logical}+`);
+            this.#activeMappedInputs.delete(`${logical}-`);
             if (this.#activeMappedInputs.size < 1) this.#timeMappedInputs = 0;
             /** @type {MappedInputCallback[]} */
             // @ts-ignore
             const cbs = this.#callbacks.get('mapped-input-end') ?? [];
             for (const cb of cbs)
               cb({
-                logicalName: logical,
+                logicalName: activeLogical,
                 activeTime: this.#timeMappedInputs,
                 comboTime: this.#timeComboInputs,
               });
@@ -791,18 +812,18 @@ class TinyGamepad {
       // Prepare callbacks
       /** @type {PayloadCallback[]} */
       // @ts-ignore
-      const typeCbs = this.#callbacks.get(`input-${settings.type}-${logical}`) || [];
+      const typeCbs = this.#callbacks.get(`input-${settings.type}-${activeLogical}`) || [];
 
       /** @type {PayloadCallback[]} */
       // @ts-ignore
-      const cbs = this.#callbacks.get(`input-${logical}`) || [];
+      const cbs = this.#callbacks.get(`input-${activeLogical}`) || [];
 
       // Check callbacks
       if (cbs.length < 1 && typeCbs.length < 1 && globalCbs.length < 1) continue;
 
       // Send payloads
       /** @type {InputPayload|InputAnalogPayload} */
-      const payload = { ...settings, logicalName: logical };
+      const payload = { ...settings, logicalName: activeLogical };
       for (const cb of globalCbs) cb(payload);
       for (const cb of cbs) cb(payload);
 
