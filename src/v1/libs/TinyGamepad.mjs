@@ -621,6 +621,8 @@ class TinyGamepad {
 
   //////////////////////////////////
 
+  #axisActiveSensitivity = 0.5;
+
   /**
    * Handles an input event by dispatching to registered listeners.
    * Supports wildcard and logical name-based callbacks.
@@ -641,7 +643,12 @@ class TinyGamepad {
         ? key
         : `${key}${settings.value > 0 ? 'P' : settings.value < 0 ? 'N' : ''}`;
 
-      if (pressed || (isAxis && settings.value !== 0)) {
+      if (
+        pressed ||
+        (isAxis &&
+          (settings.value > this.#axisActiveSensitivity ||
+            settings.value < -Math.abs(this.#axisActiveSensitivity)))
+      ) {
         if (
           // Normal
           (!isAxis && !this.#activeMappedKeys.has(key)) ||
