@@ -370,8 +370,12 @@
           <span id="heldKeys" class="status-value">-</span>
         </div>
         <div class="status-card">
+          <span class="status-label">Active Mapped Keys</span>
+          <span id="activeMappedKeys" class="status-value">-</span>
+        </div>
+        <div class="status-card">
           <span class="status-label">Active Mapped Inputs</span>
-          <span id="activeMapped" class="status-value">-</span>
+          <span id="activeMappedInputs" class="status-value">-</span>
         </div>
         <div class="status-card">
           <span class="status-label">Combo Inputs</span>
@@ -447,8 +451,10 @@
 
         // Atualiza textos simples
         document.getElementById('heldKeys').textContent = [...tg.getHeldKeys()].join(', ') || '-';
-        document.getElementById('activeMapped').textContent =
+        document.getElementById('activeMappedInputs').textContent =
           [...tg.getActiveMappedInputs()].join(', ') || '-';
+        document.getElementById('activeMappedKeys').textContent =
+          [...tg.getActiveMappedKeys()].join(', ') || '-';
         document.getElementById('comboInputs').textContent =
           tg.getComboMappedInputs().join(', ') || '-';
         document.getElementById('comboKeys').textContent =

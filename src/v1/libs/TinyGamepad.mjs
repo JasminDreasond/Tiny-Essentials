@@ -213,12 +213,6 @@ class TinyGamepad {
 
   /**
    * @type {number}
-   * Time in milliseconds before resetting a combination of mapped inputs (used for sequences like fighting game combos).
-   */
-  #timeoutComboInputs;
-
-  /**
-   * @type {number}
    * Time in milliseconds before resetting a combination of raw keys (used for basic key sequences).
    */
   #timeoutComboKeys;
@@ -235,9 +229,6 @@ class TinyGamepad {
 
   /** @type {number} Timestamp of the last mapped input combo trigger. */
   #timeComboInputs = 0;
-
-  /** @type {NodeJS.Timeout|null} Timer for auto-resetting the mapped input combo sequence. */
-  #intervalComboInputs = null;
 
   /** @type {number} Timestamp of the last mapped input. */
   #timeMappedInputs = 0;
@@ -288,7 +279,6 @@ class TinyGamepad {
    * @param {string[]} [options.ignoreIds=[]] - List of device IDs to ignore.
    * @param {number} [options.deadZone=0.1] - Analog stick dead zone threshold.
    * @param {boolean} [options.allowMouse=false] - Whether mouse events should be treated as input triggers.
-   * @param {number} [options.timeoutComboInputs=500] - Maximum time (in milliseconds) allowed between inputs in a combo sequence before the reset time.
    * @param {number} [options.timeoutComboKeys=500] - Maximum time (in milliseconds) allowed between inputs in a key sequence before the reset time.
    * @param {number} [options.axisActiveSensitivity=0.3] - Threshold to detect meaningful axis movement (0 = most sensitive, 1 = least sensitive).
    * @param {Window|Element} [options.elementBase=window] - The DOM element or window to bind keyboard and mouse events to.
@@ -299,7 +289,6 @@ class TinyGamepad {
     ignoreIds = [],
     deadZone = 0.1,
     axisActiveSensitivity = 0.3,
-    timeoutComboInputs = 500,
     timeoutComboKeys = 500,
     allowMouse = false,
     elementBase = window,
@@ -310,7 +299,6 @@ class TinyGamepad {
     this.#deadZone = deadZone;
     this.#allowMouse = allowMouse;
     this.#elementBase = elementBase;
-    this.#timeoutComboInputs = timeoutComboInputs;
     this.#timeoutComboKeys = timeoutComboKeys;
     this.#axisActiveSensitivity = axisActiveSensitivity;
 
@@ -672,7 +660,7 @@ class TinyGamepad {
           if (this.#intervalComboKeys) clearTimeout(this.#intervalComboKeys);
           this.#comboKeys.push(activeKey);
           this.#intervalComboKeys = setTimeout(
-            () => this.resetComboMappedKeys(),
+            () => this.resetComboMapped(),
             this.#timeoutComboKeys,
           );
 
@@ -743,11 +731,11 @@ class TinyGamepad {
             this.#activeMappedInputs.add(logical);
 
             if (this.#timeComboInputs === 0) this.#timeComboInputs = Date.now();
-            if (this.#intervalComboInputs) clearTimeout(this.#intervalComboInputs);
+            if (this.#intervalComboKeys) clearTimeout(this.#intervalComboKeys);
             this.#comboInputs.push(logical);
-            this.#intervalComboInputs = setTimeout(
-              () => this.resetComboMappedInputs(),
-              this.#timeoutComboInputs,
+            this.#intervalComboKeys = setTimeout(
+              () => this.resetComboMapped(),
+              this.#timeoutComboKeys,
             );
 
             /** @type {MappedInputCallback[]} */
@@ -1054,25 +1042,26 @@ class TinyGamepad {
   /**
    * Renew the currently held combo logical keys.
    */
-  renewComboMappedKeys() {
+  renewComboMapped() {
     if (this.#intervalComboKeys) {
       clearTimeout(this.#intervalComboKeys);
-      this.#intervalComboKeys = setTimeout(
-        () => this.resetComboMappedKeys(),
-        this.#timeoutComboKeys,
-      );
+      this.#intervalComboKeys = setTimeout(() => this.resetComboMapped(), this.#timeoutComboKeys);
     }
   }
 
   /**
    * Resets the currently held key combo logical inputs.
    */
-  resetComboMappedKeys() {
+  resetComboMapped() {
     if (this.#intervalComboKeys) clearTimeout(this.#intervalComboKeys);
     this.#comboKeys = [];
     this.#intervalComboKeys = null;
     this.#timeComboKeys = 0;
+    this.#comboInputs = [];
+    this.#timeComboInputs = 0;
   }
+
+  ///////////////////////////////////////////////////////////////
 
   /**
    * Returns a clone of currently held key combo logical inputs.
@@ -1080,6 +1069,14 @@ class TinyGamepad {
    */
   getComboMappedKeys() {
     return [...this.#comboKeys];
+  }
+
+  /**
+   * Returns a clone of currently held combo logical inputs.
+   * @returns {string[]}
+   */
+  getComboMappedInputs() {
+    return [...this.#comboInputs];
   }
 
   /////////////////////////////////////////////////////////////////
@@ -1240,39 +1237,6 @@ class TinyGamepad {
   getMappedKeyEndCallbackSize() {
     const list = this.#callbacks.get('mapped-key-end');
     return Array.isArray(list) ? list.length : 0;
-  }
-
-  ////////////////////////////////////////////////////////
-
-  /**
-   * Renew the currently held combo logical inputs.
-   */
-  renewComboMappedInputs() {
-    if (this.#intervalComboInputs) {
-      clearTimeout(this.#intervalComboInputs);
-      this.#intervalComboInputs = setTimeout(
-        () => this.resetComboMappedInputs(),
-        this.#timeoutComboInputs,
-      );
-    }
-  }
-
-  /**
-   * Resets the currently held combo logical inputs.
-   */
-  resetComboMappedInputs() {
-    if (this.#intervalComboInputs) clearTimeout(this.#intervalComboInputs);
-    this.#comboInputs = [];
-    this.#intervalComboInputs = null;
-    this.#timeComboInputs = 0;
-  }
-
-  /**
-   * Returns a clone of currently held combo logical inputs.
-   * @returns {string[]}
-   */
-  getComboMappedInputs() {
-    return [...this.#comboInputs];
   }
 
   /////////////////////////////////////////////////////////////////
@@ -2083,25 +2047,6 @@ class TinyGamepad {
   }
 
   /**
-   * Returns the timeout duration (in milliseconds) before mapped input combos are reset.
-   * @returns {number}
-   */
-  get timeoutComboInputs() {
-    return this.#timeoutComboInputs;
-  }
-
-  /**
-   * Sets the timeout duration (in milliseconds) before mapped input combos are reset.
-   * Must be a positive number.
-   * @param {number} value
-   */
-  set timeoutComboInputs(value) {
-    if (typeof value !== 'number' || value < 0 || !Number.isFinite(value))
-      throw new TypeError('timeoutComboInputs must be a non-negative finite number.');
-    this.#timeoutComboInputs = value;
-  }
-
-  /**
    * Returns the timeout duration (in milliseconds) before raw key combos are reset.
    * @returns {number}
    */
@@ -2116,7 +2061,7 @@ class TinyGamepad {
    */
   set timeoutComboKeys(value) {
     if (typeof value !== 'number' || value < 0 || !Number.isFinite(value))
-      throw new TypeError('timeoutComboKeys must be a non-negative finite number.');
+      throw new TypeError('Timeout combo keys must be a non-negative finite number.');
     this.#timeoutComboKeys = value;
   }
 
@@ -2221,8 +2166,7 @@ class TinyGamepad {
       window.removeEventListener('gamepaddisconnected', this.#gamepadDisconnected);
     }
 
-    this.resetComboMappedInputs();
-    this.resetComboMappedKeys();
+    this.resetComboMapped();
     this.#inputMap.clear();
     this.#callbacks.clear();
     this.#heldKeys.clear();
