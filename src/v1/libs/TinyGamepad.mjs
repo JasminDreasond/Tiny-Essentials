@@ -621,50 +621,93 @@ class TinyGamepad {
 
   /**
    * Handles an input event by dispatching to registered listeners.
-   * Supports wildcard and logical name-based callbacks.
-   * @param {InputEvents|InputAnalogEvents} settings - Input event data.
+   * This method acts as the central hub for all input events (gamepad, keyboard, mouse, etc.),
+   * handling both direct physical inputs and their mapped logical equivalents.
+   *
+   * Features inside this method:
+   *  - Wildcard callback support (global input listeners)
+   *  - Automatic detection of axis-based controls (analog sticks, triggers)
+   *  - Dead zone filtering for axis values (#axisActiveSensitivity)
+   *  - Dynamic key press/release tracking for both physical keys and mapped inputs
+   *  - Combination key sequence tracking with timeout handling
+   *  - Separate callback systems for:
+   *       -> Physical inputs
+   *       -> Logical (mapped) inputs
+   *       -> Start/End/Hold input events
+   *       -> Combo sequences (key-based and mapped input-based)
+   *  - Payload injection for callbacks with contextual data
+   *
+   * @param {InputEvents|InputAnalogEvents} settings - Input event data containing key, value, type, etc.
    */
   #handleInput(settings) {
     if (this.#isDestroyed) return;
-    /** @type {PayloadCallback[]} */
+
+    /** 
+     *  @type {PayloadCallback[]}
+     *  List of global "input-*" listeners that will receive *all* input events
+     *  regardless of the specific key, axis, or logical mapping.
+     */
     // @ts-ignore
     const globalCbs = this.#callbacks.get('input-*') || [];
+
+    // Extract main properties from incoming settings
     // @ts-ignore
     const { pressed, key } = settings;
 
-    /** @type {boolean} */
+    /** 
+     *  @type {boolean}
+     *  Detect if the incoming key belongs to an axis (e.g., 'Axis0', 'Axis1').
+     */
     const isAxis = key.startsWith('Axis');
-    /** @type {boolean} */
+
+    /** 
+     *  @type {boolean}
+     *  Determines whether the input should be considered "active".
+     *  - For buttons: simply uses the `pressed` flag
+     *  - For axes: compares value to configured deadzone threshold (#axisActiveSensitivity)
+     */
     const isPressed =
       (typeof pressed === 'boolean' && pressed) ||
       (isAxis &&
         (settings.value > this.#axisActiveSensitivity ||
           settings.value < -Math.abs(this.#axisActiveSensitivity)));
 
-    /** @type {string} */
+    /** 
+     *  @type {string}
+     *  The "active key" represents the directional form of the key.
+     *  - Non-axis: same as the original key
+     *  - Axis: adds '+' or '-' depending on value direction
+     */
     const activeKey = !isAxis
       ? key
       : `${key}${settings.value > 0 ? '+' : settings.value < 0 ? '-' : ''}`;
 
-    /** @type {boolean|null} */
+    /** 
+     *  @type {boolean|null}
+     *  Used to track if this event results in a key press (true), release (false), or no change (null).
+     */
     let keyResult = null;
 
-    // Key Map
+    // -------------------------
+    //  PHYSICAL KEY TRACKING
+    // -------------------------
     if (settings.type !== 'move' && settings.type !== 'hold') {
       if (isPressed) {
+        // -------------------------
+        //  NEW KEY PRESS DETECTION
+        // -------------------------
         if (
-          // Normal
           (!isAxis && !this.#activeMappedKeys.has(key)) ||
-          // Axis
           (isAxis &&
             !this.#activeMappedKeys.has(key) &&
             !this.#activeMappedKeys.has(`${key}+`) &&
             !this.#activeMappedKeys.has(`${key}-`))
-          ) {
+        ) {
           if (this.#timeComboKeys === 0) this.#timeComboKeys = Date.now();
           this.#activeMappedKeys.add(activeKey);
           keyResult = true;
 
+          // Combo tracking
           if (this.#intervalComboKeys) clearTimeout(this.#intervalComboKeys);
           this.#comboKeys.push(activeKey);
           this.#intervalComboKeys = setTimeout(
@@ -672,7 +715,10 @@ class TinyGamepad {
             this.#timeoutComboKeys,
           );
 
-          /** @type {MappedKeyCallback[]} */
+          /** 
+           *  @type {MappedKeyCallback[]}
+           *  Notifies all "mapped-key-start" listeners that a key has been pressed.
+           */
           // @ts-ignore
           const cbs = this.#callbacks.get('mapped-key-start') ?? [];
           for (const cb of cbs)
@@ -682,10 +728,11 @@ class TinyGamepad {
             });
         }
       } else {
+        // -------------------------
+        //  KEY RELEASE DETECTION
+        // -------------------------
         if (
-          // Normal
           (!isAxis && this.#activeMappedKeys.has(key)) ||
-          // Axis
           (isAxis &&
             (this.#activeMappedKeys.has(key) ||
               this.#activeMappedKeys.has(`${key}+`) ||
@@ -695,7 +742,11 @@ class TinyGamepad {
           this.#activeMappedKeys.delete(`${key}+`);
           this.#activeMappedKeys.delete(`${key}-`);
           keyResult = false;
-          /** @type {MappedKeyCallback[]} */
+
+          /** 
+           *  @type {MappedKeyCallback[]}
+           *  Notifies all "mapped-key-end" listeners that a key has been released.
+           */
           // @ts-ignore
           const cbs = this.#callbacks.get('mapped-key-end') ?? [];
           for (const cb of cbs)
@@ -706,11 +757,13 @@ class TinyGamepad {
         }
       }
 
-      // Check sequences
+      // -------------------------
+      //  PHYSICAL KEY COMBO SEQUENCES
+      // -------------------------
       for (const { sequence, callback, triggered } of this.#keySequences.values()) {
         const keySequence = this.#keySequences.get(sequence.join('+'));
         if (!keySequence) continue;
-        // Execute sequences
+
         const allPressed = sequence.every((name, index) => this.#comboKeys[index] === name);
         if (allPressed && !triggered) {
           keySequence.triggered = true;
@@ -721,20 +774,27 @@ class TinyGamepad {
       }
     }
 
-    // Input Map
+    // -------------------------
+    //  LOGICAL (MAPPED) INPUTS
+    // -------------------------
     for (const [logical, physical] of this.#inputMap.entries()) {
-      /** @type {(tinyKey: string) => boolean} */
-      const checkPhysical = (tinyKey) =>(typeof physical === 'string' && tinyKey === physical) ||
-        (Array.isArray(physical) &&
-          physical.findIndex((value, i) => tinyKey === physical[i]) > -1);
+      /**
+       * Checks if a given tinyKey matches the physical mapping of a logical input.
+       * @param {string} tinyKey
+       * @returns {boolean}
+       */
+      const checkPhysical = (tinyKey) =>
+        (typeof physical === 'string' && tinyKey === physical) ||
+        (Array.isArray(physical) && physical.findIndex((value, i) => tinyKey === physical[i]) > -1);
 
       const mainKey = checkPhysical(activeKey);
       const baseAxisKeyP = isAxis && checkPhysical(`${key}+`);
       const baseAxisKeyN = isAxis && checkPhysical(`${key}-`);
 
-      // Active Mapped inputs script
+      // -------------------------
+      //  ACTIVE MAPPED INPUT LIST
+      // -------------------------
       if (mainKey || baseAxisKeyP || baseAxisKeyN) {
-        // Manage input list
         if (isPressed && mainKey) {
           if (keyResult || !this.#activeMappedInputs.has(logical)) {
             if (this.#timeMappedInputs === 0) this.#timeMappedInputs = Date.now();
@@ -748,7 +808,10 @@ class TinyGamepad {
               this.#timeoutComboKeys,
             );
 
-            /** @type {MappedInputCallback[]} */
+            /** 
+             *  @type {MappedInputCallback[]}
+             *  Notifies all "mapped-input-start" listeners that a logical input has been activated.
+             */
             // @ts-ignore
             const cbs = this.#callbacks.get('mapped-input-start') ?? [];
             for (const cb of cbs)
@@ -762,7 +825,11 @@ class TinyGamepad {
           if (!keyResult || this.#activeMappedInputs.has(logical)) {
             this.#activeMappedInputs.delete(logical);
             if (this.#activeMappedInputs.size < 1) this.#timeMappedInputs = 0;
-            /** @type {MappedInputCallback[]} */
+
+            /** 
+             *  @type {MappedInputCallback[]}
+             *  Notifies all "mapped-input-end" listeners that a logical input has been deactivated.
+             */
             // @ts-ignore
             const cbs = this.#callbacks.get('mapped-input-end') ?? [];
             for (const cb of cbs)
@@ -774,11 +841,13 @@ class TinyGamepad {
           }
         }
 
-        // Check sequences
+        // -------------------------
+        //  LOGICAL COMBO SEQUENCES
+        // -------------------------
         for (const { sequence, callback, triggered } of this.#inputSequences.values()) {
           const inputSequence = this.#inputSequences.get(sequence.join('+'));
           if (!inputSequence) continue;
-          // Execute sequences
+
           const activeSequence = Array.from(this.#activeMappedInputs);
           const allPressed = sequence.every((name, index) => activeSequence[index] === name);
           if (allPressed && !triggered) {
@@ -790,18 +859,23 @@ class TinyGamepad {
         }
       }
 
-      // Match Checker
+      // -------------------------
+      //  MATCH CHECKER (for physical <-> logical link)
+      // -------------------------
       const matches =
         physical === '*' ||
         physical === key ||
         (Array.isArray(physical) && physical.includes(settings.key));
 
       if (!matches) continue;
+
       const activeLogical = !isAxis
         ? logical
         : `${logical}${settings.value > 0 ? '+' : settings.value < 0 ? '-' : ''}`;
 
-      // Prepare callbacks
+      // -------------------------
+      //  CALLBACK RETRIEVAL
+      // -------------------------
       /** @type {PayloadCallback[]} */
       // @ts-ignore
       const typeCbs = this.#callbacks.get(`input-${settings.type}-${activeLogical}`) || [];
@@ -810,16 +884,17 @@ class TinyGamepad {
       // @ts-ignore
       const cbs = this.#callbacks.get(`input-${activeLogical}`) || [];
 
-      // Check callbacks
       if (cbs.length < 1 && typeCbs.length < 1 && globalCbs.length < 1) continue;
 
-      // Send payloads
+      // -------------------------
+      //  PAYLOAD DISPATCH
+      // -------------------------
       /** @type {InputPayload|InputAnalogPayload} */
       const payload = { ...settings, logicalName: activeLogical };
       for (const cb of globalCbs) cb(payload);
       for (const cb of cbs) cb(payload);
 
-      // ➕ Separated events:
+      // ➕ Separate event type callbacks
       for (const cb of typeCbs) cb(payload);
     }
   }
