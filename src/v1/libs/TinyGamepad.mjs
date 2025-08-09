@@ -642,7 +642,7 @@ class TinyGamepad {
   #handleInput(settings) {
     if (this.#isDestroyed) return;
 
-    /** 
+    /**
      *  @type {PayloadCallback[]}
      *  List of global "input-*" listeners that will receive *all* input events
      *  regardless of the specific key, axis, or logical mapping.
@@ -654,13 +654,13 @@ class TinyGamepad {
     // @ts-ignore
     const { pressed, key } = settings;
 
-    /** 
+    /**
      *  @type {boolean}
      *  Detect if the incoming key belongs to an axis (e.g., 'Axis0', 'Axis1').
      */
     const isAxis = key.startsWith('Axis');
 
-    /** 
+    /**
      *  @type {boolean}
      *  Determines whether the input should be considered "active".
      *  - For buttons: simply uses the `pressed` flag
@@ -672,7 +672,7 @@ class TinyGamepad {
         (settings.value > this.#axisActiveSensitivity ||
           settings.value < -Math.abs(this.#axisActiveSensitivity)));
 
-    /** 
+    /**
      *  @type {string}
      *  The "active key" represents the directional form of the key.
      *  - Non-axis: same as the original key
@@ -682,7 +682,7 @@ class TinyGamepad {
       ? key
       : `${key}${settings.value > 0 ? '+' : settings.value < 0 ? '-' : ''}`;
 
-    /** 
+    /**
      *  @type {boolean|null}
      *  Used to track if this event results in a key press (true), release (false), or no change (null).
      */
@@ -715,7 +715,7 @@ class TinyGamepad {
             this.#timeoutComboKeys,
           );
 
-          /** 
+          /**
            *  @type {MappedKeyCallback[]}
            *  Notifies all "mapped-key-start" listeners that a key has been pressed.
            */
@@ -743,7 +743,7 @@ class TinyGamepad {
           this.#activeMappedKeys.delete(`${key}-`);
           keyResult = false;
 
-          /** 
+          /**
            *  @type {MappedKeyCallback[]}
            *  Notifies all "mapped-key-end" listeners that a key has been released.
            */
@@ -808,7 +808,7 @@ class TinyGamepad {
               this.#timeoutComboKeys,
             );
 
-            /** 
+            /**
              *  @type {MappedInputCallback[]}
              *  Notifies all "mapped-input-start" listeners that a logical input has been activated.
              */
@@ -826,7 +826,7 @@ class TinyGamepad {
             this.#activeMappedInputs.delete(logical);
             if (this.#activeMappedInputs.size < 1) this.#timeMappedInputs = 0;
 
-            /** 
+            /**
              *  @type {MappedInputCallback[]}
              *  Notifies all "mapped-input-end" listeners that a logical input has been deactivated.
              */
