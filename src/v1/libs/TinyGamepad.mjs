@@ -82,6 +82,8 @@
 /**
  * @typedef {Object} InputPayload
  * Structure for digital button input payload.
+ * @property {string} id - Unique identifier for the input.
+ * @property {Event} [event] - Optional DOM event reference.
  * @property {DeviceInputType} type - Type of input event (down, up, hold).
  * @property {DeviceSource} source - Input source (keyboard, mouse, gamepad).
  * @property {string} key - Physical input identifier.
@@ -98,6 +100,8 @@
 /**
  * @typedef {Object} InputAnalogPayload
  * Structure for analog input payload.
+ * @property {string} id - Unique identifier for the input.
+ * @property {Event} [event] - Optional DOM event reference.
  * @property {DeviceInputType} type - Type of input event (change).
  * @property {DeviceSource} source - Input source.
  * @property {string} key - Physical input identifier.
@@ -111,6 +115,8 @@
 /**
  * @typedef {Object} InputEvents
  * Internal structure for digital input events.
+ * @property {string} id - Unique identifier for the input.
+ * @property {Event} [event] - Optional DOM event reference.
  * @property {string} key - Input key identifier.
  * @property {DeviceSource} source - Source of the input.
  * @property {number} value - Value of the input.
@@ -126,6 +132,8 @@
 /**
  * @typedef {Object} InputAnalogEvents
  * Internal structure for analog input events.
+ * @property {string} id - Unique identifier for the input.
+ * @property {Event} [event] - Optional DOM event reference.
  * @property {string} key - Analog key.
  * @property {DeviceSource} source - Source of input.
  * @property {number} value - Main analog value.
@@ -426,6 +434,7 @@ class TinyGamepad {
           pressed: btn.pressed,
           prevPressed: prev,
           timestamp: gp.timestamp,
+          id: gp.id,
         });
       this.#lastButtonStates[index] = { pressed: btn.pressed };
     });
@@ -443,6 +452,7 @@ class TinyGamepad {
           value2: NaN,
           type: 'change',
           timestamp: gp.timestamp,
+          id: gp.id,
           gp,
         });
       }
@@ -467,6 +477,7 @@ class TinyGamepad {
     if (!this.#heldKeys.has(e.code)) {
       this.#heldKeys.add(e.code);
       this.#handleInput({
+        event: e,
         key: e.code,
         source: 'keyboard',
         value: 1,
@@ -474,7 +485,8 @@ class TinyGamepad {
         type: 'down',
         pressed: true,
         prevPressed: this.#lastKeyStates[e.code]?.pressed ?? false,
-        timestamp: NaN,
+        id: 'native_keyboard',
+        timestamp: e.timeStamp,
       });
       this.#lastKeyStates[e.code] = { pressed: true };
     }
@@ -493,6 +505,7 @@ class TinyGamepad {
     if (this.#heldKeys.has(e.code)) {
       this.#heldKeys.delete(e.code);
       this.#handleInput({
+        event: e,
         key: e.code,
         source: 'keyboard',
         value: 0,
@@ -500,7 +513,8 @@ class TinyGamepad {
         type: 'up',
         pressed: false,
         prevPressed: this.#lastKeyStates[e.code]?.pressed ?? false,
-        timestamp: NaN,
+        id: 'native_keyboard',
+        timestamp: e.timeStamp,
       });
       this.#lastKeyStates[e.code] = { pressed: false };
     }
@@ -519,6 +533,7 @@ class TinyGamepad {
     const key = `Mouse${e.button}`;
     this.#heldKeys.add(key);
     this.#handleInput({
+      event: e,
       key,
       source: 'mouse',
       value: 1,
@@ -526,7 +541,8 @@ class TinyGamepad {
       type: 'down',
       pressed: true,
       prevPressed: this.#lastKeyStates[key]?.pressed ?? false,
-      timestamp: NaN,
+      id: 'native_mouse',
+      timestamp: e.timeStamp,
     });
     this.#lastKeyStates[key] = { pressed: true };
   };
@@ -544,6 +560,7 @@ class TinyGamepad {
     const key = `Mouse${e.button}`;
     this.#heldKeys.delete(key);
     this.#handleInput({
+      event: e,
       key,
       source: 'mouse',
       value: 0,
@@ -551,7 +568,8 @@ class TinyGamepad {
       type: 'up',
       pressed: false,
       prevPressed: this.#lastKeyStates[key]?.pressed ?? false,
-      timestamp: NaN,
+      id: 'native_mouse',
+      timestamp: e.timeStamp,
     });
     this.#lastKeyStates[key] = { pressed: false };
   };
@@ -571,14 +589,16 @@ class TinyGamepad {
       /** @type {KeyStatus} */
       const old = this.#lastKeyStates[key] ?? { pressed: false, value: 0, value2: 0 };
       this.#handleInput({
+        event: e,
         key,
         source: 'mouse',
         value: e.movementX + (old.value ?? 0),
         value2: e.movementY + (old.value ?? 0),
+        id: 'native_mouse',
         type: 'move',
         pressed: true,
         prevPressed: null,
-        timestamp: NaN,
+        timestamp: e.timeStamp,
       });
       this.#lastKeyStates[key] = { pressed: false, value: e.movementX, value2: e.movementY };
     }
@@ -601,9 +621,11 @@ class TinyGamepad {
     const loop = () => {
       if (this.#isDestroyed) return;
       this.#heldKeys.forEach((key) => {
+        const source = !key.startsWith('Mouse') ? 'keyboard' : 'mouse';
         this.#handleInput({
           key,
-          source: !key.startsWith('Mouse') ? 'keyboard' : 'mouse',
+          source,
+          id: `native_${source}`,
           value: 1,
           value2: NaN,
           type: 'hold',
