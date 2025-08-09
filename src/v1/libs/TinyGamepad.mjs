@@ -1031,13 +1031,14 @@ class TinyGamepad {
    * @param {object} [options] - Optional configuration for input capture behavior.
    * @param {number} [options.timeout=10000] - Timeout in milliseconds before the promise resolves automatically with null values.
    * @param {string} [options.eventName='MappingInput'] - The temporary logical event name used internally to listen for input.
+   * @param {boolean} [options.canMove=false] - Whether movement-based inputs (e.g., mouse movement) are allowed.
    * @returns {Promise<{ key: string | null, source: DeviceSource | null, gp?: Gamepad }>}
    * A promise that resolves with an object containing:
    *   - `key`: the identifier of the pressed input (e.g., "KeyW", "Button0", "LeftClick"),
    *   - `source`: the origin of the input ("keyboard", "mouse", "gamepad-button", or "gamepad-analog"),
    *   - `gp`: the Gamepad object (only if the input source is a gamepad).
    */
-  awaitInputMapping({ timeout = 10000, eventName = 'MappingInput' } = {}) {
+  awaitInputMapping({ timeout = 10000, eventName = 'MappingInput', canMove = false } = {}) {
     return new Promise((resolve) => {
       /** @type {{ key: string|null; source: DeviceSource|null; gp?: Gamepad; }} */
       const result = { key: null, source: null };
@@ -1051,6 +1052,7 @@ class TinyGamepad {
         clearTimeout(timer);
         this.offInputStart(eventName, inputCallback);
         this.offInputChange(eventName, inputCallback);
+        if (canMove) this.offInputMove(eventName, inputCallback);
         resolve(result);
       };
 
@@ -1060,6 +1062,7 @@ class TinyGamepad {
       this.mapInput(eventName, '*');
       this.onInputStart(eventName, inputCallback);
       this.onInputChange(eventName, inputCallback);
+      if (canMove) this.onInputMove(eventName, inputCallback);
     });
   }
 
