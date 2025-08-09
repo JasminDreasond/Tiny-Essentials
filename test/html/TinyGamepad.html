@@ -745,7 +745,7 @@
         tg.mapInput('All', '*');
         if (debugAllInputs) tg.onInput('All', (evt) => console.log(`Input (ALL)`, evt));
 
-        tg.onMappedInputStart((evt) =>
+        /** tg.onMappedInputStart((evt) =>
           console.log(
             `Mapped Input Start`,
             evt,
@@ -769,7 +769,7 @@
           tg.onMappedKeyEnd((evt) =>
             console.log(`Mapped Key Input End`, evt, tg.getComboMappedKeys()),
           );
-        }
+        } */
 
         tg.registerInputSequence(['Chat', 'Action'], (timestamp) =>
           console.log('Chat + Action', tg.getActiveMappedInputs(), timestamp),

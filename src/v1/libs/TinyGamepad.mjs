@@ -869,20 +869,16 @@ class TinyGamepad {
 
       if (!matches) continue;
 
-      const activeLogical = !isAxis
-        ? logical
-        : `${logical}${settings.value > 0 ? '+' : settings.value < 0 ? '-' : ''}`;
-
       // -------------------------
       //  CALLBACK RETRIEVAL
       // -------------------------
       /** @type {PayloadCallback[]} */
       // @ts-ignore
-      const typeCbs = this.#callbacks.get(`input-${settings.type}-${activeLogical}`) || [];
+      const typeCbs = this.#callbacks.get(`input-${settings.type}-${logical}`) || [];
 
       /** @type {PayloadCallback[]} */
       // @ts-ignore
-      const cbs = this.#callbacks.get(`input-${activeLogical}`) || [];
+      const cbs = this.#callbacks.get(`input-${logical}`) || [];
 
       if (cbs.length < 1 && typeCbs.length < 1 && globalCbs.length < 1) continue;
 
@@ -890,7 +886,7 @@ class TinyGamepad {
       //  PAYLOAD DISPATCH
       // -------------------------
       /** @type {InputPayload|InputAnalogPayload} */
-      const payload = { ...settings, logicalName: activeLogical };
+      const payload = { ...settings, logicalName: logical };
       for (const cb of globalCbs) cb(payload);
       for (const cb of cbs) cb(payload);
 
