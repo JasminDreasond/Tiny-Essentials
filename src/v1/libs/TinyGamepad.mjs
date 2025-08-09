@@ -1855,7 +1855,7 @@ class TinyGamepad {
   /**
    * Returns a shallow clone of the callback list for a given logical input and event type.
    * @param {string} logicalName
-   * @param {'all' | 'start' | 'end' | 'hold'} [type='all']
+   * @param {'all' | 'start' | 'end' | 'hold' | 'change' | 'move'} [type='all']
    * @returns {Function[]}
    */
   getClonedCallbacks(logicalName, type = 'all') {
@@ -1864,6 +1864,8 @@ class TinyGamepad {
       start: 'input-down-',
       end: 'input-up-',
       hold: 'input-hold-',
+      change: 'input-change-',
+      move: 'input-move-',
     }[type];
     const key = `${prefix}${logicalName}`;
     const list = this.#callbacks.get(key);
@@ -1873,7 +1875,7 @@ class TinyGamepad {
   /**
    * Removes all callbacks for a specific logical input event.
    * @param {string} logicalName
-   * @param {'all'| 'start' | 'end' | 'hold'} [type='all']
+   * @param {'all'| 'start' | 'end' | 'hold' | 'change' | 'move'} [type='all']
    */
   offAllInputs(logicalName, type = 'all') {
     const prefix = {
@@ -1881,6 +1883,8 @@ class TinyGamepad {
       start: 'input-down-',
       end: 'input-up-',
       hold: 'input-hold-',
+      change: 'input-change-',
+      move: 'input-move-',
     }[type];
     if (prefix) this.#callbacks.delete(`${prefix}${logicalName}`);
   }
@@ -1888,7 +1892,7 @@ class TinyGamepad {
   /**
    * Returns the number of registered callbacks for a specific logical input and type.
    * @param {string} logicalName
-   * @param {'all' | 'start' | 'end' | 'hold'} [type='all']
+   * @param {'all' | 'start' | 'end' | 'hold' | 'change' | 'move'} [type='all']
    * @returns {number}
    */
   getCallbackSize(logicalName, type = 'all') {
@@ -1897,6 +1901,8 @@ class TinyGamepad {
       start: 'input-down-',
       end: 'input-up-',
       hold: 'input-hold-',
+      change: 'input-change-',
+      move: 'input-move-',
     }[type];
     const list = this.#callbacks.get(`${prefix}${logicalName}`);
     return Array.isArray(list) ? list.length : 0;
