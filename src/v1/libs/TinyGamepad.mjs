@@ -950,6 +950,7 @@ class TinyGamepad {
         result.gp = gp;
         clearTimeout(timer);
         this.offInputStart(eventName, inputCallback);
+        this.offInputChange(eventName, inputCallback);
         resolve(result);
       };
 
@@ -958,6 +959,7 @@ class TinyGamepad {
 
       this.mapInput(eventName, '*');
       this.onInputStart(eventName, inputCallback);
+      this.onInputChange(eventName, inputCallback);
     });
   }
 
@@ -1737,6 +1739,63 @@ class TinyGamepad {
   ////////////////////////////////////////////////////////////
 
   /**
+   * Registers a callback for the "input-change" event of a logical name
+   * @param {string} logicalName
+   * @param {PayloadCallback} callback
+   */
+  onInputChange(logicalName, callback) {
+    let callbacks = this.#callbacks.get(`input-change-${logicalName}`);
+    if (!Array.isArray(callbacks)) {
+      callbacks = [];
+      this.#callbacks.set(`input-change-${logicalName}`, callbacks);
+    }
+    callbacks.push(callback);
+  }
+
+  /**
+   * Registers a one-time callback for the "input-change" event.
+   * @param {string} logicalName
+   * @param {PayloadCallback} callback
+   */
+  onceInputChange(logicalName, callback) {
+    /** @type {PayloadCallback} */
+    const wrapper = (payload) => {
+      this.offInputHold(logicalName, wrapper);
+      callback(payload);
+    };
+    this.onInputHold(logicalName, wrapper);
+  }
+
+  /**
+   * Prepends a callback to the "input-change" event list.
+   * @param {string} logicalName
+   * @param {PayloadCallback} callback
+   */
+  prependInputChange(logicalName, callback) {
+    const key = `input-change-${logicalName}`;
+    const list = this.#callbacks.get(key) ?? [];
+    list.unshift(callback);
+    this.#callbacks.set(key, list);
+  }
+
+  /**
+   * Removes a callback from a specific logical "input-change" event.
+   * @param {string} logicalName
+   * @param {PayloadCallback} callback
+   */
+  offInputChange(logicalName, callback) {
+    const list = this.#callbacks.get(`input-change-${logicalName}`);
+    if (Array.isArray(list)) {
+      this.#callbacks.set(
+        `input-change-${logicalName}`,
+        list.filter((cb) => cb !== callback),
+      );
+    }
+  }
+
+  ////////////////////////////////////////////////////////////
+
+  /**
    * Returns a shallow clone of the callback list for a given logical input and event type.
    * @param {string} logicalName
    * @param {'all' | 'start' | 'end' | 'hold'} [type='all']
@@ -2113,7 +2172,7 @@ class TinyGamepad {
   ////////////////////////////////////
 
   /**
-   * Returns the current input mode (e.g., 'keyboard', 'gamepad', or 'both').
+   * Returns the current input mode (e.g., 'keyboard-only', 'gamepad-only', or 'both').
    * @returns {InputMode}
    */
   get inputMode() {
