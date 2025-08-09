@@ -1045,7 +1045,7 @@ class TinyGamepad {
 
       /** @type {PayloadCallback} */
       const inputCallback = ({ key, type, source, gp }) => {
-        if (type === 'move') return;
+        if (!canMove && type === 'move') return;
         result.key = key;
         result.source = source;
         result.gp = gp;
@@ -1096,7 +1096,7 @@ class TinyGamepad {
    * Returns a shallow clone of all logical-to-physical input mappings as a plain object.
    * @returns {{ [logicalName: string]: string | string[] }}
    */
-  getClonedMappedInputs() {
+  getMappedInputs() {
     /** @type {{ [logicalName: string]: string | string[] }} */
     const result = {};
     for (const [logicalName, physicalInput] of this.#inputMap.entries()) {
@@ -1170,7 +1170,7 @@ class TinyGamepad {
    * Returns a shallow clone of all input sequences and their associated data.
    * @returns {InputSequenceCallback[]}
    */
-  getClonedInputSequences() {
+  getInputSequences() {
     const result = [];
     for (const [, data] of this.#inputSequences.entries()) result.push(data.callback);
     return result;
@@ -1234,7 +1234,7 @@ class TinyGamepad {
    * Returns a shallow clone of all input sequences and their associated data.
    * @returns {InputSequenceCallback[]}
    */
-  getClonedKeySequences() {
+  getKeySequences() {
     const result = [];
     for (const [, data] of this.#keySequences.entries()) result.push(data.callback);
     return result;
@@ -1354,7 +1354,7 @@ class TinyGamepad {
    * Returns a cloned list of the "mapped-key-start" event callbacks.
    * @returns {MappedInputCallback[]}
    */
-  getClonedMappedKeyStartCalls() {
+  getMappedKeyStartCalls() {
     /** @type {MappedInputCallback[]} */
     // @ts-ignore
     const list = this.#callbacks.get('mapped-key-start');
@@ -1434,7 +1434,7 @@ class TinyGamepad {
    * Returns a cloned list of the "mapped-key-end" event callbacks.
    * @returns {MappedInputCallback[]}
    */
-  getClonedMappedKeyEndCalls() {
+  getMappedKeyEndCalls() {
     /** @type {MappedInputCallback[]} */
     // @ts-ignore
     const list = this.#callbacks.get('mapped-key-end');
@@ -1514,7 +1514,7 @@ class TinyGamepad {
    * Returns a cloned list of the "mapped-input-start" event callbacks.
    * @returns {MappedInputCallback[]}
    */
-  getClonedMappedInputStartCalls() {
+  getMappedInputStartCalls() {
     /** @type {MappedInputCallback[]} */
     // @ts-ignore
     const list = this.#callbacks.get('mapped-input-start');
@@ -1594,7 +1594,7 @@ class TinyGamepad {
    * Returns a cloned list of the "mapped-input-end" event callbacks.
    * @returns {MappedInputCallback[]}
    */
-  getClonedMappedInputEndCalls() {
+  getMappedInputEndCalls() {
     /** @type {MappedInputCallback[]} */
     // @ts-ignore
     const list = this.#callbacks.get('mapped-input-end');
@@ -1961,7 +1961,7 @@ class TinyGamepad {
    * @param {'all' | 'start' | 'end' | 'hold' | 'change' | 'move'} [type='all']
    * @returns {Function[]}
    */
-  getClonedCalls(logicalName, type = 'all') {
+  getCalls(logicalName, type = 'all') {
     const prefix = {
       all: 'input-',
       start: 'input-down-',
@@ -2150,7 +2150,7 @@ class TinyGamepad {
    * Returns a cloned list of the "connected" event callbacks.
    * @returns {ConnectionCallback[]}
    */
-  getClonedConnectedCalls() {
+  getConnectedCalls() {
     /** @type {ConnectionCallback[]} */
     // @ts-ignore
     const list = this.#callbacks.get('connected');
@@ -2228,7 +2228,7 @@ class TinyGamepad {
    * Returns a cloned list of the "disconnected" event callbacks.
    * @returns {ConnectionCallback[]}
    */
-  getClonedDisconnectedCalls() {
+  getDisconnectedCalls() {
     /** @type {ConnectionCallback[]} */
     // @ts-ignore
     const list = this.#callbacks.get('disconnected');
