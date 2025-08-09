@@ -274,6 +274,94 @@ class TinyGamepad {
    */
   #keySequences = new Map();
 
+  /** @type {Record<string, string>} */
+  static #specialMap = {
+    ' ': 'Space',
+    '\n': 'Enter',
+    '\r': 'Enter',
+    '\t': 'Tab',
+    '-': 'Minus',
+    _: 'Minus',
+    '=': 'Equal',
+    '+': 'Equal',
+    '[': 'BracketLeft',
+    '{': 'BracketLeft',
+    ']': 'BracketRight',
+    '}': 'BracketRight',
+    '\\': 'Backslash',
+    '|': 'Backslash',
+    ';': 'Semicolon',
+    ':': 'Semicolon',
+    "'": 'Quote',
+    '"': 'Quote',
+    ',': 'Comma',
+    '<': 'Comma',
+    '.': 'Period',
+    '>': 'Period',
+    '/': 'Slash',
+    '?': 'Slash',
+    '`': 'Backquote',
+    '~': 'Backquote',
+  };
+
+  /**
+   * Add or update a special key mapping.
+   * @param {string} char - The character to map.
+   * @param {string} code - The corresponding key code.
+   */
+  static addSpecialKey(char, code) {
+    if (char.length !== 1) throw new Error(`Invalid char: "${char}"`);
+    TinyGamepad.#specialMap[char] = code;
+  }
+
+  /**
+   * Remove a special key mapping.
+   * @param {string} char - The character to remove from mapping.
+   */
+  static removeSpecialKey(char) {
+    delete TinyGamepad.#specialMap[char];
+  }
+
+  /**
+   * Get the mapped code for a special character.
+   * @param {string} char - The character to look up.
+   * @returns {string | undefined} - The mapped code or undefined if not found.
+   */
+  static getSpecialKey(char) {
+    return TinyGamepad.#specialMap[char];
+  }
+
+  /**
+   * Get all current special key mappings.
+   * @returns {Record<string, string>}
+   */
+  static getAllSpecialKeys() {
+    return { ...TinyGamepad.#specialMap };
+  }
+
+  /**
+   * Converts a string into an array of TinyGamepad-style key codes.
+   * Example: "pudding" → ['KeyP', 'KeyU', 'KeyD', 'KeyD', 'KeyI', 'KeyN', 'KeyG']
+   * @param {string} text - Input text.
+   * @returns {string[]} Array of key codes.
+   */
+  static stringToKeys(text) {
+    return Array.from(text).map((char) => {
+      const upper = char.toUpperCase();
+      if (upper >= 'A' && upper <= 'Z') {
+        return `Key${upper}`;
+      }
+      if (upper >= '0' && upper <= '9') {
+        return `Digit${upper}`;
+      }
+      const mapped = TinyGamepad.#specialMap[char];
+      if (mapped !== undefined) {
+        return mapped;
+      }
+      throw new Error(`Unsupported character: "${char}"`);
+    });
+  }
+
   /**
    * Initializes a new instance of TinyGamepad with customizable input behavior.
    *
