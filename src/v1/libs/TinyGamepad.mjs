@@ -818,12 +818,14 @@ class TinyGamepad {
           keyResult = true;
 
           // Combo tracking
-          if (this.#intervalComboKeys) clearTimeout(this.#intervalComboKeys);
           this.#comboKeys.push(activeKey);
-          this.#intervalComboKeys = setTimeout(
-            () => this.resetComboMapped(),
-            this.#timeoutComboKeys,
-          );
+          if (this.#comboInputs.length < 1) {
+            if (this.#intervalComboKeys) clearTimeout(this.#intervalComboKeys);
+            this.#intervalComboKeys = setTimeout(
+              () => this.resetComboMapped(),
+              this.#timeoutComboKeys,
+            );
+          }
 
           /**
            *  @type {MappedKeyCallback[]}
