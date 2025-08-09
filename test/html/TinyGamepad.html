@@ -744,7 +744,8 @@
         tg.onDisconnected((e) => log(`Gamepad disconnected: ${e.id}`));
 
         tg.mapInput('All', '*');
-        if (debugAllInputs) tg.onInput('All', (evt) => console.log(`Input (ALL)`, evt));
+        if (debugAllInputs)
+          tg.onInput('All', (evt) => evt.key !== 'MouseMove' && console.log(`Input (ALL)`, evt));
 
         /** tg.onMappedInputStart((evt) =>
           console.log(

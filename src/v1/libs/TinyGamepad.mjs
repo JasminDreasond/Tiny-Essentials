@@ -1007,6 +1007,16 @@ class TinyGamepad {
     }
   }
 
+  /**
+   * Emits a custom internal event to all listeners.
+   * @param {string} event - Event name.
+   * @param {*} data - Payload data.
+   */
+  #emit(event, data) {
+    const cbs = this.#callbacks.get(event) || [];
+    for (const cb of cbs) cb(data);
+  }
+
   ///////////////////////////////////////////////////
 
   /**
@@ -1341,7 +1351,7 @@ class TinyGamepad {
    * Returns a cloned list of the "mapped-key-start" event callbacks.
    * @returns {MappedInputCallback[]}
    */
-  getClonedMappedKeyStartCallbacks() {
+  getClonedMappedKeyStartCalls() {
     /** @type {MappedInputCallback[]} */
     // @ts-ignore
     const list = this.#callbacks.get('mapped-key-start');
@@ -1352,7 +1362,7 @@ class TinyGamepad {
    * Returns the number of callbacks registered for the "mapped-key-start" event.
    * @returns {number}
    */
-  getMappedKeyStartCallbackSize() {
+  getMappedKeyStartCallSize() {
     const list = this.#callbacks.get('mapped-key-start');
     return Array.isArray(list) ? list.length : 0;
   }
@@ -1421,7 +1431,7 @@ class TinyGamepad {
    * Returns a cloned list of the "mapped-key-end" event callbacks.
    * @returns {MappedInputCallback[]}
    */
-  getClonedMappedKeyEndCallbacks() {
+  getClonedMappedKeyEndCalls() {
     /** @type {MappedInputCallback[]} */
     // @ts-ignore
     const list = this.#callbacks.get('mapped-key-end');
@@ -1432,7 +1442,7 @@ class TinyGamepad {
    * Returns the number of callbacks registered for the "mapped-key-end" event.
    * @returns {number}
    */
-  getMappedKeyEndCallbackSize() {
+  getMappedKeyEndCallSize() {
     const list = this.#callbacks.get('mapped-key-end');
     return Array.isArray(list) ? list.length : 0;
   }
@@ -1501,7 +1511,7 @@ class TinyGamepad {
    * Returns a cloned list of the "mapped-input-start" event callbacks.
    * @returns {MappedInputCallback[]}
    */
-  getClonedMappedInputStartCallbacks() {
+  getClonedMappedInputStartCalls() {
     /** @type {MappedInputCallback[]} */
     // @ts-ignore
     const list = this.#callbacks.get('mapped-input-start');
@@ -1512,7 +1522,7 @@ class TinyGamepad {
    * Returns the number of callbacks registered for the "mapped-input-start" event.
    * @returns {number}
    */
-  getMappedInputStartCallbackSize() {
+  getMappedInputStartCallSize() {
     const list = this.#callbacks.get('mapped-input-start');
     return Array.isArray(list) ? list.length : 0;
   }
@@ -1581,7 +1591,7 @@ class TinyGamepad {
    * Returns a cloned list of the "mapped-input-end" event callbacks.
    * @returns {MappedInputCallback[]}
    */
-  getClonedMappedInputEndCallbacks() {
+  getClonedMappedInputEndCalls() {
     /** @type {MappedInputCallback[]} */
     // @ts-ignore
     const list = this.#callbacks.get('mapped-input-end');
@@ -1592,7 +1602,7 @@ class TinyGamepad {
    * Returns the number of callbacks registered for the "mapped-input-end" event.
    * @returns {number}
    */
-  getMappedInputEndCallbackSize() {
+  getMappedInputEndCallSize() {
     const list = this.#callbacks.get('mapped-input-end');
     return Array.isArray(list) ? list.length : 0;
   }
@@ -1948,7 +1958,7 @@ class TinyGamepad {
    * @param {'all' | 'start' | 'end' | 'hold' | 'change' | 'move'} [type='all']
    * @returns {Function[]}
    */
-  getClonedCallbacks(logicalName, type = 'all') {
+  getClonedCalls(logicalName, type = 'all') {
     const prefix = {
       all: 'input-',
       start: 'input-down-',
@@ -1985,7 +1995,7 @@ class TinyGamepad {
    * @param {'all' | 'start' | 'end' | 'hold' | 'change' | 'move'} [type='all']
    * @returns {number}
    */
-  getCallbackSize(logicalName, type = 'all') {
+  getCallSize(logicalName, type = 'all') {
     const prefix = {
       all: 'input-',
       start: 'input-down-',
@@ -1996,14 +2006,6 @@ class TinyGamepad {
     }[type];
     const list = this.#callbacks.get(`${prefix}${logicalName}`);
     return Array.isArray(list) ? list.length : 0;
-  }
-
-  /**
-   * Returns the total number of unique event keys currently registered.
-   * @returns {number}
-   */
-  getEventCount() {
-    return this.#callbacks.size;
   }
 
   ////////////////////////////////////////////////
@@ -2145,7 +2147,7 @@ class TinyGamepad {
    * Returns a cloned list of the "connected" event callbacks.
    * @returns {ConnectionCallback[]}
    */
-  getClonedConnectedCallbacks() {
+  getClonedConnectedCalls() {
     /** @type {ConnectionCallback[]} */
     // @ts-ignore
     const list = this.#callbacks.get('connected');
@@ -2156,7 +2158,7 @@ class TinyGamepad {
    * Returns the number of callbacks registered for the "connected" event.
    * @returns {number}
    */
-  getConnectedCallbackSize() {
+  getConnectedCallSize() {
     const list = this.#callbacks.get('connected');
     return Array.isArray(list) ? list.length : 0;
   }
@@ -2223,7 +2225,7 @@ class TinyGamepad {
    * Returns a cloned list of the "disconnected" event callbacks.
    * @returns {ConnectionCallback[]}
    */
-  getClonedDisconnectedCallbacks() {
+  getClonedDisconnectedCalls() {
     /** @type {ConnectionCallback[]} */
     // @ts-ignore
     const list = this.#callbacks.get('disconnected');
@@ -2234,19 +2236,9 @@ class TinyGamepad {
    * Returns the number of callbacks registered for the "disconnected" event.
    * @returns {number}
    */
-  getDisconnectedCallbackSize() {
+  getDisconnectedCallSize() {
     const list = this.#callbacks.get('disconnected');
     return Array.isArray(list) ? list.length : 0;
-  }
-
-  /**
-   * Emits a custom internal event to all listeners.
-   * @param {string} event - Event name.
-   * @param {*} data - Payload data.
-   */
-  #emit(event, data) {
-    const cbs = this.#callbacks.get(event) || [];
-    for (const cb of cbs) cb(data);
   }
 
   //////////////////////////////////////////
@@ -2323,6 +2315,14 @@ class TinyGamepad {
   }
 
   ////////////////////////////////////
+
+  /**
+   * Returns the total number of unique event keys currently registered.
+   * @returns {number}
+   */
+  get eventsSize() {
+    return this.#callbacks.size;
+  }
 
   /**
    * Returns the current input mode (e.g., 'keyboard-only', 'gamepad-only', or 'both').
