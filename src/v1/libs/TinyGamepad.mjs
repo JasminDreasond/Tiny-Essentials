@@ -1760,10 +1760,10 @@ class TinyGamepad {
   onceInputChange(logicalName, callback) {
     /** @type {PayloadCallback} */
     const wrapper = (payload) => {
-      this.offInputHold(logicalName, wrapper);
+      this.offInputChange(logicalName, wrapper);
       callback(payload);
     };
-    this.onInputHold(logicalName, wrapper);
+    this.onInputChange(logicalName, wrapper);
   }
 
   /**
@@ -1788,6 +1788,63 @@ class TinyGamepad {
     if (Array.isArray(list)) {
       this.#callbacks.set(
         `input-change-${logicalName}`,
+        list.filter((cb) => cb !== callback),
+      );
+    }
+  }
+
+  ////////////////////////////////////////////////////////////
+
+  /**
+   * Registers a callback for the "input-move" event of a logical name
+   * @param {string} logicalName
+   * @param {PayloadCallback} callback
+   */
+  onInputMove(logicalName, callback) {
+    let callbacks = this.#callbacks.get(`input-move-${logicalName}`);
+    if (!Array.isArray(callbacks)) {
+      callbacks = [];
+      this.#callbacks.set(`input-move-${logicalName}`, callbacks);
+    }
+    callbacks.push(callback);
+  }
+
+  /**
+   * Registers a one-time callback for the "input-move" event.
+   * @param {string} logicalName
+   * @param {PayloadCallback} callback
+   */
+  onceInputMove(logicalName, callback) {
+    /** @type {PayloadCallback} */
+    const wrapper = (payload) => {
+      this.offInputMove(logicalName, wrapper);
+      callback(payload);
+    };
+    this.onInputMove(logicalName, wrapper);
+  }
+
+  /**
+   * Prepends a callback to the "input-move" event list.
+   * @param {string} logicalName
+   * @param {PayloadCallback} callback
+   */
+  prependInputMove(logicalName, callback) {
+    const key = `input-move-${logicalName}`;
+    const list = this.#callbacks.get(key) ?? [];
+    list.unshift(callback);
+    this.#callbacks.set(key, list);
+  }
+
+  /**
+   * Removes a callback from a specific logical "input-move" event.
+   * @param {string} logicalName
+   * @param {PayloadCallback} callback
+   */
+  offInputMove(logicalName, callback) {
+    const list = this.#callbacks.get(`input-move-${logicalName}`);
+    if (Array.isArray(list)) {
+      this.#callbacks.set(
+        `input-move-${logicalName}`,
         list.filter((cb) => cb !== callback),
       );
     }
