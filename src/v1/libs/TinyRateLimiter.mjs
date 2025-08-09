@@ -326,19 +326,6 @@ class TinyRateLimiter {
   }
 
   /**
-   * Manually reset user data.
-   *
-   * @deprecated Use `resetUserGroup(userId)` instead. This method will be removed in future versions.
-   * @param {string} userId
-   * @returns {void}
-   */
-  reset(userId) {
-    if (process?.env?.NODE_ENV !== 'production')
-      console.warn(`[TinyRateLimiter] 'reset()' is deprecated. Use 'resetUserGroup()' instead.`);
-    return this.resetUserGroup(userId);
-  }
-
-  /**
    * Manually reset a user mapping
    * @param {string} userId
    */
