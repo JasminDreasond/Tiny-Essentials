@@ -600,17 +600,6 @@ class TinySmartScroller {
   }
 
   /**
-   * Emits a scroll-related event to all registered listeners.
-   *
-   * @param {string} event - Event name.
-   * @param {*} [payload] - Optional event data payload.
-   * @deprecated - Use emit() instead.
-   */
-  _emit(event, payload) {
-    this.emit(event, payload);
-  }
-
-  /**
    * Handles scroll events, calculates position-related statuses, and emits appropriate events.
    */
   _onScroll() {
@@ -1042,46 +1031,6 @@ class TinySmartScroller {
    */
   isPastAtCustomBottom() {
     return this.#isPastAtCustomBottom;
-  }
-
-  /**
-   * Checks if the user is within the defined extra scroll boundary from the bottom.
-   *
-   * @returns {boolean}
-   * @deprecated - Use isAtCustomBottom instead.
-   */
-  isUserAtCustomBottom() {
-    return this.#isAtCustomBottom;
-  }
-
-  /**
-   * Checks if the user is within the defined extra scroll boundary from the top.
-   *
-   * @returns {boolean}
-   * @deprecated - Use isAtCustomTop instead.
-   */
-  isUserAtCustomTop() {
-    return this.#isAtCustomTop;
-  }
-
-  /**
-   * Returns true if the user is currently scrolled to the bottom of the element.
-   *
-   * @returns {boolean}
-   * @deprecated - Use isAtBottom instead.
-   */
-  isUserAtBottom() {
-    return this.#isAtBottom;
-  }
-
-  /**
-   * Returns true if the user is currently scrolled to the top of the element.
-   *
-   * @returns {boolean}
-   * @deprecated - Use isAtTop instead.
-   */
-  isUserAtTop() {
-    return this.#isAtTop;
   }
 
   /**
