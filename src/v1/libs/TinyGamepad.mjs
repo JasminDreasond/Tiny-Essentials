@@ -1361,15 +1361,6 @@ class TinyGamepad {
     return Array.isArray(list) ? [...list] : [];
   }
 
-  /**
-   * Returns the number of callbacks registered for the "mapped-key-start" event.
-   * @returns {number}
-   */
-  getMappedKeyStartCallSize() {
-    const list = this.#callbacks.get('mapped-key-start');
-    return Array.isArray(list) ? list.length : 0;
-  }
-
   //////////////////////////////////////////////////////////////////
 
   /**
@@ -1439,15 +1430,6 @@ class TinyGamepad {
     // @ts-ignore
     const list = this.#callbacks.get('mapped-key-end');
     return Array.isArray(list) ? [...list] : [];
-  }
-
-  /**
-   * Returns the number of callbacks registered for the "mapped-key-end" event.
-   * @returns {number}
-   */
-  getMappedKeyEndCallSize() {
-    const list = this.#callbacks.get('mapped-key-end');
-    return Array.isArray(list) ? list.length : 0;
   }
 
   /////////////////////////////////////////////////////////////////
@@ -1521,15 +1503,6 @@ class TinyGamepad {
     return Array.isArray(list) ? [...list] : [];
   }
 
-  /**
-   * Returns the number of callbacks registered for the "mapped-input-start" event.
-   * @returns {number}
-   */
-  getMappedInputStartCallSize() {
-    const list = this.#callbacks.get('mapped-input-start');
-    return Array.isArray(list) ? list.length : 0;
-  }
-
   //////////////////////////////////////////////////////////////////
 
   /**
@@ -1599,15 +1572,6 @@ class TinyGamepad {
     // @ts-ignore
     const list = this.#callbacks.get('mapped-input-end');
     return Array.isArray(list) ? [...list] : [];
-  }
-
-  /**
-   * Returns the number of callbacks registered for the "mapped-input-end" event.
-   * @returns {number}
-   */
-  getMappedInputEndCallSize() {
-    const list = this.#callbacks.get('mapped-input-end');
-    return Array.isArray(list) ? list.length : 0;
   }
 
   /////////////////////////////////////////////////////////////
@@ -2158,15 +2122,6 @@ class TinyGamepad {
   }
 
   /**
-   * Returns the number of callbacks registered for the "connected" event.
-   * @returns {number}
-   */
-  getConnectedCallSize() {
-    const list = this.#callbacks.get('connected');
-    return Array.isArray(list) ? list.length : 0;
-  }
-
-  /**
    * Registers a callback for the "disconnected" event
    * @param {ConnectionCallback} callback
    */
@@ -2233,15 +2188,6 @@ class TinyGamepad {
     // @ts-ignore
     const list = this.#callbacks.get('disconnected');
     return Array.isArray(list) ? [...list] : [];
-  }
-
-  /**
-   * Returns the number of callbacks registered for the "disconnected" event.
-   * @returns {number}
-   */
-  getDisconnectedCallSize() {
-    const list = this.#callbacks.get('disconnected');
-    return Array.isArray(list) ? list.length : 0;
   }
 
   //////////////////////////////////////////
@@ -2320,12 +2266,80 @@ class TinyGamepad {
   ////////////////////////////////////
 
   /**
-   * Returns the total number of unique event keys currently registered.
+   * Returns the total number of sub event keys inside all events currently registered.
    * @returns {number}
    */
   get eventsSize() {
+    let total = 0;
+    this.#callbacks.forEach((values) => {
+      total += values.length;
+    });
+    return total;
+  }
+
+  /**
+   * Returns the total number of unique event keys currently registered.
+   * @returns {number}
+   */
+  get callSize() {
     return this.#callbacks.size;
   }
+
+  /**
+   * Returns the number of callbacks registered for the "connected" event.
+   * @returns {number}
+   */
+  get connectedCallSize() {
+    const list = this.#callbacks.get('connected');
+    return Array.isArray(list) ? list.length : 0;
+  }
+
+  /**
+   * Returns the number of callbacks registered for the "disconnected" event.
+   * @returns {number}
+   */
+  get disconnectedCallSize() {
+    const list = this.#callbacks.get('disconnected');
+    return Array.isArray(list) ? list.length : 0;
+  }
+
+  /**
+   * Returns the number of callbacks registered for the "mapped-key-start" event.
+   * @returns {number}
+   */
+  get mappedKeyStartCallSize() {
+    const list = this.#callbacks.get('mapped-key-start');
+    return Array.isArray(list) ? list.length : 0;
+  }
+
+  /**
+   * Returns the number of callbacks registered for the "mapped-key-end" event.
+   * @returns {number}
+   */
+  get mappedKeyEndCallSize() {
+    const list = this.#callbacks.get('mapped-key-end');
+    return Array.isArray(list) ? list.length : 0;
+  }
+
+  /**
+   * Returns the number of callbacks registered for the "mapped-input-start" event.
+   * @returns {number}
+   */
+  get mappedInputStartCallSize() {
+    const list = this.#callbacks.get('mapped-input-start');
+    return Array.isArray(list) ? list.length : 0;
+  }
+
+  /**
+   * Returns the number of callbacks registered for the "mapped-input-end" event.
+   * @returns {number}
+   */
+  get mappedInputEndCallSize() {
+    const list = this.#callbacks.get('mapped-input-end');
+    return Array.isArray(list) ? list.length : 0;
+  }
+
+  //////////////////////////////////////
 
   /**
    * Returns the current input mode (e.g., 'keyboard-only', 'gamepad-only', or 'both').
