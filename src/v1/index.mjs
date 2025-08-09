@@ -55,15 +55,6 @@ import {
   readBase64Blob,
   fetchText,
 } from './basics/html.mjs';
-import {
-  getHtmlElBorders,
-  getHtmlElBordersWidth,
-  getHtmlElMargin,
-  getHtmlElPadding,
-  areHtmlElsColliding,
-  isInViewport,
-  isScrolledIntoView,
-} from './basics/html_deprecated.mjs';
 import TinyDragDropDetector from './libs/TinyDragDropDetector.mjs';
 
 import {
@@ -184,8 +175,6 @@ export {
   getElsRelativeCenterOffset,
   getElsCollDirDepth,
   getElsCollDetails,
-  isInViewport,
-  isScrolledIntoView,
   safeTextTrim,
   installWindowHiddenScript,
   genFibonacciSeq,
@@ -194,10 +183,6 @@ export {
   dirSizeAsync,
   listFilesAsync,
   listDirsAsync,
-  getHtmlElBorders,
-  getHtmlElBordersWidth,
-  getHtmlElMargin,
-  getHtmlElPadding,
   getLatestBackupPath,
   fetchJson,
   fetchText,
@@ -234,7 +219,6 @@ export {
   isFullScreenMode,
   onFullScreenChange,
   offFullScreenChange,
-  areHtmlElsColliding,
   isJsonObject,
   arraySortPositions,
   formatBytes,

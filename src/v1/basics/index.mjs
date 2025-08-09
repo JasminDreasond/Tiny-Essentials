@@ -11,15 +11,6 @@ import {
   readBase64Blob,
   fetchText,
 } from './html.mjs';
-import {
-  areHtmlElsColliding,
-  getHtmlElBorders,
-  getHtmlElBordersWidth,
-  getHtmlElMargin,
-  getHtmlElPadding,
-  isInViewport,
-  isScrolledIntoView,
-} from './html_deprecated.mjs';
 import { extendObjType, reorderObjTypeOrder, cloneObjTypeOrder, objType } from './objFilter.mjs';
 import { countObj, isJsonObject } from './objChecker.mjs';
 import {
@@ -85,15 +76,9 @@ export {
   getElsRelativeCenterOffset,
   getElsCollDirDepth,
   getElsCollDetails,
-  isInViewport,
-  isScrolledIntoView,
   safeTextTrim,
   installWindowHiddenScript,
   genFibonacciSeq,
-  getHtmlElBorders,
-  getHtmlElBordersWidth,
-  getHtmlElMargin,
-  getHtmlElPadding,
   fetchJson,
   fetchText,
   readJsonBlob,
@@ -107,7 +92,6 @@ export {
   isFullScreenMode,
   onFullScreenChange,
   offFullScreenChange,
-  areHtmlElsColliding,
   isJsonObject,
   arraySortPositions,
   formatBytes,
