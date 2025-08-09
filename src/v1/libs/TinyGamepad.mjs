@@ -646,24 +646,24 @@ class TinyGamepad {
       ? key
       : `${key}${settings.value > 0 ? '+' : settings.value < 0 ? '-' : ''}`;
 
-    /** @type {boolean} */
-    let ivResult = false;
+    /** @type {boolean|null} */
+    let keyResult = null;
 
     // Key Map
     if (settings.type !== 'move' && settings.type !== 'hold') {
       if (isPressed) {
-        ivResult =
+        if (
           // Normal
           (!isAxis && !this.#activeMappedKeys.has(key)) ||
           // Axis
           (isAxis &&
             !this.#activeMappedKeys.has(key) &&
             !this.#activeMappedKeys.has(`${key}+`) &&
-            !this.#activeMappedKeys.has(`${key}-`));
-
-        if (ivResult) {
+            !this.#activeMappedKeys.has(`${key}-`))
+          ) {
           if (this.#timeComboKeys === 0) this.#timeComboKeys = Date.now();
           this.#activeMappedKeys.add(activeKey);
+          keyResult = true;
 
           if (this.#intervalComboKeys) clearTimeout(this.#intervalComboKeys);
           this.#comboKeys.push(activeKey);
@@ -682,19 +682,19 @@ class TinyGamepad {
             });
         }
       } else {
-        ivResult =
+        if (
           // Normal
           (!isAxis && this.#activeMappedKeys.has(key)) ||
           // Axis
           (isAxis &&
             (this.#activeMappedKeys.has(key) ||
               this.#activeMappedKeys.has(`${key}+`) ||
-              this.#activeMappedKeys.has(`${key}-`)));
-
-        if (ivResult) {
+              this.#activeMappedKeys.has(`${key}-`)))
+        ) {
           this.#activeMappedKeys.delete(key);
           this.#activeMappedKeys.delete(`${key}+`);
           this.#activeMappedKeys.delete(`${key}-`);
+          keyResult = false;
           /** @type {MappedKeyCallback[]} */
           // @ts-ignore
           const cbs = this.#callbacks.get('mapped-key-end') ?? [];
@@ -723,15 +723,20 @@ class TinyGamepad {
 
     // Input Map
     for (const [logical, physical] of this.#inputMap.entries()) {
-      // Active Mapped inputs script
-      if (
-        (typeof physical === 'string' && activeKey === physical) ||
+      /** @type {(tinyKey: string) => boolean} */
+      const checkPhysical = (tinyKey) =>(typeof physical === 'string' && tinyKey === physical) ||
         (Array.isArray(physical) &&
-          physical.findIndex((value, i) => activeKey === physical[i]) > -1)
-      ) {
+          physical.findIndex((value, i) => tinyKey === physical[i]) > -1);
+
+      const mainKey = checkPhysical(activeKey);
+      const baseAxisKeyP = isAxis && checkPhysical(`${key}+`);
+      const baseAxisKeyN = isAxis && checkPhysical(`${key}-`);
+
+      // Active Mapped inputs script
+      if (mainKey || baseAxisKeyP || baseAxisKeyN) {
         // Manage input list
-        if (isPressed) {
-          if (ivResult) {
+        if (isPressed && mainKey) {
+          if (keyResult || !this.#activeMappedInputs.has(logical)) {
             if (this.#timeMappedInputs === 0) this.#timeMappedInputs = Date.now();
             this.#activeMappedInputs.add(logical);
 
@@ -754,7 +759,7 @@ class TinyGamepad {
               });
           }
         } else {
-          if (ivResult) {
+          if (!keyResult || this.#activeMappedInputs.has(logical)) {
             this.#activeMappedInputs.delete(logical);
             if (this.#activeMappedInputs.size < 1) this.#timeMappedInputs = 0;
             /** @type {MappedInputCallback[]} */
