@@ -18,6 +18,12 @@ The user prefers that, when asking for JavaScript code without having authorized
 The user prefers that, when asking for JavaScript code and not authorizing the use of jsDoc, if jsDoc is necessary, it should only include the types of the function values, without descriptions.
 ```
 
+**Throws aligned with the script’s jsDoc**
+
+```
+Add throws that help validate if the arguments contradict the jsDocs:
+```
+
 **Avoid using `@private` or `@public`**
 
 ```

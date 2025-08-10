@@ -18,6 +18,11 @@ A usuária prefere que, quando ela pedir para escrever um JavaScript sem ter aut
 A usuária prefere que, quando pedir para escrever um código JavaScript e não autorizar o uso de jsDoc, se o jsDoc for necessário, ele seja gerado apenas com os tipos dos valores nas funções, sem descrições.
 ```
 
+**Throws alinhados com o jsDoc do script**
+```
+coloque throws que ajudam a validar se os argumentos contradiz com os jsDocs:
+```
+
 **Evitar o uso de `@private` ou `@public`**
 
 ```
