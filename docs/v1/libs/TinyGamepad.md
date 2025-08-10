@@ -1,10 +1,19 @@
-# 🎮 Type Definitions
+# 🎮 TinyGamepad
+
+TinyGamepad is a powerful and flexible JavaScript library designed to manage gamepad, keyboard, and mouse inputs seamlessly.
+It supports advanced features like input mapping, combo detection, haptic feedback, and multiple event callbacks — all in a clean, easy-to-use API.
+
+Perfect for game developers and interactive apps who want precise control over input devices without hassle.
+
+---
+
+## 🎮 Type Definitions
 
 This section documents the key **types**, **structures**, and **callback signatures** used by **TinyGamepad** for handling gamepad, keyboard, and mouse inputs.
 
 ---
 
-## 🔑 `KeyStatus`
+### 🔑 `KeyStatus`
 
 Represents the **status** of a key or button.
 
@@ -18,7 +27,7 @@ type KeyStatus = {
 
 ---
 
-## 🎯 `InputMode`
+### 🎯 `InputMode`
 
 Defines the available **input modes**:
 
@@ -32,7 +41,7 @@ type InputMode = 'gamepad-only' | 'keyboard-only' | 'both';
 
 ---
 
-## 🗺️ `MappedInputCallback`
+### 🗺️ `MappedInputCallback`
 
 Callback fired when a **mapped logical input** (e.g., `"Jump"`, `"Shoot"`) is activated or deactivated.
 
@@ -46,7 +55,7 @@ type MappedInputCallback = (payload: {
 
 ---
 
-## ⌨️ `MappedKeyCallback`
+### ⌨️ `MappedKeyCallback`
 
 Callback fired when a **mapped key** (e.g., `"KeyA"`, `"KeyB"`) is activated or deactivated.
 
@@ -59,7 +68,7 @@ type MappedKeyCallback = (payload: {
 
 ---
 
-## 📦 `PayloadCallback`
+### 📦 `PayloadCallback`
 
 Generic callback for handling **input events**:
 
@@ -69,7 +78,7 @@ type PayloadCallback = (payload: InputPayload | InputAnalogPayload) => void;
 
 ---
 
-## 🔌 `ConnectionCallback`
+### 🔌 `ConnectionCallback`
 
 Callback for **gamepad connection events**:
 
@@ -79,7 +88,7 @@ type ConnectionCallback = (payload: ConnectionPayload) => void;
 
 ---
 
-## 🕹️ `InputSequenceCallback`
+### 🕹️ `InputSequenceCallback`
 
 Fired when a **registered input sequence** is fully activated:
 
@@ -89,7 +98,7 @@ type InputSequenceCallback = (timestamp: number) => void;
 
 ---
 
-## ⌨️ `KeySequenceCallback`
+### ⌨️ `KeySequenceCallback`
 
 Fired when a **registered key sequence** is fully activated:
 
@@ -99,7 +108,7 @@ type KeySequenceCallback = (timestamp: number) => void;
 
 ---
 
-## 📚 `CallbackList`
+### 📚 `CallbackList`
 
 Union of all possible **callback types** in the event system:
 
@@ -113,7 +122,7 @@ type CallbackList =
 
 ---
 
-## 🎮 `GamepadDeviceSource`
+### 🎮 `GamepadDeviceSource`
 
 Specific gamepad input sources:
 
@@ -126,7 +135,7 @@ type GamepadDeviceSource = 'gamepad-analog' | 'gamepad-button';
 
 ---
 
-## 🖱️ `DeviceSource`
+### 🖱️ `DeviceSource`
 
 All possible **physical input sources**:
 
@@ -141,7 +150,7 @@ type DeviceSource = 'mouse' | 'keyboard' | GamepadDeviceSource;
 
 ---
 
-## 📍 `DeviceInputType`
+### 📍 `DeviceInputType`
 
 Describes **input interaction types**:
 
@@ -157,7 +166,7 @@ type DeviceInputType = 'up' | 'down' | 'hold' | 'change' | 'move';
 
 ---
 
-## 🆙 `InputPayload`
+### 🆙 `InputPayload`
 
 Payload structure for **digital button input events**:
 
@@ -181,7 +190,7 @@ type InputPayload = {
 
 ---
 
-## 📏 `InputAnalogPayload`
+### 📏 `InputAnalogPayload`
 
 Payload structure for **analog input events**:
 
@@ -202,7 +211,7 @@ type InputAnalogPayload = {
 
 ---
 
-## 🗂️ `InputEvents`
+### 🗂️ `InputEvents`
 
 Internal structure for **digital input tracking**:
 
@@ -225,7 +234,7 @@ type InputEvents = {
 
 ---
 
-## 🎚️ `InputAnalogEvents`
+### 🎚️ `InputAnalogEvents`
 
 Internal structure for **analog input tracking**:
 
@@ -245,7 +254,7 @@ type InputAnalogEvents = {
 
 ---
 
-## 🔌 `ConnectionPayload`
+### 🔌 `ConnectionPayload`
 
 Payload for **gamepad connection events**:
 
@@ -259,7 +268,7 @@ type ConnectionPayload = {
 
 ---
 
-## ⚙️ `ExportedConfig`
+### ⚙️ `ExportedConfig`
 
 Structure for **exporting and importing TinyGamepad configurations**:
 
@@ -276,9 +285,9 @@ type ExportedConfig = {
 
 ---
 
-# 🎮 Constructor & Input Event Initialization
+## 🎮 Constructor & Input Event Initialization
 
-## ⚙️ Constructor
+### ⚙️ Constructor
 
 ```js
 constructor({
@@ -295,7 +304,7 @@ constructor({
 
 Initializes a new instance of **TinyGamepad** with customizable input behavior.
 
-### 🔑 Parameters:
+#### 🔑 Parameters:
 
 | Name                    | Type                | Default        | Description                                                                         |          |                                      |
 | ----------------------- | ------------------- | -------------- | ----------------------------------------------------------------------------------- | -------- | ------------------------------------ |
@@ -308,26 +317,26 @@ Initializes a new instance of **TinyGamepad** with customizable input behavior.
 | `allowMouse`            | `boolean`           | `false`        | Whether mouse input events should be treated as triggers.                           |          |                                      |
 | `elementBase`           | `Window \| Element` | `window`       | DOM element or window to bind keyboard and mouse event listeners.                   |          |                                      |
 
-### 🚨 Validation:
+#### 🚨 Validation:
 
 * Throws `TypeError` or `RangeError` on invalid types or out-of-range values.
 * Ensures only valid configurations are accepted.
 
-### 🔥 Behavior:
+#### 🔥 Behavior:
 
 * Initializes gamepad event listeners if mode includes `'gamepad-only'` or `'both'`.
 * Initializes keyboard and mouse listeners if mode includes `'keyboard-only'` or `'both'`.
 
 ---
 
-# 🎮 Input Mapping & Sequence Management
+## 🎮 Input Mapping & Sequence Management
 
-## ⏳ `awaitInputMapping({ timeout, eventName, canMove })`
+### ⏳ `awaitInputMapping({ timeout, eventName, canMove })`
 
 Waits for a single input event from the user and resolves with detailed input info.
 Useful for input configuration screens where the user chooses a key/button to assign.
 
-### ⚙️ Parameters (all optional):
+#### ⚙️ Parameters (all optional):
 
 | Name        | Type    | Default          | Description                                              |
 | ----------- | ------- | ---------------- | -------------------------------------------------------- |
@@ -335,7 +344,7 @@ Useful for input configuration screens where the user chooses a key/button to as
 | `eventName` | string  | `'MappingInput'` | Temporary logical event name used internally             |
 | `canMove`   | boolean | `false`          | Whether to accept movement inputs like mouse move        |
 
-### 🔄 Returns:
+#### 🔄 Returns:
 
 A `Promise` that resolves with an object:
 
@@ -349,7 +358,7 @@ A `Promise` that resolves with an object:
 
 ---
 
-## 🛠️ `mapInput(logicalName, physicalInput)`
+### 🛠️ `mapInput(logicalName, physicalInput)`
 
 Maps one or multiple physical inputs to a logical input name.
 
@@ -360,7 +369,7 @@ Maps one or multiple physical inputs to a logical input name.
 
 ---
 
-## ❌ `unmapInput(logicalName)`
+### ❌ `unmapInput(logicalName)`
 
 Removes the mapping for the specified logical input.
 
@@ -370,7 +379,7 @@ Removes the mapping for the specified logical input.
 
 ---
 
-## 🔍 `hasMappedInput(logicalName): boolean`
+### 🔍 `hasMappedInput(logicalName): boolean`
 
 Checks if a logical input name has any physical inputs mapped.
 
@@ -380,7 +389,7 @@ Checks if a logical input name has any physical inputs mapped.
 
 ---
 
-## 📋 `getMappedInput(logicalName): string | string[]`
+### 📋 `getMappedInput(logicalName): string | string[]`
 
 Gets the physical input(s) mapped to a logical input name.
 
@@ -390,15 +399,15 @@ Gets the physical input(s) mapped to a logical input name.
 
 ---
 
-## 🧹 `clearMapInputs()`
+### 🧹 `clearMapInputs()`
 
 Clears **all** logical to physical input mappings.
 
 ---
 
-# 🔗 Input Sequences — Logical & Physical
+## 🔗 Input Sequences — Logical & Physical
 
-### ➡️ `registerInputSequence(sequence, callback)`
+#### ➡️ `registerInputSequence(sequence, callback)`
 
 Registers a sequence of logical inputs that triggers a callback when fully held.
 
@@ -409,163 +418,163 @@ Registers a sequence of logical inputs that triggers a callback when fully held.
 
 ---
 
-### ❌ `unregisterInputSequence(sequence)`
+#### ❌ `unregisterInputSequence(sequence)`
 
 Removes a registered logical input sequence.
 
 ---
 
-### 🧹 `unregisterAllInputSequences()`
+#### 🧹 `unregisterAllInputSequences()`
 
 Removes **all** registered logical input sequences.
 
 ---
 
-### 🔍 `hasInputSequence(sequence): boolean`
+#### 🔍 `hasInputSequence(sequence): boolean`
 
 Checks if a logical input sequence is registered.
 
 ---
 
-### ➡️ `registerKeySequence(sequence, callback)`
+#### ➡️ `registerKeySequence(sequence, callback)`
 
 Same as `registerInputSequence` but for **physical key** sequences.
 
 ---
 
-### ❌ `unregisterKeySequence(sequence)`
+#### ❌ `unregisterKeySequence(sequence)`
 
 Unregisters a physical key sequence.
 
 ---
 
-### 🧹 `unregisterAllKeySequences()`
+#### 🧹 `unregisterAllKeySequences()`
 
 Removes all physical key sequences.
 
 ---
 
-### 🔍 `hasKeySequence(sequence): boolean`
+#### 🔍 `hasKeySequence(sequence): boolean`
 
 Checks if a physical key sequence is registered.
 
 ---
 
-# ⏳ Combo Logical Keys Management
+## ⏳ Combo Logical Keys Management
 
-### 🔄 `renewComboMapped()`
+#### 🔄 `renewComboMapped()`
 
 Refreshes the timer that tracks the currently held combo logical keys.
 Useful to prevent premature combo resets when keys are still being held.
 
 ---
 
-### ❌ `resetComboMapped()`
+#### ❌ `resetComboMapped()`
 
 Resets and clears all current combo keys and combo inputs, stopping timers and resetting timestamps.
 
 ---
 
-# 🎯 Event Listener Methods for Input Events
+## 🎯 Event Listener Methods for Input Events
 
 This section covers how to register, unregister, and manage callbacks for various input-related events.
 Each event type has methods for regular (`on`), one-time (`once`), prepend, and removal of callbacks (`off`).
 
 ---
 
-## 🔑 Mapped Key Events
+### 🔑 Mapped Key Events
 
-### `onMappedKeyStart(callback)`
+#### `onMappedKeyStart(callback)`
 
 Register callback for when a mapped key is **pressed down**.
 
-### `onceMappedKeyStart(callback)`
+#### `onceMappedKeyStart(callback)`
 
 Register a one-time callback that triggers once when a mapped key is pressed.
 
-### `prependMappedKeyStart(callback)`
+#### `prependMappedKeyStart(callback)`
 
 Adds a callback at the start of the callback list for mapped key start.
 
-### `offMappedKeyStart(callback)`
+#### `offMappedKeyStart(callback)`
 
 Removes a specific callback from mapped key start event.
 
-### `offAllMappedKeyStart()`
+#### `offAllMappedKeyStart()`
 
 Removes **all** callbacks from mapped key start event.
 
 ---
 
-### `onMappedKeyEnd(callback)`
+#### `onMappedKeyEnd(callback)`
 
 Register callback for when a mapped key is **released**.
 
-### `onceMappedKeyEnd(callback)`
+#### `onceMappedKeyEnd(callback)`
 
 One-time callback for mapped key release.
 
-### `prependMappedKeyEnd(callback)`
+#### `prependMappedKeyEnd(callback)`
 
 Prepends callback for mapped key release event.
 
-### `offMappedKeyEnd(callback)`
+#### `offMappedKeyEnd(callback)`
 
 Removes a callback from mapped key release event.
 
-### `offAllMappedKeyEnd()`
+#### `offAllMappedKeyEnd()`
 
 Removes all callbacks from mapped key release event.
 
 ---
 
-## 🎛️ Mapped Input Events (includes buttons, analogs, sensors, etc.)
+### 🎛️ Mapped Input Events (includes buttons, analogs, sensors, etc.)
 
-### `onMappedInputStart(callback)`
+#### `onMappedInputStart(callback)`
 
 Triggered when any mapped input is activated (pressed or engaged).
 
-### `onceMappedInputStart(callback)`
+#### `onceMappedInputStart(callback)`
 
 One-time callback for mapped input activation.
 
-### `prependMappedInputStart(callback)`
+#### `prependMappedInputStart(callback)`
 
 Prepends callback for mapped input start.
 
-### `offMappedInputStart(callback)`
+#### `offMappedInputStart(callback)`
 
 Removes a callback from mapped input start.
 
-### `offAllMappedInputStart()`
+#### `offAllMappedInputStart()`
 
 Removes all callbacks from mapped input start.
 
 ---
 
-### `onMappedInputEnd(callback)`
+#### `onMappedInputEnd(callback)`
 
 Triggered when a mapped input is deactivated (released or disengaged).
 
-### `onceMappedInputEnd(callback)`
+#### `onceMappedInputEnd(callback)`
 
 One-time callback for mapped input release.
 
-### `prependMappedInputEnd(callback)`
+#### `prependMappedInputEnd(callback)`
 
 Prepends callback for mapped input end.
 
-### `offMappedInputEnd(callback)`
+#### `offMappedInputEnd(callback)`
 
 Removes a callback from mapped input end.
 
-### `offAllMappedInputEnd()`
+#### `offAllMappedInputEnd()`
 
 Removes all callbacks from mapped input end.
 
 ---
 
-## 🧩 Logical Input Events by Name
+### 🧩 Logical Input Events by Name
 
 These methods use the logical input names to manage callbacks for different stages of input:
 
@@ -580,7 +589,7 @@ These methods use the logical input names to manage callbacks for different stag
 
 ---
 
-### Common method patterns for logical inputs:
+#### Common method patterns for logical inputs:
 
 * `on<EventType>(logicalName, callback)`
   Register a callback for the event.
@@ -596,7 +605,7 @@ These methods use the logical input names to manage callbacks for different stag
 
 ---
 
-### Example: Logical Input "Jump" pressed down event
+#### Example: Logical Input "Jump" pressed down event
 
 ```js
 gamepad.onInputStart('Jump', callback);
@@ -607,7 +616,7 @@ gamepad.offInputStart('Jump', callback);
 
 ---
 
-### Detailed List of Methods:
+#### Detailed List of Methods:
 
 | Method                                | Description                   |
 | ------------------------------------- | ----------------------------- |
@@ -653,15 +662,15 @@ gamepad.offInputStart('Jump', callback);
 
 ---
 
-# 📋 Callback Management for Logical Inputs
+## 📋 Callback Management for Logical Inputs
 
 These methods help you inspect and control the callbacks registered for logical inputs and their event types.
 
 ---
 
-## 🔍 Get Registered Callbacks
+### 🔍 Get Registered Callbacks
 
-### `getCalls(logicalName, type = 'all')`
+#### `getCalls(logicalName, type = 'all')`
 
 Returns a **shallow clone** of the callback list for a given logical input and event type.
 
@@ -671,9 +680,9 @@ Returns a **shallow clone** of the callback list for a given logical input and e
 
 ---
 
-## ❌ Remove All Callbacks for an Input
+### ❌ Remove All Callbacks for an Input
 
-### `offAllInputs(logicalName, type = 'all')`
+#### `offAllInputs(logicalName, type = 'all')`
 
 Removes **all callbacks** for a specific logical input and event type.
 
@@ -682,25 +691,25 @@ Removes **all callbacks** for a specific logical input and event type.
 
 ---
 
-## 🔢 Count Registered Callbacks
+### 🔢 Count Registered Callbacks
 
-### `getCallSize(logicalName, type = 'all')`
+#### `getCallSize(logicalName, type = 'all')`
 
 Returns the number of callbacks registered for the given logical input and event type.
 
 ---
 
-# 🎮 Haptic Feedback (Vibration) Control
+## 🎮 Haptic Feedback (Vibration) Control
 
 ---
 
-## ⚙️ Default Haptic Effect Settings
+### ⚙️ Default Haptic Effect Settings
 
 * Private field storing default effect type and parameters (duration, intensity, etc.)
 
 ---
 
-## 🔧 `setDefaultHapticEffect(type, params)`
+### 🔧 `setDefaultHapticEffect(type, params)`
 
 Sets the default haptic feedback effect for gamepad vibration.
 
@@ -709,7 +718,7 @@ Sets the default haptic feedback effect for gamepad vibration.
 
 ---
 
-## 🎵 `hasHapticEffect()`
+### 🎵 `hasHapticEffect()`
 
 Checks if the currently connected gamepad supports vibration feedback.
 
@@ -717,7 +726,7 @@ Checks if the currently connected gamepad supports vibration feedback.
 
 ---
 
-## 📳 `vibrate(params?, type?)`
+### 📳 `vibrate(params?, type?)`
 
 Triggers a vibration on the connected gamepad using either custom or default parameters.
 
@@ -725,25 +734,25 @@ Triggers a vibration on the connected gamepad using either custom or default par
 
 ---
 
-# 🚫 Ignoring Specific Input IDs
+## 🚫 Ignoring Specific Input IDs
 
 ---
 
-## `ignoreId(id)`
+### `ignoreId(id)`
 
 Adds an input ID to the ignored list (won’t trigger events).
 
-## `unignoreId(id)`
+### `unignoreId(id)`
 
 Removes an input ID from the ignored list.
 
 ---
 
-# 🔌 Gamepad Connection Events
+## 🔌 Gamepad Connection Events
 
 ---
 
-## Connection Callbacks
+### Connection Callbacks
 
 | Method                 | Description                            |
 | ---------------------- | -------------------------------------- |
@@ -755,7 +764,7 @@ Removes an input ID from the ignored list.
 
 ---
 
-## Disconnection Callbacks
+### Disconnection Callbacks
 
 | Method                    | Description                               |
 | ------------------------- | ----------------------------------------- |
@@ -767,39 +776,39 @@ Removes an input ID from the ignored list.
 
 ---
 
-# 🎮 Gamepad Info and State
+## 🎮 Gamepad Info and State
 
 ---
 
-## `hasGamepad()`
+### `hasGamepad()`
 
 Returns `true` if a gamepad is currently connected, else `false`.
 
 ---
 
-## `getGamepad()`
+### `getGamepad()`
 
 Returns the connected `Gamepad` instance. Throws error if none connected.
 
 ---
 
-## Button Last State Tracking
+### Button Last State Tracking
 
-### `hasLastButtonState(index)`
+#### `hasLastButtonState(index)`
 
 Checks if there is a recorded last state for button index.
 
-### `getLastButtonState(index)`
+#### `getLastButtonState(index)`
 
 Returns a copy of the last known state for a button index. Throws if none recorded.
 
 ---
 
-# ⚙️ Configuration Export & Import
+## ⚙️ Configuration Export & Import
 
 ---
 
-## 💾 `exportConfig()`
+### 💾 `exportConfig()`
 
 Exports the current TinyGamepad settings as a plain object, ready for saving or serialization.
 Includes: device filters, ignored IDs, input mappings, sensitivities, and timeouts.
@@ -807,7 +816,7 @@ Includes: device filters, ignored IDs, input mappings, sensitivities, and timeou
 
 ---
 
-## 📥 `importConfig(json)`
+### 📥 `importConfig(json)`
 
 Imports and applies a configuration object or JSON string to update TinyGamepad settings.
 
@@ -817,78 +826,78 @@ Imports and applies a configuration object or JSON string to update TinyGamepad 
 
 ---
 
-# 🔄 Callback Lists Getters
+## 🔄 Callback Lists Getters
 
 ---
 
-## 🔑 Mapped Key Callbacks
+### 🔑 Mapped Key Callbacks
 
 * `mappedKeyStartCalls` — Gets cloned list of callbacks for `"mapped-key-start"` event.
 * `mappedKeyEndCalls` — Gets cloned list of callbacks for `"mapped-key-end"` event.
 
 ---
 
-## 🔀 Combo Keys and Inputs
+### 🔀 Combo Keys and Inputs
 
 * `comboMappedKeys` — Clone of currently held **key combo** logical inputs.
 * `comboMappedInputs` — Clone of currently held **combo logical inputs**.
 
 ---
 
-# 📜 Input Sequence Info
+## 📜 Input Sequence Info
 
 ---
 
-## 🔢 Key Sequences
+### 🔢 Key Sequences
 
 * `keySequenceSize` — Number of registered input sequences.
 * `keySequences` — Clone array of all input sequence callbacks.
 
 ---
 
-## 🔑 Active Mapped Keys & Inputs
+### 🔑 Active Mapped Keys & Inputs
 
 * `activeMappedKeys` — Clone of currently held mapped logical keys.
 * `activeMappedInputs` — Clone of currently held mapped logical inputs.
 
 ---
 
-# 🔑 Mapped Input Callbacks
+## 🔑 Mapped Input Callbacks
 
 * `mappedInputStartCalls` — Cloned callbacks for `"mapped-input-start"`.
 * `mappedInputEndCalls` — Cloned callbacks for `"mapped-input-end"`.
 
 ---
 
-# 🧩 Input Sequences (Again)
+## 🧩 Input Sequences (Again)
 
 * `inputSequenceSize` — Number of registered input sequences (physical/logical).
 * `inputSequences` — Clone array of all input sequence callbacks.
 
 ---
 
-# 🗺️ Logical-to-Physical Mapping Info
+## 🗺️ Logical-to-Physical Mapping Info
 
 * `mappedInputs` — Shallow clone object of all logical → physical input mappings.
 * `mappedInputSize` — Number of logical inputs currently mapped.
 
 ---
 
-# 🔌 Connection Event Callbacks
+## 🔌 Connection Event Callbacks
 
 * `connectedCalls` — Clone of callbacks for `"connected"` event.
 * `disconnectedCalls` — Clone of callbacks for `"disconnected"` event.
 
 ---
 
-# 🚫 Ignored Devices & Held Keys
+## 🚫 Ignored Devices & Held Keys
 
 * `ignoredDeviceIds` — Clone of currently ignored device IDs.
 * `heldKeys` — Clone of currently held raw keys.
 
 ---
 
-# 📊 Event Counts & Sizes
+## 📊 Event Counts & Sizes
 
 * `eventsSize` — Total number of registered callbacks (all events).
 * `callSize` — Number of unique event keys (types).
@@ -901,21 +910,21 @@ Imports and applies a configuration object or JSON string to update TinyGamepad 
 
 ---
 
-# 🎮 Last Button and Axis States
+## 🎮 Last Button and Axis States
 
 * `lastButtonStates` — Snapshot array of button statuses from last update cycle.
 * `lastAxes` — Snapshot array of axis values (thumbsticks, triggers) from last update.
 
 ---
 
-# 🎛️ Input Modes and Event Targets
+## 🎛️ Input Modes and Event Targets
 
 * `inputMode` — Current input mode (e.g., `'keyboard-only'`, `'gamepad-only'`, `'both'`).
 * `elementBase` — DOM element or window used for event bindings.
 
 ---
 
-# ⏰ Timestamps & Timeouts
+## ⏰ Timestamps & Timeouts
 
 * `timeComboInputs` — Timestamp of last mapped input combo.
 * `timeComboKeys` — Timestamp of last raw key combo.
@@ -924,24 +933,24 @@ Imports and applies a configuration object or JSON string to update TinyGamepad 
 
 ---
 
-# 🎚️ Sensitivity & Dead Zone Settings
+## 🎚️ Sensitivity & Dead Zone Settings
 
 * `axisActiveSensitivity` — Sensitivity threshold for axis movement to count as "active" input (getter/setter).
 * `deadZone` — Dead zone threshold for analog inputs (getter/setter).
 
 ---
 
-# 🆔 Device Identification
+## 🆔 Device Identification
 
 * `expectedId` — Expected device ID filter (getter/setter).
 
 ---
 
-# 🧹 Lifecycle & Cleanup
+## 🧹 Lifecycle & Cleanup
 
 ---
 
-## 🔒 `isDestroyed`
+### 🔒 `isDestroyed`
 
 **Getter** that returns whether this TinyGamepad instance has been destroyed.
 
@@ -950,7 +959,7 @@ Imports and applies a configuration object or JSON string to update TinyGamepad 
 
 ---
 
-## 🗑️ `destroy()`
+### 🗑️ `destroy()`
 
 Cleans up and completely stops all internal input monitoring and loops.
 
