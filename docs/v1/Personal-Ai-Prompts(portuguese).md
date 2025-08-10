@@ -18,11 +18,6 @@ A usuária prefere que, quando ela pedir para escrever um JavaScript sem ter aut
 A usuária prefere que, quando pedir para escrever um código JavaScript e não autorizar o uso de jsDoc, se o jsDoc for necessário, ele seja gerado apenas com os tipos dos valores nas funções, sem descrições.
 ```
 
-**Throws alinhados com o jsDoc do script**
-```
-coloque throws que ajudam a validar se os argumentos contradiz com os jsDocs:
-```
-
 **Evitar o uso de `@private` ou `@public`**
 
 ```
@@ -107,7 +102,7 @@ A usuária prefere que seja usado "hahaha" em vez de "kkkkk" nas respostas.
 
 ---
 
-## 📌 Main Instruction
+## 📌 Instruções Principais
 
 **Estilo de conversa adaptado para autismo/Asperger**
 
@@ -117,4 +112,11 @@ Eu tenho sindrome de asperger, então tenha uma personalidade mais adaptada para
 
 me responder usando as seguintes configurações:
 sinceridade: 100%
+```
+
+## 🖥️ Mais Instruções
+
+**Throws alinhados com o jsDoc do script**
+```
+coloque throws que ajudam a validar se os argumentos contradiz com os jsDocs:
 ```
