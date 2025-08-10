@@ -413,6 +413,20 @@
     </div>
 
     <div class="section">
+      <h2>⏳ Await Input Mapping</h2>
+      <div class="flex">
+        <label>
+          Logical Input Name:
+          <input id="awaitLogicalName" type="text" placeholder="e.g. Shoot" />
+        </label>
+        <button id="awaitInputBtn">Await Input</button>
+      </div>
+      <div id="awaitStatus" style="margin-top: 8px; font-size: 0.9rem; color: #aaa">
+        Click "Await Input" and press a key or button...
+      </div>
+    </div>
+
+    <div class="section">
       <button id="exportBtn">📤 Export Config (JSON)</button>
       <button id="importBtn">📥 Import Config</button>
       <textarea id="configJson" placeholder="Paste exported config here..."></textarea>
@@ -676,13 +690,14 @@
           updateUI();
           updateSensorFeed();
           requestAnimationFrame(update);
+          updateMappings();
         };
         update();
       };
 
       const updateMappings = () => {
         const pre = document.getElementById('inputMappings');
-        const mapped = [...tg.activeMappedInputs.entries()]
+        const mapped = Object.entries(tg.mappedInputs)
           .map(([k, v]) => `${k} → ${Array.isArray(v) ? v.join(', ') : v}`)
           .join('\n');
         pre.textContent = mapped || 'No mappings yet.';
@@ -804,7 +819,6 @@
         );
 
         applyDefaultMappings();
-        updateMappings();
         startLiveUI();
         log('TinyGamepad initialized!');
         document.getElementById('initBtn').setAttribute('disabled', true);
@@ -821,7 +835,6 @@
         tg.onInput(logical, (evt) => {
           if (evt.input) log(`Mapped input "${logical}" triggered via ${evt.type} (${evt.input})`);
         });
-        updateMappings();
       });
 
       document.getElementById('exportBtn').addEventListener('click', () => {
@@ -835,7 +848,6 @@
         try {
           const json = document.getElementById('configJson').value;
           tg.importConfig(json);
-          updateMappings();
           log('Configuration imported.');
         } catch (err) {
           alert('Invalid JSON');
@@ -846,6 +858,33 @@
         if (!tg) return;
         const success = tg.vibrate?.({ duration: 200 });
         log(success ? 'Vibration triggered.' : 'Vibration not supported.');
+      });
+
+      const awaitBtn = document.getElementById('awaitInputBtn');
+      const awaitNameInput = document.getElementById('awaitLogicalName');
+      const awaitStatus = document.getElementById('awaitStatus');
+
+      awaitBtn.addEventListener('click', async () => {
+        const logicalName = awaitNameInput.value.trim();
+        if (!logicalName) {
+          alert('Please enter a logical name first.');
+          return;
+        }
+
+        awaitStatus.textContent = 'Waiting for input...';
+
+        try {
+          // Chama o método para aguardar input
+          const input = await tg.awaitInputMapping();
+
+          // Mapeia automaticamente
+          tg.mapInput(logicalName, input.key);
+
+          awaitStatus.textContent = `Mapped "${logicalName}" to "${input.key}"`;
+        } catch (err) {
+          console.error(err);
+          awaitStatus.textContent = 'Await cancelled or failed.';
+        }
       });
     </script>
   </body>

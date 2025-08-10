@@ -284,6 +284,9 @@ class TinyGamepad {
    */
   #keySequences = new Map();
 
+  /** @type {Map<string, { value: number; value2: number }>} */
+  #keyOldValue = new Map();
+
   /** @type {Record<string, string>} */
   static #specialMap = {
     ' ': 'Space',
@@ -1039,39 +1042,52 @@ class TinyGamepad {
         }
       }
 
-      // -------------------------
-      //  MATCH CHECKER (for physical <-> logical link)
-      // -------------------------
-      const matches =
-        physical === '*' ||
-        physical === key ||
-        (Array.isArray(physical) && physical.includes(settings.key));
+      /** @type {string[]} */
+      const keys = [];
+      if (!isAxis || settings.value !== 0) keys.push(activeKey);
+      else {
+        const { value: valueN } = this.#keyOldValue.get(`${key}-`) ?? { value: 0, value2: NaN };
+        const { value: valueP } = this.#keyOldValue.get(`${key}+`) ?? { value: 0, value2: NaN };
+        if (settings.value !== valueN) keys.push(`${key}-`);
+        if (settings.value !== valueP) keys.push(`${key}+`);
+      }
 
-      if (!matches) continue;
+      keys.forEach((key) => {
+        // -------------------------
+        //  MATCH CHECKER (for physical <-> logical link)
+        // -------------------------
+        const matches =
+          physical === '*' ||
+          physical === key ||
+          (Array.isArray(physical) && physical.includes(key));
 
-      // -------------------------
-      //  CALLBACK RETRIEVAL
-      // -------------------------
-      /** @type {PayloadCallback[]} */
-      // @ts-ignore
-      const typeCbs = this.#callbacks.get(`input-${settings.type}-${logical}`) || [];
+        if (!matches) return;
 
-      /** @type {PayloadCallback[]} */
-      // @ts-ignore
-      const cbs = this.#callbacks.get(`input-${logical}`) || [];
+        // -------------------------
+        //  CALLBACK RETRIEVAL
+        // -------------------------
+        /** @type {PayloadCallback[]} */
+        // @ts-ignore
+        const typeCbs = this.#callbacks.get(`input-${settings.type}-${logical}`) || [];
 
-      if (cbs.length < 1 && typeCbs.length < 1 && globalCbs.length < 1) continue;
+        /** @type {PayloadCallback[]} */
+        // @ts-ignore
+        const cbs = this.#callbacks.get(`input-${logical}`) || [];
 
-      // -------------------------
-      //  PAYLOAD DISPATCH
-      // -------------------------
-      /** @type {InputPayload|InputAnalogPayload} */
-      const payload = { ...settings, logicalName: logical };
-      for (const cb of globalCbs) cb(payload);
-      for (const cb of cbs) cb(payload);
+        if (cbs.length < 1 && typeCbs.length < 1 && globalCbs.length < 1) return;
 
-      // ➕ Separate event type callbacks
-      for (const cb of typeCbs) cb(payload);
+        // -------------------------
+        //  PAYLOAD DISPATCH
+        // -------------------------
+        /** @type {InputPayload|InputAnalogPayload} */
+        const payload = { ...settings, key, logicalName: logical };
+        for (const cb of globalCbs) cb(payload);
+        for (const cb of cbs) cb(payload);
+
+        // ➕ Separate event type callbacks
+        for (const cb of typeCbs) cb(payload);
+        this.#keyOldValue.set(key, { value: settings.value, value2: settings.value2 });
+      });
     }
   }
 
@@ -1129,11 +1145,6 @@ class TinyGamepad {
         result.key = key;
         result.source = source;
         result.gp = gp;
-
-        if (result.key.startsWith('Axis')) {
-          if (value > 0) result.key = `${result.key}+`;
-          if (value < 0) result.key = `${result.key}-`;
-        }
 
         clearTimeout(timer);
         this.offInputStart(eventName, inputCallback);
@@ -2904,6 +2915,7 @@ class TinyGamepad {
     this.#inputSequences.clear();
     this.#keySequences.clear();
     this.#ignoreIds.clear();
+    this.#keyOldValue.clear();
     this.#lastButtonStates = [];
     this.#lastAxes = [];
     this.#lastKeyStates = {};
