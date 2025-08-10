@@ -46,7 +46,7 @@ This folder contains the core scripts we have worked on so far. Each file is a m
 - 📦 **[TinyLocalStorage](./libs/TinyLocalStorage.md)** — A tiny wrapper for `localStorage` with full support for objects, arrays, `Map`, `Set`, and typed value helpers like string, number, and boolean.
 - 🖼️ **[TinyIframeEvents](./libs/TinyIframeEvents.md)** — A structured `postMessage`-based event router for secure and reliable communication between a parent window and its embedded iframe. Supports directional filtering, origin enforcement, payload transport, and listener lifecycle.
 - 🪟 **[TinyNewWinEvents](./libs/TinyNewWinEvents.md)** — A smart, route-based `postMessage` system for structured communication between a main window and a popup (`window.open`). Includes queueing, origin enforcement, and lifecycle tracking.
-* 🎮 **[TinyGamepad](./libs/TinyGamepad.md)** — A flexible, professional gamepad and input manager supporting keyboard, mouse, combos, haptics, and custom input mappings.
+- 🎮 **[TinyGamepad](./libs/TinyGamepad.md)** — A flexible, professional gamepad and input manager supporting keyboard, mouse, combos, haptics, and custom input mappings.
 - ✨ **[TinyTextarea](./libs/TinyTextarea.md)** — A minimal auto-expanding `<textarea>` manager with configurable row limits, extra height padding, and real-time resize/input event hooks.
 
 ### 3. **`fileManager/`**
