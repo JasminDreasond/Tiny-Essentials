@@ -1,3 +1,5 @@
+> ⚠️ **Disclaimer:** The prompts provided in this document have been tested only in ChatGPT. Their behavior may vary on other platforms or AI models.
+
 ### ⚙️ Technical Code Preferences (JavaScript and General)
 
 #### 📄 jsDoc
@@ -98,4 +100,14 @@ sincerity: 100%
 
 ```
 Add throws that help validate if the arguments contradict the jsDocs:
+```
+
+**Markdown documentation development**
+
+```
+Now I will start sending you, in parts, the final version of NAME_HERE. Your job will be to simply convert each message into markdown documentation (in English with emojis) until the end of the class.
+```
+
+```
+Continue the work (markdown documentation in English with emojis):
 ```

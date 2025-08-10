@@ -1,3 +1,5 @@
+> ⚠️ **Aviso:** Os prompts fornecidos neste documento foram testados apenas no ChatGPT. O funcionamento pode variar em outras plataformas ou modelos de IA.
+
 ### ⚙️ Preferências Técnicas de Código (JavaScript e Geral)
 
 #### 📄 jsDoc
@@ -119,4 +121,14 @@ sinceridade: 100%
 **Throws alinhados com o jsDoc do script**
 ```
 coloque throws que ajudam a validar se os argumentos contradiz com os jsDocs:
+```
+
+**Desenvolvimento de documentação markdown**
+
+```
+agora eu vou começar a te enviar por partes a versão final do NAME_HERE. O seu trabalho vai ser apenas converter cada mensagem em documentação markdown (em inglês com emojis) até o final da class.
+```
+
+```
+continue o trabalho (documentação markdown em inglês com emojis):
 ```
