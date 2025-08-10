@@ -1,3 +1,22 @@
+/**
+ * @callback WeatherCallback
+ * @param {Object} configs
+ * @param {number} configs.hour
+ * @param {number} configs.minute
+ * @param {number} configs.currentMinutes
+ * @param {boolean} configs.isDay
+ * @param {string} configs.season
+ * @param {string|null} configs.weather
+ */
+
+/**
+ * @typedef {Record<string, number|WeatherCallback>} WeatherCfg
+ */
+
+/**
+ * @typedef {Record<string, number>} WeatherData
+ */
+
 class TinyDayNightCycle {
   /** @type {number} */
   dayStart;
@@ -31,11 +50,31 @@ class TinyDayNightCycle {
 
   /** Weather configs */
   weatherConfig = {
-    default: {}, // General fallback probabilities
-    day: {}, // Daytime probabilities
-    night: {}, // Nighttime probabilities
-    hours: {}, // Specific hours { "06:00-09:00": {...} }
-    seasons: {}, // Seasonal configs { summer: {...}, winter: {...} }
+    /**
+     * General fallback probabilities
+     * @type {WeatherCfg}
+     */
+    default: {},
+    /**
+     * Daytime probabilities
+     * @type {WeatherCfg}
+     */
+    day: {},
+    /**
+     * Nighttime probabilities
+     * @type {WeatherCfg}
+     */
+    night: {},
+    /**
+     * Specific hours { "06:00-09:00": {...} }
+     * @type {Record<string, WeatherCfg>}
+     */
+    hours: {},
+    /**
+     * Seasonal configs { summer: {...}, winter: {...} }
+     * @type {Record<string, WeatherCfg>}
+     */
+    seasons: {},
   };
 
   /** Dynamic weather system */
@@ -225,14 +264,45 @@ class TinyDayNightCycle {
       duration ?? this.randomInRange(this.weatherDuration.min, this.weatherDuration.max);
   }
 
-  /** @param {Object} [customWeather] */
+  /**
+   * @param {WeatherCfg} [customWeather]
+   * @returns {string|null}
+   */
   chooseNewWeather(customWeather) {
+    /** @type {WeatherData} */
     let probabilities = {};
 
-    // Default fallback
-    probabilities = { ...this.weatherConfig.default, ...probabilities };
+    /**
+     * Helper: Add probability or initialize
+     * @param {WeatherCfg} source
+     */
+    const addProbabilities = (source) => {
+      for (const [key, value] of Object.entries(source)) {
+        let resolvedValue = value;
 
-    // Specific hours
+        // If it's a function, call it
+        if (typeof resolvedValue === 'function') {
+          resolvedValue = resolvedValue({
+            hour: Math.floor(this.currentMinutes / 60),
+            minute: this.currentMinutes % 60,
+            currentMinutes: this.currentMinutes,
+            isDay: this.isDay(),
+            season: this.currentSeason,
+            weather: this.weather,
+          });
+        }
+
+        // Only add if it's a number
+        if (typeof resolvedValue === 'number' && !isNaN(resolvedValue)) {
+          probabilities[key] = (probabilities[key] || 0) + resolvedValue;
+        }
+      }
+    };
+
+    // 1. Default fallback
+    addProbabilities(this.weatherConfig.default || {});
+
+    // 2. Specific hours
     for (const range in this.weatherConfig.hours) {
       const [start, end] = range.split('-').map((t) => {
         const [h, m] = t.split(':').map(Number);
@@ -244,34 +314,36 @@ class TinyDayNightCycle {
 
       if (inRange) {
         // @ts-ignore
-        probabilities = { ...probabilities, ...this.weatherConfig.hours[range] };
+        addProbabilities(this.weatherConfig.hours[range]);
       }
     }
 
-    // Day/Night
+    // 3. Day/Night
     if (this.isDay() && this.weatherConfig.day) {
-      probabilities = { ...probabilities, ...this.weatherConfig.day };
+      addProbabilities(this.weatherConfig.day);
     } else if (!this.isDay() && this.weatherConfig.night) {
-      probabilities = { ...probabilities, ...this.weatherConfig.night };
+      addProbabilities(this.weatherConfig.night);
     }
 
-    // Seasonal
+    // 4. Seasonal
     // @ts-ignore
-    if (this.weatherConfig.seasons[this.currentSeason]) {
+    if (this.weatherConfig.seasons?.[this.currentSeason]) {
       // @ts-ignore
-      probabilities = { ...probabilities, ...this.weatherConfig.seasons[this.currentSeason] };
+      addProbabilities(this.weatherConfig.seasons[this.currentSeason]);
     }
 
-    if (customWeather !== null && typeof customWeather === 'object') {
-      probabilities = { ...probabilities, ...customWeather };
+    // 5. Custom weather passed directly
+    if (customWeather && typeof customWeather === 'object') {
+      addProbabilities(customWeather);
     }
 
-    // Pick random
-    const entries = Object.entries(probabilities);
+    // Pick random based on final probabilities
+    const entries = Object.entries(probabilities).filter(([, prob]) => prob > 0);
     if (!entries.length) {
       this.weather = null;
       return null;
     }
+
     const total = entries.reduce((sum, [, prob]) => sum + prob, 0);
     let rand = Math.random() * total;
 
