@@ -15,8 +15,18 @@ class TinyDayNightCycle {
 
   /** @type {Object<number, number>} */
   monthDays = {
-    1: 31, 2: 31, 3: 31, 4: 31, 5: 31, 6: 31,
-    7: 31, 8: 31, 9: 31, 10: 31, 11: 31, 12: 31
+    1: 31,
+    2: 31,
+    3: 31,
+    4: 31,
+    5: 31,
+    6: 31,
+    7: 31,
+    8: 31,
+    9: 31,
+    10: 31,
+    11: 31,
+    12: 31,
   };
 
   /** Weather configs */
@@ -25,7 +35,7 @@ class TinyDayNightCycle {
     day: {}, // Daytime probabilities
     night: {}, // Nighttime probabilities
     hours: {}, // Specific hours { "06:00-09:00": {...} }
-    seasons: {} // Seasonal configs { summer: {...}, winter: {...} }
+    seasons: {}, // Seasonal configs { summer: {...}, winter: {...} }
   };
 
   /** Dynamic weather system */
@@ -90,13 +100,11 @@ class TinyDayNightCycle {
   isDay() {
     if (this.dayStart < this.nightStart) {
       return (
-        this.currentMinutes >= this.dayStart * 60 &&
-        this.currentMinutes < this.nightStart * 60
+        this.currentMinutes >= this.dayStart * 60 && this.currentMinutes < this.nightStart * 60
       );
     } else {
       return (
-        this.currentMinutes >= this.dayStart * 60 ||
-        this.currentMinutes < this.nightStart * 60
+        this.currentMinutes >= this.dayStart * 60 || this.currentMinutes < this.nightStart * 60
       );
     }
   }
@@ -136,7 +144,7 @@ class TinyDayNightCycle {
   }
 
   /** --------------------- DAY/MONTH/YEAR SYSTEM --------------------- */
-  
+
   /**
    * @param {Object} config
    */
@@ -196,8 +204,8 @@ class TinyDayNightCycle {
     this.weatherDuration.max = maxMinutes;
   }
 
-  /** 
-   * Call this whenever time passes 
+  /**
+   * Call this whenever time passes
    * @param {number} minutesPassed
    */
   updateWeatherTimer(minutesPassed) {
@@ -217,15 +225,27 @@ class TinyDayNightCycle {
       duration ?? this.randomInRange(this.weatherDuration.min, this.weatherDuration.max);
   }
 
-  chooseNewWeather() {
-    const { hour } = this.getTime();
+  /** @param {Object} [customWeather] */
+  chooseNewWeather(customWeather) {
     let probabilities = {};
 
-    // Seasonal
-    // @ts-ignore
-    if (this.weatherConfig.seasons[this.currentSeason]) {
-      // @ts-ignore
-      probabilities = { ...probabilities, ...this.weatherConfig.seasons[this.currentSeason] };
+    // Default fallback
+    probabilities = { ...this.weatherConfig.default, ...probabilities };
+
+    // Specific hours
+    for (const range in this.weatherConfig.hours) {
+      const [start, end] = range.split('-').map((t) => {
+        const [h, m] = t.split(':').map(Number);
+        return h * 60 + (m || 0);
+      });
+      const current = this.currentMinutes;
+      const inRange =
+        start <= end ? current >= start && current <= end : current >= start || current <= end;
+
+      if (inRange) {
+        // @ts-ignore
+        probabilities = { ...probabilities, ...this.weatherConfig.hours[range] };
+      }
     }
 
     // Day/Night
@@ -235,25 +255,16 @@ class TinyDayNightCycle {
       probabilities = { ...probabilities, ...this.weatherConfig.night };
     }
 
-    // Specific hours
-    for (const range in this.weatherConfig.hours) {
-      const [start, end] = range.split('-').map(t => {
-        const [h, m] = t.split(':').map(Number);
-        return h * 60 + (m || 0);
-      });
-      const current = this.currentMinutes;
-      const inRange = start <= end
-        ? current >= start && current <= end
-        : current >= start || current <= end;
-
-      if (inRange) {
-        // @ts-ignore
-        probabilities = { ...probabilities, ...this.weatherConfig.hours[range] };
-      }
+    // Seasonal
+    // @ts-ignore
+    if (this.weatherConfig.seasons[this.currentSeason]) {
+      // @ts-ignore
+      probabilities = { ...probabilities, ...this.weatherConfig.seasons[this.currentSeason] };
     }
 
-    // Default fallback
-    probabilities = { ...this.weatherConfig.default, ...probabilities };
+    if (customWeather !== null && typeof customWeather === 'object') {
+      probabilities = { ...probabilities, ...customWeather };
+    }
 
     // Pick random
     const entries = Object.entries(probabilities);
@@ -269,7 +280,7 @@ class TinyDayNightCycle {
         this.weather = type;
         this.weatherTimeLeft = this.randomInRange(
           this.weatherDuration.min,
-          this.weatherDuration.max
+          this.weatherDuration.max,
         );
         return type;
       }

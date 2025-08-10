@@ -1,362 +1,466 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Day Night Cycle — Advanced Tester</title>
-  <style>
-    /* ---------- Reset & base ---------- */
-    :root{
-      --bg:#0f1720;
-      --card:#0f1728;
-      --muted:#9aa6b2;
-      --accent:#6ee7b7;
-      --danger:#ff7b7b;
-      --glass: rgba(255,255,255,0.03);
-      --glass-2: rgba(255,255,255,0.02);
-      --glass-3: rgba(255,255,255,0.015);
-      font-family: Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      color-scheme: dark;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      background: linear-gradient(180deg, rgba(10,12,16,1) 0%, rgba(12,16,22,1) 100%);
-      color:#e6eef3;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-      padding:28px;
-    }
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Day Night Cycle — Advanced Tester</title>
+    <style>
+      /* ---------- Reset & base ---------- */
+      :root {
+        --bg: #0f1720;
+        --card: #0f1728;
+        --muted: #9aa6b2;
+        --accent: #6ee7b7;
+        --danger: #ff7b7b;
+        --glass: rgba(255, 255, 255, 0.03);
+        --glass-2: rgba(255, 255, 255, 0.02);
+        --glass-3: rgba(255, 255, 255, 0.015);
+        font-family: Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        background: linear-gradient(180deg, rgba(10, 12, 16, 1) 0%, rgba(12, 16, 22, 1) 100%);
+        color: #e6eef3;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        padding: 28px;
+      }
 
-    /* ---------- Layout ---------- */
-    .wrap{
-      max-width:1200px;
-      margin:0 auto;
-      display:grid;
-      grid-template-columns: 360px 1fr;
-      gap:22px;
-    }
+      /* ---------- Layout ---------- */
+      .wrap {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        gap: 22px;
+      }
 
-    header{
-      grid-column:1/-1;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:18px;
-      margin-bottom:6px;
-    }
-    header h1{
-      font-size:20px;
-      margin:0;
-      letter-spacing:0.2px;
-    }
-    header p{margin:0;color:var(--muted);font-size:13px}
+      header {
+        grid-column: 1/-1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 6px;
+      }
+      header h1 {
+        font-size: 20px;
+        margin: 0;
+        letter-spacing: 0.2px;
+      }
+      header p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
 
-    /* ---------- Left panel (controls) ---------- */
-    .panel{
-      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      border-radius:12px;
-      padding:18px;
-      box-shadow: 0 6px 30px rgba(2,6,23,0.6);
-      border:1px solid rgba(255,255,255,0.03);
-      height:calc(100vh - 112px);
-      overflow:auto;
-    }
-    .panel h2{margin:0 0 8px 0;font-size:14px}
-    .field{margin-bottom:12px}
-    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
-    input[type="number"], input[type="text"], select, textarea {
-      width:100%;
-      padding:8px 10px;
-      border-radius:8px;
-      border:1px solid rgba(255,255,255,0.04);
-      background:var(--glass);
-      color:inherit;
-      font-size:13px;
-      outline:none;
-    }
-    textarea{min-height:90px;font-family:monospace;font-size:12px;resize:vertical}
-    .btn{
-      display:inline-flex;
-      gap:8px;
-      align-items:center;
-      padding:8px 12px;
-      border-radius:10px;
-      border:0;
-      background:linear-gradient(90deg, rgba(110,231,183,0.14), rgba(110,231,183,0.06));
-      color:var(--accent);
-      cursor:pointer;
-      font-weight:600;
-      font-size:13px;
-    }
-    .btn.ghost{
-      background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.03)
-    }
-    .btn.danger{background:linear-gradient(90deg, rgba(255,123,123,0.12), rgba(255,123,123,0.04)); color:var(--danger)}
-    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+      /* ---------- Left panel (controls) ---------- */
+      .panel {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+        border-radius: 12px;
+        padding: 18px;
+        box-shadow: 0 6px 30px rgba(2, 6, 23, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        height: calc(100vh - 112px);
+        overflow: auto;
+      }
+      .panel h2 {
+        margin: 0 0 8px 0;
+        font-size: 14px;
+      }
+      .field {
+        margin-bottom: 12px;
+      }
+      label {
+        display: block;
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      input[type='number'],
+      input[type='text'],
+      select,
+      textarea {
+        width: 100%;
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        background: var(--glass);
+        color: inherit;
+        font-size: 13px;
+        outline: none;
+      }
+      textarea {
+        min-height: 90px;
+        font-family: monospace;
+        font-size: 12px;
+        resize: vertical;
+      }
+      .btn {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        padding: 8px 12px;
+        border-radius: 10px;
+        border: 0;
+        background: linear-gradient(90deg, rgba(110, 231, 183, 0.14), rgba(110, 231, 183, 0.06));
+        color: var(--accent);
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 13px;
+      }
+      .btn.ghost {
+        background: transparent;
+        color: var(--muted);
+        border: 1px solid rgba(255, 255, 255, 0.03);
+      }
+      .btn.danger {
+        background: linear-gradient(90deg, rgba(255, 123, 123, 0.12), rgba(255, 123, 123, 0.04));
+        color: var(--danger);
+      }
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
 
-    /* ---------- Right area (status, visuals) ---------- */
-    .stage{
-      display:flex;
-      flex-direction:column;
-      gap:18px;
-      min-height:calc(100vh - 112px);
-    }
+      /* ---------- Right area (status, visuals) ---------- */
+      .stage {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        min-height: calc(100vh - 112px);
+      }
 
-    .cards{
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap:14px;
-    }
-    .card{
-      background:linear-gradient(180deg,var(--glass),var(--glass-2));
-      border-radius:12px;
-      padding:14px;
-      border:1px solid rgba(255,255,255,0.02);
-    }
-    .card h3{margin:0 0 8px 0;font-size:12px;color:var(--muted)}
-    .card .big{font-size:20px;font-weight:700}
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+      }
+      .card {
+        background: linear-gradient(180deg, var(--glass), var(--glass-2));
+        border-radius: 12px;
+        padding: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.02);
+      }
+      .card h3 {
+        margin: 0 0 8px 0;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .card .big {
+        font-size: 20px;
+        font-weight: 700;
+      }
 
-    /* timeline & weather visual */
-    .visual{
-      background:linear-gradient(180deg,var(--glass-2),var(--glass-3));
-      border-radius:12px;padding:16px;border:1px solid rgba(255,255,255,0.02);
-      min-height:220px;
-    }
-    .timeline{
-      display:flex;align-items:center;gap:8px;margin:10px 0;
-    }
-    .timeline .hour{
-      width:48px;text-align:center;font-size:12px;color:var(--muted)
-    }
-    .progress{
-      height:18px;background:rgba(255,255,255,0.03);border-radius:12px;overflow:hidden;flex:1;display:flex;
-      align-items:center;
-    }
-    .progress > .bar{height:100%; transition: width 0.3s linear; background:linear-gradient(90deg,#6ee7b7,#60a5fa);}
+      /* timeline & weather visual */
+      .visual {
+        background: linear-gradient(180deg, var(--glass-2), var(--glass-3));
+        border-radius: 12px;
+        padding: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.02);
+        min-height: 220px;
+      }
+      .timeline {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 10px 0;
+      }
+      .timeline .hour {
+        width: 48px;
+        text-align: center;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .progress {
+        height: 18px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 12px;
+        overflow: hidden;
+        flex: 1;
+        display: flex;
+        align-items: center;
+      }
+      .progress > .bar {
+        height: 100%;
+        transition: width 0.3s linear;
+        background: linear-gradient(90deg, #6ee7b7, #60a5fa);
+      }
 
-    /* log */
-    .log{
-      background:transparent;border-radius:8px;padding:12px;height:180px;overflow:auto;font-family:monospace;font-size:12px;
-      border:1px dashed rgba(255,255,255,0.02);
-      color:var(--muted);
-    }
+      /* log */
+      .log {
+        background: transparent;
+        border-radius: 8px;
+        padding: 12px;
+        height: 180px;
+        overflow: auto;
+        font-family: monospace;
+        font-size: 12px;
+        border: 1px dashed rgba(255, 255, 255, 0.02);
+        color: var(--muted);
+      }
 
-    footer{grid-column:1/-1;margin-top:8px;color:var(--muted);font-size:12px;text-align:center}
-    @media (max-width: 980px){
-      .wrap{grid-template-columns:1fr; padding:10px}
-      .cards{grid-template-columns:repeat(2,1fr)}
-      .panel{height:auto}
-    }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <header>
-      <div>
-        <h1>Day Night Cycle — Advanced Tester</h1>
-        <p>Interface para controlar e observar o ciclo dia/noite, clima, meses personalizados e eventos.</p>
-      </div>
-      <div>
-        <small id="assumption" style="color:var(--muted)">Assume: <strong>TinyDayNightCycle</strong> is loaded on the page.</small>
-      </div>
-    </header>
-
-    <!-- Controls -->
-    <aside class="panel" id="controls">
-      <h2>Time control</h2>
-
-      <div class="field grid-2">
+      footer {
+        grid-column: 1/-1;
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 12px;
+        text-align: center;
+      }
+      @media (max-width: 980px) {
+        .wrap {
+          grid-template-columns: 1fr;
+          padding: 10px;
+        }
+        .cards {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .panel {
+          height: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
         <div>
-          <label>Day starts at (hour)</label>
-          <input type="number" id="dayStart" min="0" max="23" value="6" />
+          <h1>Day Night Cycle — Advanced Tester</h1>
+          <p>
+            Interface para controlar e observar o ciclo dia/noite, clima, meses personalizados e
+            eventos.
+          </p>
         </div>
         <div>
-          <label>Night starts at (hour)</label>
-          <input type="number" id="nightStart" min="0" max="23" value="18" />
+          <small id="assumption" style="color: var(--muted)"
+            >Assume: <strong>TinyDayNightCycle</strong> is loaded on the page.</small
+          >
         </div>
-      </div>
+      </header>
 
-      <div class="field grid-2">
-        <div>
-          <label>Set time (HH)</label>
-          <input type="number" id="setHour" min="0" max="23" value="7" />
-        </div>
-        <div>
-          <label>Set time (MM)</label>
-          <input type="number" id="setMinute" min="0" max="59" value="0" />
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;margin-bottom:12px">
-        <button class="btn" id="btnSetTime">Set Time</button>
-        <button class="btn ghost" id="btnSetToDay">Goto Day Start</button>
-        <button class="btn ghost" id="btnSetToNight">Goto Night Start</button>
-      </div>
+      <!-- Controls -->
+      <aside class="panel" id="controls">
+        <h2>Time control</h2>
 
-      <div class="field">
-        <label>Add time</label>
-        <div class="grid-2">
-          <input type="number" id="addHours" placeholder="hours" value="1"/>
-          <input type="number" id="addMinutes" placeholder="minutes" value="0"/>
+        <div class="field grid-2">
+          <div>
+            <label>Day starts at (hour)</label>
+            <input type="number" id="dayStart" min="0" max="23" value="6" />
+          </div>
+          <div>
+            <label>Night starts at (hour)</label>
+            <input type="number" id="nightStart" min="0" max="23" value="18" />
+          </div>
         </div>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <button class="btn" id="btnAddTime">Add Time</button>
-          <button class="btn ghost" id="btnAddTick">Advance N min (tick)</button>
-        </div>
-      </div>
 
-      <hr style="border:none;height:1px;background:rgba(255,255,255,0.02);margin:12px 0">
-
-      <h2>Days, months & seasons</h2>
-      <div class="field grid-2">
-        <div>
-          <label>Current month</label>
-          <input type="number" id="currentMonth" min="1" max="12" value="1" />
+        <div class="field grid-2">
+          <div>
+            <label>Set time (HH)</label>
+            <input type="number" id="setHour" min="0" max="23" value="7" />
+          </div>
+          <div>
+            <label>Set time (MM)</label>
+            <input type="number" id="setMinute" min="0" max="59" value="0" />
+          </div>
         </div>
-        <div>
-          <label>Current day</label>
-          <input type="number" id="currentDay" min="1" value="1" />
+        <div style="display: flex; gap: 8px; margin-bottom: 12px">
+          <button class="btn" id="btnSetTime">Set Time</button>
+          <button class="btn ghost" id="btnSetToDay">Goto Day Start</button>
+          <button class="btn ghost" id="btnSetToNight">Goto Night Start</button>
         </div>
-      </div>
 
-      <div class="field">
-        <label>Custom month lengths (JSON object)</label>
-        <textarea id="monthConfig" placeholder='e.g. {"1":40,"2":25,...}'></textarea>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <button class="btn" id="btnApplyMonthConfig">Apply Month Config</button>
-          <button class="btn ghost" id="btnSetDate">Set Date</button>
+        <div class="field">
+          <label>Add time</label>
+          <div class="grid-2">
+            <input type="number" id="addHours" placeholder="hours" value="1" />
+            <input type="number" id="addMinutes" placeholder="minutes" value="0" />
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: 8px">
+            <button class="btn" id="btnAddTime">Add Time</button>
+            <button class="btn ghost" id="btnAddTick">Advance N min (tick)</button>
+          </div>
         </div>
-      </div>
 
-      <hr style="border:none;height:1px;background:rgba(255,255,255,0.02);margin:12px 0">
+        <hr
+          style="border: none; height: 1px; background: rgba(255, 255, 255, 0.02); margin: 12px 0"
+        />
 
-      <h2>Weather control</h2>
-      <div class="field grid-2">
-        <div>
-          <label>Weather duration (min)</label>
-          <input type="number" id="weatherMin" value="120" />
+        <h2>Days, months & seasons</h2>
+        <div class="field grid-2">
+          <div>
+            <label>Current month</label>
+            <input type="number" id="currentMonth" min="1" max="12" value="1" />
+          </div>
+          <div>
+            <label>Current day</label>
+            <input type="number" id="currentDay" min="1" value="1" />
+          </div>
         </div>
-        <div>
-          <label>Weather duration (max)</label>
-          <input type="number" id="weatherMax" value="360" />
-        </div>
-      </div>
 
-      <div class="field">
-        <label>Weather config (JSON)</label>
-        <textarea id="weatherConfig" placeholder='{
+        <div class="field">
+          <label>Custom month lengths (JSON object)</label>
+          <textarea id="monthConfig" placeholder='e.g. {"1":40,"2":25,...}'></textarea>
+          <div style="display: flex; gap: 8px; margin-top: 8px">
+            <button class="btn" id="btnApplyMonthConfig">Apply Month Config</button>
+            <button class="btn ghost" id="btnSetDate">Set Date</button>
+          </div>
+        </div>
+
+        <hr
+          style="border: none; height: 1px; background: rgba(255, 255, 255, 0.02); margin: 12px 0"
+        />
+
+        <h2>Weather control</h2>
+        <div class="field grid-2">
+          <div>
+            <label>Weather duration (min)</label>
+            <input type="number" id="weatherMin" value="120" />
+          </div>
+          <div>
+            <label>Weather duration (max)</label>
+            <input type="number" id="weatherMax" value="360" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Weather config (JSON)</label>
+          <textarea
+            id="weatherConfig"
+            placeholder='{
   "default":{"sunny":50,"cloudy":30,"rain":20},
   "day":{"sunny":60,"cloudy":25,"rain":15},
   "night":{"clear":50,"cloudy":30,"rain":20},
   "hours":{"06:00-09:00":{"fog":40,"sunny":30,"cloudy":30}},
   "seasons":{"winter":{"snow":50,"cloudy":30,"sunny":20}}
-}'></textarea>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <button class="btn" id="btnApplyWeatherConfig">Apply Weather Config</button>
-          <button class="btn ghost" id="btnChooseWeather">Choose Now</button>
-          <button class="btn danger" id="btnForceClear">Force Clear</button>
-        </div>
-      </div>
-
-      <div class="field">
-        <label>Force weather</label>
-        <div style="display:flex;gap:8px">
-          <input type="text" id="forceType" placeholder="e.g. rain" />
-          <input type="number" id="forceDuration" placeholder="minutes (optional)" />
-          <button class="btn" id="btnForceWeather">Force</button>
-        </div>
-      </div>
-
-      <hr style="border:none;height:1px;background:rgba(255,255,255,0.02);margin:12px 0">
-
-      <h2>Simulation</h2>
-      <div class="field">
-        <label>Auto-advance: tick every (ms)</label>
-        <div style="display:flex;gap:8px">
-          <input type="number" id="tickMs" value="500" />
-          <input type="number" id="tickMinutes" value="1" />
-          <button class="btn" id="btnStartAuto">Start</button>
-          <button class="btn ghost" id="btnStopAuto">Stop</button>
-        </div>
-      </div>
-
-      <div class="field">
-        <label>Event log controls</label>
-        <div style="display:flex;gap:8px">
-          <button class="btn" id="btnClearLog">Clear Log</button>
-          <button class="btn ghost" id="btnExportLog">Export Log</button>
-        </div>
-      </div>
-
-      <div style="margin-top:10px;color:var(--muted);font-size:12px">
-        Dica: carregue a sua classe `TinyDayNightCycle` antes de usar. Se faltar, a UI mostrará instruções.
-      </div>
-    </aside>
-
-    <!-- Stage -->
-    <main class="stage">
-      <div class="cards">
-        <div class="card">
-          <h3>Local time</h3>
-          <div class="big" id="ui-time">--:--</div>
-          <div style="color:var(--muted);font-size:13px" id="ui-phase">Phase: --</div>
-        </div>
-
-        <div class="card">
-          <h3>Calendar</h3>
-          <div class="big" id="ui-date">Day -- / Month -- / Year --</div>
-          <div style="color:var(--muted);font-size:13px" id="ui-season">Season: --</div>
-        </div>
-
-        <div class="card">
-          <h3>Weather</h3>
-          <div class="big" id="ui-weather">--</div>
-          <div style="color:var(--muted);font-size:13px" id="ui-weather-ttl">TTL: -- min</div>
-        </div>
-      </div>
-
-      <div class="visual">
-        <div style="display:flex;align-items:center;justify-content:space-between">
-          <div style="font-weight:700">Timeline</div>
-          <div style="color:var(--muted);font-size:13px">Day start / Night start visual</div>
-        </div>
-
-        <div class="timeline" style="margin-top:12px">
-          <div class="hour">00:00</div>
-          <div class="progress" id="timelineProgress" title="progress through current day">
-            <div class="bar" id="timelineBar" style="width:0%"></div>
-            <div style="position:relative;padding-left:8px;color:var(--muted);font-size:12px" id="timelineLabel">--%</div>
+}'
+          ></textarea>
+          <div style="display: flex; gap: 8px; margin-top: 8px">
+            <button class="btn" id="btnApplyWeatherConfig">Apply Weather Config</button>
+            <button class="btn ghost" id="btnChooseWeather">Choose Now</button>
+            <button class="btn danger" id="btnForceClear">Force Clear</button>
           </div>
-          <div class="hour">24:00</div>
         </div>
 
-        <div style="display:flex;gap:10px;align-items:center;margin-top:12px">
-          <div style="flex:1">
-            <label style="font-size:12px;color:var(--muted)">Weather progression</label>
-            <div class="progress" style="height:12px">
-              <div class="bar" id="weatherBar" style="width:0%"></div>
+        <div class="field">
+          <label>Force weather</label>
+          <div style="display: flex; gap: 8px">
+            <input type="text" id="forceType" placeholder="e.g. rain" />
+            <input type="number" id="forceDuration" placeholder="minutes (optional)" />
+            <button class="btn" id="btnForceWeather">Force</button>
+          </div>
+        </div>
+
+        <hr
+          style="border: none; height: 1px; background: rgba(255, 255, 255, 0.02); margin: 12px 0"
+        />
+
+        <h2>Simulation</h2>
+        <div class="field">
+          <label>Auto-advance: tick every (ms)</label>
+          <div style="display: flex; gap: 8px">
+            <input type="number" id="tickMs" value="500" />
+            <input type="number" id="tickMinutes" value="1" />
+            <button class="btn" id="btnStartAuto">Start</button>
+            <button class="btn ghost" id="btnStopAuto">Stop</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Event log controls</label>
+          <div style="display: flex; gap: 8px">
+            <button class="btn" id="btnClearLog">Clear Log</button>
+            <button class="btn ghost" id="btnExportLog">Export Log</button>
+          </div>
+        </div>
+
+        <div style="margin-top: 10px; color: var(--muted); font-size: 12px">
+          Dica: carregue a sua classe `TinyDayNightCycle` antes de usar. Se faltar, a UI mostrará
+          instruções.
+        </div>
+      </aside>
+
+      <!-- Stage -->
+      <main class="stage">
+        <div class="cards">
+          <div class="card">
+            <h3>Local time</h3>
+            <div class="big" id="ui-time">--:--</div>
+            <div style="color: var(--muted); font-size: 13px" id="ui-phase">Phase: --</div>
+          </div>
+
+          <div class="card">
+            <h3>Calendar</h3>
+            <div class="big" id="ui-date">Day -- / Month -- / Year --</div>
+            <div style="color: var(--muted); font-size: 13px" id="ui-season">Season: --</div>
+          </div>
+
+          <div class="card">
+            <h3>Weather</h3>
+            <div class="big" id="ui-weather">--</div>
+            <div style="color: var(--muted); font-size: 13px" id="ui-weather-ttl">TTL: -- min</div>
+          </div>
+        </div>
+
+        <div class="visual">
+          <div style="display: flex; align-items: center; justify-content: space-between">
+            <div style="font-weight: 700">Timeline</div>
+            <div style="color: var(--muted); font-size: 13px">Day start / Night start visual</div>
+          </div>
+
+          <div class="timeline" style="margin-top: 12px">
+            <div class="hour">00:00</div>
+            <div class="progress" id="timelineProgress" title="progress through current day">
+              <div class="bar" id="timelineBar" style="width: 0%"></div>
+              <div
+                style="position: relative; padding-left: 8px; color: var(--muted); font-size: 12px"
+                id="timelineLabel"
+              >
+                --%
+              </div>
+            </div>
+            <div class="hour">24:00</div>
+          </div>
+
+          <div style="display: flex; gap: 10px; align-items: center; margin-top: 12px">
+            <div style="flex: 1">
+              <label style="font-size: 12px; color: var(--muted)">Weather progression</label>
+              <div class="progress" style="height: 12px">
+                <div class="bar" id="weatherBar" style="width: 0%"></div>
+              </div>
+            </div>
+            <div
+              style="width: 160px; text-align: right; color: var(--muted); font-size: 13px"
+              id="weatherHint"
+            >
+              --
             </div>
           </div>
-          <div style="width:160px;text-align:right;color:var(--muted);font-size:13px" id="weatherHint">--</div>
+
+          <div style="margin-top: 14px">
+            <div style="font-weight: 700; margin-bottom: 6px">Event log</div>
+            <div class="log" id="log"></div>
+          </div>
         </div>
 
-        <div style="margin-top:14px">
-          <div style="font-weight:700;margin-bottom:6px">Event log</div>
-          <div class="log" id="log"></div>
-        </div>
-      </div>
+        <footer>
+          Built for testing — modify the class in your project and use this UI to experiment.
+        </footer>
+      </main>
+    </div>
 
-      <footer>
-        Built for testing — modify the class in your project and use this UI to experiment.
-      </footer>
-    </main>
-  </div>
-
-  <script type="module">
-    import { TinyDayNightCycle } from './src/v1/libs/TinyDayNightCycle.mjs';
-    window.TinyDayNightCycle = TinyDayNightCycle;
-    /* ===========================
+    <script type="module">
+      import { TinyDayNightCycle } from './src/v1/libs/TinyDayNightCycle.mjs';
+      window.TinyDayNightCycle = TinyDayNightCycle;
+      /* ===========================
        TinyDayNightCycle Tester Script
        - Expects TinyDayNightCycle to be available on window.TinyDayNightCycle
        - Controls many API points: setTime, addTime, setTo, setMonthDaysConfig,
@@ -364,345 +468,369 @@
        - Provides auto-tick and event logging
     ============================ */
 
-    // Utility helpers
-    const $ = (sel, root = document) => root.querySelector(sel);
-    const el = (id) => document.getElementById(id);
-    const nowStr = () => new Date().toLocaleTimeString();
+      document.getElementById('weatherConfig').value =
+        '{"default":{"sunny":50,"cloudy":30,"rain":20},"day":{"sunny":60,"cloudy":25,"rain":15},"night":{"clear":50,"cloudy":30,"rain":20},"hours":{"06:00-09:00":{"fog":40,"sunny":30,"cloudy":30},"20:00-23:00":{"clear":60,"cloudy":40}},"seasons":{"winter":{"snow":50,"cloudy":30,"sunny":20},"summer":{"sunny":70,"cloudy":20,"rain":10}}}';
 
-    // UI elements
-    const ui = {
-      time: el('ui-time'),
-      phase: el('ui-phase'),
-      date: el('ui-date'),
-      season: el('ui-season'),
-      weather: el('ui-weather'),
-      weatherTTL: el('ui-weather-ttl'),
-      timelineBar: el('timelineBar'),
-      timelineLabel: el('timelineLabel'),
-      weatherBar: el('weatherBar'),
-      weatherHint: el('weatherHint'),
-      log: el('log'),
-      assumption: el('assumption')
-    };
+      // Utility helpers
+      const $ = (sel, root = document) => root.querySelector(sel);
+      const el = (id) => document.getElementById(id);
+      const nowStr = () => new Date().toLocaleTimeString();
 
-    // Controls
-    const controls = {
-      dayStart: el('dayStart'),
-      nightStart: el('nightStart'),
-      setHour: el('setHour'),
-      setMinute: el('setMinute'),
-      btnSetTime: el('btnSetTime'),
-      btnSetToDay: el('btnSetToDay'),
-      btnSetToNight: el('btnSetToNight'),
-      addHours: el('addHours'),
-      addMinutes: el('addMinutes'),
-      btnAddTime: el('btnAddTime'),
-      btnAddTick: el('btnAddTick'),
-      currentMonth: el('currentMonth'),
-      currentDay: el('currentDay'),
-      monthConfig: el('monthConfig'),
-      btnApplyMonthConfig: el('btnApplyMonthConfig'),
-      btnSetDate: el('btnSetDate'),
-      weatherMin: el('weatherMin'),
-      weatherMax: el('weatherMax'),
-      weatherConfig: el('weatherConfig'),
-      btnApplyWeatherConfig: el('btnApplyWeatherConfig'),
-      btnChooseWeather: el('btnChooseWeather'),
-      btnForceClear: el('btnForceClear'),
-      forceType: el('forceType'),
-      forceDuration: el('forceDuration'),
-      btnForceWeather: el('btnForceWeather'),
-      tickMs: el('tickMs'),
-      tickMinutes: el('tickMinutes'),
-      btnStartAuto: el('btnStartAuto'),
-      btnStopAuto: el('btnStopAuto'),
-      btnClearLog: el('btnClearLog'),
-      btnExportLog: el('btnExportLog')
-    };
+      // UI elements
+      const ui = {
+        time: el('ui-time'),
+        phase: el('ui-phase'),
+        date: el('ui-date'),
+        season: el('ui-season'),
+        weather: el('ui-weather'),
+        weatherTTL: el('ui-weather-ttl'),
+        timelineBar: el('timelineBar'),
+        timelineLabel: el('timelineLabel'),
+        weatherBar: el('weatherBar'),
+        weatherHint: el('weatherHint'),
+        log: el('log'),
+        assumption: el('assumption'),
+      };
 
-    // Tester state
-    let cycle = null;            // TinyDayNightCycle instance (provided by user)
-    let autoHandle = null;
-    let logs = [];
+      // Controls
+      const controls = {
+        dayStart: el('dayStart'),
+        nightStart: el('nightStart'),
+        setHour: el('setHour'),
+        setMinute: el('setMinute'),
+        btnSetTime: el('btnSetTime'),
+        btnSetToDay: el('btnSetToDay'),
+        btnSetToNight: el('btnSetToNight'),
+        addHours: el('addHours'),
+        addMinutes: el('addMinutes'),
+        btnAddTime: el('btnAddTime'),
+        btnAddTick: el('btnAddTick'),
+        currentMonth: el('currentMonth'),
+        currentDay: el('currentDay'),
+        monthConfig: el('monthConfig'),
+        btnApplyMonthConfig: el('btnApplyMonthConfig'),
+        btnSetDate: el('btnSetDate'),
+        weatherMin: el('weatherMin'),
+        weatherMax: el('weatherMax'),
+        weatherConfig: el('weatherConfig'),
+        btnApplyWeatherConfig: el('btnApplyWeatherConfig'),
+        btnChooseWeather: el('btnChooseWeather'),
+        btnForceClear: el('btnForceClear'),
+        forceType: el('forceType'),
+        forceDuration: el('forceDuration'),
+        btnForceWeather: el('btnForceWeather'),
+        tickMs: el('tickMs'),
+        tickMinutes: el('tickMinutes'),
+        btnStartAuto: el('btnStartAuto'),
+        btnStopAuto: el('btnStopAuto'),
+        btnClearLog: el('btnClearLog'),
+        btnExportLog: el('btnExportLog'),
+      };
 
-    function log(...args){
-      const prefix = '[' + nowStr() + ']';
-      const line = prefix + ' ' + args.join(' ');
-      logs.push(line);
-      ui.log.innerText = logs.slice(-500).join('\\n');
-      ui.log.scrollTop = ui.log.scrollHeight;
-    }
+      // Tester state
+      let cycle = null; // TinyDayNightCycle instance (provided by user)
+      let autoHandle = null;
+      let logs = [];
 
-    function resetUIStateIfMissing(){
-      if (typeof window.TinyDayNightCycle !== 'function') {
-        ui.assumption.innerHTML = 'Missing <strong>TinyDayNightCycle</strong> — include your class file first.';
-        disableAllControls(true);
-        return false;
+      function log(...args) {
+        const prefix = '[' + nowStr() + ']';
+        const line = prefix + ' ' + args.join(' ');
+        logs.push(line);
+        ui.log.innerText = logs.slice(-500).join('\n');
+        ui.log.scrollTop = ui.log.scrollHeight;
       }
-      ui.assumption.innerHTML = 'Assume: <strong>TinyDayNightCycle</strong> is loaded on the page.';
-      disableAllControls(false);
-      return true;
-    }
 
-    function disableAllControls(disabled){
-      for (const k in controls){
-        if (controls[k] instanceof HTMLButtonElement || controls[k] instanceof HTMLInputElement || controls[k] instanceof HTMLTextAreaElement)
-          controls[k].disabled = disabled;
+      function resetUIStateIfMissing() {
+        if (typeof window.TinyDayNightCycle !== 'function') {
+          ui.assumption.innerHTML =
+            'Missing <strong>TinyDayNightCycle</strong> — include your class file first.';
+          disableAllControls(true);
+          return false;
+        }
+        ui.assumption.innerHTML =
+          'Assume: <strong>TinyDayNightCycle</strong> is loaded on the page.';
+        disableAllControls(false);
+        return true;
       }
-    }
 
-    function createCycleIfNeeded(){
-      if (!resetUIStateIfMissing()) return false;
-      if (!cycle) {
-        // eslint-disable-next-line no-undef
-        cycle = new window.TinyDayNightCycle(Number(controls.dayStart.value), Number(controls.nightStart.value));
-        // initialize month/day/season from UI
+      function disableAllControls(disabled) {
+        for (const k in controls) {
+          if (
+            controls[k] instanceof HTMLButtonElement ||
+            controls[k] instanceof HTMLInputElement ||
+            controls[k] instanceof HTMLTextAreaElement
+          )
+            controls[k].disabled = disabled;
+        }
+      }
+
+      function createCycleIfNeeded() {
+        if (!resetUIStateIfMissing()) return false;
+        if (!cycle) {
+          // eslint-disable-next-line no-undef
+          cycle = new window.TinyDayNightCycle(
+            Number(controls.dayStart.value),
+            Number(controls.nightStart.value),
+          );
+          // initialize month/day/season from UI
+          cycle.currentMonth = Number(controls.currentMonth.value) || 1;
+          cycle.currentDay = Number(controls.currentDay.value) || 1;
+          cycle.updateSeason?.();
+          log('Created TinyDayNightCycle instance.');
+        }
+        return true;
+      }
+
+      /* ---------- UI -> Cycle actions ---------- */
+
+      controls.btnSetTime.addEventListener('click', () => {
+        if (!createCycleIfNeeded()) return;
+        const h = Number(controls.setHour.value || 0);
+        const m = Number(controls.setMinute.value || 0);
+        cycle.setTime(h, m);
+        log('setTime', `${h}:${m}`);
+        refreshUI();
+      });
+
+      controls.btnSetToDay.addEventListener('click', () => {
+        if (!createCycleIfNeeded()) return;
+        cycle.setTo('day');
+        log('setTo day');
+        refreshUI();
+      });
+
+      controls.btnSetToNight.addEventListener('click', () => {
+        if (!createCycleIfNeeded()) return;
+        cycle.setTo('night');
+        log('setTo night');
+        refreshUI();
+      });
+
+      controls.btnAddTime.addEventListener('click', () => {
+        if (!createCycleIfNeeded()) return;
+        const h = Number(controls.addHours.value || 0);
+        const m = Number(controls.addMinutes.value || 0);
+        cycle.addTime(h, m);
+        log('addTime', `${h}h ${m}m`);
+        refreshUI();
+      });
+
+      controls.btnAddTick.addEventListener('click', () => {
+        if (!createCycleIfNeeded()) return;
+        const mins = Number(prompt('Advance how many minutes?', '60')) || 0;
+        cycle.addTime(0, mins);
+        log('manual tick +' + mins + 'min');
+        refreshUI();
+      });
+
+      controls.btnApplyMonthConfig.addEventListener('click', () => {
+        if (!createCycleIfNeeded()) return;
+        try {
+          const cfg = JSON.parse(controls.monthConfig.value || '{}');
+          cycle.setMonthDaysConfig(cfg);
+          log('Applied month config', JSON.stringify(cfg));
+        } catch (e) {
+          log('Invalid JSON for month config:', e.message);
+        }
+        refreshUI();
+      });
+
+      controls.btnSetDate.addEventListener('click', () => {
+        if (!createCycleIfNeeded()) return;
         cycle.currentMonth = Number(controls.currentMonth.value) || 1;
         cycle.currentDay = Number(controls.currentDay.value) || 1;
         cycle.updateSeason?.();
-        log('Created TinyDayNightCycle instance.');
-      }
-      return true;
-    }
-
-    /* ---------- UI -> Cycle actions ---------- */
-
-    controls.btnSetTime.addEventListener('click', () => {
-      if (!createCycleIfNeeded()) return;
-      const h = Number(controls.setHour.value || 0);
-      const m = Number(controls.setMinute.value || 0);
-      cycle.setTime(h, m);
-      log('setTime', `${h}:${m}`);
-      refreshUI();
-    });
-
-    controls.btnSetToDay.addEventListener('click', () => {
-      if (!createCycleIfNeeded()) return;
-      cycle.setTo('day');
-      log('setTo day');
-      refreshUI();
-    });
-
-    controls.btnSetToNight.addEventListener('click', () => {
-      if (!createCycleIfNeeded()) return;
-      cycle.setTo('night');
-      log('setTo night');
-      refreshUI();
-    });
-
-    controls.btnAddTime.addEventListener('click', () => {
-      if (!createCycleIfNeeded()) return;
-      const h = Number(controls.addHours.value || 0);
-      const m = Number(controls.addMinutes.value || 0);
-      cycle.addTime(h, m);
-      log('addTime', `${h}h ${m}m`);
-      refreshUI();
-    });
-
-    controls.btnAddTick.addEventListener('click', () => {
-      if (!createCycleIfNeeded()) return;
-      const mins = Number(prompt('Advance how many minutes?', '60')) || 0;
-      cycle.addTime(0, mins);
-      log('manual tick +'+mins+'min');
-      refreshUI();
-    });
-
-    controls.btnApplyMonthConfig.addEventListener('click', () => {
-      if (!createCycleIfNeeded()) return;
-      try {
-        const cfg = JSON.parse(controls.monthConfig.value || '{}');
-        cycle.setMonthDaysConfig(cfg);
-        log('Applied month config', JSON.stringify(cfg));
-      } catch (e) {
-        log('Invalid JSON for month config:', e.message);
-      }
-      refreshUI();
-    });
-
-    controls.btnSetDate.addEventListener('click', () => {
-      if (!createCycleIfNeeded()) return;
-      cycle.currentMonth = Number(controls.currentMonth.value) || 1;
-      cycle.currentDay = Number(controls.currentDay.value) || 1;
-      cycle.updateSeason?.();
-      log('Set date to', `Day ${cycle.currentDay} / Month ${cycle.currentMonth}`);
-      refreshUI();
-    });
-
-    controls.btnApplyWeatherConfig.addEventListener('click', () => {
-      if (!createCycleIfNeeded()) return;
-      try {
-        const cfg = JSON.parse(controls.weatherConfig.value || '{}');
-        cycle.setWeatherConfig(cfg);
-        log('Applied weather config');
-      } catch (e) {
-        log('Invalid JSON for weather config:', e.message);
-      }
-      refreshUI();
-    });
-
-    controls.btnChooseWeather.addEventListener('click', () => {
-      if (!createCycleIfNeeded()) return;
-      const w = cycle.chooseNewWeather?.() ?? cycle.getRandomWeather?.();
-      log('chooseNewWeather =>', w);
-      refreshUI();
-    });
-
-    controls.btnForceClear.addEventListener('click', () => {
-      if (!createCycleIfNeeded()) return;
-      cycle.forceWeather?.('clear');
-      log('forceWeather clear');
-      refreshUI();
-    });
-
-    controls.btnForceWeather.addEventListener('click', () => {
-      if (!createCycleIfNeeded()) return;
-      const type = controls.forceType.value.trim();
-      if (!type) return log('No weather type provided to force.');
-      const dur = Number(controls.forceDuration.value) || null;
-      cycle.forceWeather?.(type, dur);
-      log('forceWeather', type, dur ? `${dur}min` : '(auto)');
-      refreshUI();
-    });
-
-    controls.btnStartAuto.addEventListener('click', () => {
-      if (!createCycleIfNeeded()) return;
-      const ms = Math.max(50, Number(controls.tickMs.value) || 500);
-      const minutes = Math.max(1, Number(controls.tickMinutes.value) || 1);
-      startAutoTick(ms, minutes);
-      log('Auto tick started', `${minutes} min / ${ms} ms`);
-    });
-
-    controls.btnStopAuto.addEventListener('click', () => {
-      stopAutoTick();
-      log('Auto tick stopped');
-    });
-
-    controls.btnClearLog.addEventListener('click', () => {
-      logs = [];
-      ui.log.innerText = '';
-      log('Log cleared');
-    });
-
-    controls.btnExportLog.addEventListener('click', () => {
-      const blob = new Blob([logs.join('\\n')], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'daynight-log.txt';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-      log('Log exported');
-    });
-
-    // When user changes day/night start values, update instance if exists
-    controls.dayStart.addEventListener('change', () => {
-      if (cycle) {
-        cycle.dayStart = Number(controls.dayStart.value);
-        log('dayStart changed', cycle.dayStart);
+        log('Set date to', `Day ${cycle.currentDay} / Month ${cycle.currentMonth}`);
         refreshUI();
-      }
-    });
-    controls.nightStart.addEventListener('change', () => {
-      if (cycle) {
-        cycle.nightStart = Number(controls.nightStart.value);
-        log('nightStart changed', cycle.nightStart);
+      });
+
+      controls.btnApplyWeatherConfig.addEventListener('click', () => {
+        if (!createCycleIfNeeded()) return;
+        try {
+          const cfg = JSON.parse(controls.weatherConfig.value || '{}');
+          cycle.setWeatherConfig(cfg);
+          log('Applied weather config');
+        } catch (e) {
+          log('Invalid JSON for weather config:', e.message);
+        }
         refreshUI();
-      }
-    });
+      });
 
-    // Update weather duration controls
-    controls.weatherMin.addEventListener('change', () => {
-      if (cycle) cycle.setWeatherDuration?.(Number(controls.weatherMin.value), Number(controls.weatherMax.value));
-      refreshUI();
-    });
-    controls.weatherMax.addEventListener('change', () => {
-      if (cycle) cycle.setWeatherDuration?.(Number(controls.weatherMin.value), Number(controls.weatherMax.value));
-      refreshUI();
-    });
-
-    /* ---------- Auto tick ---------- */
-    function startAutoTick(ms, minutes){
-      stopAutoTick();
-      autoHandle = setInterval(() => {
-        if (!cycle) return;
-        cycle.addTime(0, minutes);
+      controls.btnChooseWeather.addEventListener('click', () => {
+        if (!createCycleIfNeeded()) return;
+        const w = cycle.chooseNewWeather?.() ?? cycle.getRandomWeather?.();
+        log('chooseNewWeather =>', w);
         refreshUI();
-      }, ms);
-    }
-    function stopAutoTick(){
-      if (autoHandle) {
-        clearInterval(autoHandle);
-        autoHandle = null;
-      }
-    }
+      });
 
-    /* ---------- UI refresh ---------- */
-    function refreshUI(){
-      if (!cycle) {
-        resetUIStateIfMissing();
-        return;
-      }
-      const t = cycle.getTime?.() ?? { hour:0, minute:0, formatted:'--:--' };
-      ui.time.innerText = t.formatted ?? `${t.hour}:${t.minute}`;
-      ui.phase.innerText = cycle.isDay?.() ? 'Day' : 'Night';
-
-      ui.date.innerText = `Day ${cycle.currentDay} / Month ${cycle.currentMonth} / Year ${cycle.currentYear}`;
-      ui.season.innerText = cycle.currentSeason ?? '—';
-
-      ui.weather.innerText = cycle.weather ?? '—';
-      ui.weatherTTL.innerText = (cycle.weatherTimeLeft != null) ? `${Math.max(0, Math.round(cycle.weatherTimeLeft))} min` : '--';
-
-      // timeline progress across day
-      const progress = ((cycle.currentMinutes ?? 0) / 1440) * 100;
-      ui.timelineBar.style.width = progress + '%';
-      ui.timelineLabel.innerText = Math.round(progress) + '%';
-
-      // weather progress bar (percentage of remaining vs duration)
-      if (cycle.weatherTimeLeft != null && cycle.weatherDuration != null) {
-        const max = cycle.weatherDuration.max ?? 1;
-        const min = cycle.weatherDuration.min ?? 0;
-        const dur = Math.max(1, max);
-        const perc = Math.min(100, (cycle.weatherTimeLeft / dur) * 100);
-        ui.weatherBar.style.width = perc + '%';
-        ui.weatherHint.innerText = `${Math.round(perc)}% left`;
-      } else {
-        ui.weatherBar.style.width = '0%';
-        ui.weatherHint.innerText = '--';
-      }
-
-      // reflect current values in controls
-      controls.currentMonth.value = cycle.currentMonth ?? controls.currentMonth.value;
-      controls.currentDay.value = cycle.currentDay ?? controls.currentDay.value;
-    }
-
-    /* ---------- Initialization ---------- */
-    // Try to create cycle automatically if class exists
-    (function init(){
-      if (typeof window.TinyDayNightCycle === 'function') {
-        createCycleIfNeeded();
-        // ensure weather duration if present
-        const wm = Number(controls.weatherMin.value), wx = Number(controls.weatherMax.value);
-        cycle.setWeatherDuration?.(wm, wx);
-        // initial choose weather if not present
-        if (!cycle.weather) cycle.chooseNewWeather?.();
+      controls.btnForceClear.addEventListener('click', () => {
+        if (!createCycleIfNeeded()) return;
+        cycle.forceWeather?.('clear');
+        log('forceWeather clear');
         refreshUI();
-        log('Tester ready — TinyDayNightCycle found');
-      } else {
-        resetUIStateIfMissing();
-        log('TinyDayNightCycle class not found. Please include it and reload the tester.');
-      }
-    })();
+      });
 
-    // expose some helpers for console debugging
-    window.__DNC_TESTER__ = {
-      getCycle: () => cycle,
-      log,
-      refreshUI,
-      startAutoTick,
-      stopAutoTick
-    };
-  </script>
-</body>
+      controls.btnForceWeather.addEventListener('click', () => {
+        if (!createCycleIfNeeded()) return;
+        const type = controls.forceType.value.trim();
+        if (!type) return log('No weather type provided to force.');
+        const dur = Number(controls.forceDuration.value) || null;
+        cycle.forceWeather?.(type, dur);
+        log('forceWeather', type, dur ? `${dur}min` : '(auto)');
+        refreshUI();
+      });
+
+      controls.btnStartAuto.addEventListener('click', () => {
+        if (!createCycleIfNeeded()) return;
+        const ms = Math.max(50, Number(controls.tickMs.value) || 500);
+        const minutes = Math.max(1, Number(controls.tickMinutes.value) || 1);
+        startAutoTick(ms, minutes);
+        log('Auto tick started', `${minutes} min / ${ms} ms`);
+      });
+
+      controls.btnStopAuto.addEventListener('click', () => {
+        stopAutoTick();
+        log('Auto tick stopped');
+      });
+
+      controls.btnClearLog.addEventListener('click', () => {
+        logs = [];
+        ui.log.innerText = '';
+        log('Log cleared');
+      });
+
+      controls.btnExportLog.addEventListener('click', () => {
+        const blob = new Blob([logs.join('\\n')], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'daynight-log.txt';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        log('Log exported');
+      });
+
+      // When user changes day/night start values, update instance if exists
+      controls.dayStart.addEventListener('change', () => {
+        if (cycle) {
+          cycle.dayStart = Number(controls.dayStart.value);
+          log('dayStart changed', cycle.dayStart);
+          refreshUI();
+        }
+      });
+      controls.nightStart.addEventListener('change', () => {
+        if (cycle) {
+          cycle.nightStart = Number(controls.nightStart.value);
+          log('nightStart changed', cycle.nightStart);
+          refreshUI();
+        }
+      });
+
+      // Update weather duration controls
+      controls.weatherMin.addEventListener('change', () => {
+        if (cycle)
+          cycle.setWeatherDuration?.(
+            Number(controls.weatherMin.value),
+            Number(controls.weatherMax.value),
+          );
+        refreshUI();
+      });
+      controls.weatherMax.addEventListener('change', () => {
+        if (cycle)
+          cycle.setWeatherDuration?.(
+            Number(controls.weatherMin.value),
+            Number(controls.weatherMax.value),
+          );
+        refreshUI();
+      });
+
+      /* ---------- Auto tick ---------- */
+      function startAutoTick(ms, minutes) {
+        stopAutoTick();
+        autoHandle = setInterval(() => {
+          if (!cycle) return;
+          cycle.addTime(0, minutes);
+          refreshUI();
+        }, ms);
+      }
+      function stopAutoTick() {
+        if (autoHandle) {
+          clearInterval(autoHandle);
+          autoHandle = null;
+        }
+      }
+
+      /* ---------- UI refresh ---------- */
+      function refreshUI() {
+        if (!cycle) {
+          resetUIStateIfMissing();
+          return;
+        }
+        const t = cycle.getTime?.() ?? { hour: 0, minute: 0, formatted: '--:--' };
+        ui.time.innerText = t.formatted ?? `${t.hour}:${t.minute}`;
+        ui.phase.innerText = cycle.isDay?.() ? 'Day' : 'Night';
+
+        ui.date.innerText = `Day ${cycle.currentDay} / Month ${cycle.currentMonth} / Year ${cycle.currentYear}`;
+        ui.season.innerText = cycle.currentSeason ?? '—';
+
+        ui.weather.innerText = cycle.weather ?? '—';
+        ui.weatherTTL.innerText =
+          cycle.weatherTimeLeft != null
+            ? `${Math.max(0, Math.round(cycle.weatherTimeLeft))} min`
+            : '--';
+
+        // timeline progress across day
+        const progress = ((cycle.currentMinutes ?? 0) / 1440) * 100;
+        ui.timelineBar.style.width = progress + '%';
+        ui.timelineLabel.innerText = Math.round(progress) + '%';
+
+        // weather progress bar (percentage of remaining vs duration)
+        if (cycle.weatherTimeLeft != null && cycle.weatherDuration != null) {
+          const max = cycle.weatherDuration.max ?? 1;
+          const min = cycle.weatherDuration.min ?? 0;
+          const dur = Math.max(1, max);
+          const perc = Math.min(100, (cycle.weatherTimeLeft / dur) * 100);
+          ui.weatherBar.style.width = perc + '%';
+          ui.weatherHint.innerText = `${Math.round(perc)}% left`;
+        } else {
+          ui.weatherBar.style.width = '0%';
+          ui.weatherHint.innerText = '--';
+        }
+
+        // reflect current values in controls
+        controls.currentMonth.value = cycle.currentMonth ?? controls.currentMonth.value;
+        controls.currentDay.value = cycle.currentDay ?? controls.currentDay.value;
+      }
+
+      /* ---------- Initialization ---------- */
+      // Try to create cycle automatically if class exists
+      (function init() {
+        if (typeof window.TinyDayNightCycle === 'function') {
+          createCycleIfNeeded();
+          // ensure weather duration if present
+          const wm = Number(controls.weatherMin.value),
+            wx = Number(controls.weatherMax.value);
+          cycle.setWeatherDuration?.(wm, wx);
+          // initial choose weather if not present
+          if (!cycle.weather) cycle.chooseNewWeather?.();
+          refreshUI();
+          log('Tester ready — TinyDayNightCycle found');
+        } else {
+          resetUIStateIfMissing();
+          log('TinyDayNightCycle class not found. Please include it and reload the tester.');
+        }
+      })();
+
+      // expose some helpers for console debugging
+      window.__DNC_TESTER__ = {
+        getCycle: () => cycle,
+        log,
+        refreshUI,
+        startAutoTick,
+        stopAutoTick,
+      };
+    </script>
+  </body>
 </html>
