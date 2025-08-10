@@ -53,6 +53,8 @@
  * @param {number} timestamp - The moment in milliseconds when the sequence was successfully detected.
  */
 
+/** @typedef {ConnectionCallback|PayloadCallback|MappedInputCallback|MappedKeyCallback} CallbackList */
+
 /**
  * Represents a specific input source from a gamepad.
  * - 'gamepad-analog' refers to analog sticks or analog triggers.
@@ -188,7 +190,7 @@ class TinyGamepad {
   #inputMap = new Map();
 
   /**
-   * @type {Map<string, (ConnectionCallback|PayloadCallback|MappedInputCallback|MappedKeyCallback)[]>}
+   * @type {Map<string, CallbackList[]>}
    * Stores all event callback arrays for different input-related events.
    */
   #callbacks = new Map();
@@ -1108,6 +1110,87 @@ class TinyGamepad {
     for (const cb of cbs) cb(data);
   }
 
+  /**
+   * Registers a callback for a logical template
+   * @param {string} logicalName
+   * @param {CallbackList} callback
+   * @param {string} nameStart
+   */
+  #onTemplate(logicalName, callback, nameStart) {
+    if (typeof logicalName !== 'string' || logicalName.trim() === '')
+      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
+    if (typeof callback !== 'function')
+      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
+    const id = nameStart.replace('{logicalName}', logicalName);
+
+    let callbacks = this.#callbacks.get(id);
+    if (!Array.isArray(callbacks)) {
+      callbacks = [];
+      this.#callbacks.set(id, callbacks);
+    }
+    callbacks.push(callback);
+  }
+
+  /**
+   * Registers a one-time callback for a logical template.
+   * The callback is removed after the first invocation.
+   * @param {string} logicalName
+   * @param {CallbackList} callback
+   * @param {string} nameStart
+   */
+  #onceTemplate(logicalName, callback, nameStart) {
+    if (typeof logicalName !== 'string' || logicalName.trim() === '')
+      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
+    if (typeof callback !== 'function')
+      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
+    /** @type {CallbackList} */
+    // @ts-ignore
+    const wrapper = (payload) => {
+      this.#offTemplate(logicalName, wrapper, nameStart);
+      callback(payload);
+    };
+    this.#onTemplate(logicalName, wrapper, nameStart);
+  }
+
+  /**
+   * Prepends a callback to the template event list.
+   * @param {string} logicalName
+   * @param {CallbackList} callback
+   * @param {string} nameStart
+   */
+  #prependTemplate(logicalName, callback, nameStart) {
+    if (typeof logicalName !== 'string' || logicalName.trim() === '')
+      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
+    if (typeof callback !== 'function')
+      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
+    const id = nameStart.replace('{logicalName}', logicalName);
+
+    const list = this.#callbacks.get(id) ?? [];
+    list.unshift(callback);
+    this.#callbacks.set(id, list);
+  }
+
+  /**
+   * Removes a callback from a specific logical template event.
+   * @param {string} logicalName
+   * @param {CallbackList} callback
+   * @param {string} nameStart
+   */
+  #offTemplate(logicalName, callback, nameStart) {
+    if (typeof logicalName !== 'string' || logicalName.trim() === '')
+      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
+    if (typeof callback !== 'function')
+      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
+    const id = nameStart.replace('{logicalName}', logicalName);
+
+    const list = this.#callbacks.get(id);
+    if (Array.isArray(list))
+      this.#callbacks.set(
+        id,
+        list.filter((cb) => cb !== callback),
+      );
+  }
+
   ///////////////////////////////////////////////////
 
   /**
@@ -1368,16 +1451,7 @@ class TinyGamepad {
    * @param {MappedInputCallback} callback
    */
   onMappedKeyStart(callback) {
-    if (typeof callback !== 'function')
-      throw new TypeError(
-        `Expected "callback" to be a function (MappedInputCallback), got ${typeof callback}`,
-      );
-    let list = this.#callbacks.get('mapped-key-start');
-    if (!Array.isArray(list)) {
-      list = [];
-      this.#callbacks.set('mapped-key-start', list);
-    }
-    list.push(callback);
+    return this.#onTemplate('', callback, 'mapped-key-start');
   }
 
   /**
@@ -1386,16 +1460,7 @@ class TinyGamepad {
    * @param {MappedInputCallback} callback
    */
   onceMappedKeyStart(callback) {
-    if (typeof callback !== 'function')
-      throw new TypeError(
-        `Expected "callback" to be a function (MappedInputCallback), got ${typeof callback}`,
-      );
-    /** @type {MappedInputCallback} */
-    const wrapper = (logicalName) => {
-      this.offMappedInputStart(wrapper);
-      callback(logicalName);
-    };
-    this.onMappedInputStart(wrapper);
+    return this.#onceTemplate('', callback, 'mapped-key-start');
   }
 
   /**
@@ -1403,13 +1468,7 @@ class TinyGamepad {
    * @param {MappedInputCallback} callback
    */
   prependMappedKeyStart(callback) {
-    if (typeof callback !== 'function')
-      throw new TypeError(
-        `Expected "callback" to be a function (MappedInputCallback), got ${typeof callback}`,
-      );
-    const list = this.#callbacks.get('mapped-key-start') ?? [];
-    list.unshift(callback);
-    this.#callbacks.set('mapped-key-start', list);
+    return this.#prependTemplate('', callback, 'mapped-key-start');
   }
 
   /**
@@ -1417,17 +1476,7 @@ class TinyGamepad {
    * @param {MappedInputCallback} callback
    */
   offMappedKeyStart(callback) {
-    if (typeof callback !== 'function')
-      throw new TypeError(
-        `Expected "callback" to be a function (MappedInputCallback), got ${typeof callback}`,
-      );
-    const list = this.#callbacks.get('mapped-key-start');
-    if (Array.isArray(list)) {
-      this.#callbacks.set(
-        'mapped-key-start',
-        list.filter((cb) => cb !== callback),
-      );
-    }
+    return this.#offTemplate('', callback, 'mapped-key-start');
   }
 
   /**
@@ -1444,16 +1493,7 @@ class TinyGamepad {
    * @param {MappedInputCallback} callback
    */
   onMappedKeyEnd(callback) {
-    if (typeof callback !== 'function')
-      throw new TypeError(
-        `Expected "callback" to be a function (MappedInputCallback), got ${typeof callback}`,
-      );
-    let list = this.#callbacks.get('mapped-key-end');
-    if (!Array.isArray(list)) {
-      list = [];
-      this.#callbacks.set('mapped-key-end', list);
-    }
-    list.push(callback);
+    return this.#onTemplate('', callback, 'mapped-key-end');
   }
 
   /**
@@ -1462,16 +1502,7 @@ class TinyGamepad {
    * @param {MappedInputCallback} callback
    */
   onceMappedKeyEnd(callback) {
-    if (typeof callback !== 'function')
-      throw new TypeError(
-        `Expected "callback" to be a function (MappedInputCallback), got ${typeof callback}`,
-      );
-    /** @type {MappedInputCallback} */
-    const wrapper = (logicalName) => {
-      this.offMappedInputEnd(wrapper);
-      callback(logicalName);
-    };
-    this.onMappedInputEnd(wrapper);
+    return this.#onceTemplate('', callback, 'mapped-key-end');
   }
 
   /**
@@ -1479,13 +1510,7 @@ class TinyGamepad {
    * @param {MappedInputCallback} callback
    */
   prependMappedKeyEnd(callback) {
-    if (typeof callback !== 'function')
-      throw new TypeError(
-        `Expected "callback" to be a function (MappedInputCallback), got ${typeof callback}`,
-      );
-    const list = this.#callbacks.get('mapped-key-end') ?? [];
-    list.unshift(callback);
-    this.#callbacks.set('mapped-key-end', list);
+    return this.#prependTemplate('', callback, 'mapped-key-end');
   }
 
   /**
@@ -1493,17 +1518,7 @@ class TinyGamepad {
    * @param {MappedInputCallback} callback
    */
   offMappedKeyEnd(callback) {
-    if (typeof callback !== 'function')
-      throw new TypeError(
-        `Expected "callback" to be a function (MappedInputCallback), got ${typeof callback}`,
-      );
-    const list = this.#callbacks.get('mapped-key-end');
-    if (Array.isArray(list)) {
-      this.#callbacks.set(
-        'mapped-key-end',
-        list.filter((cb) => cb !== callback),
-      );
-    }
+    return this.#offTemplate('', callback, 'mapped-key-end');
   }
 
   /**
@@ -1520,16 +1535,7 @@ class TinyGamepad {
    * @param {MappedInputCallback} callback
    */
   onMappedInputStart(callback) {
-    if (typeof callback !== 'function')
-      throw new TypeError(
-        `Expected "callback" to be a function (MappedInputCallback), got ${typeof callback}`,
-      );
-    let list = this.#callbacks.get('mapped-input-start');
-    if (!Array.isArray(list)) {
-      list = [];
-      this.#callbacks.set('mapped-input-start', list);
-    }
-    list.push(callback);
+    return this.#onTemplate('', callback, 'mapped-input-start');
   }
 
   /**
@@ -1538,16 +1544,7 @@ class TinyGamepad {
    * @param {MappedInputCallback} callback
    */
   onceMappedInputStart(callback) {
-    if (typeof callback !== 'function')
-      throw new TypeError(
-        `Expected "callback" to be a function (MappedInputCallback), got ${typeof callback}`,
-      );
-    /** @type {MappedInputCallback} */
-    const wrapper = (logicalName) => {
-      this.offMappedInputStart(wrapper);
-      callback(logicalName);
-    };
-    this.onMappedInputStart(wrapper);
+    return this.#onceTemplate('', callback, 'mapped-input-start');
   }
 
   /**
@@ -1555,13 +1552,7 @@ class TinyGamepad {
    * @param {MappedInputCallback} callback
    */
   prependMappedInputStart(callback) {
-    if (typeof callback !== 'function')
-      throw new TypeError(
-        `Expected "callback" to be a function (MappedInputCallback), got ${typeof callback}`,
-      );
-    const list = this.#callbacks.get('mapped-input-start') ?? [];
-    list.unshift(callback);
-    this.#callbacks.set('mapped-input-start', list);
+    return this.#prependTemplate('', callback, 'mapped-input-start');
   }
 
   /**
@@ -1569,17 +1560,7 @@ class TinyGamepad {
    * @param {MappedInputCallback} callback
    */
   offMappedInputStart(callback) {
-    if (typeof callback !== 'function')
-      throw new TypeError(
-        `Expected "callback" to be a function (MappedInputCallback), got ${typeof callback}`,
-      );
-    const list = this.#callbacks.get('mapped-input-start');
-    if (Array.isArray(list)) {
-      this.#callbacks.set(
-        'mapped-input-start',
-        list.filter((cb) => cb !== callback),
-      );
-    }
+    return this.#offTemplate('', callback, 'mapped-input-start');
   }
 
   /**
@@ -1596,16 +1577,7 @@ class TinyGamepad {
    * @param {MappedInputCallback} callback
    */
   onMappedInputEnd(callback) {
-    if (typeof callback !== 'function')
-      throw new TypeError(
-        `Expected "callback" to be a function (MappedInputCallback), got ${typeof callback}`,
-      );
-    let list = this.#callbacks.get('mapped-input-end');
-    if (!Array.isArray(list)) {
-      list = [];
-      this.#callbacks.set('mapped-input-end', list);
-    }
-    list.push(callback);
+    return this.#onTemplate('', callback, 'mapped-input-end');
   }
 
   /**
@@ -1614,16 +1586,7 @@ class TinyGamepad {
    * @param {MappedInputCallback} callback
    */
   onceMappedInputEnd(callback) {
-    if (typeof callback !== 'function')
-      throw new TypeError(
-        `Expected "callback" to be a function (MappedInputCallback), got ${typeof callback}`,
-      );
-    /** @type {MappedInputCallback} */
-    const wrapper = (logicalName) => {
-      this.offMappedInputEnd(wrapper);
-      callback(logicalName);
-    };
-    this.onMappedInputEnd(wrapper);
+    return this.#onceTemplate('', callback, 'mapped-input-end');
   }
 
   /**
@@ -1631,13 +1594,7 @@ class TinyGamepad {
    * @param {MappedInputCallback} callback
    */
   prependMappedInputEnd(callback) {
-    if (typeof callback !== 'function')
-      throw new TypeError(
-        `Expected "callback" to be a function (MappedInputCallback), got ${typeof callback}`,
-      );
-    const list = this.#callbacks.get('mapped-input-end') ?? [];
-    list.unshift(callback);
-    this.#callbacks.set('mapped-input-end', list);
+    return this.#prependTemplate('', callback, 'mapped-input-end');
   }
 
   /**
@@ -1645,17 +1602,7 @@ class TinyGamepad {
    * @param {MappedInputCallback} callback
    */
   offMappedInputEnd(callback) {
-    if (typeof callback !== 'function')
-      throw new TypeError(
-        `Expected "callback" to be a function (MappedInputCallback), got ${typeof callback}`,
-      );
-    const list = this.#callbacks.get('mapped-input-end');
-    if (Array.isArray(list)) {
-      this.#callbacks.set(
-        'mapped-input-end',
-        list.filter((cb) => cb !== callback),
-      );
-    }
+    return this.#offTemplate('', callback, 'mapped-input-end');
   }
 
   /**
@@ -1673,16 +1620,7 @@ class TinyGamepad {
    * @param {PayloadCallback} callback
    */
   onInput(logicalName, callback) {
-    if (typeof logicalName !== 'string' || logicalName.trim() === '')
-      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    let callbacks = this.#callbacks.get(`input-${logicalName}`);
-    if (!Array.isArray(callbacks)) {
-      callbacks = [];
-      this.#callbacks.set(`input-${logicalName}`, callbacks);
-    }
-    callbacks.push(callback);
+    return this.#onTemplate(logicalName, callback, 'input-{logicalName}');
   }
 
   /**
@@ -1692,16 +1630,7 @@ class TinyGamepad {
    * @param {PayloadCallback} callback
    */
   onceInput(logicalName, callback) {
-    if (typeof logicalName !== 'string' || logicalName.trim() === '')
-      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    /** @type {PayloadCallback} */
-    const wrapper = (payload) => {
-      this.offInput(logicalName, wrapper);
-      callback(payload);
-    };
-    this.onInput(logicalName, wrapper);
+    return this.#onceTemplate(logicalName, callback, 'input-{logicalName}');
   }
 
   /**
@@ -1710,14 +1639,7 @@ class TinyGamepad {
    * @param {PayloadCallback} callback
    */
   prependInput(logicalName, callback) {
-    if (typeof logicalName !== 'string' || logicalName.trim() === '')
-      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    const key = `input-${logicalName}`;
-    const list = this.#callbacks.get(key) ?? [];
-    list.unshift(callback);
-    this.#callbacks.set(key, list);
+    return this.#prependTemplate(logicalName, callback, 'input-{logicalName}');
   }
 
   /**
@@ -1726,17 +1648,7 @@ class TinyGamepad {
    * @param {PayloadCallback} callback
    */
   offInput(logicalName, callback) {
-    if (typeof logicalName !== 'string' || logicalName.trim() === '')
-      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    const list = this.#callbacks.get(`input-${logicalName}`);
-    if (Array.isArray(list)) {
-      this.#callbacks.set(
-        `input-${logicalName}`,
-        list.filter((cb) => cb !== callback),
-      );
-    }
+    return this.#offTemplate(logicalName, callback, 'input-{logicalName}');
   }
 
   /////////////////////////////////////////////////////////
@@ -1747,16 +1659,7 @@ class TinyGamepad {
    * @param {PayloadCallback} callback
    */
   onInputStart(logicalName, callback) {
-    if (typeof logicalName !== 'string' || logicalName.trim() === '')
-      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    let callbacks = this.#callbacks.get(`input-down-${logicalName}`);
-    if (!Array.isArray(callbacks)) {
-      callbacks = [];
-      this.#callbacks.set(`input-down-${logicalName}`, callbacks);
-    }
-    callbacks.push(callback);
+    return this.#onTemplate(logicalName, callback, 'input-down-{logicalName}');
   }
 
   /**
@@ -1765,16 +1668,7 @@ class TinyGamepad {
    * @param {PayloadCallback} callback
    */
   onceInputStart(logicalName, callback) {
-    if (typeof logicalName !== 'string' || logicalName.trim() === '')
-      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    /** @type {PayloadCallback} */
-    const wrapper = (payload) => {
-      this.offInputStart(logicalName, wrapper);
-      callback(payload);
-    };
-    this.onInputStart(logicalName, wrapper);
+    return this.#onceTemplate(logicalName, callback, 'input-down-{logicalName}');
   }
 
   /**
@@ -1783,14 +1677,7 @@ class TinyGamepad {
    * @param {PayloadCallback} callback
    */
   prependInputStart(logicalName, callback) {
-    if (typeof logicalName !== 'string' || logicalName.trim() === '')
-      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    const key = `input-down-${logicalName}`;
-    const list = this.#callbacks.get(key) ?? [];
-    list.unshift(callback);
-    this.#callbacks.set(key, list);
+    return this.#prependTemplate(logicalName, callback, 'input-down-{logicalName}');
   }
 
   /**
@@ -1799,17 +1686,7 @@ class TinyGamepad {
    * @param {PayloadCallback} callback
    */
   offInputStart(logicalName, callback) {
-    if (typeof logicalName !== 'string' || logicalName.trim() === '')
-      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    const list = this.#callbacks.get(`input-down-${logicalName}`);
-    if (Array.isArray(list)) {
-      this.#callbacks.set(
-        `input-down-${logicalName}`,
-        list.filter((cb) => cb !== callback),
-      );
-    }
+    return this.#offTemplate(logicalName, callback, 'input-down-{logicalName}');
   }
 
   /////////////////////////////////////////////////////////////////////////
@@ -1820,16 +1697,7 @@ class TinyGamepad {
    * @param {PayloadCallback} callback
    */
   onInputEnd(logicalName, callback) {
-    if (typeof logicalName !== 'string' || logicalName.trim() === '')
-      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    let callbacks = this.#callbacks.get(`input-up-${logicalName}`);
-    if (!Array.isArray(callbacks)) {
-      callbacks = [];
-      this.#callbacks.set(`input-up-${logicalName}`, callbacks);
-    }
-    callbacks.push(callback);
+    return this.#onTemplate(logicalName, callback, 'input-up-{logicalName}');
   }
 
   /**
@@ -1838,16 +1706,7 @@ class TinyGamepad {
    * @param {PayloadCallback} callback
    */
   onceInputEnd(logicalName, callback) {
-    if (typeof logicalName !== 'string' || logicalName.trim() === '')
-      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    /** @type {PayloadCallback} */
-    const wrapper = (payload) => {
-      this.offInputEnd(logicalName, wrapper);
-      callback(payload);
-    };
-    this.onInputEnd(logicalName, wrapper);
+    return this.#onceTemplate(logicalName, callback, 'input-up-{logicalName}');
   }
 
   /**
@@ -1856,14 +1715,7 @@ class TinyGamepad {
    * @param {PayloadCallback} callback
    */
   prependInputEnd(logicalName, callback) {
-    if (typeof logicalName !== 'string' || logicalName.trim() === '')
-      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    const key = `input-up-${logicalName}`;
-    const list = this.#callbacks.get(key) ?? [];
-    list.unshift(callback);
-    this.#callbacks.set(key, list);
+    return this.#prependTemplate(logicalName, callback, 'input-up-{logicalName}');
   }
 
   /**
@@ -1872,17 +1724,7 @@ class TinyGamepad {
    * @param {PayloadCallback} callback
    */
   offInputEnd(logicalName, callback) {
-    if (typeof logicalName !== 'string' || logicalName.trim() === '')
-      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    const list = this.#callbacks.get(`input-up-${logicalName}`);
-    if (Array.isArray(list)) {
-      this.#callbacks.set(
-        `input-up-${logicalName}`,
-        list.filter((cb) => cb !== callback),
-      );
-    }
+    return this.#offTemplate(logicalName, callback, 'input-up-{logicalName}');
   }
 
   ///////////////////////////////////////////////////////////////////
@@ -1893,16 +1735,7 @@ class TinyGamepad {
    * @param {PayloadCallback} callback
    */
   onInputHold(logicalName, callback) {
-    if (typeof logicalName !== 'string' || logicalName.trim() === '')
-      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    let callbacks = this.#callbacks.get(`input-hold-${logicalName}`);
-    if (!Array.isArray(callbacks)) {
-      callbacks = [];
-      this.#callbacks.set(`input-hold-${logicalName}`, callbacks);
-    }
-    callbacks.push(callback);
+    return this.#onTemplate(logicalName, callback, 'input-hold-{logicalName}');
   }
 
   /**
@@ -1911,16 +1744,7 @@ class TinyGamepad {
    * @param {PayloadCallback} callback
    */
   onceInputHold(logicalName, callback) {
-    if (typeof logicalName !== 'string' || logicalName.trim() === '')
-      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    /** @type {PayloadCallback} */
-    const wrapper = (payload) => {
-      this.offInputHold(logicalName, wrapper);
-      callback(payload);
-    };
-    this.onInputHold(logicalName, wrapper);
+    return this.#onceTemplate(logicalName, callback, 'input-hold-{logicalName}');
   }
 
   /**
@@ -1929,14 +1753,7 @@ class TinyGamepad {
    * @param {PayloadCallback} callback
    */
   prependInputHold(logicalName, callback) {
-    if (typeof logicalName !== 'string' || logicalName.trim() === '')
-      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    const key = `input-hold-${logicalName}`;
-    const list = this.#callbacks.get(key) ?? [];
-    list.unshift(callback);
-    this.#callbacks.set(key, list);
+    return this.#prependTemplate(logicalName, callback, 'input-hold-{logicalName}');
   }
 
   /**
@@ -1945,17 +1762,7 @@ class TinyGamepad {
    * @param {PayloadCallback} callback
    */
   offInputHold(logicalName, callback) {
-    if (typeof logicalName !== 'string' || logicalName.trim() === '')
-      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    const list = this.#callbacks.get(`input-hold-${logicalName}`);
-    if (Array.isArray(list)) {
-      this.#callbacks.set(
-        `input-hold-${logicalName}`,
-        list.filter((cb) => cb !== callback),
-      );
-    }
+    return this.#offTemplate(logicalName, callback, 'input-hold-{logicalName}');
   }
 
   ////////////////////////////////////////////////////////////
@@ -1966,16 +1773,7 @@ class TinyGamepad {
    * @param {PayloadCallback} callback
    */
   onInputChange(logicalName, callback) {
-    if (typeof logicalName !== 'string' || logicalName.trim() === '')
-      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    let callbacks = this.#callbacks.get(`input-change-${logicalName}`);
-    if (!Array.isArray(callbacks)) {
-      callbacks = [];
-      this.#callbacks.set(`input-change-${logicalName}`, callbacks);
-    }
-    callbacks.push(callback);
+    return this.#onTemplate(logicalName, callback, 'input-change-{logicalName}');
   }
 
   /**
@@ -1984,16 +1782,7 @@ class TinyGamepad {
    * @param {PayloadCallback} callback
    */
   onceInputChange(logicalName, callback) {
-    if (typeof logicalName !== 'string' || logicalName.trim() === '')
-      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    /** @type {PayloadCallback} */
-    const wrapper = (payload) => {
-      this.offInputChange(logicalName, wrapper);
-      callback(payload);
-    };
-    this.onInputChange(logicalName, wrapper);
+    return this.#onceTemplate(logicalName, callback, 'input-change-{logicalName}');
   }
 
   /**
@@ -2002,14 +1791,7 @@ class TinyGamepad {
    * @param {PayloadCallback} callback
    */
   prependInputChange(logicalName, callback) {
-    if (typeof logicalName !== 'string' || logicalName.trim() === '')
-      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    const key = `input-change-${logicalName}`;
-    const list = this.#callbacks.get(key) ?? [];
-    list.unshift(callback);
-    this.#callbacks.set(key, list);
+    return this.#prependTemplate(logicalName, callback, 'input-change-{logicalName}');
   }
 
   /**
@@ -2018,17 +1800,7 @@ class TinyGamepad {
    * @param {PayloadCallback} callback
    */
   offInputChange(logicalName, callback) {
-    if (typeof logicalName !== 'string' || logicalName.trim() === '')
-      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    const list = this.#callbacks.get(`input-change-${logicalName}`);
-    if (Array.isArray(list)) {
-      this.#callbacks.set(
-        `input-change-${logicalName}`,
-        list.filter((cb) => cb !== callback),
-      );
-    }
+    return this.#offTemplate(logicalName, callback, 'input-change-{logicalName}');
   }
 
   ////////////////////////////////////////////////////////////
@@ -2039,16 +1811,7 @@ class TinyGamepad {
    * @param {PayloadCallback} callback
    */
   onInputMove(logicalName, callback) {
-    if (typeof logicalName !== 'string' || logicalName.trim() === '')
-      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    let callbacks = this.#callbacks.get(`input-move-${logicalName}`);
-    if (!Array.isArray(callbacks)) {
-      callbacks = [];
-      this.#callbacks.set(`input-move-${logicalName}`, callbacks);
-    }
-    callbacks.push(callback);
+    return this.#onTemplate(logicalName, callback, 'input-move-{logicalName}');
   }
 
   /**
@@ -2057,16 +1820,7 @@ class TinyGamepad {
    * @param {PayloadCallback} callback
    */
   onceInputMove(logicalName, callback) {
-    if (typeof logicalName !== 'string' || logicalName.trim() === '')
-      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    /** @type {PayloadCallback} */
-    const wrapper = (payload) => {
-      this.offInputMove(logicalName, wrapper);
-      callback(payload);
-    };
-    this.onInputMove(logicalName, wrapper);
+    return this.#onceTemplate(logicalName, callback, 'input-move-{logicalName}');
   }
 
   /**
@@ -2075,14 +1829,7 @@ class TinyGamepad {
    * @param {PayloadCallback} callback
    */
   prependInputMove(logicalName, callback) {
-    if (typeof logicalName !== 'string' || logicalName.trim() === '')
-      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    const key = `input-move-${logicalName}`;
-    const list = this.#callbacks.get(key) ?? [];
-    list.unshift(callback);
-    this.#callbacks.set(key, list);
+    return this.#prependTemplate(logicalName, callback, 'input-move-{logicalName}');
   }
 
   /**
@@ -2091,17 +1838,7 @@ class TinyGamepad {
    * @param {PayloadCallback} callback
    */
   offInputMove(logicalName, callback) {
-    if (typeof logicalName !== 'string' || logicalName.trim() === '')
-      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    const list = this.#callbacks.get(`input-move-${logicalName}`);
-    if (Array.isArray(list)) {
-      this.#callbacks.set(
-        `input-move-${logicalName}`,
-        list.filter((cb) => cb !== callback),
-      );
-    }
+    return this.#offTemplate(logicalName, callback, 'input-move-{logicalName}');
   }
 
   ////////////////////////////////////////////////////////////
@@ -2273,14 +2010,7 @@ class TinyGamepad {
    * @param {ConnectionCallback} callback
    */
   onConnected(callback) {
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    let callbacks = this.#callbacks.get('connected');
-    if (!Array.isArray(callbacks)) {
-      callbacks = [];
-      this.#callbacks.set('connected', callbacks);
-    }
-    callbacks.push(callback);
+    return this.#onTemplate('', callback, 'connected');
   }
 
   /**
@@ -2289,14 +2019,7 @@ class TinyGamepad {
    * @param {ConnectionCallback} callback
    */
   onceConnected(callback) {
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    /** @type {ConnectionCallback} */
-    const wrapper = (device) => {
-      this.offConnected(wrapper);
-      callback(device);
-    };
-    this.onConnected(wrapper);
+    return this.#onceTemplate('', callback, 'connected');
   }
 
   /**
@@ -2304,13 +2027,7 @@ class TinyGamepad {
    * @param {ConnectionCallback} callback
    */
   prependConnected(callback) {
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    /** @type {ConnectionCallback[]} */
-    // @ts-ignore
-    const list = this.#callbacks.get('connected') ?? [];
-    list.unshift(callback);
-    this.#callbacks.set('connected', list);
+    return this.#prependTemplate('', callback, 'connected');
   }
 
   /**
@@ -2318,15 +2035,7 @@ class TinyGamepad {
    * @param {ConnectionCallback} callback
    */
   offConnected(callback) {
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    const list = this.#callbacks.get('connected');
-    if (Array.isArray(list)) {
-      this.#callbacks.set(
-        'connected',
-        list.filter((cb) => cb !== callback),
-      );
-    }
+    return this.#offTemplate('', callback, 'connected');
   }
 
   /**
@@ -2341,14 +2050,7 @@ class TinyGamepad {
    * @param {ConnectionCallback} callback
    */
   onDisconnected(callback) {
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    let callbacks = this.#callbacks.get('disconnected');
-    if (!Array.isArray(callbacks)) {
-      callbacks = [];
-      this.#callbacks.set('disconnected', callbacks);
-    }
-    callbacks.push(callback);
+    return this.#onTemplate('', callback, 'disconnected');
   }
 
   /**
@@ -2357,14 +2059,7 @@ class TinyGamepad {
    * @param {ConnectionCallback} callback
    */
   onceDisconnected(callback) {
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    /** @type {ConnectionCallback} */
-    const wrapper = (device) => {
-      this.offDisconnected(wrapper);
-      callback(device);
-    };
-    this.onDisconnected(wrapper);
+    return this.#onceTemplate('', callback, 'disconnected');
   }
 
   /**
@@ -2372,11 +2067,7 @@ class TinyGamepad {
    * @param {ConnectionCallback} callback
    */
   prependDisconnected(callback) {
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    const list = this.#callbacks.get('disconnected') ?? [];
-    list.unshift(callback);
-    this.#callbacks.set('disconnected', list);
+    return this.#prependTemplate('', callback, 'disconnected');
   }
 
   /**
@@ -2384,15 +2075,7 @@ class TinyGamepad {
    * @param {ConnectionCallback} callback
    */
   offDisconnected(callback) {
-    if (typeof callback !== 'function')
-      throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
-    const list = this.#callbacks.get('disconnected');
-    if (Array.isArray(list)) {
-      this.#callbacks.set(
-        'disconnected',
-        list.filter((cb) => cb !== callback),
-      );
-    }
+    return this.#offTemplate('', callback, 'disconnected');
   }
 
   /**
