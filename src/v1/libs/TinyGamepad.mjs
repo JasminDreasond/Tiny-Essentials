@@ -152,6 +152,16 @@
  */
 
 /**
+ * @typedef {Object} ExportedConfig
+ * @property {string | null} expectedId - The expected identifier for a specific gamepad device, or null if not set.
+ * @property {string[]} ignoreIds - Array of device IDs to be ignored (excluded from input detection).
+ * @property {number} deadZone - The threshold value below which analog stick inputs are ignored (dead zone).
+ * @property {number} timeoutComboKeys - Time in milliseconds allowed between consecutive inputs in a combo sequence before it resets.
+ * @property {number} axisActiveSensitivity - Sensitivity threshold for detecting significant analog axis movement (0 = most sensitive, 1 = least sensitive).
+ * @property {[string, string | string[]][]} inputMap - Array of key-value pairs representing the mapping between logical input names and physical input(s).
+ */
+
+/**
  * TinyGamepad is a high-level and extensible input management system
  * designed for professional-level control schemes in games or applications.
  *
@@ -2389,16 +2399,6 @@ class TinyGamepad {
   }
 
   //////////////////////////////////////////
-
-  /**
-   * @typedef {Object} ExportedConfig
-   * @property {string | null} expectedId - The expected identifier for a specific gamepad device, or null if not set.
-   * @property {string[]} ignoreIds - Array of device IDs to be ignored (excluded from input detection).
-   * @property {number} deadZone - The threshold value below which analog stick inputs are ignored (dead zone).
-   * @property {number} timeoutComboKeys - Time in milliseconds allowed between consecutive inputs in a combo sequence before it resets.
-   * @property {number} axisActiveSensitivity - Sensitivity threshold for detecting significant analog axis movement (0 = most sensitive, 1 = least sensitive).
-   * @property {[string, string | string[]][]} inputMap - Array of key-value pairs representing the mapping between logical input names and physical input(s).
-   */
 
   /**
    * Exports the current TinyGamepad configuration as a plain object suitable for serialization.
