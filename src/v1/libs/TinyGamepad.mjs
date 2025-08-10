@@ -284,7 +284,10 @@ class TinyGamepad {
    */
   #keySequences = new Map();
 
-  /** @type {Map<string, { value: number; value2: number }>} */
+  /**
+   * Stores the previous values of each input key to track state changes between updates.
+   * @type {Map<string, { value: number; value2: number }>}
+   */
   #keyOldValue = new Map();
 
   /** @type {Record<string, string>} */
@@ -595,7 +598,11 @@ class TinyGamepad {
           timestamp: gp.timestamp,
           id: gp.id,
         });
-      this.#lastButtonStates[index] = { pressed: btn.pressed };
+      this.#lastButtonStates[index] = {
+        pressed: btn.pressed,
+        value: typeof value === 'number' ? value : this.#lastButtonStates[index]?.value,
+        value2: NaN,
+      };
     });
 
     gp.axes.forEach((val, index) => {
@@ -2415,6 +2422,29 @@ class TinyGamepad {
     return this.#connectedGamepad;
   }
 
+  /**
+   * Checks if there is a recorded last state for a given button index.
+   * @param {number} index - The index of the button to check.
+   * @returns {boolean} True if a last state exists for the specified button index; otherwise, false.
+   */
+  hasLastButtonState(index) {
+    if (!this.#lastButtonStates[index]) return false;
+    return true;
+  }
+
+  /**
+   * Retrieves the last recorded state for a given button index.
+   * Throws an error if the button index has no recorded state.
+   * @param {number} index - The index of the button to retrieve.
+   * @returns {KeyStatus} A copy of the last known state for the specified button index.
+   * @throws {Error} If no last state exists for the specified button index.
+   */
+  getLastButtonState(index) {
+    if (!this.#lastButtonStates[index])
+      throw new Error(`No last button state found for index ${index}`);
+    return { ...this.#lastButtonStates[index] };
+  }
+
   //////////////////////////////////////////
 
   /**
@@ -2742,6 +2772,31 @@ class TinyGamepad {
   get mappedInputEndCallSize() {
     const list = this.#callbacks.get('mapped-input-end');
     return Array.isArray(list) ? list.length : 0;
+  }
+
+  //////////////////////////////////////
+
+  /**
+   * Retrieves a snapshot of the most recent button states.
+   * Each element represents the status of a specific button at the last update cycle.
+   * @returns {KeyStatus[]} An array of button states from the last poll.
+   */
+  get lastButtonStates() {
+    /** @type {KeyStatus[]} */
+    const results = [];
+    this.#lastButtonStates.forEach((value) => {
+      results.push({ ...value });
+    });
+    return results;
+  }
+
+  /**
+   * Retrieves a snapshot of the most recent axis values.
+   * Each element is a numeric value representing the position or tilt of a specific axis at the last update cycle.
+   * @returns {number[]} An array of axis values from the last poll.
+   */
+  get lastAxes() {
+    return [...this.#lastAxes];
   }
 
   //////////////////////////////////////
