@@ -1183,7 +1183,7 @@ class TinyGamepad {
    * @returns {string | string[]}
    */
   getMappedInput(logicalName) {
-    if (typeof logicalName !== 'string' || !logicalName.trim()) 
+    if (typeof logicalName !== 'string' || !logicalName.trim())
       throw new TypeError(`Invalid "logicalName": expected a non-empty string, got ${logicalName}`);
     const result = this.#inputMap.get(logicalName);
     if (!result) throw new Error(`No physical input mapped for logicalName: "${logicalName}"`);
@@ -2391,32 +2391,42 @@ class TinyGamepad {
   //////////////////////////////////////////
 
   /**
-   * Exports the current configuration as a JSON string
-   * @param {number} [spaces=2]
-   * @returns {string}
+   * @typedef {Object} ExportedConfig
+   * @property {string | null} expectedId - The expected identifier for a specific gamepad device, or null if not set.
+   * @property {string[]} ignoreIds - Array of device IDs to be ignored (excluded from input detection).
+   * @property {number} deadZone - The threshold value below which analog stick inputs are ignored (dead zone).
+   * @property {number} timeoutComboKeys - Time in milliseconds allowed between consecutive inputs in a combo sequence before it resets.
+   * @property {number} axisActiveSensitivity - Sensitivity threshold for detecting significant analog axis movement (0 = most sensitive, 1 = least sensitive).
+   * @property {[string, string | string[]][]} inputMap - Array of key-value pairs representing the mapping between logical input names and physical input(s).
    */
-  exportConfig(spaces = 2) {
-    if (typeof spaces !== 'number' || spaces < 0)
-      throw new TypeError(`"spaces" must be a non-negative number, received: ${spaces}`);
-    return JSON.stringify(
-      {
-        expectedId: this.#expectedId,
-        ignoreIds: Array.from(this.#ignoreIds),
-        deadZone: this.#deadZone,
-        inputMap: Array.from(this.#inputMap.entries()),
-      },
-      null,
-      spaces,
-    );
+
+  /**
+   * Exports the current TinyGamepad configuration as a plain object suitable for serialization.
+   * Includes device filters, input mappings, and various sensitivity settings.
+   * @returns {ExportedConfig} The current configuration snapshot.
+   */
+  exportConfig() {
+    return {
+      expectedId: this.#expectedId,
+      ignoreIds: Array.from(this.#ignoreIds),
+      deadZone: this.#deadZone,
+      timeoutComboKeys: this.#timeoutComboKeys,
+      axisActiveSensitivity: this.#axisActiveSensitivity,
+      inputMap: Array.from(this.#inputMap.entries()),
+    };
   }
 
   /**
-   * Imports a JSON configuration and applies it
-   * @param {string|Object} json
+   * Imports and applies a configuration object or JSON string to update TinyGamepad settings.
+   * Validates the input to ensure proper types and throws if invalid.
+   * @param {string | ExportedConfig} json - JSON string or configuration object to apply.
+   * @throws {TypeError} Throws if the provided argument is not a valid JSON string or configuration object,
+   * or if any property has an incorrect type.
    */
   importConfig(json) {
     if (typeof json !== 'string' && (typeof json !== 'object' || json === null))
       throw new TypeError(`"json" must be a string or a non-null object, received: ${json}`);
+
     const config = typeof json === 'string' ? JSON.parse(json) : json;
 
     if (
@@ -2425,19 +2435,33 @@ class TinyGamepad {
       config.expectedId !== null
     )
       throw new TypeError(`"expectedId" must be a string or null if provided`);
+
     if (config.ignoreIds !== undefined && !Array.isArray(config.ignoreIds))
       throw new TypeError(`"ignoreIds" must be an array if provided`);
+
     if (config.deadZone !== undefined && typeof config.deadZone !== 'number')
       throw new TypeError(`"deadZone" must be a number if provided`);
+
+    if (config.timeoutComboKeys !== undefined && typeof config.timeoutComboKeys !== 'number')
+      throw new TypeError(`"timeoutComboKeys" must be a number if provided`);
+
+    if (
+      config.axisActiveSensitivity !== undefined &&
+      typeof config.axisActiveSensitivity !== 'number'
+    )
+      throw new TypeError(`"axisActiveSensitivity" must be a number if provided`);
+
     if (config.inputMap !== undefined && !Array.isArray(config.inputMap))
       throw new TypeError(`"inputMap" must be an array if provided`);
 
-    if (config.expectedId) this.#expectedId = config.expectedId;
+    if (config.expectedId !== undefined) this.#expectedId = config.expectedId;
     if (Array.isArray(config.ignoreIds)) this.#ignoreIds = new Set(config.ignoreIds);
     if (typeof config.deadZone === 'number') this.#deadZone = config.deadZone;
-    if (Array.isArray(config.#inputMap)) {
-      this.#inputMap = new Map(config.#inputMap);
-    }
+    if (typeof config.timeoutComboKeys === 'number')
+      this.#timeoutComboKeys = config.timeoutComboKeys;
+    if (typeof config.axisActiveSensitivity === 'number')
+      this.#axisActiveSensitivity = config.axisActiveSensitivity;
+    if (Array.isArray(config.inputMap)) this.#inputMap = new Map(config.inputMap);
   }
 
   ///////////////////////////////////////////////////////////////

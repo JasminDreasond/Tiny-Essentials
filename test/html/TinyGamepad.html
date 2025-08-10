@@ -826,7 +826,7 @@
 
       document.getElementById('exportBtn').addEventListener('click', () => {
         if (!tg) return;
-        document.getElementById('configJson').value = tg.exportConfig();
+        document.getElementById('configJson').value = JSON.stringify(tg.exportConfig(), null, 2);
         log('Configuration exported.');
       });
 
