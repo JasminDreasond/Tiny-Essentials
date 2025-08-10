@@ -1124,11 +1124,17 @@ class TinyGamepad {
       const result = { key: null, source: null };
 
       /** @type {PayloadCallback} */
-      const inputCallback = ({ key, type, source, gp }) => {
+      const inputCallback = ({ key, type, source, gp, value }) => {
         if (!canMove && type === 'move') return;
         result.key = key;
         result.source = source;
         result.gp = gp;
+
+        if (result.key.startsWith('Axis')) {
+          if (value > 0) result.key = `${result.key}+`;
+          if (value < 0) result.key = `${result.key}-`;
+        }
+
         clearTimeout(timer);
         this.offInputStart(eventName, inputCallback);
         this.offInputChange(eventName, inputCallback);
