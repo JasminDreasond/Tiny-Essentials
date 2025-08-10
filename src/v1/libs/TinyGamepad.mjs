@@ -1936,6 +1936,23 @@ class TinyGamepad {
   };
 
   /**
+   * Returns the current default haptic feedback effect configuration.
+   *
+   * This includes the effect type (e.g., 'dual-rumble') and its parameters
+   * such as duration, delay, and vibration intensities (weak and strong).
+   *
+   * The returned object is a shallow clone to prevent external mutation.
+   *
+   * @returns {{ type: GamepadHapticEffectType; params: GamepadEffectParameters; }} The default haptic effect settings.
+   */
+  get defaultHapticEffect() {
+    return {
+      type: this.#defaultHapticEffect.type,
+      params: { ...this.#defaultHapticEffect.params },
+    };
+  }
+
+  /**
    * Sets the default haptic feedback effect configuration.
    * @param {GamepadHapticEffectType} type - Type of effect.
    * @param {GamepadEffectParameters} params - Effect parameters.

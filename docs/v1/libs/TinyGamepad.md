@@ -709,6 +709,12 @@ Returns the number of callbacks registered for the given logical input and event
 
 ---
 
+### 🔍 `get defaultHapticEffect()`
+
+Returns the current default haptic feedback effect configuration, including effect type and parameters like duration and intensity.
+
+---
+
 ### 🔧 `setDefaultHapticEffect(type, params)`
 
 Sets the default haptic feedback effect for gamepad vibration.
