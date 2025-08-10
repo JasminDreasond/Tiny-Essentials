@@ -451,15 +451,15 @@
         if (!tg) return;
 
         // Atualiza textos simples
-        document.getElementById('heldKeys').textContent = [...tg.getHeldKeys()].join(', ') || '-';
+        document.getElementById('heldKeys').textContent = [...tg.heldKeys].join(', ') || '-';
         document.getElementById('activeMappedInputs').textContent =
-          [...tg.getActiveMappedInputs()].join(', ') || '-';
+          [...tg.activeMappedInputs].join(', ') || '-';
         document.getElementById('activeMappedKeys').textContent =
-          [...tg.getActiveMappedKeys()].join(', ') || '-';
+          [...tg.activeMappedKeys].join(', ') || '-';
         document.getElementById('comboInputs').textContent =
-          tg.getComboMappedInputs().join(', ') || '-';
+          tg.comboMappedInputs.join(', ') || '-';
         document.getElementById('comboKeys').textContent =
-          tg.getComboMappedKeys().join(', ') || '-';
+          tg.comboMappedKeys.join(', ') || '-';
         document.getElementById('mode').textContent = tg.inputMode;
         document.getElementById('gamepadId').textContent = tg.hasGamepad()
           ? tg.getGamepad().id
@@ -684,7 +684,7 @@
 
       const updateMappings = () => {
         const pre = document.getElementById('inputMappings');
-        const mapped = [...tg.getActiveMappedInputs().entries()]
+        const mapped = [...tg.activeMappedInputs.entries()]
           .map(([k, v]) => `${k} → ${Array.isArray(v) ? v.join(', ') : v}`)
           .join('\n');
         pre.textContent = mapped || 'No mappings yet.';
@@ -751,30 +751,30 @@
           console.log(
             `Mapped Input Start`,
             evt,
-            tg.getActiveMappedInputs(),
-            tg.getComboMappedInputs(),
+            tg.activeMappedInputs,
+            tg.comboMappedInputs,
           ),
         );
         tg.onMappedInputEnd((evt) =>
           console.log(
             `Mapped Input End`,
             evt,
-            tg.getActiveMappedInputs(),
-            tg.getComboMappedInputs(),
+            tg.activeMappedInputs,
+            tg.comboMappedInputs,
           ),
         );
 
         if (debugAllInputs) {
           tg.onMappedKeyStart((evt) =>
-            console.log(`Mapped Key Input Start`, evt, tg.getComboMappedKeys()),
+            console.log(`Mapped Key Input Start`, evt, tg.comboMappedKeys),
           );
           tg.onMappedKeyEnd((evt) =>
-            console.log(`Mapped Key Input End`, evt, tg.getComboMappedKeys()),
+            console.log(`Mapped Key Input End`, evt, tg.comboMappedKeys),
           );
         } */
 
         tg.registerInputSequence(['Chat', 'Action'], (timestamp) =>
-          console.log('Chat + Action', tg.getActiveMappedInputs(), timestamp),
+          console.log('Chat + Action', tg.activeMappedInputs, timestamp),
         );
 
         tg.registerKeySequence(

@@ -1176,28 +1176,6 @@ class TinyGamepad {
       throw new TypeError(`Invalid "logicalName": expected a non-empty string, got ${logicalName}`);
     return this.#inputMap.has(logicalName);
   }
-
-  /**
-   * Returns a shallow clone of all logical-to-physical input mappings as a plain object.
-   * @returns {{ [logicalName: string]: string | string[] }}
-   */
-  getMappedInputs() {
-    /** @type {{ [logicalName: string]: string | string[] }} */
-    const result = {};
-    for (const [logicalName, physicalInput] of this.#inputMap.entries()) {
-      result[logicalName] = physicalInput;
-    }
-    return result;
-  }
-
-  /**
-   * Returns the number of logical inputs currently mapped.
-   * @returns {number}
-   */
-  getMappedInputCount() {
-    return this.#inputMap.size;
-  }
-
   /**
    * Clears all mappings for all logical inputs.
    */
@@ -1258,32 +1236,6 @@ class TinyGamepad {
     return this.#inputSequences.has(key);
   }
 
-  /**
-   * Returns the number of input sequences currently registered.
-   * @returns {number}
-   */
-  getInputSequenceCount() {
-    return this.#inputSequences.size;
-  }
-
-  /**
-   * Returns a shallow clone of all input sequences and their associated data.
-   * @returns {InputSequenceCallback[]}
-   */
-  getInputSequences() {
-    const result = [];
-    for (const [, data] of this.#inputSequences.entries()) result.push(data.callback);
-    return result;
-  }
-
-  /**
-   * Returns a clone of currently held mapped logical inputs.
-   * @returns {string[]}
-   */
-  getActiveMappedInputs() {
-    return [...this.#activeMappedInputs];
-  }
-
   ////////////////////////////////////////////////////////
 
   /**
@@ -1337,32 +1289,6 @@ class TinyGamepad {
     return this.#keySequences.has(key);
   }
 
-  /**
-   * Returns the number of input sequences currently registered.
-   * @returns {number}
-   */
-  getKeySequenceCount() {
-    return this.#keySequences.size;
-  }
-
-  /**
-   * Returns a shallow clone of all input sequences and their associated data.
-   * @returns {InputSequenceCallback[]}
-   */
-  getKeySequences() {
-    const result = [];
-    for (const [, data] of this.#keySequences.entries()) result.push(data.callback);
-    return result;
-  }
-
-  /**
-   * Returns a clone of currently held mapped logical keys.
-   * @returns {string[]}
-   */
-  getActiveMappedKeys() {
-    return [...this.#activeMappedKeys];
-  }
-
   ////////////////////////////////////////////////////////
 
   /**
@@ -1385,24 +1311,6 @@ class TinyGamepad {
     this.#timeComboKeys = 0;
     this.#comboInputs = [];
     this.#timeComboInputs = 0;
-  }
-
-  ///////////////////////////////////////////////////////////////
-
-  /**
-   * Returns a clone of currently held key combo logical inputs.
-   * @returns {string[]}
-   */
-  getComboMappedKeys() {
-    return [...this.#comboKeys];
-  }
-
-  /**
-   * Returns a clone of currently held combo logical inputs.
-   * @returns {string[]}
-   */
-  getComboMappedInputs() {
-    return [...this.#comboInputs];
   }
 
   /////////////////////////////////////////////////////////////////
@@ -1655,17 +1563,6 @@ class TinyGamepad {
     this.#callbacks.delete('mapped-input-start');
   }
 
-  /**
-   * Returns a cloned list of the "mapped-input-start" event callbacks.
-   * @returns {MappedInputCallback[]}
-   */
-  getMappedInputStartCalls() {
-    /** @type {MappedInputCallback[]} */
-    // @ts-ignore
-    const list = this.#callbacks.get('mapped-input-start');
-    return Array.isArray(list) ? [...list] : [];
-  }
-
   //////////////////////////////////////////////////////////////////
 
   /**
@@ -1740,17 +1637,6 @@ class TinyGamepad {
    */
   offAllMappedInputEnd() {
     this.#callbacks.delete('mapped-input-end');
-  }
-
-  /**
-   * Returns a cloned list of the "mapped-input-end" event callbacks.
-   * @returns {MappedInputCallback[]}
-   */
-  getMappedInputEndCalls() {
-    /** @type {MappedInputCallback[]} */
-    // @ts-ignore
-    const list = this.#callbacks.get('mapped-input-end');
-    return Array.isArray(list) ? [...list] : [];
   }
 
   /////////////////////////////////////////////////////////////
@@ -2425,17 +2311,6 @@ class TinyGamepad {
   }
 
   /**
-   * Returns a cloned list of the "connected" event callbacks.
-   * @returns {ConnectionCallback[]}
-   */
-  getConnectedCalls() {
-    /** @type {ConnectionCallback[]} */
-    // @ts-ignore
-    const list = this.#callbacks.get('connected');
-    return Array.isArray(list) ? [...list] : [];
-  }
-
-  /**
    * Registers a callback for the "disconnected" event
    * @param {ConnectionCallback} callback
    */
@@ -2499,17 +2374,6 @@ class TinyGamepad {
    */
   offAllDisconnected() {
     this.#callbacks.delete('disconnected');
-  }
-
-  /**
-   * Returns a cloned list of the "disconnected" event callbacks.
-   * @returns {ConnectionCallback[]}
-   */
-  getDisconnectedCalls() {
-    /** @type {ConnectionCallback[]} */
-    // @ts-ignore
-    const list = this.#callbacks.get('disconnected');
-    return Array.isArray(list) ? [...list] : [];
   }
 
   //////////////////////////////////////////
@@ -2584,13 +2448,158 @@ class TinyGamepad {
     }
   }
 
+  ///////////////////////////////////////////////////////////////
+
+  /**
+   * Returns a clone of currently held key combo logical inputs.
+   * @returns {string[]}
+   */
+  get comboMappedKeys() {
+    return [...this.#comboKeys];
+  }
+
+  /**
+   * Returns a clone of currently held combo logical inputs.
+   * @returns {string[]}
+   */
+  get comboMappedInputs() {
+    return [...this.#comboInputs];
+  }
+
+  ////////////////////////////////////
+
+  /**
+   * Returns the number of input sequences currently registered.
+   * @returns {number}
+   */
+  get keySequenceSize() {
+    return this.#keySequences.size;
+  }
+
+  /**
+   * Returns a shallow clone of all input sequences and their associated data.
+   * @returns {InputSequenceCallback[]}
+   */
+  get keySequences() {
+    const result = [];
+    for (const [, data] of this.#keySequences.entries()) result.push(data.callback);
+    return result;
+  }
+
+  /**
+   * Returns a clone of currently held mapped logical keys.
+   * @returns {string[]}
+   */
+  get activeMappedKeys() {
+    return [...this.#activeMappedKeys];
+  }
+
+  ////////////////////////////////////
+
+  /**
+   * Returns a cloned list of the "mapped-input-start" event callbacks.
+   * @returns {MappedInputCallback[]}
+   */
+  get mappedInputStartCalls() {
+    /** @type {MappedInputCallback[]} */
+    // @ts-ignore
+    const list = this.#callbacks.get('mapped-input-start');
+    return Array.isArray(list) ? [...list] : [];
+  }
+
+  /**
+   * Returns a cloned list of the "mapped-input-end" event callbacks.
+   * @returns {MappedInputCallback[]}
+   */
+  get mappedInputEndCalls() {
+    /** @type {MappedInputCallback[]} */
+    // @ts-ignore
+    const list = this.#callbacks.get('mapped-input-end');
+    return Array.isArray(list) ? [...list] : [];
+  }
+
+  ////////////////////////////////////
+
+  /**
+   * Returns the number of input sequences currently registered.
+   * @returns {number}
+   */
+  get inputSequenceSize() {
+    return this.#inputSequences.size;
+  }
+
+  /**
+   * Returns a shallow clone of all input sequences and their associated data.
+   * @returns {InputSequenceCallback[]}
+   */
+  get inputSequences() {
+    const result = [];
+    for (const [, data] of this.#inputSequences.entries()) result.push(data.callback);
+    return result;
+  }
+
+  /**
+   * Returns a clone of currently held mapped logical inputs.
+   * @returns {string[]}
+   */
+  get activeMappedInputs() {
+    return [...this.#activeMappedInputs];
+  }
+
+  ////////////////////////////////////
+
+  /**
+   * Returns a shallow clone of all logical-to-physical input mappings as a plain object.
+   * @returns {{ [logicalName: string]: string | string[] }}
+   */
+  get mappedInputs() {
+    /** @type {{ [logicalName: string]: string | string[] }} */
+    const result = {};
+    for (const [logicalName, physicalInput] of this.#inputMap.entries()) {
+      result[logicalName] = physicalInput;
+    }
+    return result;
+  }
+
+  /**
+   * Returns the number of logical inputs currently mapped.
+   * @returns {number}
+   */
+  get mappedInputSize() {
+    return this.#inputMap.size;
+  }
+
+  ////////////////////////////////////
+
+  /**
+   * Returns a cloned list of the "connected" event callbacks.
+   * @returns {ConnectionCallback[]}
+   */
+  get connectedCalls() {
+    /** @type {ConnectionCallback[]} */
+    // @ts-ignore
+    const list = this.#callbacks.get('connected');
+    return Array.isArray(list) ? [...list] : [];
+  }
+
+  /**
+   * Returns a cloned list of the "disconnected" event callbacks.
+   * @returns {ConnectionCallback[]}
+   */
+  get disconnectedCalls() {
+    /** @type {ConnectionCallback[]} */
+    // @ts-ignore
+    const list = this.#callbacks.get('disconnected');
+    return Array.isArray(list) ? [...list] : [];
+  }
+
   ////////////////////////////////////
 
   /**
    * Returns a shallow clone of the set of ignored device IDs.
    * @returns {string[]}
    */
-  getIgnoredDeviceIds() {
+  get ignoredDeviceIds() {
     return [...this.#ignoreIds];
   }
 
@@ -2598,7 +2607,7 @@ class TinyGamepad {
    * Returns a shallow clone of the currently held keys.
    * @returns {string[]}
    */
-  getHeldKeys() {
+  get heldKeys() {
     return [...this.#heldKeys];
   }
 
