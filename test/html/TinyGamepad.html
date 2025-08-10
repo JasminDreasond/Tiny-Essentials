@@ -456,10 +456,8 @@
           [...tg.activeMappedInputs].join(', ') || '-';
         document.getElementById('activeMappedKeys').textContent =
           [...tg.activeMappedKeys].join(', ') || '-';
-        document.getElementById('comboInputs').textContent =
-          tg.comboMappedInputs.join(', ') || '-';
-        document.getElementById('comboKeys').textContent =
-          tg.comboMappedKeys.join(', ') || '-';
+        document.getElementById('comboInputs').textContent = tg.comboMappedInputs.join(', ') || '-';
+        document.getElementById('comboKeys').textContent = tg.comboMappedKeys.join(', ') || '-';
         document.getElementById('mode').textContent = tg.inputMode;
         document.getElementById('gamepadId').textContent = tg.hasGamepad()
           ? tg.getGamepad().id

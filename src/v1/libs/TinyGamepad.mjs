@@ -1176,6 +1176,20 @@ class TinyGamepad {
       throw new TypeError(`Invalid "logicalName": expected a non-empty string, got ${logicalName}`);
     return this.#inputMap.has(logicalName);
   }
+
+  /**
+   * Returns the physical input(s) mapped to a given logical name.
+   * @param {string} logicalName
+   * @returns {string | string[]}
+   */
+  getMappedInput(logicalName) {
+    if (typeof logicalName !== 'string' || !logicalName.trim()) 
+      throw new TypeError(`Invalid "logicalName": expected a non-empty string, got ${logicalName}`);
+    const result = this.#inputMap.get(logicalName);
+    if (!result) throw new Error(`No physical input mapped for logicalName: "${logicalName}"`);
+    return result;
+  }
+
   /**
    * Clears all mappings for all logical inputs.
    */
@@ -2817,7 +2831,7 @@ class TinyGamepad {
    * Returns whether the instance has been destroyed
    * @returns {boolean}
    */
-  isDestroyed() {
+  get isDestroyed() {
     return this.#isDestroyed;
   }
 
