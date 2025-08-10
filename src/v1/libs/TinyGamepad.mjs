@@ -1121,8 +1121,8 @@ class TinyGamepad {
    * @param {string} nameStart
    */
   #onTemplate(logicalName, callback, nameStart) {
-    if (typeof logicalName !== 'string' || logicalName.trim() === '')
-      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
+    if (typeof logicalName !== 'string')
+      throw new TypeError(`"logicalName" must be a string, received ${logicalName}`);
     if (typeof callback !== 'function')
       throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
     const id = nameStart.replace('{logicalName}', logicalName);
@@ -1143,8 +1143,8 @@ class TinyGamepad {
    * @param {string} nameStart
    */
   #onceTemplate(logicalName, callback, nameStart) {
-    if (typeof logicalName !== 'string' || logicalName.trim() === '')
-      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
+    if (typeof logicalName !== 'string')
+      throw new TypeError(`"logicalName" must be a string, received ${logicalName}`);
     if (typeof callback !== 'function')
       throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
     /** @type {CallbackList} */
@@ -1163,8 +1163,8 @@ class TinyGamepad {
    * @param {string} nameStart
    */
   #prependTemplate(logicalName, callback, nameStart) {
-    if (typeof logicalName !== 'string' || logicalName.trim() === '')
-      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
+    if (typeof logicalName !== 'string')
+      throw new TypeError(`"logicalName" must be a string, received ${logicalName}`);
     if (typeof callback !== 'function')
       throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
     const id = nameStart.replace('{logicalName}', logicalName);
@@ -1181,8 +1181,8 @@ class TinyGamepad {
    * @param {string} nameStart
    */
   #offTemplate(logicalName, callback, nameStart) {
-    if (typeof logicalName !== 'string' || logicalName.trim() === '')
-      throw new TypeError(`"logicalName" must be a non-empty string, received ${logicalName}`);
+    if (typeof logicalName !== 'string')
+      throw new TypeError(`"logicalName" must be a string, received ${logicalName}`);
     if (typeof callback !== 'function')
       throw new TypeError(`"callback" must be a function, received ${typeof callback}`);
     const id = nameStart.replace('{logicalName}', logicalName);
