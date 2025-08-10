@@ -5,7 +5,7 @@
  * @param {number} configs.minute
  * @param {number} configs.currentMinutes
  * @param {boolean} configs.isDay
- * @param {string} configs.season
+ * @param {Season} configs.season
  * @param {string|null} configs.weather
  */
 
@@ -17,6 +17,8 @@
  * @typedef {Record<string, number>} WeatherData
  */
 
+/**@typedef {'winter'|'spring'|'summer'|'autumn'} Season */
+
 class TinyDayNightCycle {
   /** @type {number} */
   dayStart;
@@ -27,6 +29,8 @@ class TinyDayNightCycle {
   weather = null;
 
   currentMinutes = 0; // 0-1439
+
+  /** @type {Season} */
   currentSeason = 'summer';
   currentDay = 1;
   currentMonth = 1;
@@ -313,7 +317,6 @@ class TinyDayNightCycle {
         start <= end ? current >= start && current <= end : current >= start || current <= end;
 
       if (inRange) {
-        // @ts-ignore
         addProbabilities(this.weatherConfig.hours[range]);
       }
     }
@@ -326,9 +329,7 @@ class TinyDayNightCycle {
     }
 
     // 4. Seasonal
-    // @ts-ignore
     if (this.weatherConfig.seasons?.[this.currentSeason]) {
-      // @ts-ignore
       addProbabilities(this.weatherConfig.seasons[this.currentSeason]);
     }
 
