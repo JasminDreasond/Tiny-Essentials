@@ -53,7 +53,11 @@
  * @param {number} timestamp - The moment in milliseconds when the sequence was successfully detected.
  */
 
-/** @typedef {ConnectionCallback|PayloadCallback|MappedInputCallback|MappedKeyCallback} CallbackList */
+/**
+ * Represents any valid callback type used in the TinyGamepad event system.
+ * This is a union of all supported callback signatures.
+ * @typedef {ConnectionCallback | PayloadCallback | MappedInputCallback | MappedKeyCallback} CallbackList
+ */
 
 /**
  * Represents a specific input source from a gamepad.
