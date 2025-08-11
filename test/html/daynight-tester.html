@@ -723,7 +723,7 @@
 
       controls.btnForceClear.addEventListener('click', () => {
         if (!createCycleIfNeeded()) return;
-        cycle.forceWeather?.('clear');
+        cycle.forceWeather?.({ type: 'clear' });
         log('forceWeather clear');
         refreshUI();
       });
@@ -733,7 +733,7 @@
         const type = controls.forceType.value.trim();
         if (!type) return log('No weather type provided to force.');
         const dur = Number(controls.forceDuration.value) || null;
-        cycle.forceWeather?.(type, dur);
+        cycle.forceWeather?.({ type, duration: dur });
         log('forceWeather', type, dur ? `${dur}min` : '(auto)');
         refreshUI();
       });
@@ -838,7 +838,7 @@
         ui.date.innerText = `Day ${cycle.currentDay} / Month ${cycle.currentMonth} / Year ${cycle.currentYear}`;
         ui.season.innerText = cycle.currentSeason ?? '—';
 
-        ui.weather.innerText = cycle.weather ?? '—';
+        ui.weather.innerText = cycle.weather.main ?? '—';
         ui.weatherTTL.innerText =
           cycle.weatherTimeLeft != null
             ? `${Math.max(0, Math.round(cycle.weatherTimeLeft))} min`
@@ -876,7 +876,7 @@
             wx = Number(controls.weatherMax.value);
           cycle.setWeatherDuration?.(wm, wx);
           // initial choose weather if not present
-          if (!cycle.weather) cycle.chooseNewWeather?.();
+          if (!cycle.weather.main) cycle.chooseNewWeather?.();
           refreshUI();
           log('Tester ready — TinyDayNightCycle found');
         } else {

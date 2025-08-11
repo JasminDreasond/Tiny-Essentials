@@ -1,4 +1,13 @@
 /**
+ * Represents a mapping of weather type names to their selected values.
+ * Each key is the name of a weather type, and the value is either:
+ * - a string containing the selected weather configuration name, or
+ * - `null` if no selection has been made.
+ *
+ * @typedef {Record<string, string|null>} SelectedWeather
+ */
+
+/**
  * Callback used to dynamically calculate weather probabilities.
  *
  * @callback WeatherCallback
@@ -8,7 +17,7 @@
  * @param {number} configs.currentMinutes - Minutes since midnight (0–1439).
  * @param {boolean} configs.isDay - Whether it's currently daytime.
  * @param {string} configs.season - Current season.
- * @param {string|null} configs.weather - Current active weather type or null if none.
+ * @param {SelectedWeather} configs.weather - Current active weather types or nulls if none.
  * @returns {number} Probability weight for the weather type.
  */
 
@@ -92,9 +101,9 @@ class TinyDayNightCycle {
   #nightStart;
 
   /**
-   * @type {string|null} Currently active weather type.
+   * @type {SelectedWeather} Currently active weather type.
    */
-  #weather = null;
+  #weather = { main: null };
 
   /**
    * @type {number} Current time in seconds since midnight (0–86399).
@@ -291,9 +300,9 @@ class TinyDayNightCycle {
     return this.#nightStart;
   }
 
-  /** @returns {string|null} Currently active weather type or null if none. */
+  /** @returns {SelectedWeather} Currently active weather types or nulls if none. */
   get weather() {
-    return this.#weather;
+    return { ...this.#weather };
   }
 
   /** @returns {string} Currently active season name. */
@@ -364,12 +373,17 @@ class TinyDayNightCycle {
 
   /**
    * Sets the current weather type.
-   * @param {string|null} value Weather type string or null for no weather.
+   * @param {SelectedWeather} value Weather type strings or nulls for no weather.
    * @throws {TypeError} If value is not a string or null.
    */
   set weather(value) {
-    if (value !== null && typeof value !== 'string')
-      throw new TypeError(`weather must be a string or null, received ${typeof value}`);
+    if (
+      typeof value !== 'object' ||
+      value === null ||
+      Array.isArray(value) ||
+      !Object.values(value).every((name) => typeof name === 'string')
+    )
+      throw new TypeError(`weather must be a object with strings, received ${typeof value}`);
     this.#weather = value;
   }
 
@@ -869,11 +883,15 @@ class TinyDayNightCycle {
 
   /**
    * Forces the weather to a specific type, optionally for a given duration.
-   * @param {string} type - The weather type (e.g., "sunny", "rain", "storm").
-   * @param {number|null} [duration=null] - Duration in minutes. If null, a random duration is used.
+   * @param {Object} settings - Configuration object.
+   * @param {string} [settings.where='main'] - The target weather zone or location key.
+   * @param {string|null} settings.type - The weather type (e.g., "sunny", "rain", "storm").
+   * @param {number|null} [settings.duration=null] - Duration in minutes. If null, a random duration is used.
    */
-  forceWeather(type, duration = null) {
-    this.#weather = type;
+  forceWeather({ where = 'main', type, duration = null }) {
+    const weather = this.#weather;
+    weather[where] = type;
+    this.weather = weather;
     this.#weatherTimeLeft =
       duration ?? this._randomInRange(this.#weatherDuration.min, this.#weatherDuration.max);
   }
@@ -887,10 +905,12 @@ class TinyDayNightCycle {
    * - Seasonal settings
    * - Custom overrides passed as parameter
    * If a value is a function, it will be executed with contextual data and must return a number.
-   * @param {WeatherCfg} [customWeather] - Optional weather probability overrides.
+   * @param {Object} [settings={}] - Configuration object.
+   * @param {string} [settings.where='main'] - The target weather zone or location key.
+   * @param {WeatherCfg} [settings.customWeather] - Optional weather probability overrides.
    * @returns {string|null} - The selected weather type, or null if none selected.
    */
-  chooseNewWeather(customWeather) {
+  chooseNewWeather({ customWeather, where = 'main' } = {}) {
     /** @type {WeatherData} */
     let probabilities = {};
 
@@ -959,7 +979,7 @@ class TinyDayNightCycle {
     // Pick random based on final probabilities
     const entries = Object.entries(probabilities).filter(([, prob]) => prob > 0);
     if (!entries.length) {
-      this.#weather = null;
+      this.#weather[where] = null;
       return null;
     }
 
@@ -968,7 +988,7 @@ class TinyDayNightCycle {
 
     for (const [type, prob] of entries) {
       if (rand < prob) {
-        this.#weather = type;
+        this.#weather[where] = type;
         this.#weatherTimeLeft = this._randomInRange(
           this.#weatherDuration.min,
           this.#weatherDuration.max,
@@ -978,7 +998,7 @@ class TinyDayNightCycle {
       rand -= prob;
     }
 
-    this.#weather = null;
+    this.#weather[where] = null;
     return null;
   }
 
