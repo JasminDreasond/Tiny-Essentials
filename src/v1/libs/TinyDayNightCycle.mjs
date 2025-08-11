@@ -104,8 +104,13 @@ class TinyDayNightCycle {
   /**
    * @type {number} Current time in minutes since midnight (0–1439).
    */
-  #currentMinutes = 0; // 0-1439
+  #currentMinutes = 0;
 
+  /** 
+   * @type {number} Current time in hours since midnight (0–24).
+   */
+  #currentHours = 0;
+  
   /**
    * @type {string} Current season.
    */
@@ -208,12 +213,17 @@ class TinyDayNightCycle {
    * Sets the current time in seconds since midnight.
    * Also updates the currentMinutes property accordingly.
    * @param {number} value - Current seconds since midnight (0 to 86399).
+   * @throws {TypeError} If the value is not a number.
+   * @throws {RangeError} If the value is outside the valid range.
    */
   set currentSeconds(value) {
-    this.#currentSeconds = value;
-
-    // Update currentMinutes rounding down
+    if (typeof value !== 'number' || !Number.isFinite(value)) 
+      throw new TypeError(`currentSeconds must be a finite number, received ${typeof value}`);
+    if (value < 0 || value >= 86400) 
+      throw new RangeError(`currentSeconds must be between 0 and 86399, received ${value}`);
+    this.#currentSeconds = Math.floor(value);
     this.#currentMinutes = Math.floor(value / 60);
+    this.#currentHours = Math.floor(value / 3600);
   }
 
   /**
@@ -228,11 +238,46 @@ class TinyDayNightCycle {
    * Sets the current time in minutes since midnight.
    * Also updates the currentSeconds property accordingly (seconds set to zero).
    * @param {number} value - Current minutes since midnight (0 to 1439).
+   * @throws {TypeError} If the value is not a number.
+   * @throws {RangeError} If the value is outside the valid range.
    */
   set currentMinutes(value) {
-    this.#currentMinutes = value;
-    this.#currentSeconds = value * 60; // assumes zero seconds in the minute
+    if (typeof value !== 'number' || !Number.isFinite(value)) 
+      throw new TypeError(`currentMinutes must be a finite number, received ${typeof value}`);
+    if (value < 0 || value >= 1440) 
+      throw new RangeError(`currentMinutes must be between 0 and 1439, received ${value}`);
+    this.#currentMinutes = Math.floor(value);
+    this.#currentHours = Math.floor(value / 60);
+    this.#currentSeconds = Math.floor(value * 60);
   }
+
+  /**
+   * Gets the current time in hours since midnight.
+   * May be a decimal value (e.g., 14.5 = 14:30).
+   * @returns {number} Current hours (0 to less than 24).
+   */
+  get currentHours() {
+    return this.#currentHours;
+  }
+
+  /**
+   * Sets the current time in hours since midnight.
+   * Accepts decimal numbers to specify partial hours.
+   * Also updates currentMinutes and currentSeconds accordingly.
+   * @param {number} value - Current hours since midnight (0 to less than 24).
+   * @throws {TypeError} If the value is not a finite number.
+   * @throws {RangeError} If the value is outside the valid range.
+   */
+  set currentHours(value) {
+    if (typeof value !== 'number' || !Number.isFinite(value)) 
+      throw new TypeError(`currentHours must be a finite number, received ${typeof value}`);
+    if (value < 0 || value >= 24) 
+      throw new RangeError(`currentHours must be between 0 and less than 24, received ${value}`);
+    this.#currentHours = Math.floor(value);
+    this.#currentMinutes = Math.floor(value * 60);
+    this.#currentSeconds = Math.floor(value * 3600);
+  }
+
 
   /**
    * Returns all moons with their current phase details.
