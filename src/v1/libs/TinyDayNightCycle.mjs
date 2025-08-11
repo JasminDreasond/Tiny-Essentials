@@ -139,20 +139,7 @@ class TinyDayNightCycle {
    * Can be customized to any structure.
    * @type {number[]}
    */
-  #monthDays = [
-    31,
-    31,
-    31,
-    31,
-    31,
-    31,
-    31,
-    31,
-    31,
-    31,
-    31,
-    31,
-  ];
+  #monthDays = [31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31];
 
   /**
    * Weather configuration layers:
@@ -369,7 +356,9 @@ class TinyDayNightCycle {
    */
   set nightStart(value) {
     if (typeof value !== 'number' || value < 1)
-      throw new TypeError(`nightStart must be a positive non-zero number, received ${typeof value}`);
+      throw new TypeError(
+        `nightStart must be a positive non-zero number, received ${typeof value}`,
+      );
     this.#nightStart = value;
   }
 
@@ -393,7 +382,9 @@ class TinyDayNightCycle {
   set currentSeason(value) {
     if (typeof value !== 'string' || !this.#seasons.has(value)) {
       throw new TypeError(
-        `currentSeason must be one of ${Array.from(this.#seasons).map(v => v[0]).join(', ')}, received ${value}`,
+        `currentSeason must be one of ${Array.from(this.#seasons)
+          .map((v) => v[0])
+          .join(', ')}, received ${value}`,
       );
     }
     this.#currentSeason = value;
@@ -428,7 +419,9 @@ class TinyDayNightCycle {
    */
   set currentYear(value) {
     if (typeof value !== 'number' || value < 1)
-      throw new TypeError(`currentYear must be a positive number non-zero, received ${typeof value}`);
+      throw new TypeError(
+        `currentYear must be a positive number non-zero, received ${typeof value}`,
+      );
     this.#currentYear = value;
   }
 
@@ -438,9 +431,8 @@ class TinyDayNightCycle {
    * @param {number[]} value - An object where keys are month numbers (1-12) and values are the number of days.
    */
   set monthDays(value) {
-    if (!Array.isArray(value))
-      throw new TypeError(`monthDays must be a array`);
-    if (!value.every((n) => typeof n === 'number')) 
+    if (!Array.isArray(value)) throw new TypeError(`monthDays must be a array`);
+    if (!value.every((n) => typeof n === 'number'))
       throw new TypeError(`monthDays must have number values`);
     this.#monthDays = [...value];
   }
@@ -489,6 +481,71 @@ class TinyDayNightCycle {
       default: { ...this.#weatherConfig.default },
       day: { ...this.#weatherConfig.day },
       night: { ...this.#weatherConfig.night },
+      hours,
+      seasons,
+    };
+  }
+
+  /**
+   * Sets the entire weather configuration object.
+   * Accepts default, day, night, hours, and seasons settings.
+   * @param {WeatherCfgs} config - The new weather configuration.
+   * @throws {TypeError} If the provided value is not a valid object or contains invalid data types.
+   */
+  set weatherConfig(config) {
+    if (typeof config !== 'object' || config === null)
+      throw new TypeError(`weatherConfig must be a non-null object, received ${config}`);
+
+    const requiredKeys = ['default', 'day', 'night', 'hours', 'seasons'];
+    for (const key of requiredKeys) {
+      if (!(key in config))
+        throw new TypeError(`weatherConfig is missing required property "${key}".`);
+    }
+
+    /** @type {Record<string, WeatherCfg>} */
+    const hours = {};
+    /** @type {Record<string, WeatherCfg>} */
+    const seasons = {};
+
+    /**
+     * @param {WeatherCfg} cfg
+     * @param {string} label
+     */
+    const validateWeatherCfg = (cfg, label) => {
+      if (typeof cfg !== 'object' || cfg === null)
+        throw new TypeError(`${label} must be an object, received ${cfg}`);
+
+      for (const prop in cfg) {
+        const value = cfg[prop];
+        const type = typeof value;
+        if (!(type === 'number' || type === 'function'))
+          throw new TypeError(`${label}["${prop}"] must be a number or function, received ${type}`);
+      }
+    };
+
+    for (const name in config.hours) {
+      validateWeatherCfg(config.hours[name], `hours["${name}"]`);
+      hours[name] = { ...config.hours[name] };
+    }
+
+    for (const name in config.seasons) {
+      validateWeatherCfg(config.seasons[name], `seasons["${name}"]`);
+      seasons[name] = { ...config.seasons[name] };
+    }
+
+    /**
+     * @param {WeatherCfg} src
+     * @param {string} label
+     */
+    const copyCfg = (src, label) => {
+      validateWeatherCfg(src, label);
+      return { ...src };
+    };
+
+    this.#weatherConfig = {
+      default: copyCfg(config.default, 'default'),
+      day: copyCfg(config.day, 'day'),
+      night: copyCfg(config.night, 'night'),
       hours,
       seasons,
     };

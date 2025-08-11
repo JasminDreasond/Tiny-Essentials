@@ -312,7 +312,7 @@
 
         <div class="field">
           <label>Custom month lengths (JSON object)</label>
-          <textarea id="monthConfig" placeholder='e.g. [40,25,...]'></textarea>
+          <textarea id="monthConfig" placeholder="e.g. [40,25,...]"></textarea>
           <div style="display: flex; gap: 8px; margin-top: 8px">
             <button class="btn" id="btnApplyMonthConfig">Apply Month Config</button>
             <button class="btn ghost" id="btnSetDate">Set Date</button>
@@ -493,8 +493,7 @@
 
       document.getElementById('weatherConfig').value =
         '{"default":{"sunny":50,"cloudy":30,"rain":20},"day":{"sunny":60,"cloudy":25,"rain":15},"night":{"clear":50,"cloudy":30,"rain":20},"hours":{"06:00-09:00":{"fog":40,"sunny":30,"cloudy":30},"20:00-23:00":{"clear":60,"cloudy":40}},"seasons":{"winter":{"snow":50,"cloudy":30,"sunny":20},"summer":{"sunny":70,"cloudy":20,"rain":10}}}';
-      document.getElementById('monthConfig').value =
-        '[40,25,35,28,40,25,30,20,45,33,30,50]';
+      document.getElementById('monthConfig').value = '[40,25,35,28,40,25,30,20,45,33,30,50]';
 
       // Utility helpers
       const $ = (sel, root = document) => root.querySelector(sel);
@@ -707,7 +706,7 @@
         if (!createCycleIfNeeded()) return;
         try {
           const cfg = JSON.parse(controls.weatherConfig.value || '{}');
-          cycle.setWeatherConfig(cfg);
+          cycle.weatherConfig = cfg;
           log('Applied weather config');
         } catch (e) {
           log('Invalid JSON for weather config:', e.message);
