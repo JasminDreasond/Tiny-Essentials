@@ -598,6 +598,12 @@
             Number(controls.nightStart.value),
           );
           window.cycle = cycle;
+
+          cycle.addSeason('winter', [12, 1, 2]);
+          cycle.addSeason('spring', [3, 4, 5]);
+          cycle.addSeason('summer', [6, 7, 8]);
+          cycle.addSeason('autumn', [9, 10, 11]);
+
           cycle.addMoon(
             'Moon',
             29,
@@ -815,7 +821,7 @@
         ui.time.innerText = t.formatted ?? `${t.hour}:${t.minute}`;
         ui.phase.innerText = cycle.isDay?.() ? 'Day' : 'Night';
 
-        const m = cycle.getMoons();
+        const m = cycle.moons;
         ui.moon.innerText = m[0].phaseName;
         ui.moonStep.innerText =
           typeof m[0].phaseIndex === 'number' ? `Phase ${m[0].phaseIndex + 1}` : '—';

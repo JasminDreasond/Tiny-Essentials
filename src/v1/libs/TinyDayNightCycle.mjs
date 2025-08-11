@@ -7,9 +7,20 @@
  * @param {number} configs.minute - Current in-game minute (0–59).
  * @param {number} configs.currentMinutes - Minutes since midnight (0–1439).
  * @param {boolean} configs.isDay - Whether it's currently daytime.
- * @param {Season} configs.season - Current season.
+ * @param {string} configs.season - Current season.
  * @param {string|null} configs.weather - Current active weather type or null if none.
  * @returns {number} Probability weight for the weather type.
+ */
+
+/**
+ * Represents the complete set of weather configurations.
+ *
+ * @typedef {Object} WeatherCfgs
+ * @property {WeatherCfg} default - Default weather configuration applied when no specific condition matches.
+ * @property {WeatherCfg} day - Weather configuration used during daytime hours.
+ * @property {WeatherCfg} night - Weather configuration used during nighttime hours.
+ * @property {Record<string, WeatherCfg>} hours - Specific weather configurations mapped by hour (e.g., `"06": WeatherCfg`).
+ * @property {Record<string, WeatherCfg>} seasons - Specific weather configurations mapped by season name.
  */
 
 /**
@@ -26,11 +37,6 @@
  */
 
 /**
- * Supported season values.
- * @typedef {'winter'|'spring'|'summer'|'autumn'} Season
- */
-
-/**
  * Represents the data for a moon's current phase.
  *
  * @typedef {Object} MoonData
@@ -38,6 +44,16 @@
  * @property {number} phaseIndex - The current phase index (zero-based) within the moon's cycle.
  * @property {string} phaseName - The descriptive name of the current phase.
  * @property {number} cycleLength - The total number of phases/days in the moon's full cycle.
+ */
+
+/**
+ * Represents the raw data structure for a moon's cycle.
+ *
+ * @typedef {Object} MoonRaw
+ * @property {string} name - The name of the moon.
+ * @property {number} cycleLength - Total number of phases in the moon's cycle.
+ * @property {number} currentPhase - The current phase index (0-based).
+ * @property {string[]} [phaseNames] - Optional list of names for each phase in the cycle.
  */
 
 /**
@@ -52,6 +68,20 @@
  * Time and date calculations are independent from the real world and can run at any speed.
  */
 class TinyDayNightCycle {
+  /**
+   * Stores season configurations, where each season name maps to an array of numbers.
+   * The number array represent month list.
+   *
+   * @type {Map<string, number[]>}
+   */
+  #seasons = new Map();
+
+  /**
+   * Array of tracked moons with independent phases.
+   * @type {MoonRaw[]}
+   */
+  #moons = [];
+
   /**
    * @type {number} Hour of the day start (0–23).
    */
@@ -77,9 +107,9 @@ class TinyDayNightCycle {
   #currentMinutes = 0; // 0-1439
 
   /**
-   * @type {Season} Current season.
+   * @type {string} Current season.
    */
-  #currentSeason = 'summer';
+  #currentSeason = '';
 
   /**
    * Current day of the month.
@@ -205,12 +235,235 @@ class TinyDayNightCycle {
   }
 
   /**
+   * Returns all moons with their current phase details.
+   * @returns {MoonData[]} Array of moons including their name, current phase index, phase name, and cycle length.
+   */
+  get moons() {
+    return this.#moons.map((moon) => this.getMoon(moon));
+  }
+
+  /** @type {string[]} */
+  get seasons() {
+    return Array.from(this.#seasons.keys());
+  }
+
+  /** @returns {number} */
+  get dayStart() {
+    return this.#dayStart;
+  }
+
+  /** @returns {number} */
+  get nightStart() {
+    return this.#nightStart;
+  }
+
+  /** @returns {string|null} */
+  get weather() {
+    return this.#weather;
+  }
+
+  /** @returns {string} */
+  get currentSeason() {
+    return this.#currentSeason;
+  }
+
+  /** @returns {number} */
+  get currentDay() {
+    return this.#currentDay;
+  }
+
+  /** @returns {number} */
+  get currentMonth() {
+    return this.#currentMonth;
+  }
+
+  /** @returns {number} */
+  get currentYear() {
+    return this.#currentYear;
+  }
+
+  /** @returns {Object<number, number>} */
+  get monthDays() {
+    return { ...this.#monthDays };
+  }
+
+  /** @returns {{min: number, max: number}} */
+  get weatherDuration() {
+    return { ...this.#weatherDuration };
+  }
+
+  /** @returns {number} */
+  get weatherTimeLeft() {
+    return this.#weatherTimeLeft;
+  }
+
+  /** @param {number} value */
+  set dayStart(value) {
+    if (typeof value !== 'number')
+      throw new TypeError(`dayStart must be a number, received ${typeof value}`);
+    this.#dayStart = value;
+  }
+
+  /** @param {number} value */
+  set nightStart(value) {
+    if (typeof value !== 'number')
+      throw new TypeError(`nightStart must be a number, received ${typeof value}`);
+    this.#nightStart = value;
+  }
+
+  /** @param {string|null} value */
+  set weather(value) {
+    if (value !== null && typeof value !== 'string')
+      throw new TypeError(`weather must be a string or null, received ${typeof value}`);
+    this.#weather = value;
+  }
+
+  /** @param {string} value */
+  set currentSeason(value) {
+    if (typeof value !== 'string' || !this.#seasons.has(value)) {
+      throw new TypeError(
+        `currentSeason must be one of ${Array.from(this.#seasons).join(', ')}, received ${value}`,
+      );
+    }
+    this.#currentSeason = value;
+  }
+
+  /** @param {number} value */
+  set currentDay(value) {
+    if (typeof value !== 'number')
+      throw new TypeError(`currentDay must be a number, received ${typeof value}`);
+    this.#currentDay = value;
+  }
+
+  /** @param {number} value */
+  set currentMonth(value) {
+    if (typeof value !== 'number')
+      throw new TypeError(`currentMonth must be a number, received ${typeof value}`);
+    this.#currentMonth = value;
+  }
+
+  /** @param {number} value */
+  set currentYear(value) {
+    if (typeof value !== 'number')
+      throw new TypeError(`currentYear must be a number, received ${typeof value}`);
+    this.#currentYear = value;
+  }
+
+  /** @param {Object<number, number>} value */
+  set monthDays(value) {
+    if (typeof value !== 'object' || value === null)
+      throw new TypeError(`monthDays must be a non-null object`);
+    for (const [key, val] of Object.entries(value)) {
+      if (Number.isNaN(Number(key)) || typeof val !== 'number') {
+        throw new TypeError(`monthDays must have numeric keys and number values`);
+      }
+    }
+    this.#monthDays = { ...value };
+  }
+
+  /** @param {{min: number, max: number}} value */
+  set weatherDuration(value) {
+    if (typeof value !== 'object' || value === null)
+      throw new TypeError(`weatherDuration must be a non-null object`);
+    if (typeof value.min !== 'number' || typeof value.max !== 'number')
+      throw new TypeError(`weatherDuration.min and weatherDuration.max must be numbers`);
+    this.#weatherDuration = { ...value };
+  }
+
+  /** @param {number} value */
+  set weatherTimeLeft(value) {
+    if (typeof value !== 'number')
+      throw new TypeError(`weatherTimeLeft must be a number, received ${typeof value}`);
+    this.#weatherTimeLeft = value;
+  }
+
+  /** @returns {WeatherCfgs} */
+  get weatherConfig() {
+    /** @type {Record<string, WeatherCfg>} */
+    const hours = {};
+    /** @type {Record<string, WeatherCfg>} */
+    const seasons = {};
+
+    for (const name in this.#weatherConfig.hours)
+      hours[name] = { ...this.#weatherConfig.hours[name] };
+    for (const name in this.#weatherConfig.seasons)
+      seasons[name] = { ...this.#weatherConfig.seasons[name] };
+
+    return {
+      default: { ...this.#weatherConfig.default },
+      day: { ...this.#weatherConfig.day },
+      night: { ...this.#weatherConfig.night },
+      hours,
+      seasons,
+    };
+  }
+
+  /**
    * @param {number} dayStart - Hour of the day start (0-23)
    * @param {number} nightStart - Hour of the night start (0-23)
    */
   constructor(dayStart = 6, nightStart = 18) {
     this.#dayStart = dayStart;
     this.#nightStart = nightStart;
+  }
+
+  /** --------------------- SEASON SYSTEM --------------------- */
+
+  /**
+   * Adds or updates a season with the provided numeric values.
+   *
+   * @param {string} name - The name of the season to add or update.
+   * @param {number[]} values - An array of month values associated with the season.
+   * @throws {TypeError} If `name` is not a string or `values` is not an array of numbers.
+   */
+  addSeason(name, values) {
+    if (typeof name !== 'string')
+      throw new TypeError(`Season name must be a string, received ${typeof name}`);
+    if (!Array.isArray(values) || !values.every((v) => typeof v === 'number'))
+      throw new TypeError(`Season values must be an array of numbers`);
+    this.#seasons.set(name, values);
+  }
+
+  /**
+   * Removes a season from the collection.
+   *
+   * @param {string} name - The name of the season to remove.
+   * @throws {TypeError} If `name` is not a string.
+   */
+  removeSeason(name) {
+    if (typeof name !== 'string')
+      throw new TypeError(`Season name must be a string, received ${typeof name}`);
+    this.#seasons.delete(name);
+    if (this.#currentSeason === name) this.#currentSeason = '';
+  }
+
+  /**
+   * Checks whether a season exists in the collection.
+   *
+   * @param {string} name - The name of the season to check.
+   * @returns {boolean} `true` if the season exists, otherwise `false`.
+   * @throws {TypeError} If `name` is not a string.
+   */
+  hasSeason(name) {
+    if (typeof name !== 'string')
+      throw new TypeError(`Season name must be a string, received ${typeof name}`);
+    return this.#seasons.has(name);
+  }
+
+  /**
+   * Retrieves the mouth values associated with a season.
+   *
+   * @param {string} name - The name of the season to retrieve.
+   * @returns {number[]} A copy of the month values for the specified season.
+   * @throws {TypeError} If `name` is not a string.
+   * @throws {Error} If the season does not exist.
+   */
+  getSeason(name) {
+    if (typeof name !== 'string')
+      throw new TypeError(`Season name must be a string, received ${typeof name}`);
+    const result = this.#seasons.get(name);
+    if (!result) throw new Error(`Season "${name}" not found`);
+    return [...result];
   }
 
   /** --------------------- TIME SYSTEM --------------------- */
@@ -430,24 +683,18 @@ class TinyDayNightCycle {
 
   /**
    * Updates the current season based on the month.
-   * Default mapping:
-   * - Winter: Dec, Jan, Feb
-   * - Spring: Mar, Apr, May
-   * - Summer: Jun, Jul, Aug
-   * - Autumn: Sep, Oct, Nov
    */
   updateSeason() {
-    if ([12, 1, 2].includes(this.#currentMonth)) this.#currentSeason = 'winter';
-    else if ([3, 4, 5].includes(this.#currentMonth)) this.#currentSeason = 'spring';
-    else if ([6, 7, 8].includes(this.#currentMonth)) this.#currentSeason = 'summer';
-    else this.#currentSeason = 'autumn';
+    this.#seasons.forEach((seasonMonths, name) => {
+      if (seasonMonths.includes(this.#currentMonth)) this.#currentSeason = name;
+    });
   }
 
   /** --------------------- WEATHER SYSTEM --------------------- */
 
   /**
    * Sets the weather configuration.
-   * @param {{ default: WeatherCfg; day: WeatherCfg; night: WeatherCfg; hours: Record<string, WeatherCfg>; seasons: Record<string, WeatherCfg>; }} config
+   * @param {WeatherCfgs} config
    * An object defining default probabilities, time-based probabilities, day/night differences, and seasonal probabilities.
    */
   setWeatherConfig(config) {
@@ -524,7 +771,7 @@ class TinyDayNightCycle {
         }
 
         // Only add if it's a number
-        if (typeof resolvedValue === 'number' && !isNaN(resolvedValue)) {
+        if (typeof resolvedValue === 'number' && !Number.isNaN(resolvedValue)) {
           probabilities[key] = (probabilities[key] || 0) + resolvedValue;
         }
       }
@@ -604,26 +851,22 @@ class TinyDayNightCycle {
   /** --------------------- MOON SYSTEM --------------------- */
 
   /**
-   * Array of tracked moons with independent phases.
-   * @type {Array<{name: string, cycleLength: number, currentPhase: number, phaseNames?: string[]}>}
-   */
-  moons = [];
-
-  /**
    * Add a new moon to the system.
    * @param {string} name - Name of the moon.
    * @param {number} cycleLength - Number of days in cycle.
    * @param {string[]} phaseNames - Optional list of phase names.
    * @param {number} [startingPhase=0] - Initial phase.
+   * @returns {number} - The moon index.
    */
   addMoon(name, cycleLength, phaseNames, startingPhase = 0) {
     const length = Math.max(1, cycleLength);
-    this.moons.push({
+    this.#moons.push({
       name,
       cycleLength: length,
       currentPhase: ((startingPhase % length) + length) % length,
       phaseNames,
     });
+    return this.#moons.length - 1;
   }
 
   /**
@@ -631,7 +874,7 @@ class TinyDayNightCycle {
    * @param {string} name
    */
   removeMoon(name) {
-    this.moons = this.moons.filter((m) => m.name !== name);
+    this.#moons = this.#moons.filter((m) => m.name !== name);
   }
 
   /**
@@ -639,9 +882,7 @@ class TinyDayNightCycle {
    * @param {number} days
    */
   advanceMoons(days = 1) {
-    for (const moon of this.moons) {
-      moon.currentPhase = (moon.currentPhase + days) % moon.cycleLength;
-    }
+    for (const index in this.#moons) this.advanceMoon(parseInt(index), days);
   }
 
   /**
@@ -649,24 +890,80 @@ class TinyDayNightCycle {
    * @param {number} days
    */
   rewindMoons(days = 1) {
-    for (const moon of this.moons) {
-      moon.currentPhase = (moon.currentPhase - days + moon.cycleLength) % moon.cycleLength;
-    }
+    for (const index in this.#moons) this.rewindMoon(parseInt(index), days);
   }
 
   /**
-   * Returns all moons with their current phase details.
-   * @returns {MoonData[]} Array of moons including their name, current phase index, phase name, and cycle length.
+   * Advances the phase of a single moon by a number of days.
+   * @param {number} moonIndex - The index of the moon to advance.
+   * @param {number} days - Number of days to advance. Defaults to 1.
+   * @throws {RangeError} If the moonIndex is invalid.
    */
-  getMoons() {
-    return this.moons.map((moon) => ({
+  advanceMoon(moonIndex, days = 1) {
+    const moon = this.#moons[moonIndex];
+    if (!moon) throw new RangeError(`No moon found at index ${moonIndex}`);
+    moon.currentPhase = (moon.currentPhase + days) % moon.cycleLength;
+  }
+
+  /**
+   * Rewinds the phase of a single moon by a number of days.
+   * @param {number} moonIndex - The index of the moon to rewind.
+   * @param {number} days - Number of days to rewind. Defaults to 1.
+   * @throws {RangeError} If the moonIndex is invalid.
+   */
+  rewindMoon(moonIndex, days = 1) {
+    const moon = this.#moons[moonIndex];
+    if (!moon) throw new RangeError(`No moon found at index ${moonIndex}`);
+    moon.currentPhase = (moon.currentPhase - days + moon.cycleLength) % moon.cycleLength;
+  }
+
+  /**
+   * Checks if a moon exists at the specified index.
+   *
+   * @param {number} index - The index of the moon to check.
+   * @returns {boolean} `true` if a moon exists at the given index, otherwise `false`.
+   */
+  moonExists(index) {
+    if (!this.#moons[index]) return false;
+    return true;
+  }
+
+  /**
+   * Retrieves the moon with its current phase details.
+   *
+   * @param {number|MoonRaw} index - The moon index in the internal collection or a `MoonRaw` object.
+   * @returns {MoonData} The moon including its name, current phase index, phase name, and cycle length.
+   * @throws {TypeError} If `index` is neither a number nor a valid `MoonRaw` object.
+   * @throws {RangeError} If `index` is a number but no moon exists at that position.
+   * @throws {Error} If `index` is a `MoonRaw` object but required properties are missing or invalid.
+   */
+  getMoon(index) {
+    let moon;
+
+    if (typeof index === 'number') {
+      moon = this.#moons[index];
+      if (!moon) throw new RangeError(`No moon found at index ${index}`);
+    } else if (
+      index &&
+      typeof index === 'object' &&
+      typeof index.name === 'string' &&
+      typeof index.cycleLength === 'number' &&
+      typeof index.currentPhase === 'number'
+    )
+      moon = index;
+    else
+      throw new TypeError(
+        `Invalid moon reference. Expected a number index or a MoonRaw object, received ${typeof index}`,
+      );
+
+    return {
       name: moon.name,
       phaseIndex: moon.currentPhase,
       phaseName: moon.phaseNames
         ? (moon.phaseNames[moon.currentPhase] ?? String(moon.currentPhase))
         : String(moon.currentPhase),
       cycleLength: moon.cycleLength,
-    }));
+    };
   }
 }
 
