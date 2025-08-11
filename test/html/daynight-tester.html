@@ -297,6 +297,10 @@
         <h2>Days, months & seasons</h2>
         <div class="field grid-2">
           <div>
+            <label>Current year</label>
+            <input type="number" id="currentYear" min="1" value="1" />
+          </div>
+          <div>
             <label>Current month</label>
             <input type="number" id="currentMonth" min="1" max="12" value="1" />
           </div>
@@ -482,7 +486,7 @@
       /* ===========================
        TinyDayNightCycle Tester Script
        - Expects TinyDayNightCycle to be available on window.TinyDayNightCycle
-       - Controls many API points: setTime, addTime, setTo, setMonthDaysConfig,
+       - Controls many API points: setTime, addTime, setTo, monthDays,
          setWeatherConfig, setWeatherDuration, forceWeather, chooseNewWeather
        - Provides auto-tick and event logging
     ============================ */
@@ -531,6 +535,7 @@
         btnAddTime: el('btnAddTime'),
         btnAddTick: el('btnAddTick'),
         currentMonth: el('currentMonth'),
+        currentYear: el('currentYear'),
         currentDay: el('currentDay'),
         monthConfig: el('monthConfig'),
         btnApplyMonthConfig: el('btnApplyMonthConfig'),
@@ -623,6 +628,7 @@
           );
           // initialize month/day/season from UI
           cycle.currentMonth = Number(controls.currentMonth.value) || 1;
+          cycle.currentYear = Number(controls.currentYear.value) || 1;
           cycle.currentDay = Number(controls.currentDay.value) || 1;
           cycle.updateSeason?.();
           log('Created TinyDayNightCycle instance.');
@@ -676,7 +682,7 @@
         if (!createCycleIfNeeded()) return;
         try {
           const cfg = JSON.parse(controls.monthConfig.value || '{}');
-          cycle.setMonthDaysConfig(cfg);
+          cycle.monthDays = cfg;
           log('Applied month config', JSON.stringify(cfg));
         } catch (e) {
           log('Invalid JSON for month config:', e.message);
@@ -687,9 +693,13 @@
       controls.btnSetDate.addEventListener('click', () => {
         if (!createCycleIfNeeded()) return;
         cycle.currentMonth = Number(controls.currentMonth.value) || 1;
+        cycle.currentYear = Number(controls.currentYear.value) || 1;
         cycle.currentDay = Number(controls.currentDay.value) || 1;
         cycle.updateSeason?.();
-        log('Set date to', `Day ${cycle.currentDay} / Month ${cycle.currentMonth}`);
+        log(
+          'Set date to',
+          `Day ${cycle.currentDay} / Month ${cycle.currentMonth} / Year ${cycle.currentYear}`,
+        );
         refreshUI();
       });
 
@@ -855,10 +865,6 @@
           ui.weatherBar.style.width = '0%';
           ui.weatherHint.innerText = '--';
         }
-
-        // reflect current values in controls
-        controls.currentMonth.value = cycle.currentMonth ?? controls.currentMonth.value;
-        controls.currentDay.value = cycle.currentDay ?? controls.currentDay.value;
       }
 
       /* ---------- Initialization ---------- */

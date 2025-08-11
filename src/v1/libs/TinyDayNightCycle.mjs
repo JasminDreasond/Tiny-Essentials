@@ -106,11 +106,11 @@ class TinyDayNightCycle {
    */
   #currentMinutes = 0;
 
-  /** 
+  /**
    * @type {number} Current time in hours since midnight (0–24).
    */
   #currentHours = 0;
-  
+
   /**
    * @type {string} Current season.
    */
@@ -217,9 +217,9 @@ class TinyDayNightCycle {
    * @throws {RangeError} If the value is outside the valid range.
    */
   set currentSeconds(value) {
-    if (typeof value !== 'number' || !Number.isFinite(value)) 
+    if (typeof value !== 'number' || !Number.isFinite(value))
       throw new TypeError(`currentSeconds must be a finite number, received ${typeof value}`);
-    if (value < 0 || value >= 86400) 
+    if (value < 0 || value >= 86400)
       throw new RangeError(`currentSeconds must be between 0 and 86399, received ${value}`);
     this.#currentSeconds = Math.floor(value);
     this.#currentMinutes = Math.floor(value / 60);
@@ -242,9 +242,9 @@ class TinyDayNightCycle {
    * @throws {RangeError} If the value is outside the valid range.
    */
   set currentMinutes(value) {
-    if (typeof value !== 'number' || !Number.isFinite(value)) 
+    if (typeof value !== 'number' || !Number.isFinite(value))
       throw new TypeError(`currentMinutes must be a finite number, received ${typeof value}`);
-    if (value < 0 || value >= 1440) 
+    if (value < 0 || value >= 1440)
       throw new RangeError(`currentMinutes must be between 0 and 1439, received ${value}`);
     this.#currentMinutes = Math.floor(value);
     this.#currentHours = Math.floor(value / 60);
@@ -269,15 +269,14 @@ class TinyDayNightCycle {
    * @throws {RangeError} If the value is outside the valid range.
    */
   set currentHours(value) {
-    if (typeof value !== 'number' || !Number.isFinite(value)) 
+    if (typeof value !== 'number' || !Number.isFinite(value))
       throw new TypeError(`currentHours must be a finite number, received ${typeof value}`);
-    if (value < 0 || value >= 24) 
+    if (value < 0 || value >= 24)
       throw new RangeError(`currentHours must be between 0 and less than 24, received ${value}`);
     this.#currentHours = Math.floor(value);
     this.#currentMinutes = Math.floor(value * 60);
     this.#currentSeconds = Math.floor(value * 3600);
   }
-
 
   /**
    * Returns all moons with their current phase details.
@@ -394,7 +393,11 @@ class TinyDayNightCycle {
     this.#currentYear = value;
   }
 
-  /** @param {Object<number, number>} value */
+  /**
+   * Sets a custom configuration for the number of days in each month.
+   * This allows for non-standard calendar systems.
+   * @param {Object<number, number>} value - An object where keys are month numbers (1-12) and values are the number of days.
+   */
   set monthDays(value) {
     if (typeof value !== 'object' || value === null)
       throw new TypeError(`monthDays must be a non-null object`);
@@ -672,15 +675,6 @@ class TinyDayNightCycle {
   }
 
   /** --------------------- DAY/MONTH/YEAR SYSTEM --------------------- */
-
-  /**
-   * Sets a custom configuration for the number of days in each month.
-   * This allows for non-standard calendar systems.
-   * @param {Object<number, number>} config - An object where keys are month numbers (1-12) and values are the number of days.
-   */
-  setMonthDaysConfig(config) {
-    this.#monthDays = { ...config };
-  }
 
   /**
    * Advances the current date by one day.
