@@ -424,7 +424,9 @@
           <div class="card">
             <h3>Util Night</h3>
             <div class="big" id="ui-next-day">--</div>
-            <div style="color: var(--muted); font-size: 13px" id="ui-next-night-ttl">TTL: -- min</div>
+            <div style="color: var(--muted); font-size: 13px" id="ui-next-night-ttl">
+              TTL: -- min
+            </div>
           </div>
         </div>
 
@@ -598,16 +600,23 @@
             Number(controls.nightStart.value),
           );
           window.cycle = cycle;
-          cycle.addMoon('Moon', 29, multiplyArrayBlocks([
-            'New Moon',
-            'Waxing Crescent',
-            'First Quarter',
-            'Waxing Gibbous',
-            'Full Moon',
-            'Waning Gibbous',
-            'Last Quarter',
-            'Waning Crescent',
-          ], [4, 4, 3, 3, 4, 3, 4, 4]));
+          cycle.addMoon(
+            'Moon',
+            29,
+            multiplyArrayBlocks(
+              [
+                'New Moon',
+                'Waxing Crescent',
+                'First Quarter',
+                'Waxing Gibbous',
+                'Full Moon',
+                'Waning Gibbous',
+                'Last Quarter',
+                'Waning Crescent',
+              ],
+              [4, 4, 3, 3, 4, 3, 4, 4],
+            ),
+          );
           // initialize month/day/season from UI
           cycle.currentMonth = Number(controls.currentMonth.value) || 1;
           cycle.currentDay = Number(controls.currentDay.value) || 1;
@@ -810,7 +819,8 @@
 
         const m = cycle.getMoons();
         ui.moon.innerText = m[0].phaseName;
-        ui.moonStep.innerText = typeof m[0].phaseIndex === 'number' ? `Phase ${m[0].phaseIndex + 1}` : '—';
+        ui.moonStep.innerText =
+          typeof m[0].phaseIndex === 'number' ? `Phase ${m[0].phaseIndex + 1}` : '—';
 
         ui.date.innerText = `Day ${cycle.currentDay} / Month ${cycle.currentMonth} / Year ${cycle.currentYear}`;
         ui.season.innerText = cycle.currentSeason ?? '—';

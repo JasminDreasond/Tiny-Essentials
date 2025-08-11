@@ -1,42 +1,94 @@
 /**
+ * Callback used to dynamically calculate weather probabilities.
+ *
  * @callback WeatherCallback
- * @param {Object} configs
- * @param {number} configs.hour
- * @param {number} configs.minute
- * @param {number} configs.currentMinutes
- * @param {boolean} configs.isDay
- * @param {Season} configs.season
- * @param {string|null} configs.weather
+ * @param {Object} configs - Contextual information about the current time and weather state.
+ * @param {number} configs.hour - Current in-game hour (0–23).
+ * @param {number} configs.minute - Current in-game minute (0–59).
+ * @param {number} configs.currentMinutes - Minutes since midnight (0–1439).
+ * @param {boolean} configs.isDay - Whether it's currently daytime.
+ * @param {Season} configs.season - Current season.
+ * @param {string|null} configs.weather - Current active weather type or null if none.
+ * @returns {number} Probability weight for the weather type.
  */
 
 /**
- * @typedef {Record<string, number|WeatherCallback>} WeatherCfg
+ * A weather configuration object mapping weather types to probability weights
+ * or dynamic WeatherCallback functions.
+ *
+ * @typedef {Record<string, number | WeatherCallback>} WeatherCfg
  */
 
 /**
+ * Weather data with resolved numeric probability values.
+ *
  * @typedef {Record<string, number>} WeatherData
  */
 
-/**@typedef {'winter'|'spring'|'summer'|'autumn'} Season */
+/**
+ * Supported season values.
+ * @typedef {'winter'|'spring'|'summer'|'autumn'} Season
+ */
 
+/**
+ * TinyDayNightCycle — A time, date, moon-phase, and weather simulation system.
+ *
+ * This class provides:
+ * - Customizable day/night cycle with variable sunrise/sunset.
+ * - Calendar system with adjustable month lengths.
+ * - Dynamic weather with multiple configurable probability layers.
+ * - Multi-moon phase tracking.
+ *
+ * Time and date calculations are independent from the real world and can run at any speed.
+ */
 class TinyDayNightCycle {
-  /** @type {number} */
+  /**
+   * @type {number} Hour of the day start (0–23).
+   */
   dayStart;
-  /** @type {number} */
+  /**
+   * @type {number} Hour of the night start (0–23).
+   */
   nightStart;
 
-  /** @type {string|null} */
+  /**
+   * @type {string|null} Currently active weather type.
+   */
   weather = null;
 
+  /**
+   * @type {number} Current time in minutes since midnight (0–1439).
+   */
   currentMinutes = 0; // 0-1439
 
-  /** @type {Season} */
+  /**
+   * @type {Season} Current season.
+   */
   currentSeason = 'summer';
+
+  /**
+   * Current day of the month.
+   * @type {number}
+   */
   currentDay = 1;
+
+  /**
+   * Current month number (1–12).
+   * @type {number}
+   */
   currentMonth = 1;
+
+  /**
+   * Current year count.
+   * @type {number}
+   */
   currentYear = 1;
 
-  /** @type {Object<number, number>} */
+  /**
+   * Number of days in each month. Keys are month numbers (1–12).
+   * Can be customized to any structure.
+   * @type {Object<number, number>}
+   */
   monthDays = {
     1: 31,
     2: 31,
@@ -52,7 +104,13 @@ class TinyDayNightCycle {
     12: 31,
   };
 
-  /** Weather configs */
+  /**
+   * Weather configuration layers:
+   * - `default`: Global fallback probabilities.
+   * - `day` / `night`: Applied depending on time of day.
+   * - `hours`: Specific time ranges (e.g. "06:00-09:00").
+   * - `seasons`: Seasonal weather overrides.
+   */
   weatherConfig = {
     /**
      * General fallback probabilities
@@ -81,8 +139,16 @@ class TinyDayNightCycle {
     seasons: {},
   };
 
-  /** Dynamic weather system */
+  /**
+   * Duration range for each weather type in minutes.
+   * @type {{min: number, max: number}}
+   */
   weatherDuration = { min: 60, max: 180 }; // in minutes
+
+  /**
+   * Minutes remaining until the current weather changes.
+   * @type {number}
+   */
   weatherTimeLeft = 0;
 
   /**
@@ -189,12 +255,19 @@ class TinyDayNightCycle {
   /** --------------------- DAY/MONTH/YEAR SYSTEM --------------------- */
 
   /**
-   * @param {Object} config
+   * Sets a custom configuration for the number of days in each month.
+   * This allows for non-standard calendar systems.
+   * @param {Object<number, number>} config - An object where keys are month numbers (1-12) and values are the number of days.
    */
   setMonthDaysConfig(config) {
     this.monthDays = { ...config };
   }
 
+  /**
+   * Advances the current date by one day.
+   * Automatically wraps months and years based on the configured month days.
+   * Also updates the season and advances moon phases by 1.
+   */
   nextDay() {
     this.currentDay++;
     if (this.currentDay > (this.monthDays[this.currentMonth] || 30)) {
@@ -209,6 +282,11 @@ class TinyDayNightCycle {
     this.advanceMoons(1);
   }
 
+  /**
+   * Moves the current date backward by one day.
+   * Automatically wraps months and years based on the configured month days.
+   * Also updates the season and rewinds moon phases by 1.
+   */
   prevDay() {
     this.currentDay--;
     if (this.currentDay < 1) {
@@ -223,6 +301,14 @@ class TinyDayNightCycle {
     this.rewindMoons(1);
   }
 
+  /**
+   * Updates the current season based on the month.
+   * Default mapping:
+   * - Winter: Dec, Jan, Feb
+   * - Spring: Mar, Apr, May
+   * - Summer: Jun, Jul, Aug
+   * - Autumn: Sep, Oct, Nov
+   */
   updateSeason() {
     if ([12, 1, 2].includes(this.currentMonth)) this.currentSeason = 'winter';
     else if ([3, 4, 5].includes(this.currentMonth)) this.currentSeason = 'spring';
@@ -233,16 +319,18 @@ class TinyDayNightCycle {
   /** --------------------- WEATHER SYSTEM --------------------- */
 
   /**
-   * Sets complex weather configuration.
-   * @param {Object} config
+   * Sets the weather configuration.
+   * @param {{ default: WeatherCfg; day: WeatherCfg; night: WeatherCfg; hours: Record<string, WeatherCfg>; seasons: Record<string, WeatherCfg>; }} config
+   * An object defining default probabilities, time-based probabilities, day/night differences, and seasonal probabilities.
    */
   setWeatherConfig(config) {
     this.weatherConfig = { ...this.weatherConfig, ...config };
   }
 
   /**
-   * @param {number} minMinutes
-   * @param {number} maxMinutes
+   * Sets the minimum and maximum duration for any weather type.
+   * @param {number} minMinutes - Minimum duration in minutes.
+   * @param {number} maxMinutes - Maximum duration in minutes.
    */
   setWeatherDuration(minMinutes, maxMinutes) {
     this.weatherDuration.min = minMinutes;
@@ -250,8 +338,9 @@ class TinyDayNightCycle {
   }
 
   /**
-   * Call this whenever time passes
-   * @param {number} minutesPassed
+   * Updates the remaining time for the current weather.
+   * Automatically selects a new weather type if time runs out.
+   * @param {number} minutesPassed - Number of in-game minutes passed since last update.
    */
   updateWeatherTimer(minutesPassed) {
     this.weatherTimeLeft -= minutesPassed;
@@ -261,8 +350,9 @@ class TinyDayNightCycle {
   }
 
   /**
-   * @param {string} type
-   * @param {number|null} [duration=null]
+   * Forces the weather to a specific type, optionally for a given duration.
+   * @param {string} type - The weather type (e.g., "sunny", "rain", "storm").
+   * @param {number|null} [duration=null] - Duration in minutes. If null, a random duration is used.
    */
   forceWeather(type, duration = null) {
     this.weather = type;
@@ -271,8 +361,16 @@ class TinyDayNightCycle {
   }
 
   /**
-   * @param {WeatherCfg} [customWeather]
-   * @returns {string|null}
+   * Chooses a new weather type based on configured probabilities.
+   * Probabilities can come from:
+   * - Default settings
+   * - Hour-based ranges
+   * - Day/night differences
+   * - Seasonal settings
+   * - Custom overrides passed as parameter
+   * If a value is a function, it will be executed with contextual data and must return a number.
+   * @param {WeatherCfg} [customWeather] - Optional weather probability overrides.
+   * @returns {string|null} - The selected weather type, or null if none selected.
    */
   chooseNewWeather(customWeather) {
     /** @type {WeatherData} */
@@ -367,8 +465,10 @@ class TinyDayNightCycle {
   }
 
   /**
-   * @param {number} min
-   * @param {number} max
+   * Returns a random integer between min and max, inclusive.
+   * @param {number} min - Minimum value.
+   * @param {number} max - Maximum value.
+   * @returns {number} - A random integer between min and max.
    */
   _randomInRange(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -376,7 +476,10 @@ class TinyDayNightCycle {
 
   /** --------------------- MOON SYSTEM --------------------- */
 
-  /** @type {Array<{name: string, cycleLength: number, currentPhase: number, phaseNames?: string[]}>} */
+  /**
+   * Array of tracked moons with independent phases.
+   * @type {Array<{name: string, cycleLength: number, currentPhase: number, phaseNames?: string[]}>}
+   */
   moons = [];
 
   /**

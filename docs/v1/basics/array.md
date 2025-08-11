@@ -78,3 +78,20 @@ Great for situations where you need to **dynamically sort objects** by one of th
 * Sorting users by age
 * Ordering tasks by priority
 * Displaying leaderboard scores
+
+---
+
+## 🔁 `multiplyArrayBlocks(phases, counts)`
+
+Generates a flattened array with phases repeated according to the specified counts.
+
+* **`phases`** 📝 — Array of phase names (e.g., `['Full', 'Half1', 'Half2', 'New']`).
+* **`counts`** 🔢 — Array of integers specifying how many times each phase should be repeated (e.g., `[4, 5, 5, 4]`).
+* **Returns** 📦 — A single array where each phase appears the given number of times, in order.
+
+**Example:**
+
+```js
+multiplyArrayBlocks(['Full', 'Half1', 'Half2', 'New'], [4, 5, 5, 4]);
+// ➡ ['Full','Full','Full','Full','Half1','Half1','Half1','Half1','Half1', ...]
+```
