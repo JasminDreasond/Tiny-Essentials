@@ -309,7 +309,7 @@ class TinyDayNightCycle {
    * @param {'minutes'|'seconds'|'hours'} unit - The unit to return.
    * @returns {number} Time until target hour, in the specified unit.
    */
-  timeUntil(targetHour, unit = 'minutes') {
+  timeUntil(targetHour, unit) {
     const targetMinutes = targetHour * 60;
     let diffMinutes = targetMinutes - this.#currentMinutes;
     if (diffMinutes <= 0) diffMinutes += 1440; // wrap to next day
