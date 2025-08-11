@@ -167,6 +167,44 @@ class TinyDayNightCycle {
   #weatherTimeLeft = 0;
 
   /**
+   * Gets the current time in seconds since midnight.
+   * @returns {number} Current seconds (0 to 86399).
+   */
+  get currentSeconds() {
+    return this.#currentSeconds;
+  }
+
+  /**
+   * Sets the current time in seconds since midnight.
+   * Also updates the currentMinutes property accordingly.
+   * @param {number} value - Current seconds since midnight (0 to 86399).
+   */
+  set currentSeconds(value) {
+    this.#currentSeconds = value;
+
+    // Update currentMinutes rounding down
+    this.#currentMinutes = Math.floor(value / 60);
+  }
+
+  /**
+   * Gets the current time in minutes since midnight.
+   * @returns {number} Current minutes (0 to 1439).
+   */
+  get currentMinutes() {
+    return this.#currentMinutes;
+  }
+
+  /**
+   * Sets the current time in minutes since midnight.
+   * Also updates the currentSeconds property accordingly (seconds set to zero).
+   * @param {number} value - Current minutes since midnight (0 to 1439).
+   */
+  set currentMinutes(value) {
+    this.#currentMinutes = value;
+    this.#currentSeconds = value * 60; // assumes zero seconds in the minute
+  }
+
+  /**
    * @param {number} dayStart - Hour of the day start (0-23)
    * @param {number} nightStart - Hour of the night start (0-23)
    */
@@ -629,44 +667,6 @@ class TinyDayNightCycle {
         : String(moon.currentPhase),
       cycleLength: moon.cycleLength,
     }));
-  }
-
-  /**
-   * Gets the current time in seconds since midnight.
-   * @returns {number} Current seconds (0 to 86399).
-   */
-  get currentSeconds() {
-    return this.#currentSeconds;
-  }
-
-  /**
-   * Sets the current time in seconds since midnight.
-   * Also updates the currentMinutes property accordingly.
-   * @param {number} value - Current seconds since midnight (0 to 86399).
-   */
-  set currentSeconds(value) {
-    this.#currentSeconds = value;
-
-    // Update currentMinutes rounding down
-    this.#currentMinutes = Math.floor(value / 60);
-  }
-
-  /**
-   * Gets the current time in minutes since midnight.
-   * @returns {number} Current minutes (0 to 1439).
-   */
-  get currentMinutes() {
-    return this.#currentMinutes;
-  }
-
-  /**
-   * Sets the current time in minutes since midnight.
-   * Also updates the currentSeconds property accordingly (seconds set to zero).
-   * @param {number} value - Current minutes since midnight (0 to 1439).
-   */
-  set currentMinutes(value) {
-    this.#currentMinutes = value;
-    this.#currentSeconds = value * 60; // assumes zero seconds in the minute
   }
 }
 
