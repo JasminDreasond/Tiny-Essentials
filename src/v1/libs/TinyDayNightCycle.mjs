@@ -267,7 +267,7 @@ class TinyDayNightCycle {
   forceWeather(type, duration = null) {
     this.weather = type;
     this.weatherTimeLeft =
-      duration ?? this.randomInRange(this.weatherDuration.min, this.weatherDuration.max);
+      duration ?? this._randomInRange(this.weatherDuration.min, this.weatherDuration.max);
   }
 
   /**
@@ -353,7 +353,7 @@ class TinyDayNightCycle {
     for (const [type, prob] of entries) {
       if (rand < prob) {
         this.weather = type;
-        this.weatherTimeLeft = this.randomInRange(
+        this.weatherTimeLeft = this._randomInRange(
           this.weatherDuration.min,
           this.weatherDuration.max,
         );
@@ -370,7 +370,7 @@ class TinyDayNightCycle {
    * @param {number} min
    * @param {number} max
    */
-  randomInRange(min, max) {
+  _randomInRange(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
