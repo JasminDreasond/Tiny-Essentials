@@ -414,6 +414,18 @@
             <div class="big" id="ui-weather">--</div>
             <div style="color: var(--muted); font-size: 13px" id="ui-weather-ttl">TTL: -- min</div>
           </div>
+
+          <div class="card">
+            <h3>Util Day</h3>
+            <div class="big" id="ui-next-day">--</div>
+            <div style="color: var(--muted); font-size: 13px" id="ui-next-day-ttl">TTL: -- min</div>
+          </div>
+
+          <div class="card">
+            <h3>Util Night</h3>
+            <div class="big" id="ui-next-day">--</div>
+            <div style="color: var(--muted); font-size: 13px" id="ui-next-night-ttl">TTL: -- min</div>
+          </div>
         </div>
 
         <div class="visual">
@@ -495,6 +507,8 @@
         season: el('ui-season'),
         weather: el('ui-weather'),
         weatherTTL: el('ui-weather-ttl'),
+        nextDayTTL: el('ui-next-day-ttl'),
+        nextNightTTL: el('ui-next-night-ttl'),
         timelineBar: el('timelineBar'),
         timelineLabel: el('timelineLabel'),
         weatherBar: el('weatherBar'),
@@ -806,6 +820,9 @@
           cycle.weatherTimeLeft != null
             ? `${Math.max(0, Math.round(cycle.weatherTimeLeft))} min`
             : '--';
+
+        ui.nextDayTTL.innerText = `${Math.max(0, Math.round(cycle.timeUntilDay()))} min`;
+        ui.nextNightTTL.innerText = `${Math.max(0, Math.round(cycle.timeUntilNight()))} min`;
 
         // timeline progress across day
         const progress = ((cycle.currentMinutes ?? 0) / 1440) * 100;
