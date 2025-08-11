@@ -267,38 +267,44 @@ class TinyDayNightCycle {
    * Advances the current date by one day.
    * Automatically wraps months and years based on the configured month days.
    * Also updates the season and advances moon phases by 1.
+   * @param {number} [amount=1] - Number of days to move forward.
    */
-  nextDay() {
-    this.currentDay++;
-    if (this.currentDay > (this.monthDays[this.currentMonth] || 30)) {
-      this.currentDay = 1;
-      this.currentMonth++;
-      if (this.currentMonth > 12) {
-        this.currentMonth = 1;
-        this.currentYear++;
+  nextDay(amount = 1) {
+    for (let i = 0; i < amount; i++) {
+      this.currentDay++;
+      if (this.currentDay > (this.monthDays[this.currentMonth] || 30)) {
+        this.currentDay = 1;
+        this.currentMonth++;
+        if (this.currentMonth > 12) {
+          this.currentMonth = 1;
+          this.currentYear++;
+        }
       }
+      this.updateSeason();
+      this.advanceMoons(1);
     }
-    this.updateSeason();
-    this.advanceMoons(1);
   }
 
   /**
    * Moves the current date backward by one day.
    * Automatically wraps months and years based on the configured month days.
    * Also updates the season and rewinds moon phases by 1.
+   * @param {number} [amount=1] - Number of days to move forward.
    */
-  prevDay() {
-    this.currentDay--;
-    if (this.currentDay < 1) {
-      this.currentMonth--;
-      if (this.currentMonth < 1) {
-        this.currentMonth = 12;
-        this.currentYear--;
+  prevDay(amount = 1) {
+    for (let i = 0; i < amount; i++) {
+      this.currentDay--;
+      if (this.currentDay < 1) {
+        this.currentMonth--;
+        if (this.currentMonth < 1) {
+          this.currentMonth = 12;
+          this.currentYear--;
+        }
+        this.currentDay = this.monthDays[this.currentMonth] || 30;
       }
-      this.currentDay = this.monthDays[this.currentMonth] || 30;
+      this.updateSeason();
+      this.rewindMoons(1);
     }
-    this.updateSeason();
-    this.rewindMoons(1);
   }
 
   /**
