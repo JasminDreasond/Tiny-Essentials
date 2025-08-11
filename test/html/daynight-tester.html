@@ -829,8 +829,8 @@
             ? `${Math.max(0, Math.round(cycle.weatherTimeLeft))} min`
             : '--';
 
-        ui.nextDayTTL.innerText = `${Math.max(0, Math.round(cycle.timeUntilDay()))} min`;
-        ui.nextNightTTL.innerText = `${Math.max(0, Math.round(cycle.timeUntilNight()))} min`;
+        ui.nextDayTTL.innerText = `${Math.max(0, Math.round(cycle.minutesUntilDay()))} min`;
+        ui.nextNightTTL.innerText = `${Math.max(0, Math.round(cycle.minutesUntilNight()))} min`;
 
         // timeline progress across day
         const progress = ((cycle.currentMinutes ?? 0) / 1440) * 100;

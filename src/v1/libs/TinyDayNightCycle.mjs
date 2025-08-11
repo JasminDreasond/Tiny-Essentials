@@ -69,12 +69,12 @@ class TinyDayNightCycle {
   /**
    * @type {number} Current time in seconds since midnight (0–86399).
    */
-  currentSeconds = 0;
+  #currentSeconds = 0;
 
   /**
    * @type {number} Current time in minutes since midnight (0–1439).
    */
-  currentMinutes = 0; // 0-1439
+  #currentMinutes = 0; // 0-1439
 
   /**
    * @type {Season} Current season.
@@ -243,11 +243,11 @@ class TinyDayNightCycle {
   isDay() {
     if (this.dayStart < this.nightStart) {
       return (
-        this.currentMinutes >= this.dayStart * 60 && this.currentMinutes < this.nightStart * 60
+        this.#currentMinutes >= this.dayStart * 60 && this.#currentMinutes < this.nightStart * 60
       );
     } else {
       return (
-        this.currentMinutes >= this.dayStart * 60 || this.currentMinutes < this.nightStart * 60
+        this.#currentMinutes >= this.dayStart * 60 || this.#currentMinutes < this.nightStart * 60
       );
     }
   }
@@ -256,29 +256,73 @@ class TinyDayNightCycle {
    * Calculates the number of minutes until the next day period starts.
    * @returns {number} Minutes until day start.
    */
-  timeUntilDay() {
-    return this.minutesUntil(this.dayStart);
+  minutesUntilDay() {
+    return this.timeUntil(this.dayStart, 'minutes');
+  }
+
+  /**
+   * Calculates the number of seconds until the next day period starts.
+   * @returns {number} Seconds until day start.
+   */
+  secondsUntilDay() {
+    return this.timeUntil(this.dayStart, 'seconds');
+  }
+
+  /**
+   * Calculates the number of hours until the next day period starts.
+   * @returns {number} Hours until day start.
+   */
+  hoursUntilDay() {
+    return this.timeUntil(this.dayStart, 'hours');
   }
 
   /**
    * Calculates the number of minutes until the next night period starts.
    * @returns {number} Minutes until night start.
    */
-  timeUntilNight() {
-    return this.minutesUntil(this.nightStart);
+  minutesUntilNight() {
+    return this.timeUntil(this.nightStart, 'minutes');
   }
 
   /**
-   * Helper method to calculate minutes until a specified hour.
-   * Accounts for wrap-around if the target hour is earlier than the current time.
-   * @param {number} targetHour - The target hour (0-23) to calculate minutes until.
-   * @returns {number} Minutes until the target hour.
+   * Calculates the number of seconds until the next night period starts.
+   * @returns {number} Seconds until night start.
    */
-  minutesUntil(targetHour) {
+  secondsUntilNight() {
+    return this.timeUntil(this.nightStart, 'seconds');
+  }
+
+  /**
+   * Calculates the number of hours until the next night period starts.
+   * @returns {number} Hours until night start.
+   */
+  hoursUntilNight() {
+    return this.timeUntil(this.nightStart, 'hours');
+  }
+
+  /**
+   * Helper method to calculate time until a specified hour.
+   * Wraps around if target hour is earlier than current time.
+   * Supports returning time in minutes, seconds, or hours.
+   *
+   * @param {number} targetHour - The target hour (0–23).
+   * @param {'minutes'|'seconds'|'hours'} unit - The unit to return.
+   * @returns {number} Time until target hour, in the specified unit.
+   */
+  timeUntil(targetHour, unit = 'minutes') {
     const targetMinutes = targetHour * 60;
-    let diff = targetMinutes - this.currentMinutes;
-    if (diff <= 0) diff += 1440; // next day
-    return diff;
+    let diffMinutes = targetMinutes - this.#currentMinutes;
+    if (diffMinutes <= 0) diffMinutes += 1440; // wrap to next day
+
+    switch (unit) {
+      case 'seconds':
+        return diffMinutes * 60;
+      case 'hours':
+        return diffMinutes / 60;
+      case 'minutes':
+      default:
+        return diffMinutes;
+    }
   }
 
   /**
@@ -431,9 +475,9 @@ class TinyDayNightCycle {
         // If it's a function, call it
         if (typeof resolvedValue === 'function') {
           resolvedValue = resolvedValue({
-            hour: Math.floor(this.currentMinutes / 60),
-            minute: this.currentMinutes % 60,
-            currentMinutes: this.currentMinutes,
+            hour: Math.floor(this.#currentMinutes / 60),
+            minute: this.#currentMinutes % 60,
+            currentMinutes: this.#currentMinutes,
             isDay: this.isDay(),
             season: this.currentSeason,
             weather: this.weather,
@@ -456,7 +500,7 @@ class TinyDayNightCycle {
         const [h, m] = t.split(':').map(Number);
         return h * 60 + (m || 0);
       });
-      const current = this.currentMinutes;
+      const current = this.#currentMinutes;
       const inRange =
         start <= end ? current >= start && current <= end : current >= start || current <= end;
 
@@ -584,6 +628,44 @@ class TinyDayNightCycle {
         : String(moon.currentPhase),
       cycleLength: moon.cycleLength,
     }));
+  }
+
+  /**
+   * Gets the current time in seconds since midnight.
+   * @returns {number} Current seconds (0 to 86399).
+   */
+  get currentSeconds() {
+    return this.#currentSeconds;
+  }
+
+  /**
+   * Sets the current time in seconds since midnight.
+   * Also updates the currentMinutes property accordingly.
+   * @param {number} value - Current seconds since midnight (0 to 86399).
+   */
+  set currentSeconds(value) {
+    this.#currentSeconds = value;
+
+    // Update currentMinutes rounding down
+    this.#currentMinutes = Math.floor(value / 60);
+  }
+
+  /**
+   * Gets the current time in minutes since midnight.
+   * @returns {number} Current minutes (0 to 1439).
+   */
+  get currentMinutes() {
+    return this.#currentMinutes;
+  }
+
+  /**
+   * Sets the current time in minutes since midnight.
+   * Also updates the currentSeconds property accordingly (seconds set to zero).
+   * @param {number} value - Current minutes since midnight (0 to 1439).
+   */
+  set currentMinutes(value) {
+    this.#currentMinutes = value;
+    this.#currentSeconds = value * 60; // assumes zero seconds in the minute
   }
 }
 
