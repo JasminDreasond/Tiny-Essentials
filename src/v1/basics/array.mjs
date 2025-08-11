@@ -25,3 +25,23 @@ export function shuffleArray(items) {
 
   return items;
 }
+
+/**
+ * Generates an array with repeated phases according to counts.
+ *
+ * @param {string[]} phases - Array of phase names, e.g., ['Full', 'Half1', 'Half2', 'New'].
+ * @param {number[]} counts - Array of integers specifying how many times to repeat each phase, e.g., [4,5,5,4].
+ * @returns {string[]} - Flattened array containing phases repeated according to counts, concatenated in order.
+ */
+export function multiplyArrayBlocks(phases, counts) {
+  // phases: array de strings, cada fase (ex: ['Full', 'Half1', 'Half2', 'New'])
+  // counts: array de inteiros, quantas vezes repetir cada fase (ex: [4,5,5,4])
+
+  const result = [];
+  for (let i = 0; i < phases.length; i++) {
+    for (let j = 0; j < counts[i]; j++) {
+      result.push(phases[i]);
+    }
+  }
+  return result;
+}

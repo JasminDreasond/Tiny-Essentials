@@ -398,6 +398,12 @@
           </div>
 
           <div class="card">
+            <h3>Moon phase</h3>
+            <div class="big" id="ui-moon">--:--</div>
+            <div style="color: var(--muted); font-size: 13px" id="ui-moon-step">Step: --</div>
+          </div>
+
+          <div class="card">
             <h3>Calendar</h3>
             <div class="big" id="ui-date">Day -- / Month -- / Year --</div>
             <div style="color: var(--muted); font-size: 13px" id="ui-season">Season: --</div>
@@ -459,6 +465,7 @@
 
     <script type="module">
       import { TinyDayNightCycle } from './src/v1/libs/TinyDayNightCycle.mjs';
+      import { multiplyArrayBlocks } from './src/v1/basics/array.mjs';
       window.TinyDayNightCycle = TinyDayNightCycle;
       /* ===========================
        TinyDayNightCycle Tester Script
@@ -481,6 +488,8 @@
       // UI elements
       const ui = {
         time: el('ui-time'),
+        moon: el('ui-moon'),
+        moonStep: el('ui-moon-step'),
         phase: el('ui-phase'),
         date: el('ui-date'),
         season: el('ui-season'),
@@ -574,6 +583,17 @@
             Number(controls.dayStart.value),
             Number(controls.nightStart.value),
           );
+          window.cycle = cycle;
+          cycle.addMoon('Moon', 29, multiplyArrayBlocks([
+            'New Moon',
+            'Waxing Crescent',
+            'First Quarter',
+            'Waxing Gibbous',
+            'Full Moon',
+            'Waning Gibbous',
+            'Last Quarter',
+            'Waning Crescent',
+          ], [4, 4, 3, 3, 4, 3, 4, 4]));
           // initialize month/day/season from UI
           cycle.currentMonth = Number(controls.currentMonth.value) || 1;
           cycle.currentDay = Number(controls.currentDay.value) || 1;
@@ -773,6 +793,10 @@
         const t = cycle.getTime?.() ?? { hour: 0, minute: 0, formatted: '--:--' };
         ui.time.innerText = t.formatted ?? `${t.hour}:${t.minute}`;
         ui.phase.innerText = cycle.isDay?.() ? 'Day' : 'Night';
+
+        const m = cycle.getMoons();
+        ui.moon.innerText = m[0].phaseName;
+        ui.moonStep.innerText = typeof m[0].phaseIndex === 'number' ? `Phase ${m[0].phaseIndex + 1}` : '—';
 
         ui.date.innerText = `Day ${cycle.currentDay} / Month ${cycle.currentMonth} / Year ${cycle.currentYear}`;
         ui.season.innerText = cycle.currentSeason ?? '—';

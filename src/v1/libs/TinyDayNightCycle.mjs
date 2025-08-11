@@ -206,6 +206,7 @@ class TinyDayNightCycle {
       }
     }
     this.updateSeason();
+    this.advanceMoons(1);
   }
 
   prevDay() {
@@ -219,6 +220,7 @@ class TinyDayNightCycle {
       this.currentDay = this.monthDays[this.currentMonth] || 30;
     }
     this.updateSeason();
+    this.rewindMoons(1);
   }
 
   updateSeason() {
@@ -370,6 +372,70 @@ class TinyDayNightCycle {
    */
   randomInRange(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  /** --------------------- MOON SYSTEM --------------------- */
+
+  /** @type {Array<{name: string, cycleLength: number, currentPhase: number, phaseNames?: string[]}>} */
+  moons = [];
+
+  /**
+   * Add a new moon to the system.
+   * @param {string} name - Name of the moon.
+   * @param {number} cycleLength - Number of days in cycle.
+   * @param {string[]} phaseNames - Optional list of phase names.
+   * @param {number} [startingPhase=0] - Initial phase.
+   */
+  addMoon(name, cycleLength, phaseNames, startingPhase = 0) {
+    const length = Math.max(1, cycleLength);
+    this.moons.push({
+      name,
+      cycleLength: length,
+      currentPhase: ((startingPhase % length) + length) % length,
+      phaseNames,
+    });
+  }
+
+  /**
+   * Remove a moon by name.
+   * @param {string} name
+   */
+  removeMoon(name) {
+    this.moons = this.moons.filter((m) => m.name !== name);
+  }
+
+  /**
+   * Advance all moons in a number of days.
+   * @param {number} days
+   */
+  advanceMoons(days = 1) {
+    for (const moon of this.moons) {
+      moon.currentPhase = (moon.currentPhase + days) % moon.cycleLength;
+    }
+  }
+
+  /**
+   * Retrocede all moons in a number of days.
+   * @param {number} days
+   */
+  rewindMoons(days = 1) {
+    for (const moon of this.moons) {
+      moon.currentPhase = (moon.currentPhase - days + moon.cycleLength) % moon.cycleLength;
+    }
+  }
+
+  /**
+   * Return all moons with the current phase information.
+   */
+  getMoons() {
+    return this.moons.map((moon) => ({
+      name: moon.name,
+      phaseIndex: moon.currentPhase,
+      phaseName: moon.phaseNames
+        ? moon.phaseNames[moon.currentPhase] || moon.currentPhase
+        : moon.currentPhase,
+      cycleLength: moon.cycleLength,
+    }));
   }
 }
 
