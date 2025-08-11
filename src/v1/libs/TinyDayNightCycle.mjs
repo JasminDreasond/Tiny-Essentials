@@ -286,83 +286,110 @@ class TinyDayNightCycle {
     return this.#moons.map((moon) => this.getMoon(moon));
   }
 
-  /** @type {string[]} */
+  /**
+   * Returns a list of all season names currently configured.
+   * @returns {string[]} Array of season names.
+   */
   get seasons() {
     return Array.from(this.#seasons.keys());
   }
 
-  /** @returns {number} */
+  /** @returns {number} Hour at which day starts (0-23). */
   get dayStart() {
     return this.#dayStart;
   }
 
-  /** @returns {number} */
+  /** @returns {number} Hour at which night starts (0-23). */
   get nightStart() {
     return this.#nightStart;
   }
 
-  /** @returns {string|null} */
+  /** @returns {string|null} Currently active weather type or null if none. */
   get weather() {
     return this.#weather;
   }
 
-  /** @returns {string} */
+  /** @returns {string} Currently active season name. */
   get currentSeason() {
     return this.#currentSeason;
   }
 
-  /** @returns {number} */
+  /** @returns {number} Current day of the month. */
   get currentDay() {
     return this.#currentDay;
   }
 
-  /** @returns {number} */
+  /** @returns {number} Current month number. */
   get currentMonth() {
     return this.#currentMonth;
   }
 
-  /** @returns {number} */
+  /** @returns {number} Current year count. */
   get currentYear() {
     return this.#currentYear;
   }
 
-  /** @returns {Object<number, number>} */
+  /**
+   * Returns a shallow copy of the mapping of month numbers to days.
+   * Can be customized for non-standard calendar systems.
+   * @returns {Object<number, number>} Object mapping month number to days.
+   */
   get monthDays() {
     return { ...this.#monthDays };
   }
 
-  /** @returns {{min: number, max: number}} */
+  /**
+   * Returns the configured range of weather durations in minutes.
+   * @returns {{min: number, max: number}} Object with min and max weather duration.
+   */
   get weatherDuration() {
     return { ...this.#weatherDuration };
   }
 
-  /** @returns {number} */
+  /** @returns {number} Minutes left until current weather expires. */
   get weatherTimeLeft() {
     return this.#weatherTimeLeft;
   }
 
-  /** @param {number} value */
+  /**
+   * Sets the hour at which day starts.
+   * @param {number} value Hour (0-23).
+   * @throws {TypeError} If value is not a number.
+   */
   set dayStart(value) {
     if (typeof value !== 'number')
       throw new TypeError(`dayStart must be a number, received ${typeof value}`);
     this.#dayStart = value;
   }
 
-  /** @param {number} value */
+  /**
+   * Sets the hour at which night starts.
+   * @param {number} value Hour (0-23).
+   * @throws {TypeError} If value is not a number.
+   */
   set nightStart(value) {
     if (typeof value !== 'number')
       throw new TypeError(`nightStart must be a number, received ${typeof value}`);
     this.#nightStart = value;
   }
 
-  /** @param {string|null} value */
+  /**
+   * Sets the current weather type.
+   * @param {string|null} value Weather type string or null for no weather.
+   * @throws {TypeError} If value is not a string or null.
+   */
   set weather(value) {
     if (value !== null && typeof value !== 'string')
       throw new TypeError(`weather must be a string or null, received ${typeof value}`);
     this.#weather = value;
   }
 
-  /** @param {string} value */
+  /**
+   * Sets the current season.
+   * Must be one of the configured seasons.
+   * @param {string} value Season name.
+   * @throws {TypeError} If value is not a string or not a configured season.
+   */
   set currentSeason(value) {
     if (typeof value !== 'string' || !this.#seasons.has(value)) {
       throw new TypeError(
@@ -372,21 +399,33 @@ class TinyDayNightCycle {
     this.#currentSeason = value;
   }
 
-  /** @param {number} value */
+  /**
+   * Sets the current day of the month.
+   * @param {number} value Day number.
+   * @throws {TypeError} If value is not a number.
+   */
   set currentDay(value) {
     if (typeof value !== 'number')
       throw new TypeError(`currentDay must be a number, received ${typeof value}`);
     this.#currentDay = value;
   }
 
-  /** @param {number} value */
+  /**
+   * Sets the current month.
+   * @param {number} value Month number.
+   * @throws {TypeError} If value is not a number.
+   */
   set currentMonth(value) {
     if (typeof value !== 'number')
       throw new TypeError(`currentMonth must be a number, received ${typeof value}`);
     this.#currentMonth = value;
   }
 
-  /** @param {number} value */
+  /**
+   * Sets the current year.
+   * @param {number} value Year count.
+   * @throws {TypeError} If value is not a number.
+   */
   set currentYear(value) {
     if (typeof value !== 'number')
       throw new TypeError(`currentYear must be a number, received ${typeof value}`);
@@ -409,7 +448,11 @@ class TinyDayNightCycle {
     this.#monthDays = { ...value };
   }
 
-  /** @param {{min: number, max: number}} value */
+  /**
+   * Sets the weather duration range in minutes.
+   * @param {{min: number, max: number}} value Object with min and max durations.
+   * @throws {TypeError} If value or its min/max are invalid.
+   */
   set weatherDuration(value) {
     if (typeof value !== 'object' || value === null)
       throw new TypeError(`weatherDuration must be a non-null object`);
@@ -418,14 +461,22 @@ class TinyDayNightCycle {
     this.#weatherDuration = { ...value };
   }
 
-  /** @param {number} value */
+  /**
+   * Sets the remaining time for current weather in minutes.
+   * @param {number} value Minutes remaining.
+   * @throws {TypeError} If value is not a number.
+   */
   set weatherTimeLeft(value) {
     if (typeof value !== 'number')
       throw new TypeError(`weatherTimeLeft must be a number, received ${typeof value}`);
     this.#weatherTimeLeft = value;
   }
 
-  /** @returns {WeatherCfgs} */
+  /**
+   * Returns the entire weather configuration object.
+   * Includes default, day, night, hours, and seasons settings.
+   * @returns {WeatherCfgs} Deep copy of the weather configuration.
+   */
   get weatherConfig() {
     /** @type {Record<string, WeatherCfg>} */
     const hours = {};
