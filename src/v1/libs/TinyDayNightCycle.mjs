@@ -31,6 +31,16 @@
  */
 
 /**
+ * Represents the data for a moon's current phase.
+ *
+ * @typedef {Object} MoonData
+ * @property {string} name - The name of the moon.
+ * @property {number} phaseIndex - The current phase index (zero-based) within the moon's cycle.
+ * @property {string} phaseName - The descriptive name of the current phase.
+ * @property {number} cycleLength - The total number of phases/days in the moon's full cycle.
+ */
+
+/**
  * TinyDayNightCycle — A time, date, moon-phase, and weather simulation system.
  *
  * This class provides:
@@ -55,6 +65,11 @@ class TinyDayNightCycle {
    * @type {string|null} Currently active weather type.
    */
   weather = null;
+
+  /**
+   * @type {number} Current time in seconds since midnight (0–86399).
+   */
+  currentSeconds = 0;
 
   /**
    * @type {number} Current time in minutes since midnight (0–1439).
@@ -166,45 +181,64 @@ class TinyDayNightCycle {
    * Sets the internal time directly.
    * @param {number} hour - 0 to 23
    * @param {number} minute - 0 to 59
+   * @param {number} second - 0 to 59
    */
-  setTime(hour, minute = 0) {
-    this.currentMinutes = (hour * 60 + minute) % 1440;
+  setTime(hour, minute = 0, second = 0) {
+    this.currentSeconds = (hour * 3600 + minute * 60 + second) % 86400;
   }
 
   /**
-   * Adds minutes/hours to the current time.
+   * Adds time to the current clock.
    * @param {number} hours
    * @param {number} minutes
+   * @param {number} seconds
    */
-  addTime(hours = 0, minutes = 0) {
-    let total = this.currentMinutes + hours * 60 + minutes;
-    while (total >= 1440) {
-      total -= 1440;
+  addTime(hours = 0, minutes = 0, seconds = 0) {
+    let total = this.currentSeconds + hours * 3600 + minutes * 60 + seconds;
+
+    while (total >= 86400) {
+      total -= 86400;
       this.nextDay();
     }
     while (total < 0) {
-      total += 1440;
+      total += 86400;
       this.prevDay();
     }
-    this.currentMinutes = total;
-    this.updateWeatherTimer(minutes + hours * 60);
+
+    this.currentSeconds = total;
+    this.updateWeatherTimer((hours * 3600 + minutes * 60 + seconds) / 60); // ainda em minutos para compatibilidade
   }
 
   /**
    * Returns current time as object and string.
+   * @param {boolean} [withSeconds=true] - Whether to include seconds in the formatted string.
+   * @returns {{
+   *   hour: number,
+   *   minute: number,
+   *   second: number,
+   *   formatted: string
+   * }} An object containing the hour, minute, second, and a formatted time string.
    */
-  getTime() {
-    const hour = Math.floor(this.currentMinutes / 60);
-    const minute = this.currentMinutes % 60;
+  getTime(withSeconds = true) {
+    const hour = Math.floor(this.currentSeconds / 3600);
+    const minute = Math.floor((this.currentSeconds % 3600) / 60);
+    const second = this.currentSeconds % 60;
+
     return {
       hour,
       minute,
-      formatted: `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`,
+      second,
+      formatted:
+        `${hour.toString().padStart(2, '0')}:` +
+        `${minute.toString().padStart(2, '0')}` +
+        `${withSeconds ? `:${second.toString().padStart(2, '0')}` : ''}`,
     };
   }
 
   /**
-   * Checks if it's currently day.
+   * Determines whether the current time is considered day.
+   * Day is defined as the period between `dayStart` and `nightStart`.
+   * @returns {boolean} True if current time is day, false otherwise.
    */
   isDay() {
     if (this.dayStart < this.nightStart) {
@@ -219,22 +253,26 @@ class TinyDayNightCycle {
   }
 
   /**
-   * Returns minutes until day starts.
+   * Calculates the number of minutes until the next day period starts.
+   * @returns {number} Minutes until day start.
    */
   timeUntilDay() {
     return this.minutesUntil(this.dayStart);
   }
 
   /**
-   * Returns minutes until night starts.
+   * Calculates the number of minutes until the next night period starts.
+   * @returns {number} Minutes until night start.
    */
   timeUntilNight() {
     return this.minutesUntil(this.nightStart);
   }
 
   /**
-   * Internal helper to calculate minutes until given hour.
-   * @param {number} targetHour
+   * Helper method to calculate minutes until a specified hour.
+   * Accounts for wrap-around if the target hour is earlier than the current time.
+   * @param {number} targetHour - The target hour (0-23) to calculate minutes until.
+   * @returns {number} Minutes until the target hour.
    */
   minutesUntil(targetHour) {
     const targetMinutes = targetHour * 60;
@@ -244,8 +282,8 @@ class TinyDayNightCycle {
   }
 
   /**
-   * Sets time to start of day or night instantly.
-   * @param {"day"|"night"} phase
+   * Instantly sets the current time to the start of the specified phase.
+   * @param {"day"|"night"} phase - The phase to set the time to.
    */
   setTo(phase) {
     if (phase === 'day') this.setTime(this.dayStart, 0);
@@ -534,15 +572,16 @@ class TinyDayNightCycle {
   }
 
   /**
-   * Return all moons with the current phase information.
+   * Returns all moons with their current phase details.
+   * @returns {MoonData[]} Array of moons including their name, current phase index, phase name, and cycle length.
    */
   getMoons() {
     return this.moons.map((moon) => ({
       name: moon.name,
       phaseIndex: moon.currentPhase,
       phaseName: moon.phaseNames
-        ? moon.phaseNames[moon.currentPhase] || moon.currentPhase
-        : moon.currentPhase,
+        ? (moon.phaseNames[moon.currentPhase] ?? String(moon.currentPhase))
+        : String(moon.currentPhase),
       cycleLength: moon.cycleLength,
     }));
   }

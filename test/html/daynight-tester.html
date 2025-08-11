@@ -417,13 +417,11 @@
 
           <div class="card">
             <h3>Until Day</h3>
-            <div class="big" id="ui-next-day">--</div>
             <div style="color: var(--muted); font-size: 13px" id="ui-next-day-ttl">TTL: -- min</div>
           </div>
 
           <div class="card">
             <h3>Until Night</h3>
-            <div class="big" id="ui-next-day">--</div>
             <div style="color: var(--muted); font-size: 13px" id="ui-next-night-ttl">
               TTL: -- min
             </div>
@@ -813,7 +811,7 @@
           resetUIStateIfMissing();
           return;
         }
-        const t = cycle.getTime?.() ?? { hour: 0, minute: 0, formatted: '--:--' };
+        const t = cycle.getTime?.(false) ?? { hour: 0, minute: 0, formatted: '--:--' };
         ui.time.innerText = t.formatted ?? `${t.hour}:${t.minute}`;
         ui.phase.innerText = cycle.isDay?.() ? 'Day' : 'Night';
 
