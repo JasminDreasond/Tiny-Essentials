@@ -128,8 +128,10 @@ import TinyIframeEvents from './libs/TinyIframeEvents.mjs';
 import TinyNewWinEvents from './libs/TinyNewWinEvents.mjs';
 import TinyTextarea from './libs/TinyTextarea.mjs';
 import TinyGamepad from './libs/TinyGamepad.mjs';
+import TinyDayNightCycle from './libs/TinyDayNightCycle.mjs';
 
 export {
+  TinyDayNightCycle,
   TinyGamepad,
   TinyTextarea,
   TinyNewWinEvents,

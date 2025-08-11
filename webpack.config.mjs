@@ -86,5 +86,6 @@ addModule(1, './src/v1/build/TinyIframeEvents.mjs', 'TinyIframeEvents', true);
 addModule(1, './src/v1/build/TinyNewWinEvents.mjs', 'TinyNewWinEvents', true);
 addModule(1, './src/v1/build/TinyTextarea.mjs', 'TinyTextarea', true);
 addModule(1, './src/v1/build/TinyGamepad.mjs', 'TinyGamepad', true);
+addModule(1, './src/v1/build/TinyDayNightCycle.mjs', 'TinyDayNightCycle', true);
 
 export default modules;

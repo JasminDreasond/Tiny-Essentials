@@ -821,7 +821,7 @@ class TinyDayNightCycle {
    * Moves the current date backward by one day.
    * Automatically wraps months and years based on the configured month days.
    * Also updates the season and rewinds moon phases by 1.
-   * @param {number} [amount=1] - Number of days to move forward.
+   * @param {number} [amount=1] - Number of days to move backward.
    */
   prevDay(amount = 1) {
     for (let i = 0; i < amount; i++) {
