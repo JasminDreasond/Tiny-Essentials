@@ -144,6 +144,12 @@ class TinyDayNightCycle {
   #currentYear = 1;
 
   /**
+   * Whether this instance has been destroyed.
+   * @type {boolean}
+   */
+  #isDestroyed = false;
+
+  /**
    * Number of days in each month. Keys are month numbers (1–12).
    * Can be customized to any structure.
    * @type {number[]}
@@ -198,6 +204,14 @@ class TinyDayNightCycle {
   #weatherTimeLeft = 0;
 
   /**
+   * Indicates whether this instance has been destroyed.
+   * @type {boolean}
+   */
+  get isDestroyed() {
+    return this.#isDestroyed;
+  }
+
+  /**
    * Gets the current time in seconds since midnight.
    * @returns {number} Current seconds (0 to 86399).
    */
@@ -213,6 +227,7 @@ class TinyDayNightCycle {
    * @throws {RangeError} If the value is outside the valid range.
    */
   set currentSeconds(value) {
+    this._checkDestroyed();
     if (typeof value !== 'number' || !Number.isFinite(value))
       throw new TypeError(`currentSeconds must be a finite number, received ${typeof value}`);
     if (value < 0 || value >= 86400)
@@ -238,6 +253,7 @@ class TinyDayNightCycle {
    * @throws {RangeError} If the value is outside the valid range.
    */
   set currentMinutes(value) {
+    this._checkDestroyed();
     if (typeof value !== 'number' || !Number.isFinite(value))
       throw new TypeError(`currentMinutes must be a finite number, received ${typeof value}`);
     if (value < 0 || value >= 1440)
@@ -265,6 +281,7 @@ class TinyDayNightCycle {
    * @throws {RangeError} If the value is outside the valid range.
    */
   set currentHours(value) {
+    this._checkDestroyed();
     if (typeof value !== 'number' || !Number.isFinite(value))
       throw new TypeError(`currentHours must be a finite number, received ${typeof value}`);
     if (value < 0 || value >= 24)
@@ -353,6 +370,7 @@ class TinyDayNightCycle {
    * @throws {TypeError} If value is not a number.
    */
   set dayStart(value) {
+    this._checkDestroyed();
     if (typeof value !== 'number' || value < 1)
       throw new TypeError(`dayStart must be a positive non-zero number, received ${typeof value}`);
     this.#dayStart = value;
@@ -364,6 +382,7 @@ class TinyDayNightCycle {
    * @throws {TypeError} If value is not a number.
    */
   set nightStart(value) {
+    this._checkDestroyed();
     if (typeof value !== 'number' || value < 1)
       throw new TypeError(
         `nightStart must be a positive non-zero number, received ${typeof value}`,
@@ -377,6 +396,7 @@ class TinyDayNightCycle {
    * @throws {TypeError} If value is not a string or null.
    */
   set weather(value) {
+    this._checkDestroyed();
     if (
       typeof value !== 'object' ||
       value === null ||
@@ -394,6 +414,7 @@ class TinyDayNightCycle {
    * @throws {TypeError} If value is not a string or not a configured season.
    */
   set currentSeason(value) {
+    this._checkDestroyed();
     if (typeof value !== 'string' || !this.#seasons.has(value)) {
       throw new TypeError(
         `currentSeason must be one of ${Array.from(this.#seasons)
@@ -410,6 +431,7 @@ class TinyDayNightCycle {
    * @throws {TypeError} If value is not a number.
    */
   set currentDay(value) {
+    this._checkDestroyed();
     if (typeof value !== 'number' || value < 1 || value > this.#monthDays[this.#currentMonth - 1])
       throw new TypeError(`currentDay must be a valid day number, received ${typeof value}`);
     this.#currentDay = value;
@@ -421,6 +443,7 @@ class TinyDayNightCycle {
    * @throws {TypeError} If value is not a number.
    */
   set currentMonth(value) {
+    this._checkDestroyed();
     if (typeof value !== 'number' || typeof this.#monthDays[value - 1] !== 'number')
       throw new TypeError(`currentMonth must be a valid month number, received ${typeof value}`);
     this.#currentMonth = value;
@@ -432,6 +455,7 @@ class TinyDayNightCycle {
    * @throws {TypeError} If value is not a number.
    */
   set currentYear(value) {
+    this._checkDestroyed();
     if (typeof value !== 'number' || value < 1)
       throw new TypeError(
         `currentYear must be a positive number non-zero, received ${typeof value}`,
@@ -445,6 +469,7 @@ class TinyDayNightCycle {
    * @param {number[]} value - An object where keys are month numbers (1-12) and values are the number of days.
    */
   set monthDays(value) {
+    this._checkDestroyed();
     if (!Array.isArray(value)) throw new TypeError(`monthDays must be a array`);
     if (!value.every((n) => typeof n === 'number'))
       throw new TypeError(`monthDays must have number values`);
@@ -457,6 +482,7 @@ class TinyDayNightCycle {
    * @throws {TypeError} If value or its min/max are invalid.
    */
   set weatherDuration(value) {
+    this._checkDestroyed();
     if (typeof value !== 'object' || value === null)
       throw new TypeError(`weatherDuration must be a non-null object`);
     if (typeof value.min !== 'number' || typeof value.max !== 'number')
@@ -470,6 +496,7 @@ class TinyDayNightCycle {
    * @throws {TypeError} If value is not a number.
    */
   set weatherTimeLeft(value) {
+    this._checkDestroyed();
     if (typeof value !== 'number')
       throw new TypeError(`weatherTimeLeft must be a number, received ${typeof value}`);
     this.#weatherTimeLeft = value;
@@ -507,6 +534,7 @@ class TinyDayNightCycle {
    * @throws {TypeError} If the provided value is not a valid object or contains invalid data types.
    */
   set weatherConfig(config) {
+    this._checkDestroyed();
     if (typeof config !== 'object' || config === null)
       throw new TypeError(`weatherConfig must be a non-null object, received ${config}`);
 
@@ -584,6 +612,7 @@ class TinyDayNightCycle {
    * @throws {TypeError} If `name` is not a string or `values` is not an array of numbers.
    */
   addSeason(name, values) {
+    this._checkDestroyed();
     if (typeof name !== 'string')
       throw new TypeError(`Season name must be a string, received ${typeof name}`);
     if (!Array.isArray(values) || !values.every((v) => typeof v === 'number'))
@@ -598,6 +627,7 @@ class TinyDayNightCycle {
    * @throws {TypeError} If `name` is not a string.
    */
   removeSeason(name) {
+    this._checkDestroyed();
     if (typeof name !== 'string')
       throw new TypeError(`Season name must be a string, received ${typeof name}`);
     this.#seasons.delete(name);
@@ -643,6 +673,7 @@ class TinyDayNightCycle {
    * @param {number} [settings.second=0] - 0 to 59
    */
   setTime({ hour = 0, minute = 0, second = 0 }) {
+    this._checkDestroyed();
     this.currentSeconds = (hour * 3600 + minute * 60 + second) % 86400;
   }
 
@@ -654,6 +685,7 @@ class TinyDayNightCycle {
    * @param {number} [settings.seconds=0]
    */
   addTime({ hours = 0, minutes = 0, seconds = 0 }) {
+    this._checkDestroyed();
     let total = this.currentSeconds + hours * 3600 + minutes * 60 + seconds;
 
     while (total >= 86400) {
@@ -771,6 +803,7 @@ class TinyDayNightCycle {
    * @returns {number} Time until target hour, in the specified unit.
    */
   timeUntil(targetHour, unit) {
+    this._checkDestroyed();
     const targetSeconds = targetHour * 3600; // 1 hour = 3600 seconds
     let diffSeconds = targetSeconds - this.#currentSeconds;
     if (diffSeconds <= 0) diffSeconds += 86400; // 24h = 86400 seconds (wrap to next day)
@@ -791,6 +824,7 @@ class TinyDayNightCycle {
    * @param {"day"|"night"} phase - The phase to set the time to.
    */
   setTo(phase) {
+    this._checkDestroyed();
     if (phase === 'day') this.setTime({ hour: this.#dayStart });
     else if (phase === 'night') this.setTime({ hour: this.#nightStart });
   }
@@ -804,6 +838,7 @@ class TinyDayNightCycle {
    * @param {number} [amount=1] - Number of days to move forward.
    */
   nextDay(amount = 1) {
+    this._checkDestroyed();
     for (let i = 0; i < amount; i++) {
       this.#currentDay++;
       if (this.#currentDay > (this.#monthDays[this.#currentMonth - 1] || 30)) {
@@ -826,6 +861,7 @@ class TinyDayNightCycle {
    * @param {number} [amount=1] - Number of days to move backward.
    */
   prevDay(amount = 1) {
+    this._checkDestroyed();
     for (let i = 0; i < amount; i++) {
       this.#currentDay--;
       if (this.#currentDay < 1) {
@@ -845,6 +881,7 @@ class TinyDayNightCycle {
    * Updates the current season based on the month.
    */
   updateSeason() {
+    this._checkDestroyed();
     this.#seasons.forEach((seasonMonths, name) => {
       if (seasonMonths.includes(this.#currentMonth)) this.#currentSeason = name;
     });
@@ -858,6 +895,7 @@ class TinyDayNightCycle {
    * An object defining default probabilities, time-based probabilities, day/night differences, and seasonal probabilities.
    */
   setWeatherConfig(config) {
+    this._checkDestroyed();
     this.#weatherConfig = { ...this.#weatherConfig, ...config };
   }
 
@@ -867,6 +905,7 @@ class TinyDayNightCycle {
    * @param {number} maxMinutes - Maximum duration in minutes.
    */
   setWeatherDuration(minMinutes, maxMinutes) {
+    this._checkDestroyed();
     this.#weatherDuration.min = minMinutes;
     this.#weatherDuration.max = maxMinutes;
   }
@@ -877,6 +916,7 @@ class TinyDayNightCycle {
    * @param {number} minutesPassed - Number of in-game minutes passed since last update.
    */
   updateWeatherTimer(minutesPassed) {
+    this._checkDestroyed();
     this.#weatherTimeLeft -= minutesPassed;
     if (this.#weatherTimeLeft <= 0) {
       this.chooseNewWeather();
@@ -891,6 +931,7 @@ class TinyDayNightCycle {
    * @param {number|null} [settings.duration=null] - Duration in minutes. If null, a random duration is used.
    */
   forceWeather({ where = 'main', type, duration = null }) {
+    this._checkDestroyed();
     const weather = this.#weather;
     weather[where] = type;
     this.weather = weather;
@@ -913,6 +954,7 @@ class TinyDayNightCycle {
    * @returns {string|null} - The selected weather type, or null if none selected.
    */
   chooseNewWeather({ customWeather, where = 'main' } = {}) {
+    this._checkDestroyed();
     /** @type {WeatherData} */
     let probabilities = {};
 
@@ -1025,6 +1067,7 @@ class TinyDayNightCycle {
    * @returns {number} - The moon index.
    */
   addMoon(name, cycleLength, phaseNames, startingPhase = 0) {
+    this._checkDestroyed();
     const length = Math.max(1, cycleLength);
     this.#moons.push({
       name,
@@ -1040,6 +1083,7 @@ class TinyDayNightCycle {
    * @param {string} name
    */
   removeMoon(name) {
+    this._checkDestroyed();
     this.#moons = this.#moons.filter((m) => m.name !== name);
   }
 
@@ -1066,6 +1110,7 @@ class TinyDayNightCycle {
    * @throws {RangeError} If the moonIndex is invalid.
    */
   advanceMoon(moonIndex, days = 1) {
+    this._checkDestroyed();
     const moon = this.#moons[moonIndex];
     if (!moon) throw new RangeError(`No moon found at index ${moonIndex}`);
     moon.currentPhase = (moon.currentPhase + days) % moon.cycleLength;
@@ -1078,6 +1123,7 @@ class TinyDayNightCycle {
    * @throws {RangeError} If the moonIndex is invalid.
    */
   rewindMoon(moonIndex, days = 1) {
+    this._checkDestroyed();
     const moon = this.#moons[moonIndex];
     if (!moon) throw new RangeError(`No moon found at index ${moonIndex}`);
     moon.currentPhase = (moon.currentPhase - days + moon.cycleLength) % moon.cycleLength;
@@ -1130,6 +1176,62 @@ class TinyDayNightCycle {
         : String(moon.currentPhase),
       cycleLength: moon.cycleLength,
     };
+  }
+
+  /**
+   * Checks if the instance has been destroyed and throws an error if so.
+   * @private
+   * @throws {Error} If the instance has already been destroyed.
+   */
+  _checkDestroyed() {
+    if (this.#isDestroyed)
+      throw new Error('This instance has been destroyed and can no longer be used.');
+  }
+
+  /**
+   * Destroys all stored data and marks the instance as unusable.
+   * Clears all internal maps, arrays, and resets primitive values to defaults.
+   * Once destroyed, any further method calls should throw an error or be ignored.
+   */
+  destroy() {
+    if (this.#isDestroyed) return;
+
+    // Clear collections
+    this.#seasons.clear();
+    this.#moons.length = 0;
+
+    // Reset numbers
+    this.#dayStart = 0;
+    this.#nightStart = 0;
+    this.#currentSeconds = 0;
+    this.#currentMinutes = 0;
+    this.#currentHours = 0;
+    this.#currentDay = 1;
+    this.#currentMonth = 1;
+    this.#currentYear = 1;
+    this.#weatherTimeLeft = 0;
+
+    // Reset strings
+    this.#currentSeason = '';
+
+    // Reset weather
+    this.#weather = { main: null };
+
+    // Reset month days
+    this.#monthDays = [];
+
+    // Reset weather configuration
+    this.#weatherConfig.default = {};
+    this.#weatherConfig.day = {};
+    this.#weatherConfig.night = {};
+    this.#weatherConfig.hours = {};
+    this.#weatherConfig.seasons = {};
+
+    // Reset duration range
+    this.#weatherDuration = { min: 0, max: 0 };
+
+    // Mark as destroyed
+    this.#isDestroyed = true;
   }
 }
 
