@@ -137,22 +137,22 @@ class TinyDayNightCycle {
   /**
    * Number of days in each month. Keys are month numbers (1–12).
    * Can be customized to any structure.
-   * @type {Object<number, number>}
+   * @type {number[]}
    */
-  #monthDays = {
-    1: 31,
-    2: 31,
-    3: 31,
-    4: 31,
-    5: 31,
-    6: 31,
-    7: 31,
-    8: 31,
-    9: 31,
-    10: 31,
-    11: 31,
-    12: 31,
-  };
+  #monthDays = [
+    31,
+    31,
+    31,
+    31,
+    31,
+    31,
+    31,
+    31,
+    31,
+    31,
+    31,
+    31,
+  ];
 
   /**
    * Weather configuration layers:
@@ -332,10 +332,10 @@ class TinyDayNightCycle {
   /**
    * Returns a shallow copy of the mapping of month numbers to days.
    * Can be customized for non-standard calendar systems.
-   * @returns {Object<number, number>} Object mapping month number to days.
+   * @returns {number[]} Object mapping month number to days.
    */
   get monthDays() {
-    return { ...this.#monthDays };
+    return [...this.#monthDays];
   }
 
   /**
@@ -357,8 +357,8 @@ class TinyDayNightCycle {
    * @throws {TypeError} If value is not a number.
    */
   set dayStart(value) {
-    if (typeof value !== 'number')
-      throw new TypeError(`dayStart must be a number, received ${typeof value}`);
+    if (typeof value !== 'number' || value < 1)
+      throw new TypeError(`dayStart must be a positive non-zero number, received ${typeof value}`);
     this.#dayStart = value;
   }
 
@@ -368,8 +368,8 @@ class TinyDayNightCycle {
    * @throws {TypeError} If value is not a number.
    */
   set nightStart(value) {
-    if (typeof value !== 'number')
-      throw new TypeError(`nightStart must be a number, received ${typeof value}`);
+    if (typeof value !== 'number' || value < 1)
+      throw new TypeError(`nightStart must be a positive non-zero number, received ${typeof value}`);
     this.#nightStart = value;
   }
 
@@ -393,7 +393,7 @@ class TinyDayNightCycle {
   set currentSeason(value) {
     if (typeof value !== 'string' || !this.#seasons.has(value)) {
       throw new TypeError(
-        `currentSeason must be one of ${Array.from(this.#seasons).join(', ')}, received ${value}`,
+        `currentSeason must be one of ${Array.from(this.#seasons).map(v => v[0]).join(', ')}, received ${value}`,
       );
     }
     this.#currentSeason = value;
@@ -405,8 +405,8 @@ class TinyDayNightCycle {
    * @throws {TypeError} If value is not a number.
    */
   set currentDay(value) {
-    if (typeof value !== 'number')
-      throw new TypeError(`currentDay must be a number, received ${typeof value}`);
+    if (typeof value !== 'number' || value < 1 || value > this.#monthDays[this.#currentMonth - 1])
+      throw new TypeError(`currentDay must be a valid day number, received ${typeof value}`);
     this.#currentDay = value;
   }
 
@@ -416,8 +416,8 @@ class TinyDayNightCycle {
    * @throws {TypeError} If value is not a number.
    */
   set currentMonth(value) {
-    if (typeof value !== 'number')
-      throw new TypeError(`currentMonth must be a number, received ${typeof value}`);
+    if (typeof value !== 'number' || typeof this.#monthDays[value - 1] !== 'number')
+      throw new TypeError(`currentMonth must be a valid month number, received ${typeof value}`);
     this.#currentMonth = value;
   }
 
@@ -427,25 +427,22 @@ class TinyDayNightCycle {
    * @throws {TypeError} If value is not a number.
    */
   set currentYear(value) {
-    if (typeof value !== 'number')
-      throw new TypeError(`currentYear must be a number, received ${typeof value}`);
+    if (typeof value !== 'number' || value < 1)
+      throw new TypeError(`currentYear must be a positive number non-zero, received ${typeof value}`);
     this.#currentYear = value;
   }
 
   /**
    * Sets a custom configuration for the number of days in each month.
    * This allows for non-standard calendar systems.
-   * @param {Object<number, number>} value - An object where keys are month numbers (1-12) and values are the number of days.
+   * @param {number[]} value - An object where keys are month numbers (1-12) and values are the number of days.
    */
   set monthDays(value) {
-    if (typeof value !== 'object' || value === null)
-      throw new TypeError(`monthDays must be a non-null object`);
-    for (const [key, val] of Object.entries(value)) {
-      if (Number.isNaN(Number(key)) || typeof val !== 'number') {
-        throw new TypeError(`monthDays must have numeric keys and number values`);
-      }
-    }
-    this.#monthDays = { ...value };
+    if (!Array.isArray(value))
+      throw new TypeError(`monthDays must be a array`);
+    if (!value.every((n) => typeof n === 'number')) 
+      throw new TypeError(`monthDays must have number values`);
+    this.#monthDays = [...value];
   }
 
   /**
@@ -736,7 +733,7 @@ class TinyDayNightCycle {
   nextDay(amount = 1) {
     for (let i = 0; i < amount; i++) {
       this.#currentDay++;
-      if (this.#currentDay > (this.#monthDays[this.#currentMonth] || 30)) {
+      if (this.#currentDay > (this.#monthDays[this.#currentMonth - 1] || 30)) {
         this.#currentDay = 1;
         this.#currentMonth++;
         if (this.#currentMonth > 12) {
@@ -764,7 +761,7 @@ class TinyDayNightCycle {
           this.#currentMonth = 12;
           this.#currentYear--;
         }
-        this.#currentDay = this.#monthDays[this.#currentMonth] || 30;
+        this.#currentDay = this.#monthDays[this.#currentMonth - 1] || 30;
       }
       this.updateSeason();
       this.rewindMoons(1);
