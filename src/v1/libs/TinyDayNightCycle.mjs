@@ -637,21 +637,23 @@ class TinyDayNightCycle {
 
   /**
    * Sets the internal time directly.
-   * @param {number} hour - 0 to 23
-   * @param {number} minute - 0 to 59
-   * @param {number} second - 0 to 59
+   * @param {Object} settings
+   * @param {number} [settings.hour=0] - 0 to 23
+   * @param {number} [settings.minute=0] - 0 to 59
+   * @param {number} [settings.second=0] - 0 to 59
    */
-  setTime(hour, minute = 0, second = 0) {
+  setTime({ hour = 0, minute = 0, second = 0 }) {
     this.currentSeconds = (hour * 3600 + minute * 60 + second) % 86400;
   }
 
   /**
    * Adds time to the current clock.
-   * @param {number} hours
-   * @param {number} minutes
-   * @param {number} seconds
+   * @param {Object} settings
+   * @param {number} [settings.hours=0]
+   * @param {number} [settings.minutes=0]
+   * @param {number} [settings.seconds=0]
    */
-  addTime(hours = 0, minutes = 0, seconds = 0) {
+  addTime({ hours = 0, minutes = 0, seconds = 0 }) {
     let total = this.currentSeconds + hours * 3600 + minutes * 60 + seconds;
 
     while (total >= 86400) {
@@ -664,12 +666,12 @@ class TinyDayNightCycle {
     }
 
     this.currentSeconds = total;
-    this.updateWeatherTimer((hours * 3600 + minutes * 60 + seconds) / 60); // ainda em minutos para compatibilidade
+    this.updateWeatherTimer((hours * 3600 + minutes * 60 + seconds) / 60); // in minutes for compatibility
   }
 
   /**
    * Returns current time as object and string.
-   * @param {boolean} [withSeconds=true] - Whether to include seconds in the formatted string.
+   * @param {boolean} [withSeconds=false] - Whether to include seconds in the formatted string.
    * @returns {{
    *   hour: number,
    *   minute: number,
@@ -677,7 +679,7 @@ class TinyDayNightCycle {
    *   formatted: string
    * }} An object containing the hour, minute, second, and a formatted time string.
    */
-  getTime(withSeconds = true) {
+  getTime(withSeconds = false) {
     const hour = Math.floor(this.currentSeconds / 3600);
     const minute = Math.floor((this.currentSeconds % 3600) / 60);
     const second = this.currentSeconds % 60;
@@ -789,8 +791,8 @@ class TinyDayNightCycle {
    * @param {"day"|"night"} phase - The phase to set the time to.
    */
   setTo(phase) {
-    if (phase === 'day') this.setTime(this.#dayStart, 0);
-    else if (phase === 'night') this.setTime(this.#nightStart, 0);
+    if (phase === 'day') this.setTime({ hour: this.#dayStart });
+    else if (phase === 'night') this.setTime({ hour: this.#nightStart });
   }
 
   /** --------------------- DAY/MONTH/YEAR SYSTEM --------------------- */

@@ -639,10 +639,10 @@
 
       controls.btnSetTime.addEventListener('click', () => {
         if (!createCycleIfNeeded()) return;
-        const h = Number(controls.setHour.value || 0);
-        const m = Number(controls.setMinute.value || 0);
-        cycle.setTime(h, m);
-        log('setTime', `${h}:${m}`);
+        const hour = Number(controls.setHour.value || 0);
+        const minute = Number(controls.setMinute.value || 0);
+        cycle.setTime({ hour, minute });
+        log('setTime', `${hour}:${minute}`);
         refreshUI();
       });
 
@@ -662,18 +662,18 @@
 
       controls.btnAddTime.addEventListener('click', () => {
         if (!createCycleIfNeeded()) return;
-        const h = Number(controls.addHours.value || 0);
-        const m = Number(controls.addMinutes.value || 0);
-        cycle.addTime(h, m);
-        log('addTime', `${h}h ${m}m`);
+        const hours = Number(controls.addHours.value || 0);
+        const minutes = Number(controls.addMinutes.value || 0);
+        cycle.addTime({ hours, minutes });
+        log('addTime', `${hours}h ${minutes}m`);
         refreshUI();
       });
 
       controls.btnAddTick.addEventListener('click', () => {
         if (!createCycleIfNeeded()) return;
-        const mins = Number(prompt('Advance how many minutes?', '60')) || 0;
-        cycle.addTime(0, mins);
-        log('manual tick +' + mins + 'min');
+        const minutes = Number(prompt('Advance how many minutes?', '60')) || 0;
+        cycle.addTime({ minutes });
+        log('manual tick +' + minutes + 'min');
         refreshUI();
       });
 
@@ -809,7 +809,7 @@
         stopAutoTick();
         autoHandle = setInterval(() => {
           if (!cycle) return;
-          cycle.addTime(0, minutes);
+          cycle.addTime({ minutes });
           refreshUI();
         }, ms);
       }
