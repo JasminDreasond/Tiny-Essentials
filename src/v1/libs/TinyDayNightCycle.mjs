@@ -66,7 +66,17 @@
  */
 
 /**
- * TinyDayNightCycle — A time, date, moon-phase, and weather simulation system.
+ * TinyDayNightCycle is a lightweight and flexible JavaScript library designed to simulate day and 
+ * night cycles along with seasonal changes, moons, weather patterns, and in-game time tracking. 
+ * It allows you to manage and customize time progression, including hours, 
+ * minutes, and seconds, as well as date transitions with support for variable month lengths and years.
+ * 
+ * This system also supports dynamic weather changes, moon phases, 
+ * and seasonal adjustments, making it ideal for game development, simulations, 
+ * or any interactive experience that requires realistic or custom time and environmental cycles.
+ *
+ * With easy-to-use methods and configurable settings, TinyDayNightCycle provides 
+ * you with precise control over the flow of time and weather in your application.
  *
  * This class provides:
  * - Customizable day/night cycle with variable sunrise/sunset.
