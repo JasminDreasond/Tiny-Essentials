@@ -1,65 +1,91 @@
 import TinyEvents from './TinyEvents.mjs';
-
 /**
+ * Generates a pseudo-random number between 0 (inclusive) and 1 (exclusive).
  * @callback RngGenerator
- * @returns {number}
+ * @returns {number} - A floating-point number in the range [0, 1).
  */
 
 /**
- * @typedef {Object} ItemData
- * @property {string} id
- * @property {string} label
- * @property {number} baseWeight
- * @property {Set<string>} groups
- * @property {boolean} locked
- * @property {ItemMetadata} meta
+ * Represents the core data structure for an item in the raffle system.
+ * @template {Set<string>|string[]} TGroups
+ * @typedef {Object} ItemDataTemplate
+ * @property {string} id - Unique identifier for the item.
+ * @property {string} label - Human-readable name for the item.
+ * @property {number} baseWeight - The base probability weight before modifiers.
+ * @property {TGroups} groups - The groups the item belongs to (Set<string> or string[]).
+ * @property {boolean} locked - Whether the item is currently locked (excluded from draws).
+ * @property {ItemMetadata} meta - Arbitrary metadata associated with the item.
  */
 
 /**
- * @typedef {Record<string|number|symbol, *>} ItemMetadata
+ * A concrete version of ItemDataTemplate where groups is Set<string>.
+ * @typedef {ItemDataTemplate<Set<string>>} ItemData
  */
 
 /**
+ * A concrete version of ItemDataTemplate where groups is string[].
+ * @typedef {ItemDataTemplate<string[]>} ItemDataGetter
+ */
+
+/**
+ * Arbitrary key-value metadata container for additional item information.
+ * Keys can be strings, numbers, or symbols.
+ * @typedef {Record<string|number|symbol, any>} ItemMetadata
+ */
+
+/**
+ * Context object passed to weight modification functions during draw calculations.
  * @typedef {Object} ComputeEffectiveWeightsContext
- * @param {ItemMetadata} [content.metadata]
- * @param {DrawOne} [content.previousDraws]
+ * @property {ItemMetadata} [metadata] - Metadata of the current raffle state or item.
+ * @property {DrawOne[]} [previousDraws] - History of previously drawn items.
  */
 
 /**
+ * Maps each item ID to its computed effective weight.
  * @typedef {Map<string, number>} Weights
  */
 
 /**
+ * Pity system configuration and current state.
  * @typedef {Object} Pity
- * @property {number} threshold
- * @property {number} increment
- * @property {number} cap
- * @property {number} counter
- * @property {number} currentAdd
+ * @property {number} threshold - Number of draws without a win before pity starts applying.
+ * @property {number} increment - Additional weight applied per pity step.
+ * @property {number} cap - Maximum total pity weight allowed.
+ * @property {number} counter - Current number of consecutive draws without a win.
+ * @property {number} currentAdd - Current pity weight being applied.
  */
 
 /**
+ * Serializable snapshot of the raffle state for persistence or rollback.
  * @typedef {Object} SnapshotState
- * @property {[string, ItemData][]} items
- * @property {[string, Pity]} pity
- * @property {string} tempMods
- * @property {string} exclusions
+ * @property {[string, ItemData][]} items - All registered items and their data.
+ * @property {[string, Pity][]} pity - All pity configurations and states.
+ * @property {string} tempMods - Serialized temporary weight modifiers.
+ * @property {string} exclusions - List of excluded item IDs.
  */
 
 /**
+ * Function used to modify or override computed weights before a draw.
  * @callback WeightsCallback
- * @param {Weights} weights
- * @param {ComputeEffectiveWeightsContext} context
- * @returns {Weights|null}
+ * @param {Weights} weights - Current computed item weights.
+ * @param {ComputeEffectiveWeightsContext} context - Additional context data for calculation.
+ * @returns {Weights|null} - Modified weights map, or null to skip modification.
  */
 
-/** @typedef {{ id: string, label: string, meta: ItemMetadata, prob: number }} DrawOne */
+/**
+ * Represents the result of a single draw.
+ * @typedef {Object} DrawOne
+ * @property {string} id - Item ID.
+ * @property {string} label - Human-readable label of the drawn item.
+ * @property {ItemMetadata} meta - Arbitrary metadata of the drawn item.
+ * @property {number} prob - Final probability of the item at draw time.
+ */
 
 /**
+ * Generic event handler function for message or signal reception.
  * @callback handler
- * A function to handle incoming event payloads.
  * @param {any} payload - The data sent by the emitter.
- * @param {any} event - Metadata about the message.
+ * @param {any} event - Metadata about the emitted event.
  */
 
 class TinyAdvancedRaffle {
@@ -263,59 +289,287 @@ class TinyAdvancedRaffle {
   ///////////////////////////////////////////////////
 
   /**
+   * Normalization method used to adjust item weights before performing the draw.
+   * Can define how the probabilities are scaled or balanced.
    * @type {string}
    */
   #normalization;
 
   /**
+   * Seed value used for deterministic random number generation.
+   * If null, results will be non-deterministic.
    * @type {number|null}
    */
   #seed;
 
   /**
-   * persistent modifiers applied each draw
+   * Persistent weight modifiers that are applied to every draw.
+   * Each modifier is a callback function that adjusts item weights.
    * @type {WeightsCallback[]}
    */
   #globalModifiers = [];
 
   /**
-   * cleared after a draw (or after specified draws)
+   * Temporary weight modifiers that are cleared after use or after a defined number of draws.
+   * Each entry contains a modifier function and a remaining usage counter.
    * @type {{ fn: WeightsCallback, uses: number }[]}
    */
   #temporaryModifiers = [];
 
   /**
-   * functions that modify weights based on state
+   * Conditional rules that dynamically modify item weights based on current state.
    * @type {WeightsCallback[]}
    */
   #conditionalRules = [];
 
   /**
-   * itemId => {threshold, increment, cap, counter}
+   * "Pity" systems — mechanisms that guarantee or increase the probability of certain items
+   * after a number of unsuccessful draws.
+   * Keyed by `itemId`.
    * @type {Map<string, Pity>}
    */
   #pitySystems = new Map();
 
   /**
+   * Items excluded from being selected in the raffle.
+   * Contains a set of item IDs.
    * @type {Set<string>}
    */
   #exclusions = new Set();
 
   /**
-   * groupName => Set(itemId)
+   * Groups of items, where each group has a name and contains a set of item IDs.
    * @type {Map<string, Set<string>>}
    */
   #groups = new Map();
 
   /**
+   * Random number generator instance used for draw calculations.
    * @type {RngGenerator}
    */
   #rng;
 
   /**
+   * All registered raffle items and their respective data.
+   * Keyed by `itemId`.
    * @type {Map<string, ItemData>}
    */
   #items = new Map();
+
+  /* -------------------- GETTERS & SETTERS -------------------- */
+
+  /**
+   * @returns {number}
+   */
+  get size() {
+    return this.#items.size;
+  }
+
+  /**
+   * @returns {string}
+   */
+  get normalization() {
+    return this.#normalization;
+  }
+  /**
+   * @param {string} value
+   */
+  set normalization(value) {
+    if (typeof value !== 'string' || !value.trim()) {
+      throw new TypeError(
+        "normalization must be a non-empty string (e.g., 'none', 'sum', 'max', 'min').",
+      );
+    }
+    this.#normalization = value;
+  }
+
+  /**
+   * @returns {number|null}
+   */
+  get seed() {
+    return this.#seed;
+  }
+
+  /**
+   * @param {number|null} value
+   */
+  set seed(value) {
+    if (value !== null && (typeof value !== 'number' || !Number.isFinite(value)))
+      throw new TypeError('seed must be a finite number or null.');
+    this.#seed = value;
+    if (value !== null) this.#rng = this._makeSeededRng(value);
+  }
+
+  /**
+   * @returns {WeightsCallback[]}
+   */
+  get globalModifiers() {
+    return [...this.#globalModifiers];
+  }
+
+  /**
+   * @param {WeightsCallback[]} value
+   */
+  set globalModifiers(value) {
+    if (!Array.isArray(value) || !value.every((fn) => typeof fn === 'function'))
+      throw new TypeError('globalModifiers must be an array of functions (WeightsCallback).');
+    this.#globalModifiers = value;
+  }
+
+  /**
+   * @returns {{ fn: WeightsCallback, uses: number }[]}
+   */
+  get temporaryModifiers() {
+    return [...this.#temporaryModifiers];
+  }
+
+  /**
+   * @param {{ fn: WeightsCallback, uses: number }[]} value
+   */
+  set temporaryModifiers(value) {
+    if (
+      !Array.isArray(value) ||
+      !value.every(
+        (obj) => obj && typeof obj.fn === 'function' && Number.isInteger(obj.uses) && obj.uses > 0,
+      )
+    )
+      throw new TypeError(
+        'temporaryModifiers must be an array of objects { fn: function, uses: positive integer }.',
+      );
+    this.#temporaryModifiers = value;
+  }
+
+  /**
+   * @returns {WeightsCallback[]}
+   */
+  get conditionalRules() {
+    return [...this.#conditionalRules];
+  }
+
+  /**
+   * @param {WeightsCallback[]} value
+   */
+  set conditionalRules(value) {
+    if (!Array.isArray(value) || !value.every((fn) => typeof fn === 'function'))
+      throw new TypeError('conditionalRules must be an array of functions (WeightsCallback).');
+    this.#conditionalRules = value;
+  }
+
+  /**
+   * @returns {Record<string, Pity>}
+   */
+  get pitySystems() {
+    return Object.fromEntries(this.#pitySystems);
+  }
+
+  /**
+   * @param {Map<string, Pity>} value
+   */
+  set pitySystems(value) {
+    if (
+      !(value instanceof Map) ||
+      ![...value.values()].every(
+        (p) =>
+          p &&
+          typeof p.threshold === 'number' &&
+          typeof p.increment === 'number' &&
+          typeof p.cap === 'number' &&
+          typeof p.counter === 'number' &&
+          typeof p.currentAdd === 'number',
+      )
+    )
+      throw new TypeError('pitySystems must be a Map<string, Pity> with all numeric fields.');
+    this.#pitySystems = value;
+  }
+
+  /**
+   * @returns {string[]}
+   */
+  get exclusions() {
+    return Array.from(this.#exclusions);
+  }
+
+  /**
+   * @param {Set<string>} value
+   */
+  set exclusions(value) {
+    if (!(value instanceof Set) || ![...value].every((v) => typeof v === 'string'))
+      throw new TypeError('exclusions must be a Set<string>.');
+    this.#exclusions = value;
+  }
+
+  /**
+   * @returns {Record<string, string[]>}
+   */
+  get groups() {
+    /** @type {Record<string, string[]>} */
+    const groups = {};
+    this.#groups.forEach((value, key) => (groups[key] = Array.from(value)));
+    return groups;
+  }
+
+  /**
+   * @param {Map<string, Set<string>>} value
+   */
+  set groups(value) {
+    if (
+      !(value instanceof Map) ||
+      ![...value.values()].every(
+        (v) => v instanceof Set && [...v].every((i) => typeof i === 'string'),
+      )
+    )
+      throw new TypeError('groups must be a Map<string, Set<string>>.');
+    this.#groups = value;
+  }
+
+  /**
+   * @returns {RngGenerator}
+   */
+  get rng() {
+    return this.#rng;
+  }
+
+  /**
+   * @param {RngGenerator} value
+   */
+  set rng(value) {
+    if (typeof value !== 'function' || typeof value() !== 'number')
+      throw new TypeError('rng must be a function returning a number (RngGenerator).');
+    this.#rng = value;
+  }
+
+  /**
+   * @returns {Record<string, ItemDataGetter>}
+   */
+  get items() {
+    /** @type {Record<string, ItemDataGetter>} */
+    const items = {};
+    this.#items.forEach((value, key) => {
+      items[key] = { ...value, groups: Array.from(value.groups) };
+    });
+    return items;
+  }
+
+  /**
+   * @param {Map<string, ItemData>} value
+   */
+  set items(value) {
+    if (
+      !(value instanceof Map) ||
+      ![...value.values()].every(
+        (item) =>
+          item &&
+          typeof item.id === 'string' &&
+          typeof item.label === 'string' &&
+          typeof item.baseWeight === 'number' &&
+          item.groups instanceof Set &&
+          typeof item.locked === 'boolean' &&
+          typeof item.meta === 'object',
+      )
+    )
+      throw new TypeError('items must be a Map<string, ItemData> with valid item structures.');
+    this.#items = value;
+  }
 
   /**
    * Create a new AdvancedRaffle engine.
@@ -402,6 +656,10 @@ class TinyAdvancedRaffle {
     return Array.from(this.#items.values()).map((i) => ({ ...i }));
   }
 
+  clearList() {
+    this.#items.clear();
+  }
+
   /* ===========================
      Modifiers & Rules
      =========================== */
@@ -476,6 +734,10 @@ class TinyAdvancedRaffle {
       p.counter = 0;
       p.currentAdd = 0;
     }
+  }
+
+  clearPities(){
+    this.#pitySystems.clear();
   }
 
   /* ===========================
@@ -821,7 +1083,7 @@ class TinyAdvancedRaffle {
    */
   loadFromJson(json) {
     const data = JSON.parse(json);
-    this.#items.clear();
+    this.clearList();
     for (const it of data.items) {
       this.#items.set(it.id, {
         id: it.id,
@@ -862,14 +1124,6 @@ class TinyAdvancedRaffle {
       r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
       return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
     };
-  }
-
-  /**
-   * @param {number|null} seed
-   */
-  setSeed(seed) {
-    this.#seed = seed;
-    if (seed !== null) this.#rng = this._makeSeededRng(seed);
   }
 
   /* ===========================

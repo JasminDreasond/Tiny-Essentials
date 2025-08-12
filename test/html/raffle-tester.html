@@ -467,7 +467,7 @@
       }
 
       function updateSummary() {
-        summary.textContent = `items: ${engine.items.size} • normalization: ${engine.normalization}`;
+        summary.textContent = `items: ${engine.size} • normalization: ${engine.normalization}`;
       }
 
       // open pity editor (simple prompt-based editor for now)
@@ -593,7 +593,7 @@
       btnDraw.addEventListener('click', async () => {
         const count = Math.max(1, Number(drawCount.value) || 1);
         const seed = seedInput.value !== '' ? Number(seedInput.value) : null;
-        if (seed !== null) engine.setSeed(seed);
+        if (seed !== null) engine.seed = seed;
 
         const opts = { previousDraws: [...history], metadata: {} };
         const results = engine.drawMany(count, {
@@ -609,7 +609,7 @@
       btnSimulate.addEventListener('click', () => {
         const n = 1000;
         const seed = seedInput.value !== '' ? Number(seedInput.value) : null;
-        if (seed !== null) engine.setSeed(seed);
+        if (seed !== null) engine.seed = seed;
         // simulation uses engine.simulate which snapshots state
         const result = engine.simulate(n, {});
         // show top results in an alert + update a quick chart
@@ -662,8 +662,8 @@
       // populate example
       btnPopulateExample.addEventListener('click', () => {
         // reset
-        engine.items.clear();
-        engine.pitySystems.clear();
+        engine.clearList();
+        engine.clearPities();
         engine.temporaryModifiers = [];
         // provide 12 example items, 2 groups: rare & legendary
         for (let i = 1; i <= 12; i++) {
@@ -764,15 +764,14 @@
       updateDistribution();
 
       // small safety: listen to engine 'draw' events if provided
-      engine.on &&
-        engine.on('draw', (payload) => {
-          // optional: if engine emits draw, we mirror it into history
-          // but to avoid double counting, only accept if not already in history's last element
-          const last = history[history.length - 1];
-          if (!last || last.id !== payload.id) {
-            // do not auto-add — leave draws triggered by UI only
-          }
-        });
+      engine.on('draw', (payload) => {
+        // optional: if engine emits draw, we mirror it into history
+        // but to avoid double counting, only accept if not already in history's last element
+        const last = history[history.length - 1];
+        if (!last || last.id !== payload.id) {
+          // do not auto-add — leave draws triggered by UI only
+        }
+      });
 
       // keyboard shortucts
       window.addEventListener('keydown', (ev) => {
