@@ -132,7 +132,7 @@ class TinyDayNightCycle {
   #currentDay = 1;
 
   /**
-   * Current month number (1–12).
+   * Current month number.
    * @type {number}
    */
   #currentMonth = 1;
@@ -150,7 +150,7 @@ class TinyDayNightCycle {
   #isDestroyed = false;
 
   /**
-   * Number of days in each month. Keys are month numbers (1–12).
+   * Number of days in each month. Keys are month numbers.
    * Can be customized to any structure.
    * @type {number[]}
    */
