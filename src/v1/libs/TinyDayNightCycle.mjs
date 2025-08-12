@@ -77,6 +77,12 @@
  * Time and date calculations are independent from the real world and can run at any speed.
  */
 class TinyDayNightCycle {
+  #daySize = 86400;
+
+  #hourSize = 3600;
+
+  #minuteSize = 60;
+
   /**
    * Stores season configurations, where each season name maps to an array of numbers.
    * The number array represent month list.
@@ -230,11 +236,11 @@ class TinyDayNightCycle {
     this._checkDestroyed();
     if (typeof value !== 'number' || !Number.isFinite(value))
       throw new TypeError(`currentSeconds must be a finite number, received ${typeof value}`);
-    if (value < 0 || value >= 86400)
+    if (value < 0 || value >= this.#daySize)
       throw new RangeError(`currentSeconds must be between 0 and 86399, received ${value}`);
     this.#currentSeconds = Math.floor(value);
-    this.#currentMinutes = Math.floor(value / 60);
-    this.#currentHours = Math.floor(value / 3600);
+    this.#currentMinutes = Math.floor(value / this.#minuteSize);
+    this.#currentHours = Math.floor(value / this.#hourSize);
   }
 
   /**
@@ -259,8 +265,8 @@ class TinyDayNightCycle {
     if (value < 0 || value >= 1440)
       throw new RangeError(`currentMinutes must be between 0 and 1439, received ${value}`);
     this.#currentMinutes = Math.floor(value);
-    this.#currentHours = Math.floor(value / 60);
-    this.#currentSeconds = Math.floor(value * 60);
+    this.#currentHours = Math.floor(value / this.#minuteSize);
+    this.#currentSeconds = Math.floor(value * this.#minuteSize);
   }
 
   /**
@@ -287,8 +293,8 @@ class TinyDayNightCycle {
     if (value < 0 || value >= 24)
       throw new RangeError(`currentHours must be between 0 and less than 24, received ${value}`);
     this.#currentHours = Math.floor(value);
-    this.#currentMinutes = Math.floor(value * 60);
-    this.#currentSeconds = Math.floor(value * 3600);
+    this.#currentMinutes = Math.floor(value * this.#minuteSize);
+    this.#currentSeconds = Math.floor(value * this.#hourSize);
   }
 
   /**
@@ -674,7 +680,8 @@ class TinyDayNightCycle {
    */
   setTime({ hour = 0, minute = 0, second = 0 }) {
     this._checkDestroyed();
-    this.currentSeconds = (hour * 3600 + minute * 60 + second) % 86400;
+    this.currentSeconds =
+      (hour * this.#hourSize + minute * this.#minuteSize + second) % this.#daySize;
   }
 
   /**
@@ -686,19 +693,21 @@ class TinyDayNightCycle {
    */
   addTime({ hours = 0, minutes = 0, seconds = 0 }) {
     this._checkDestroyed();
-    let total = this.currentSeconds + hours * 3600 + minutes * 60 + seconds;
+    let total = this.currentSeconds + hours * this.#hourSize + minutes * this.#minuteSize + seconds;
 
-    while (total >= 86400) {
-      total -= 86400;
+    while (total >= this.#daySize) {
+      total -= this.#daySize;
       this.nextDay();
     }
     while (total < 0) {
-      total += 86400;
+      total += this.#daySize;
       this.prevDay();
     }
 
     this.currentSeconds = total;
-    this.updateWeatherTimer((hours * 3600 + minutes * 60 + seconds) / 60); // in minutes for compatibility
+    this.updateWeatherTimer(
+      (hours * this.#hourSize + minutes * this.#minuteSize + seconds) / this.#minuteSize,
+    ); // in minutes for compatibility
   }
 
   /**
@@ -712,9 +721,9 @@ class TinyDayNightCycle {
    * }} An object containing the hour, minute, second, and a formatted time string.
    */
   getTime(withSeconds = false) {
-    const hour = Math.floor(this.currentSeconds / 3600);
-    const minute = Math.floor((this.currentSeconds % 3600) / 60);
-    const second = this.currentSeconds % 60;
+    const hour = Math.floor(this.currentSeconds / this.#hourSize);
+    const minute = Math.floor((this.currentSeconds % this.#hourSize) / this.#minuteSize);
+    const second = this.currentSeconds % this.#minuteSize;
 
     return {
       hour,
@@ -735,11 +744,13 @@ class TinyDayNightCycle {
   isDay() {
     if (this.#dayStart < this.#nightStart) {
       return (
-        this.#currentMinutes >= this.#dayStart * 60 && this.#currentMinutes < this.#nightStart * 60
+        this.#currentMinutes >= this.#dayStart * this.#minuteSize &&
+        this.#currentMinutes < this.#nightStart * this.#minuteSize
       );
     } else {
       return (
-        this.#currentMinutes >= this.#dayStart * 60 || this.#currentMinutes < this.#nightStart * 60
+        this.#currentMinutes >= this.#dayStart * this.#minuteSize ||
+        this.#currentMinutes < this.#nightStart * this.#minuteSize
       );
     }
   }
@@ -804,15 +815,15 @@ class TinyDayNightCycle {
    */
   timeUntil(targetHour, unit) {
     this._checkDestroyed();
-    const targetSeconds = targetHour * 3600; // 1 hour = 3600 seconds
+    const targetSeconds = targetHour * this.#hourSize; // 1 hour = 3600 seconds
     let diffSeconds = targetSeconds - this.#currentSeconds;
-    if (diffSeconds <= 0) diffSeconds += 86400; // 24h = 86400 seconds (wrap to next day)
+    if (diffSeconds <= 0) diffSeconds += this.#daySize; // 24h = 86400 seconds (wrap to next day)
 
     switch (unit) {
       case 'minutes':
-        return diffSeconds / 60;
+        return diffSeconds / this.#minuteSize;
       case 'hours':
-        return diffSeconds / 3600;
+        return diffSeconds / this.#hourSize;
       case 'seconds':
       default:
         return diffSeconds;
@@ -969,8 +980,8 @@ class TinyDayNightCycle {
         // If it's a function, call it
         if (typeof resolvedValue === 'function') {
           resolvedValue = resolvedValue({
-            hour: Math.floor(this.#currentMinutes / 60),
-            minute: this.#currentMinutes % 60,
+            hour: Math.floor(this.#currentMinutes / this.#minuteSize),
+            minute: this.#currentMinutes % this.#minuteSize,
             currentMinutes: this.#currentMinutes,
             isDay: this.isDay(),
             season: this.#currentSeason,
@@ -992,7 +1003,7 @@ class TinyDayNightCycle {
     for (const range in this.#weatherConfig.hours) {
       const [start, end] = range.split('-').map((t) => {
         const [h, m] = t.split(':').map(Number);
-        return h * 60 + (m || 0);
+        return h * this.#minuteSize + (m || 0);
       });
       const current = this.#currentMinutes;
       const inRange =
