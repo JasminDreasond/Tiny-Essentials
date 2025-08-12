@@ -263,52 +263,59 @@ class TinyAdvancedRaffle {
   ///////////////////////////////////////////////////
 
   /**
+   * @type {string}
+   */
+  #normalization;
+
+  /**
+   * @type {number|null}
+   */
+  #seed;
+
+  /**
    * persistent modifiers applied each draw
    * @type {WeightsCallback[]}
    */
-  globalModifiers = [];
+  #globalModifiers = [];
 
   /**
    * cleared after a draw (or after specified draws)
    * @type {{ fn: WeightsCallback, uses: number }[]}
    */
-  temporaryModifiers = [];
+  #temporaryModifiers = [];
 
   /**
    * functions that modify weights based on state
    * @type {WeightsCallback[]}
    */
-  conditionalRules = [];
+  #conditionalRules = [];
 
   /**
    * itemId => {threshold, increment, cap, counter}
    * @type {Map<string, Pity>}
    */
-  pitySystems = new Map();
+  #pitySystems = new Map();
 
   /**
    * @type {Set<string>}
    */
-  exclusions = new Set();
+  #exclusions = new Set();
 
   /**
    * groupName => Set(itemId)
    * @type {Map<string, Set<string>>}
    */
-  groups = new Map();
+  #groups = new Map();
 
   /**
-   *
+   * @type {RngGenerator}
    */
-  eventCallbacks = new Map(); // simple event system
-
-  /** @type {RngGenerator} */
-  rng;
+  #rng;
 
   /**
    * @type {Map<string, ItemData>}
    */
-  items = new Map();
+  #items = new Map();
 
   /**
    * Create a new AdvancedRaffle engine.
@@ -319,12 +326,12 @@ class TinyAdvancedRaffle {
    */
   constructor(opts = {}) {
     const { rng = null, seed = null, normalization = 'relative' } = opts;
-    this.normalization = normalization;
-    this._seed = seed;
-    if (typeof rng === 'function') this.rng = rng;
-    else if (this._seed !== null) this.rng = this._makeSeededRng(this._seed);
-    else this.rng = Math.random;
-    this._seed = seed ?? null;
+    this.#normalization = normalization;
+    this.#seed = seed;
+    if (typeof rng === 'function') this.#rng = rng;
+    else if (this.#seed !== null) this.#rng = this._makeSeededRng(this.#seed);
+    else this.#rng = Math.random;
+    this.#seed = seed ?? null;
   }
 
   /* ===========================
@@ -350,7 +357,7 @@ class TinyAdvancedRaffle {
       groups: new Set(groups),
       locked: false,
     };
-    this.items.set(id, entry);
+    this.#items.set(id, entry);
     // Register in groups map
     for (const g of groups) this._ensureGroup(g).add(id);
     this.#emit('itemAdded', entry);
@@ -361,13 +368,13 @@ class TinyAdvancedRaffle {
    * @param {string} id
    */
   removeItem(id) {
-    const it = this.items.get(id);
+    const it = this.#items.get(id);
     if (!it) return false;
     for (const g of it.groups) {
-      const s = this.groups.get(g);
+      const s = this.#groups.get(g);
       if (s) s.delete(id);
     }
-    this.items.delete(id);
+    this.#items.delete(id);
     this.#emit('itemRemoved', id);
     return true;
   }
@@ -377,7 +384,7 @@ class TinyAdvancedRaffle {
    * @param {number} weight
    */
   setBaseWeight(id, weight) {
-    const it = this.items.get(id);
+    const it = this.#items.get(id);
     if (!it) throw new Error('Item not found');
     it.baseWeight = Math.max(0, Number(weight) || 0);
     this.#emit('weightChanged', { id, weight: it.baseWeight });
@@ -388,11 +395,11 @@ class TinyAdvancedRaffle {
    * @returns {ItemData|null}
    */
   getItem(id) {
-    return this.items.get(id) ?? null;
+    return this.#items.get(id) ?? null;
   }
 
   listItems() {
-    return Array.from(this.items.values()).map((i) => ({ ...i }));
+    return Array.from(this.#items.values()).map((i) => ({ ...i }));
   }
 
   /* ===========================
@@ -405,7 +412,7 @@ class TinyAdvancedRaffle {
    * @param {WeightsCallback} fn
    */
   addGlobalModifier(fn) {
-    this.globalModifiers.push(fn);
+    this.#globalModifiers.push(fn);
     return fn;
   }
 
@@ -413,7 +420,7 @@ class TinyAdvancedRaffle {
    * @param {WeightsCallback} fn
    */
   removeGlobalModifier(fn) {
-    this.globalModifiers = this.globalModifiers.filter((x) => x !== fn);
+    this.#globalModifiers = this.#globalModifiers.filter((x) => x !== fn);
   }
 
   /**
@@ -423,7 +430,7 @@ class TinyAdvancedRaffle {
    * @param {number} [uses=1]
    */
   addTemporaryModifier(fn, uses = 1) {
-    this.temporaryModifiers.push({ fn, uses: Math.max(1, Math.floor(uses)) });
+    this.#temporaryModifiers.push({ fn, uses: Math.max(1, Math.floor(uses)) });
   }
 
   /**
@@ -432,7 +439,7 @@ class TinyAdvancedRaffle {
    * @param {WeightsCallback} ruleFn
    */
   addConditionalRule(ruleFn) {
-    this.conditionalRules.push(ruleFn);
+    this.#conditionalRules.push(ruleFn);
   }
 
   /* ===========================
@@ -449,9 +456,9 @@ class TinyAdvancedRaffle {
    * @param {number} [cfg.cap=Infinity]
    */
   configurePity(itemId, cfg) {
-    if (!this.items.has(itemId)) throw new Error('Item not found');
+    if (!this.#items.has(itemId)) throw new Error('Item not found');
     const { threshold, increment, cap = Infinity } = cfg;
-    this.pitySystems.set(itemId, {
+    this.#pitySystems.set(itemId, {
       threshold: Math.max(1, threshold),
       increment: Number(increment) || 0,
       cap: Number(cap) || Infinity,
@@ -464,7 +471,7 @@ class TinyAdvancedRaffle {
    * @param {string} itemId
    */
   resetPity(itemId) {
-    const p = this.pitySystems.get(itemId);
+    const p = this.#pitySystems.get(itemId);
     if (p) {
       p.counter = 0;
       p.currentAdd = 0;
@@ -479,14 +486,14 @@ class TinyAdvancedRaffle {
    * @param {string} itemId
    */
   excludeItem(itemId) {
-    this.exclusions.add(itemId);
+    this.#exclusions.add(itemId);
   }
 
   /**
    * @param {string} itemId
    */
   includeItem(itemId) {
-    this.exclusions.delete(itemId);
+    this.#exclusions.delete(itemId);
   }
 
   /**
@@ -494,10 +501,10 @@ class TinyAdvancedRaffle {
    * @returns {Set<string>}
    */
   _ensureGroup(name) {
-    let group = this.groups.get(name);
+    let group = this.#groups.get(name);
     if (!group) {
       group = new Set();
-      this.groups.set(name, group);
+      this.#groups.set(name, group);
     }
     return group;
   }
@@ -507,7 +514,7 @@ class TinyAdvancedRaffle {
    * @param {string} groupName
    */
   addToGroup(itemId, groupName) {
-    const it = this.items.get(itemId);
+    const it = this.#items.get(itemId);
     if (!it) throw new Error('Item missing');
     it.groups.add(groupName);
     this._ensureGroup(groupName).add(itemId);
@@ -518,9 +525,9 @@ class TinyAdvancedRaffle {
    * @param {string} groupName
    */
   removeFromGroup(itemId, groupName) {
-    const g = this.groups.get(groupName);
+    const g = this.#groups.get(groupName);
     if (g) g.delete(itemId);
-    const it = this.items.get(itemId);
+    const it = this.#items.get(itemId);
     if (it) it.groups.delete(groupName);
   }
 
@@ -541,12 +548,12 @@ class TinyAdvancedRaffle {
      * @type {Map<string, number>}
      */
     const weights = new Map();
-    for (const [id, it] of this.items) {
+    for (const [id, it] of this.#items) {
       weights.set(id, it.baseWeight);
     }
 
     // Apply global modifiers (they can return Map of id->delta or id->absolute)
-    for (const mod of this.globalModifiers) {
+    for (const mod of this.#globalModifiers) {
       const res = mod(weights, context);
       if (res instanceof Map) {
         for (const [id, delta] of res) {
@@ -556,7 +563,7 @@ class TinyAdvancedRaffle {
     }
 
     // Apply temporary modifiers
-    for (const tmp of this.temporaryModifiers) {
+    for (const tmp of this.#temporaryModifiers) {
       const res = tmp.fn(weights, context);
       if (res instanceof Map) {
         for (const [id, delta] of res) {
@@ -566,7 +573,7 @@ class TinyAdvancedRaffle {
     }
 
     // Apply conditional rules
-    for (const rule of this.conditionalRules) {
+    for (const rule of this.#conditionalRules) {
       const res = rule(weights, context);
       if (res instanceof Map) {
         for (const [id, delta] of res) {
@@ -576,7 +583,7 @@ class TinyAdvancedRaffle {
     }
 
     // Apply pity adjustments
-    for (const [itemId, pity] of this.pitySystems) {
+    for (const [itemId, pity] of this.#pitySystems) {
       if (!weights.has(itemId)) continue;
       // if counter >= threshold then add currentAdd
       if (pity.counter >= pity.threshold) {
@@ -588,7 +595,7 @@ class TinyAdvancedRaffle {
     }
 
     // Remove excluded items
-    for (const ex of this.exclusions) weights.delete(ex);
+    for (const ex of this.#exclusions) weights.delete(ex);
 
     // Zero or negative weights are removed
     for (const [id, w] of Array.from(weights.entries())) {
@@ -607,7 +614,7 @@ class TinyAdvancedRaffle {
     const arr = Array.from(weights.entries()).map(([id, w]) => ({ id, weight: w }));
     if (arr.length === 0) return [];
 
-    if (this.normalization === 'softmax') {
+    if (this.#normalization === 'softmax') {
       // simple softmax with temperature = 1
       const maxW = Math.max(...arr.map((a) => a.weight));
       const exps = arr.map((a) => Math.exp(a.weight - maxW));
@@ -641,18 +648,18 @@ class TinyAdvancedRaffle {
     const context = {
       previousDraws: opts.previousDraws ?? [],
       metadata: opts.metadata ?? {},
-      activeModifiers: [...this.temporaryModifiers],
+      activeModifiers: [...this.#temporaryModifiers],
     };
 
     const weights = this.computeEffectiveWeights(context);
     const dist = this._weightsToDistribution(weights);
     if (!dist.length) return null;
 
-    const r = this.rng();
+    const r = this.#rng();
     // find first cumulative >= r
     const chosen = dist.find((d) => r <= d.cumulative) ?? dist[dist.length - 1];
     // Update pity counters
-    for (const [itemId, pity] of this.pitySystems) {
+    for (const [itemId, pity] of this.#pitySystems) {
       if (itemId === chosen.id) {
         pity.counter = 0;
         pity.currentAdd = 0;
@@ -664,7 +671,7 @@ class TinyAdvancedRaffle {
     // decrement temporary modifiers uses
     this._consumeTemporaryModifiers();
 
-    const item = this.items.get(chosen.id);
+    const item = this.#items.get(chosen.id);
     if (!item) return null;
     const result = { id: item.id, label: item.label, meta: { ...item.meta }, prob: chosen.p };
     this.#emit('draw', result);
@@ -672,10 +679,10 @@ class TinyAdvancedRaffle {
   }
 
   _consumeTemporaryModifiers() {
-    for (let i = this.temporaryModifiers.length - 1; i >= 0; --i) {
-      const t = this.temporaryModifiers[i];
+    for (let i = this.#temporaryModifiers.length - 1; i >= 0; --i) {
+      const t = this.#temporaryModifiers[i];
       t.uses -= 1;
-      if (t.uses <= 0) this.temporaryModifiers.splice(i, 1);
+      if (t.uses <= 0) this.#temporaryModifiers.splice(i, 1);
     }
   }
 
@@ -701,11 +708,11 @@ class TinyAdvancedRaffle {
       const tempExcluded = new Set();
       for (let i = 0; i < count; ++i) {
         // temporarily add exclusions from tempExcluded
-        const savedEx = new Set(this.exclusions);
-        for (const ex of tempExcluded) this.exclusions.add(ex);
+        const savedEx = new Set(this.#exclusions);
+        for (const ex of tempExcluded) this.#exclusions.add(ex);
         const r = this.drawOne({ previousDraws: prev, metadata: opts.metadata });
         // restore exclusions
-        this.exclusions = savedEx;
+        this.#exclusions = savedEx;
         if (!r) break;
         results.push(r);
         tempExcluded.add(r.id);
@@ -766,10 +773,10 @@ class TinyAdvancedRaffle {
    */
   _snapshotState() {
     return {
-      items: JSON.parse(JSON.stringify(Array.from(this.items.entries()))),
-      pity: JSON.parse(JSON.stringify(Array.from(this.pitySystems.entries()))),
-      tempMods: JSON.stringify(this.temporaryModifiers),
-      exclusions: JSON.stringify(Array.from(this.exclusions)),
+      items: JSON.parse(JSON.stringify(Array.from(this.#items.entries()))),
+      pity: JSON.parse(JSON.stringify(Array.from(this.#pitySystems.entries()))),
+      tempMods: JSON.stringify(this.#temporaryModifiers),
+      exclusions: JSON.stringify(Array.from(this.#exclusions)),
     };
   }
 
@@ -777,11 +784,11 @@ class TinyAdvancedRaffle {
    * @param {SnapshotState} snapshot
    */
   _restoreState(snapshot) {
-    this.items = new Map(JSON.parse(JSON.stringify(snapshot.items)));
-    this.pitySystems = new Map(JSON.parse(JSON.stringify(snapshot.pity)));
+    this.#items = new Map(JSON.parse(JSON.stringify(snapshot.items)));
+    this.#pitySystems = new Map(JSON.parse(JSON.stringify(snapshot.pity)));
     // rehydrate sets where necessary (simple approach)
-    this.temporaryModifiers = JSON.parse(snapshot.tempMods);
-    this.exclusions = new Set(JSON.parse(snapshot.exclusions));
+    this.#temporaryModifiers = JSON.parse(snapshot.tempMods);
+    this.#exclusions = new Set(JSON.parse(snapshot.exclusions));
   }
 
   /* ===========================
@@ -793,17 +800,17 @@ class TinyAdvancedRaffle {
    */
   exportToJson() {
     const data = {
-      items: Array.from(this.items.values()).map((it) => ({
+      items: Array.from(this.#items.values()).map((it) => ({
         id: it.id,
         label: it.label,
         baseWeight: it.baseWeight,
         meta: it.meta,
         groups: Array.from(it.groups),
       })),
-      pity: Array.from(this.pitySystems.entries()),
-      exclusions: Array.from(this.exclusions),
-      normalization: this.normalization,
-      seed: this._seed,
+      pity: Array.from(this.#pitySystems.entries()),
+      exclusions: Array.from(this.#exclusions),
+      normalization: this.#normalization,
+      seed: this.#seed,
     };
     return JSON.stringify(data);
   }
@@ -814,9 +821,9 @@ class TinyAdvancedRaffle {
    */
   loadFromJson(json) {
     const data = JSON.parse(json);
-    this.items.clear();
+    this.#items.clear();
     for (const it of data.items) {
-      this.items.set(it.id, {
+      this.#items.set(it.id, {
         id: it.id,
         label: it.label,
         baseWeight: it.baseWeight,
@@ -826,16 +833,16 @@ class TinyAdvancedRaffle {
       });
       for (const g of it.groups || []) this._ensureGroup(g).add(it.id);
     }
-    this.pitySystems = new Map(data.pity || []);
-    this.exclusions = new Set(data.exclusions || []);
-    if (data.normalization) this.normalization = data.normalization;
+    this.#pitySystems = new Map(data.pity || []);
+    this.#exclusions = new Set(data.exclusions || []);
+    if (data.normalization) this.#normalization = data.normalization;
 
     if (typeof data.seed !== 'undefined' && typeof data.seed !== 'number' && data.seed !== null)
       throw new Error('');
 
     if (data.seed !== undefined) {
-      this._seed = data.seed;
-      if (this._seed !== null) this.rng = this._makeSeededRng(this._seed);
+      this.#seed = data.seed;
+      if (this.#seed !== null) this.#rng = this._makeSeededRng(this.#seed);
     }
   }
 
@@ -861,8 +868,8 @@ class TinyAdvancedRaffle {
    * @param {number|null} seed
    */
   setSeed(seed) {
-    this._seed = seed;
-    if (seed !== null) this.rng = this._makeSeededRng(seed);
+    this.#seed = seed;
+    if (seed !== null) this.#rng = this._makeSeededRng(seed);
   }
 
   /* ===========================
@@ -871,10 +878,10 @@ class TinyAdvancedRaffle {
 
   getConfigSummary() {
     return {
-      itemCount: this.items.size,
-      pityCount: this.pitySystems.size,
-      groups: Array.from(this.groups.keys()),
-      normalization: this.normalization,
+      itemCount: this.#items.size,
+      pityCount: this.#pitySystems.size,
+      groups: Array.from(this.#groups.keys()),
+      normalization: this.#normalization,
     };
   }
 }

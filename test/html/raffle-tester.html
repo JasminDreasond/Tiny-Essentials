@@ -374,6 +374,7 @@
 
       // create engine
       const engine = new TinyAdvancedRaffle({ seed: null, normalization: 'relative' });
+      window.tinyEngine = engine;
 
       // UI references
       const itemsTbody = document.querySelector('#itemsTable tbody');
