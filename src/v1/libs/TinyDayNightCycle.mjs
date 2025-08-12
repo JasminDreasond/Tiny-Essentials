@@ -78,6 +78,12 @@
  */
 class TinyDayNightCycle {
   /**
+   * Whether to automatically adjust `daySize`, `hourSize`, and `minuteSize` when one of them changes.
+   * @type {boolean}
+   */
+  #autoSizeAdjuste = true;
+
+  /**
    * Number of in-game seconds representing a full day.
    * @type {number}
    */
@@ -230,13 +236,41 @@ class TinyDayNightCycle {
   }
 
   /**
+   * Gets whether automatic size adjustment is enabled.
+   * @returns {boolean}
+   */
+  get autoSizeAdjuste() {
+    return this.#autoSizeAdjuste;
+  }
+
+  /**
+   * Sets whether automatic size adjustment is enabled.
+   * @param {boolean} value - `true` to keep the proportional relation between day, hour, and minute sizes; `false` to disable auto-adjustment.
+   * @throws {TypeError} If `value` is not a boolean.
+   */
+  set autoSizeAdjuste(value) {
+    if (typeof value !== 'boolean') throw new TypeError('autoSizeAdjuste must be a boolean.');
+    this.#autoSizeAdjuste = value;
+  }
+
+  /**
    * Sets the number of in-game seconds representing a full day.
-   * @param {number} value
+   * Keeps the proportion based on the current `hourSize` and `minuteSize` if `autoSizeAdjuste` is enabled.
+   * @param {number} value - Positive finite number representing seconds in a full day.
+   * @throws {Error} If `value` is not a positive finite number.
    */
   set daySize(value) {
     if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0)
       throw new Error('daySize must be a positive finite number.');
+
+    const hourRatio = this.#hourSize / this.#daySize;
+    const minuteRatio = this.#minuteSize / this.#daySize;
+
     this.#daySize = value;
+    if (this.#autoSizeAdjuste) {
+      this.#hourSize = value * hourRatio;
+      this.#minuteSize = value * minuteRatio;
+    }
   }
 
   /**
@@ -249,12 +283,22 @@ class TinyDayNightCycle {
 
   /**
    * Sets the number of in-game seconds representing a full hour.
-   * @param {number} value
+   * Keeps the proportion based on the current `daySize` and `minuteSize` if `autoSizeAdjuste` is enabled.
+   * @param {number} value - Positive finite number representing seconds in a full hour.
+   * @throws {Error} If `value` is not a positive finite number.
    */
   set hourSize(value) {
     if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0)
       throw new Error('hourSize must be a positive finite number.');
+
+    const dayRatio = this.#daySize / this.#hourSize;
+    const minuteRatio = this.#minuteSize / this.#hourSize;
+
     this.#hourSize = value;
+    if (this.#autoSizeAdjuste) {
+      this.#daySize = value * dayRatio;
+      this.#minuteSize = value * minuteRatio;
+    }
   }
 
   /**
@@ -267,12 +311,22 @@ class TinyDayNightCycle {
 
   /**
    * Sets the number of in-game seconds representing a full minute.
-   * @param {number} value
+   * Keeps the proportion based on the current `daySize` and `hourSize` if `autoSizeAdjuste` is enabled.
+   * @param {number} value - Positive finite number representing seconds in a full minute.
+   * @throws {Error} If `value` is not a positive finite number.
    */
   set minuteSize(value) {
     if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0)
       throw new Error('minuteSize must be a positive finite number.');
+
+    const hourRatio = this.#hourSize / this.#minuteSize;
+    const dayRatio = this.#daySize / this.#minuteSize;
+
     this.#minuteSize = value;
+    if (this.#autoSizeAdjuste) {
+      this.#hourSize = value * hourRatio;
+      this.#daySize = value * dayRatio;
+    }
   }
 
   /**
@@ -777,19 +831,24 @@ class TinyDayNightCycle {
   }
 
   /**
-   * Returns current time as object and string.
-   * @param {boolean} [withSeconds=false] - Whether to include seconds in the formatted string.
+   * Returns the current time as both an object and a formatted string,
+   * using the in-game time scale.
+   *
+   * @param {Object} [settings={}] - Optional configuration for time calculation.
+   * @param {number} [settings.hourSize=this.#hourSize] - Number of in-game seconds representing an hour.
+   * @param {number} [settings.minuteSize=this.#minuteSize] - Number of in-game seconds representing a minute.
+   * @param {boolean} [settings.withSeconds=false] - Whether to include seconds in the formatted string.
    * @returns {{
    *   hour: number,
    *   minute: number,
    *   second: number,
    *   formatted: string
-   * }} An object containing the hour, minute, second, and a formatted time string.
+   * }} An object containing the hour, minute, second, and the formatted time string.
    */
-  getTime(withSeconds = false) {
-    const hour = Math.floor(this.currentSeconds / this.#hourSize);
-    const minute = Math.floor((this.currentSeconds % this.#hourSize) / this.#minuteSize);
-    const second = this.currentSeconds % this.#minuteSize;
+  getTime({ withSeconds = false, hourSize = this.#hourSize, minuteSize = this.#minuteSize } = {}) {
+    const hour = Math.floor(this.currentSeconds / hourSize);
+    const minute = Math.floor((this.currentSeconds % hourSize) / minuteSize);
+    const second = this.currentSeconds % minuteSize;
 
     return {
       hour,

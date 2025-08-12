@@ -370,16 +370,29 @@ Initializes the cycle with provided start times for day and night.
 
 ---
 
-#### `getTime(withSeconds = false)`
+#### `getTime(settings)`
 
-⏳ Gets the current time as an object and formatted string.
+⏳ Gets the current time as an object and formatted string, using the in-game time scale.
 
 * **Parameters:**
 
-  * `withSeconds` (boolean) — Whether to include seconds in the formatted string. Default is `false`.
-* **Returns:**
+  * `settings` (object, optional) — Configuration object with the following optional properties:
 
-  * `{ hour: number, minute: number, second: number, formatted: string }`
+    * `hourSize` (`number`) — Number of in-game seconds representing an hour. Default: current internal `hourSize`.
+    * `minuteSize` (`number`) — Number of in-game seconds representing a minute. Default: current internal `minuteSize`.
+    * `withSeconds` (`boolean`) — Whether to include seconds in the formatted string. Default: `false`.
+
+* **Returns:**
+  An object with the following properties:
+
+  ```ts
+  {
+    hour: number;       // current hour (integer)
+    minute: number;     // current minute (integer)
+    second: number;     // current second (integer)
+    formatted: string;  // formatted time string, e.g. "14:05" or "14:05:30"
+  }
+  ```
 
 ---
 
@@ -645,17 +658,25 @@ Calculates time left until the next day or night period starts.
 
 ### ⏳ Day, Hour & Minute Sizes
 
+* **`autoSizeAdjuste`** — Stores whether proportional recalculation of `daySize`, `hourSize`, and `minuteSize` should occur automatically when one of them is updated.
+
+  * **Getter:** Returns whether automatic proportional size adjustment is enabled.
+  * **Setter:** Sets whether automatic proportional size adjustment is enabled.
+
 * **`daySize`** — Gets or sets the number of in-game seconds representing a full day.
+Keeps the proportion for `hourSize` and `minuteSize` if `autoSizeAdjuste` is enabled.
 
   * **Getter:** Returns the current value.
   * **Setter:** Accepts a positive finite number; throws an error otherwise.
 
 * **`hourSize`** — Gets or sets the number of in-game seconds representing a full hour.
+Keeps the proportion for `daySize` and `minuteSize` if `autoSizeAdjuste` is enabled.
 
   * **Getter:** Returns the current value.
   * **Setter:** Accepts a positive finite number; throws an error otherwise.
 
 * **`minuteSize`** — Gets or sets the number of in-game seconds representing a full minute.
+Keeps the proportion for `hourSize` and `daySize` if `autoSizeAdjuste` is enabled.
 
   * **Getter:** Returns the current value.
   * **Setter:** Accepts a positive finite number; throws an error otherwise.
