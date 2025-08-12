@@ -472,7 +472,7 @@ class TinyDayNightCycle {
   /**
    * Sets a custom configuration for the number of days in each month.
    * This allows for non-standard calendar systems.
-   * @param {number[]} value - An object where keys are month numbers (1-12) and values are the number of days.
+   * @param {number[]} value - An object where keys are month numbers and values are the number of days.
    */
   set monthDays(value) {
     this._checkDestroyed();
@@ -855,7 +855,7 @@ class TinyDayNightCycle {
       if (this.#currentDay > (this.#monthDays[this.#currentMonth - 1] || 30)) {
         this.#currentDay = 1;
         this.#currentMonth++;
-        if (this.#currentMonth > 12) {
+        if (this.#currentMonth > this.#monthDays.length) {
           this.#currentMonth = 1;
           this.#currentYear++;
         }
@@ -878,7 +878,7 @@ class TinyDayNightCycle {
       if (this.#currentDay < 1) {
         this.#currentMonth--;
         if (this.#currentMonth < 1) {
-          this.#currentMonth = 12;
+          this.#currentMonth = this.#monthDays.length;
           this.#currentYear--;
         }
         this.#currentDay = this.#monthDays[this.#currentMonth - 1] || 30;
