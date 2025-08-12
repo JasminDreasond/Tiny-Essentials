@@ -77,10 +77,22 @@
  * Time and date calculations are independent from the real world and can run at any speed.
  */
 class TinyDayNightCycle {
+  /**
+   * Number of in-game seconds representing a full day.
+   * @type {number}
+   */
   #daySize = 86400;
 
+  /**
+   * Number of in-game seconds representing a full hour.
+   * @type {number}
+   */
   #hourSize = 3600;
 
+  /**
+   * Number of in-game seconds representing a full minute.
+   * @type {number}
+   */
   #minuteSize = 60;
 
   /**
@@ -208,6 +220,60 @@ class TinyDayNightCycle {
    * @type {number}
    */
   #weatherTimeLeft = 0;
+
+  /**
+   * Gets the number of in-game seconds representing a full day.
+   * @returns {number}
+   */
+  get daySize() {
+    return this.#daySize;
+  }
+
+  /**
+   * Sets the number of in-game seconds representing a full day.
+   * @param {number} value
+   */
+  set daySize(value) {
+    if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0)
+      throw new Error('daySize must be a positive finite number.');
+    this.#daySize = value;
+  }
+
+  /**
+   * Gets the number of in-game seconds representing a full hour.
+   * @returns {number}
+   */
+  get hourSize() {
+    return this.#hourSize;
+  }
+
+  /**
+   * Sets the number of in-game seconds representing a full hour.
+   * @param {number} value
+   */
+  set hourSize(value) {
+    if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0)
+      throw new Error('hourSize must be a positive finite number.');
+    this.#hourSize = value;
+  }
+
+  /**
+   * Gets the number of in-game seconds representing a full minute.
+   * @returns {number}
+   */
+  get minuteSize() {
+    return this.#minuteSize;
+  }
+
+  /**
+   * Sets the number of in-game seconds representing a full minute.
+   * @param {number} value
+   */
+  set minuteSize(value) {
+    if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0)
+      throw new Error('minuteSize must be a positive finite number.');
+    this.#minuteSize = value;
+  }
 
   /**
    * Indicates whether this instance has been destroyed.
@@ -852,7 +918,10 @@ class TinyDayNightCycle {
     this._checkDestroyed();
     for (let i = 0; i < amount; i++) {
       this.#currentDay++;
-      if (this.#currentDay > (this.#monthDays[this.#currentMonth - 1] || 30)) {
+      const monthDays = this.#monthDays[this.#currentMonth - 1];
+      if (Number.isNaN(monthDays) || !Number.isFinite(monthDays))
+        throw new Error('Invalid month day count: monthDays must be a finite number.');
+      if (this.#currentDay > monthDays) {
         this.#currentDay = 1;
         this.#currentMonth++;
         if (this.#currentMonth > this.#monthDays.length) {

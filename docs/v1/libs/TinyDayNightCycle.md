@@ -643,6 +643,27 @@ Calculates time left until the next day or night period starts.
 
 ---
 
+### ⏳ Day, Hour & Minute Sizes
+
+* **`daySize`** — Gets or sets the number of in-game seconds representing a full day.
+
+  * **Getter:** Returns the current value.
+  * **Setter:** Accepts a positive finite number; throws an error otherwise.
+
+* **`hourSize`** — Gets or sets the number of in-game seconds representing a full hour.
+
+  * **Getter:** Returns the current value.
+  * **Setter:** Accepts a positive finite number; throws an error otherwise.
+
+* **`minuteSize`** — Gets or sets the number of in-game seconds representing a full minute.
+
+  * **Getter:** Returns the current value.
+  * **Setter:** Accepts a positive finite number; throws an error otherwise.
+
+> ⚠️ Changing these values dynamically will affect how in-game time progresses.
+
+---
+
 ### ⚠️ INTERNAL UTILITIES
 
 #### `_checkDestroyed()`
