@@ -611,7 +611,7 @@ class TinyAdvancedRaffle {
   }
 
   /**
-   * Replaces all items.
+   * Replaces all items (**and CLEAR OLD LIST**).
    * @param {Map<string, ItemData>} value - Map of item IDs to definitions.
    * @throws {TypeError} If structure is invalid.
    */
@@ -630,6 +630,7 @@ class TinyAdvancedRaffle {
       )
     )
       throw new TypeError('items must be a Map<string, ItemData> with valid item structures.');
+    this.clearList();
     this.#items = value;
   }
 
@@ -715,6 +716,8 @@ class TinyAdvancedRaffle {
     }
     this.#items.delete(id);
     this.#emit('itemRemoved', id);
+    this.resetFreq(id);
+    this.resetPity(id);
     return true;
   }
 
@@ -759,6 +762,8 @@ class TinyAdvancedRaffle {
    */
   clearList() {
     this.#items.clear();
+    this.clearFreqs();
+    this.clearPities();
   }
 
   /* ===========================
@@ -948,7 +953,7 @@ class TinyAdvancedRaffle {
    * Clears the draw frequency count for all items.
    * Effectively resets the internal frequency map to an empty state.
    */
-  resetAllFreq() {
+  clearFreqs() {
     this.#freq.clear();
   }
 
