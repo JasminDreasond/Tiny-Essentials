@@ -1,4 +1,10 @@
 import TinyEvents from './TinyEvents.mjs';
+
+/**
+ * Defines the available normalization strategies for probability weight calculations.
+ * @typedef {'relative' | 'softmax'} Normalization
+ */
+
 /**
  * Generates a pseudo-random number between 0 (inclusive) and 1 (exclusive).
  * @callback RngGenerator
@@ -15,6 +21,16 @@ import TinyEvents from './TinyEvents.mjs';
  * @property {TGroups} groups - The groups the item belongs to (Set<string> or string[]).
  * @property {boolean} locked - Whether the item is currently locked (excluded from draws).
  * @property {ItemMetadata} meta - Arbitrary metadata associated with the item.
+ */
+
+/**
+ * Represents the serialized state of the raffle system for export or persistence.
+ * @typedef {Object} ExportedJson
+ * @property {ItemDataGetter[]} items - Array of item objects in their exported form.
+ * @property {[string, Pity][]} pity - Array of tuples where the first element is the item ID and the second is its associated Pity system state.
+ * @property {string[]} exclusions - List of item IDs excluded from the draw.
+ * @property {Normalization} normalization - The normalization mode used in weight calculations.
+ * @property {number|null} seed - The RNG seed used for reproducibility, or null if no seed is set.
  */
 
 /**
@@ -291,7 +307,7 @@ class TinyAdvancedRaffle {
   /**
    * Normalization method used to adjust item weights before performing the draw.
    * Can define how the probabilities are scaled or balanced.
-   * @type {string}
+   * @type {Normalization}
    */
   #normalization;
 
@@ -366,13 +382,13 @@ class TinyAdvancedRaffle {
   }
 
   /**
-   * @returns {string}
+   * @returns {Normalization}
    */
   get normalization() {
     return this.#normalization;
   }
   /**
-   * @param {string} value
+   * @param {Normalization} value
    */
   set normalization(value) {
     if (typeof value !== 'string' || !value.trim()) {
@@ -576,7 +592,7 @@ class TinyAdvancedRaffle {
    * @param {Object} [opts]
    * @param {RngGenerator|null} [opts.rng=null] - Optional RNG function. If null a deterministic seedable RNG is created when seed is provided.
    * @param {number|null} [opts.seed=null] - Optional seed to create an internal PRNG (mulberry32).
-   * @param {string} [opts.normalization='relative'] - 'relative' (weights -> probabilities) or 'softmax' (temperature adjust).
+   * @param {Normalization} [opts.normalization='relative'] - 'relative' (weights -> probabilities) or 'softmax' (temperature adjust).
    */
   constructor(opts = {}) {
     const { rng = null, seed = null, normalization = 'relative' } = opts;
@@ -600,6 +616,7 @@ class TinyAdvancedRaffle {
    * @param {string} [opts.label] - human label
    * @param {ItemMetadata} [opts.meta] - arbitrary metadata
    * @param {string[]} [opts.groups] - group names to attach
+   * @returns {ItemData}
    */
   addItem(id, opts = {}) {
     const { weight = 1, label = id, meta = {}, groups = [] } = opts;
@@ -620,6 +637,7 @@ class TinyAdvancedRaffle {
 
   /**
    * @param {string} id
+   * @returns {boolean}
    */
   removeItem(id) {
     const it = this.#items.get(id);
@@ -736,7 +754,7 @@ class TinyAdvancedRaffle {
     }
   }
 
-  clearPities(){
+  clearPities() {
     this.#pitySystems.clear();
   }
 
@@ -847,8 +865,8 @@ class TinyAdvancedRaffle {
     // Apply pity adjustments
     for (const [itemId, pity] of this.#pitySystems) {
       if (!weights.has(itemId)) continue;
-      // if counter >= threshold then add currentAdd
-      if (pity.counter >= pity.threshold) {
+      // if counter > threshold then add currentAdd
+      if (pity.counter > pity.threshold) {
         // increase currentAdd each draw by increment but cap it
         pity.currentAdd = Math.min(pity.cap, pity.currentAdd + pity.increment);
         const weight = weights.get(itemId);
@@ -871,6 +889,7 @@ class TinyAdvancedRaffle {
    * Convert weights -> probability distribution according to this.normalization
    * returns array [{id, weight, p, cumulative}]
    * @param {Map<string, number>} weights
+   * @returns {{ id: string; weight: number; p: number; cumulative: number; }[]}
    */
   _weightsToDistribution(weights) {
     const arr = Array.from(weights.entries()).map(([id, w]) => ({ id, weight: w }));
@@ -1011,10 +1030,12 @@ class TinyAdvancedRaffle {
    * Simulate N draws and return frequency map and extras
    * @param {number} n
    * @param {Object} [opts]
+   * @returns {{ n: number; freq: Record<string, number>; }}
    */
   simulate(n = 1000, opts = {}) {
     // clone state necessary: pity counters and temporary modifiers may mutate, so we'll clone the full engine state
     const snapshot = this._snapshotState();
+    /** @type {Map<string, number>} */
     const freq = new Map();
     for (let i = 0; i < n; ++i) {
       const r = this.drawOne(opts);
@@ -1059,6 +1080,7 @@ class TinyAdvancedRaffle {
 
   /**
    * Export configuration to JSON (items, pity, groups, exclusions, normalization).
+   * @returns {ExportedJson}
    */
   exportToJson() {
     const data = {
@@ -1068,21 +1090,22 @@ class TinyAdvancedRaffle {
         baseWeight: it.baseWeight,
         meta: it.meta,
         groups: Array.from(it.groups),
+        locked: false,
       })),
       pity: Array.from(this.#pitySystems.entries()),
       exclusions: Array.from(this.#exclusions),
       normalization: this.#normalization,
       seed: this.#seed,
     };
-    return JSON.stringify(data);
+    return data;
   }
 
   /**
    * Load configuration from JSON produced by exportToJson
-   * @param {string} json
+   * @param {ExportedJson} data
    */
-  loadFromJson(json) {
-    const data = JSON.parse(json);
+  loadFromJson(data) {
+    if (!data) throw new Error('');
     this.clearList();
     for (const it of data.items) {
       this.#items.set(it.id, {
@@ -1114,6 +1137,7 @@ class TinyAdvancedRaffle {
 
   /**
    * @param {number} seed
+   * @returns {RngGenerator}
    */
   _makeSeededRng(seed) {
     // mulberry32
@@ -1123,19 +1147,6 @@ class TinyAdvancedRaffle {
       let r = Math.imul(t ^ (t >>> 15), 1 | t);
       r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
       return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
-    };
-  }
-
-  /* ===========================
-     Small helpers
-     =========================== */
-
-  getConfigSummary() {
-    return {
-      itemCount: this.#items.size,
-      pityCount: this.#pitySystems.size,
-      groups: Array.from(this.#groups.keys()),
-      normalization: this.#normalization,
     };
   }
 }

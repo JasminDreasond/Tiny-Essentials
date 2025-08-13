@@ -635,7 +635,7 @@
       // export/import json
       btnExportJson.addEventListener('click', () => {
         try {
-          jsonConfig.value = engine.exportToJson();
+          jsonConfig.value = JSON.stringify(engine.exportToJson());
           alert('Config exported to textarea below — copy and save.');
         } catch (err) {
           alert('Error exporting JSON: ' + err.message);
@@ -649,7 +649,7 @@
           return;
         }
         try {
-          engine.loadFromJson(txt);
+          engine.loadFromJson(JSON.parse(txt));
           renderItemsTable();
           updateDistribution();
           alert('Configuration loaded.');
