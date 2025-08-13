@@ -102,6 +102,20 @@ import TinyEvents from './TinyEvents.mjs';
  * @param {any} event - Metadata about the emitted event.
  */
 
+/**
+ * TinyAdvancedRaffle — A high-performance, fully customizable raffle system.
+ *
+ * This class provides advanced item drawing capabilities with:
+ * - Weighted probabilities and adjustable normalization modes (relative, softmax).
+ * - Seedable RNG for reproducible results.
+ * - Pity system support for fairness in repeated draws.
+ * - Temporary and permanent weight modifiers.
+ * - Item exclusions and group-based filtering.
+ * - JSON import/export for persistence and sharing.
+ * - Event-based architecture for monitoring and extending behaviors.
+ *
+ * @class
+ */
 class TinyAdvancedRaffle {
   #events = new TinyEvents();
 

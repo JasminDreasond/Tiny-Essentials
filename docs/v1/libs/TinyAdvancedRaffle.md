@@ -1,10 +1,31 @@
-# 🎯 Type Definitions & Core Concepts
+# 🎯 TinyAdvancedRaffle
+
+**TinyAdvancedRaffle** is an advanced, event-driven raffle system designed for complex probability-based selections.
+It goes beyond simple random draws by offering **weighted probabilities**, **normalization modes**, **pity mechanics**, **temporary modifiers**, and **seedable randomness** for reproducible outcomes.
+
+With **import/export in JSON format**, **group-based filtering**, and **exclusion lists**, it’s ideal for games, loot systems, prize distributions, and any scenario requiring **balanced yet configurable randomness**.
+
+✨ **Key Features**
+
+* 📊 **Weighted items** — Assign different probabilities to each item.
+* 🧮 **Normalization modes** — Choose between *relative* and *softmax*.
+* 🎯 **Pity system** — Guarantee fairness over multiple draws.
+* 🔄 **Temporary modifiers** — Adjust weights dynamically for limited draws.
+* 🗂️ **Group filtering** — Include or exclude items by groups.
+* 🔐 **Item exclusions** — Prevent specific items from being drawn.
+* 📦 **Import/export in JSON** — Save and restore raffle states easily.
+* ⏳ **Seedable RNG** — Ensure deterministic and repeatable results.
+* 📡 **Event-driven** — Hook into lifecycle events for customization.
+
+---
+
+## 🎯 Type Definitions & Core Concepts
 
 This section defines the **core data structures**, **callbacks**, and **types** used by the `TinyAdvancedRaffle` system.
 
 ---
 
-## 📊 Normalization Modes
+### 📊 Normalization Modes
 
 ```ts
 type Normalization = 'relative' | 'softmax';
@@ -17,7 +38,7 @@ Defines the available normalization strategies for **probability weight calculat
 
 ---
 
-## 🎲 RNG Generator
+### 🎲 RNG Generator
 
 ```ts
 type RngGenerator = () => number;
@@ -27,7 +48,7 @@ A callback that generates a pseudo-random number between `0` (inclusive) and `1`
 
 ---
 
-## ⏳ Temporary Weight Modifier
+### ⏳ Temporary Weight Modifier
 
 ```ts
 type TempModifier = {
@@ -43,7 +64,7 @@ Represents a **temporary weight modifier** that is applied for a **limited numbe
 
 ---
 
-## 📦 Item Data Template
+### 📦 Item Data Template
 
 ```ts
 type ItemDataTemplate<TGroups extends Set<string> | string[]> = {
@@ -69,7 +90,7 @@ Represents the **core data structure** for an item in the raffle system.
 
 ---
 
-## 💾 Exported Raffle State
+### 💾 Exported Raffle State
 
 ```ts
 type ExportedJson = {
@@ -85,14 +106,14 @@ Represents the **serialized state** of the raffle system for export or persisten
 
 ---
 
-## 🏷 Specialized Item Types
+### 🏷 Specialized Item Types
 
 * **`ItemData`** – Item where `groups` is a `Set<string>`.
 * **`ItemDataGetter`** – Item where `groups` is a `string[]`.
 
 ---
 
-## 🗃 Metadata Container
+### 🗃 Metadata Container
 
 ```ts
 type ItemMetadata = Record<string | number | symbol, any>;
@@ -102,7 +123,7 @@ Arbitrary key-value container for **extra item information**.
 
 ---
 
-## 🛠 Weight Calculation Context
+### 🛠 Weight Calculation Context
 
 ```ts
 type ComputeEffectiveWeightsContext = {
@@ -115,7 +136,7 @@ Provides **context** to weight modification functions during a draw.
 
 ---
 
-## ⚖ Weight Map
+### ⚖ Weight Map
 
 ```ts
 type Weights = Map<string, number>;
@@ -125,7 +146,7 @@ Maps **item IDs** to their computed **effective weight**.
 
 ---
 
-## 🎯 Pity System
+### 🎯 Pity System
 
 ```ts
 type Pity = {
@@ -141,7 +162,7 @@ Defines **pity mechanics** for guaranteeing item selection after repeated failur
 
 ---
 
-## 🧮 Weight Modifier Callback
+### 🧮 Weight Modifier Callback
 
 ```ts
 type WeightsCallback = (
@@ -154,7 +175,7 @@ A function that modifies or overrides computed weights **before** a draw.
 
 ---
 
-## 🎟 Draw Result
+### 🎟 Draw Result
 
 ```ts
 type DrawOne = {
@@ -169,7 +190,7 @@ Represents the **result** of a single draw.
 
 ---
 
-## 📡 Event Handler
+### 📡 Event Handler
 
 ```ts
 type handler = (payload: any, event: any) => void;
@@ -179,13 +200,13 @@ Generic event handler for message or signal reception.
 
 ---
 
-# 🎰 Core Properties, Getters & Setters
+## 🎰 Core Properties, Getters & Setters
 
 This section covers the **private fields**, **public getters/setters**, and **constructor** of the `TinyAdvancedRaffle` class.
 
 ---
 
-## 🔒 Private Fields
+### 🔒 Private Fields
 
 * **`#normalization`**: *(Normalization)* — Defines the strategy for scaling probabilities before a draw.
 
@@ -213,7 +234,7 @@ This section covers the **private fields**, **public getters/setters**, and **co
 
 ---
 
-## 📤 Public Getters
+### 📤 Public Getters
 
 | Getter               | Returns                          | Description                                      |
 | -------------------- | -------------------------------- | ------------------------------------------------ |
@@ -232,7 +253,7 @@ This section covers the **private fields**, **public getters/setters**, and **co
 
 ---
 
-## 📝 Public Setters
+### 📝 Public Setters
 
 Each setter **validates input types** and throws `TypeError` for invalid data.
 
@@ -249,7 +270,7 @@ Each setter **validates input types** and throws `TypeError` for invalid data.
 
 ---
 
-## 🏗 Constructor
+### 🏗 Constructor
 
 This section sets up all **core data structures** and provides strict **input validation** to keep the raffle system’s state consistent. 🎯
 
@@ -261,11 +282,11 @@ This section sets up all **core data structures** and provides strict **input va
 
 ---
 
-# 🎯 Item Management & Rules
+## 🎯 Item Management & Rules
 
-## 📦 Item Management
+### 📦 Item Management
 
-### `hasItem(itemId)`
+#### `hasItem(itemId)`
 
 Check if an item exists in the system.
 
@@ -277,7 +298,7 @@ Check if an item exists in the system.
 
 ---
 
-### `addItem(id, opts = {})`
+#### `addItem(id, opts = {})`
 
 Add or update an item in the raffle.
 
@@ -295,7 +316,7 @@ Add or update an item in the raffle.
 
 ---
 
-### `removeItem(id)`
+#### `removeItem(id)`
 
 Remove an item from the system.
 
@@ -307,7 +328,7 @@ Remove an item from the system.
 
 ---
 
-### `setBaseWeight(id, weight)`
+#### `setBaseWeight(id, weight)`
 
 Update the base weight of an existing item.
 
@@ -322,7 +343,7 @@ Update the base weight of an existing item.
 
 ---
 
-### `getItem(id)`
+#### `getItem(id)`
 
 Retrieve an item by ID.
 
@@ -334,7 +355,7 @@ Retrieve an item by ID.
 
 ---
 
-### `listItems()`
+#### `listItems()`
 
 List all items in the system.
 
@@ -342,15 +363,15 @@ List all items in the system.
 
 ---
 
-### `clearList()`
+#### `clearList()`
 
 Remove all items, frequencies, and pity systems.
 
 ---
 
-## 🛠 Modifiers & Rules
+### 🛠 Modifiers & Rules
 
-### Global Modifiers
+#### Global Modifiers
 
 Modifiers applied **persistently** to all draws.
 
@@ -360,7 +381,7 @@ Modifiers applied **persistently** to all draws.
 
 ---
 
-### Temporary Modifiers
+#### Temporary Modifiers
 
 Modifiers applied only for a **limited number of draws**.
 
@@ -370,7 +391,7 @@ Modifiers applied only for a **limited number of draws**.
 
 ---
 
-### Conditional Rules
+#### Conditional Rules
 
 Rules applied dynamically during each draw.
 
@@ -380,7 +401,7 @@ Rules applied dynamically during each draw.
 
 ---
 
-## 🍀 Pity System
+### 🍀 Pity System
 
 The **pity system** increases the chance of an item appearing if it hasn’t been drawn after a certain number of tries.
 
@@ -395,15 +416,15 @@ The **pity system** increases the chance of an item appearing if it hasn’t bee
 
 ---
 
-## 🚫 Exclusions & Groups
+### 🚫 Exclusions & Groups
 
-### Exclusions
+#### Exclusions
 
 * **`hasExclusion(itemId)`** — Check if excluded.
 * **`excludeItem(itemId)`** — Exclude from raffle.
 * **`includeItem(itemId)`** — Re-include in raffle.
 
-### Groups
+#### Groups
 
 * **`_ensureGroup(name)`** *(private)* — Create or get a group.
 * **`hasInGroup(itemId, groupName)`** — Check group membership.
@@ -412,18 +433,18 @@ The **pity system** increases the chance of an item appearing if it hasn’t bee
 
 ---
 
-# 🎲 Draw Core
+## 🎲 Draw Core
 
-## 🔄 Frequency Management
+### 🔄 Frequency Management
 
-### `clearFreqs()`
+#### `clearFreqs()`
 
 Clear the draw frequency count for **all** items.
 Effectively resets the internal frequency tracking map to an empty state.
 
 ---
 
-### `resetFreq(itemId)`
+#### `resetFreq(itemId)`
 
 Reset the draw frequency for a **specific item**.
 
@@ -436,9 +457,9 @@ Reset the draw frequency for a **specific item**.
 
 ---
 
-## ⚖️ Weight Computation
+### ⚖️ Weight Computation
 
-### `computeEffectiveWeights(context = {})`
+#### `computeEffectiveWeights(context = {})`
 
 Compute the **effective weights** of all items after applying:
 
@@ -463,7 +484,7 @@ Compute the **effective weights** of all items after applying:
 
 ---
 
-### `_weightsToDistribution(weights)`
+#### `_weightsToDistribution(weights)`
 
 Convert a **weights map** into a normalized **probability distribution array**.
 
@@ -491,9 +512,9 @@ Convert a **weights map** into a normalized **probability distribution array**.
 
 ---
 
-## 🎯 Drawing Items
+### 🎯 Drawing Items
 
-### `drawOne(opts = {})`
+#### `drawOne(opts = {})`
 
 Draw **one item** from the raffle considering all configurations, rules, and pity effects.
 
@@ -526,13 +547,13 @@ Draw **one item** from the raffle considering all configurations, rules, and pit
 
 ---
 
-### `_consumeTemporaryModifiers()` *(private)*
+#### `_consumeTemporaryModifiers()` *(private)*
 
 Decrements usage counts of **temporary modifiers** and removes them when their uses reach zero.
 
 ---
 
-### `drawMany(count = 1, opts = {})`
+#### `drawMany(count = 1, opts = {})`
 
 Draw multiple items in one operation.
 
@@ -556,9 +577,9 @@ Draw multiple items in one operation.
 
 ---
 
-## 📦 Save & Load (JSON)
+### 📦 Save & Load (JSON)
 
-### 📤 `exportToJson()`
+#### 📤 `exportToJson()`
 
 Exports the current configuration into a **JSON-serializable object**, capturing:
 
@@ -576,7 +597,7 @@ This method is ideal for saving and restoring the raffle configuration between s
 
 ---
 
-### 📥 `loadFromJson(data)`
+#### 📥 `loadFromJson(data)`
 
 Loads configuration data previously generated by [`exportToJson()`](#-exporttojson).
 
@@ -597,7 +618,7 @@ Loads configuration data previously generated by [`exportToJson()`](#-exporttojs
 
 ---
 
-## 🪞 `clone()`
+### 🪞 `clone()`
 
 Creates a **deep clone** of the current raffle instance.
 
@@ -613,9 +634,9 @@ Creates a **deep clone** of the current raffle instance.
 
 ---
 
-## 🎲 RNG: Seedable (mulberry32)
+### 🎲 RNG: Seedable (mulberry32)
 
-### 🔢 `_makeSeededRng(seed)`
+#### 🔢 `_makeSeededRng(seed)`
 
 Creates a **deterministic pseudo-random number generator (PRNG)** using the **mulberry32** algorithm.
 
