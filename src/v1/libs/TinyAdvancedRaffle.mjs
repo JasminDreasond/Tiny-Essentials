@@ -375,39 +375,47 @@ class TinyAdvancedRaffle {
   /* -------------------- GETTERS & SETTERS -------------------- */
 
   /**
-   * @returns {number}
+   * Returns the total number of registered items in the raffle.
+   * @returns {number} Total count of items.
    */
   get size() {
     return this.#items.size;
   }
 
   /**
-   * @returns {Normalization}
+   * Gets the current probability normalization strategy.
+   * @returns {Normalization} Current normalization mode.
    */
   get normalization() {
     return this.#normalization;
   }
+
   /**
-   * @param {Normalization} value
+   * Sets the probability normalization strategy.
+   * @param {Normalization} value - Accepted values: `'relative'` or `'softmax'`.
+   * @throws {TypeError} If value is not a non-empty string.
    */
   set normalization(value) {
     if (typeof value !== 'string' || !value.trim()) {
       throw new TypeError(
-        "normalization must be a non-empty string (e.g., 'none', 'sum', 'max', 'min').",
+        "normalization must be a non-empty string (e.g., 'relative', 'softmax').",
       );
     }
     this.#normalization = value;
   }
 
   /**
-   * @returns {number|null}
+   * Gets the current RNG seed value, if any.
+   * @returns {number|null} Current seed or `null` if RNG is not seeded.
    */
   get seed() {
     return this.#seed;
   }
 
   /**
-   * @param {number|null} value
+   * Sets the RNG seed for deterministic randomization.
+   * @param {number|null} value - Finite number or `null` to disable seeding.
+   * @throws {TypeError} If not `null` or a finite number.
    */
   set seed(value) {
     if (value !== null && (typeof value !== 'number' || !Number.isFinite(value)))
@@ -417,14 +425,17 @@ class TinyAdvancedRaffle {
   }
 
   /**
-   * @returns {WeightsCallback[]}
+   * Gets all global weight modifier callbacks.
+   * @returns {WeightsCallback[]} Array of registered global modifier functions.
    */
   get globalModifiers() {
     return [...this.#globalModifiers];
   }
 
   /**
-   * @param {WeightsCallback[]} value
+   * Replaces all global weight modifier callbacks.
+   * @param {WeightsCallback[]} value - Array of modifier functions.
+   * @throws {TypeError} If not an array of functions.
    */
   set globalModifiers(value) {
     if (!Array.isArray(value) || !value.every((fn) => typeof fn === 'function'))
@@ -433,14 +444,17 @@ class TinyAdvancedRaffle {
   }
 
   /**
-   * @returns {{ fn: WeightsCallback, uses: number }[]}
+   * Gets all temporary modifiers with usage counters.
+   * @returns {{ fn: WeightsCallback, uses: number }[]} Array of temporary modifier entries.
    */
   get temporaryModifiers() {
     return [...this.#temporaryModifiers];
   }
 
   /**
-   * @param {{ fn: WeightsCallback, uses: number }[]} value
+   * Replaces all temporary modifiers.
+   * @param {{ fn: WeightsCallback, uses: number }[]} value - Each object must have a function and a positive integer usage count.
+   * @throws {TypeError} If structure is invalid.
    */
   set temporaryModifiers(value) {
     if (
@@ -456,14 +470,17 @@ class TinyAdvancedRaffle {
   }
 
   /**
-   * @returns {WeightsCallback[]}
+   * Gets all conditional rule callbacks.
+   * @returns {WeightsCallback[]} Array of conditional rule functions.
    */
   get conditionalRules() {
     return [...this.#conditionalRules];
   }
 
   /**
-   * @param {WeightsCallback[]} value
+   * Replaces all conditional rule callbacks.
+   * @param {WeightsCallback[]} value - Array of functions.
+   * @throws {TypeError} If not an array of functions.
    */
   set conditionalRules(value) {
     if (!Array.isArray(value) || !value.every((fn) => typeof fn === 'function'))
@@ -472,14 +489,17 @@ class TinyAdvancedRaffle {
   }
 
   /**
-   * @returns {Record<string, Pity>}
+   * Gets a shallow copy of all configured pity systems.
+   * @returns {Record<string, Pity>} Object keyed by system name.
    */
   get pitySystems() {
     return Object.fromEntries(this.#pitySystems);
   }
 
   /**
-   * @param {Map<string, Pity>} value
+   * Replaces all pity systems.
+   * @param {Map<string, Pity>} value - Map of pity systems with numeric fields.
+   * @throws {TypeError} If structure is invalid.
    */
   set pitySystems(value) {
     if (
@@ -499,14 +519,17 @@ class TinyAdvancedRaffle {
   }
 
   /**
-   * @returns {string[]}
+   * Gets a copy of all exclusion IDs.
+   * @returns {string[]} Array of item IDs excluded from draws.
    */
   get exclusions() {
     return Array.from(this.#exclusions);
   }
 
   /**
-   * @param {Set<string>} value
+   * Replaces all exclusion IDs.
+   * @param {Set<string>} value - Set of excluded item IDs.
+   * @throws {TypeError} If not a Set of strings.
    */
   set exclusions(value) {
     if (!(value instanceof Set) || ![...value].every((v) => typeof v === 'string'))
@@ -515,7 +538,8 @@ class TinyAdvancedRaffle {
   }
 
   /**
-   * @returns {Record<string, string[]>}
+   * Gets all group definitions.
+   * @returns {Record<string, string[]>} Object where each key is a group name and value is an array of item IDs.
    */
   get groups() {
     /** @type {Record<string, string[]>} */
@@ -525,7 +549,9 @@ class TinyAdvancedRaffle {
   }
 
   /**
-   * @param {Map<string, Set<string>>} value
+   * Replaces all group definitions.
+   * @param {Map<string, Set<string>>} value - Map of group names to item ID sets.
+   * @throws {TypeError} If not a valid Map<string, Set<string>>.
    */
   set groups(value) {
     if (
@@ -539,14 +565,17 @@ class TinyAdvancedRaffle {
   }
 
   /**
-   * @returns {RngGenerator}
+   * Gets the current RNG function.
+   * @returns {RngGenerator} Function returning a floating-point number in [0, 1).
    */
   get rng() {
     return this.#rng;
   }
 
   /**
-   * @param {RngGenerator} value
+   * Sets the RNG function.
+   * @param {RngGenerator} value - Function returning a number between 0 and 1.
+   * @throws {TypeError} If not a valid function.
    */
   set rng(value) {
     if (typeof value !== 'function' || typeof value() !== 'number')
@@ -555,7 +584,8 @@ class TinyAdvancedRaffle {
   }
 
   /**
-   * @returns {Record<string, ItemDataGetter>}
+   * Gets all item definitions with group names expanded to arrays.
+   * @returns {Record<string, ItemDataGetter>} Object keyed by item ID.
    */
   get items() {
     /** @type {Record<string, ItemDataGetter>} */
@@ -567,7 +597,9 @@ class TinyAdvancedRaffle {
   }
 
   /**
-   * @param {Map<string, ItemData>} value
+   * Replaces all items.
+   * @param {Map<string, ItemData>} value - Map of item IDs to definitions.
+   * @throws {TypeError} If structure is invalid.
    */
   set items(value) {
     if (
@@ -588,11 +620,11 @@ class TinyAdvancedRaffle {
   }
 
   /**
-   * Create a new AdvancedRaffle engine.
-   * @param {Object} [opts]
-   * @param {RngGenerator|null} [opts.rng=null] - Optional RNG function. If null a deterministic seedable RNG is created when seed is provided.
-   * @param {number|null} [opts.seed=null] - Optional seed to create an internal PRNG (mulberry32).
-   * @param {Normalization} [opts.normalization='relative'] - 'relative' (weights -> probabilities) or 'softmax' (temperature adjust).
+   * Creates a new AdvancedRaffle instance.
+   * @param {Object} [opts] - Optional configuration.
+   * @param {RngGenerator|null} [opts.rng=null] - Custom RNG function. If null, an internal seeded RNG is used when a seed is provided.
+   * @param {number|null} [opts.seed=null] - Optional seed for deterministic results.
+   * @param {Normalization} [opts.normalization='relative'] - Probability normalization mode.
    */
   constructor(opts = {}) {
     const { rng = null, seed = null, normalization = 'relative' } = opts;
@@ -610,16 +642,34 @@ class TinyAdvancedRaffle {
 
   /**
    * Add or update an item.
-   * @param {string} id
-   * @param {Object} opts
-   * @param {number} [opts.weight=1] - base relative weight
-   * @param {string} [opts.label] - human label
-   * @param {ItemMetadata} [opts.meta] - arbitrary metadata
-   * @param {string[]} [opts.groups] - group names to attach
+   * @param {string} id - Unique item identifier.
+   * @param {Object} [opts={}] - Item configuration options.
+   * @param {number} [opts.weight=1] - Base relative weight (must be >= 0).
+   * @param {string} [opts.label] - Human-readable label for the item.
+   * @param {ItemMetadata} [opts.meta={}] - Arbitrary metadata for the item.
+   * @param {string[]|Set<string>} [opts.groups=[]] - Group names to attach.
    * @returns {ItemData}
+   * @throws {TypeError} If any parameter has an invalid type.
    */
   addItem(id, opts = {}) {
-    const { weight = 1, label = id, meta = {}, groups = [] } = opts;
+    if (typeof id !== 'string' || !id.trim()) throw new TypeError('id must be a non-empty string');
+    if (typeof opts !== 'object' || opts === null) throw new TypeError('opts must be an object');
+    let { weight = 1, label = id, meta = {}, groups = [] } = opts;
+    if (typeof weight !== 'number' || !Number.isFinite(weight) || weight < 0)
+      throw new TypeError('weight must be a non-negative number');
+    if (typeof label !== 'string') throw new TypeError('label must be a string');
+    if (typeof meta !== 'object' || meta === null) throw new TypeError('meta must be an object');
+
+    // Allow both arrays and sets for groups
+    if (!(Array.isArray(groups) || groups instanceof Set))
+      throw new TypeError('groups must be an array or a Set of strings');
+    groups = Array.isArray(groups) ? groups : [...groups];
+    for (const g of groups) {
+      if (typeof g !== 'string') {
+        throw new TypeError('groups must contain only strings');
+      }
+    }
+
     const entry = {
       id,
       label,
@@ -636,10 +686,13 @@ class TinyAdvancedRaffle {
   }
 
   /**
-   * @param {string} id
-   * @returns {boolean}
+   * Remove an item from the system.
+   * @param {string} id - The unique item identifier to remove.
+   * @returns {boolean} True if the item was removed, false if it did not exist.
+   * @throws {TypeError} If id is not a string.
    */
   removeItem(id) {
+    if (typeof id !== 'string' || !id.trim()) throw new TypeError('id must be a non-empty string');
     const it = this.#items.get(id);
     if (!it) return false;
     for (const g of it.groups) {
@@ -652,10 +705,16 @@ class TinyAdvancedRaffle {
   }
 
   /**
-   * @param {string} id
-   * @param {number} weight
+   * Set a new base weight for an item.
+   * @param {string} id - The unique item identifier.
+   * @param {number} weight - The new base weight (must be >= 0).
+   * @throws {Error} If the item is not found.
+   * @throws {TypeError} If weight is invalid.
    */
   setBaseWeight(id, weight) {
+    if (typeof id !== 'string' || !id.trim()) throw new TypeError('id must be a non-empty string');
+    if (typeof weight !== 'number' || !Number.isFinite(weight) || weight < 0)
+      throw new TypeError('weight must be a non-negative number');
     const it = this.#items.get(id);
     if (!it) throw new Error('Item not found');
     it.baseWeight = Math.max(0, Number(weight) || 0);
@@ -663,17 +722,27 @@ class TinyAdvancedRaffle {
   }
 
   /**
-   * @param {string} id
-   * @returns {ItemData|null}
+   * Get an item by its ID.
+   * @param {string} id - The unique item identifier.
+   * @returns {ItemData|null} The item data, or null if not found.
+   * @throws {TypeError} If id is not a string.
    */
   getItem(id) {
+    if (typeof id !== 'string' || !id.trim()) throw new TypeError('id must be a non-empty string');
     return this.#items.get(id) ?? null;
   }
 
+  /**
+   * List all items as cloned objects.
+   * @returns {ItemData[]} Array of cloned item objects.
+   */
   listItems() {
     return Array.from(this.#items.values()).map((i) => ({ ...i }));
   }
 
+  /**
+   * Clear all items from the system.
+   */
   clearList() {
     this.#items.clear();
   }
@@ -684,37 +753,49 @@ class TinyAdvancedRaffle {
 
   /**
    * Add a persistent modifier callback.
-   * The callback receives (weightsMap, context) and must return a Map of overrides/additions or modifications.
-   * @param {WeightsCallback} fn
+   * The callback receives `(weightsMap, context)` and must return a Map of overrides/additions or modifications.
+   * @param {WeightsCallback} fn - Modifier callback function.
+   * @throws {TypeError} If `fn` is not a function.
    */
   addGlobalModifier(fn) {
+    if (typeof fn !== 'function') throw new TypeError('fn must be a function');
     this.#globalModifiers.push(fn);
-    return fn;
   }
 
   /**
-   * @param {WeightsCallback} fn
+   * Remove a persistent modifier callback.
+   * @param {WeightsCallback} fn - Modifier callback to remove.
+   * @throws {TypeError} If `fn` is not a function.
    */
   removeGlobalModifier(fn) {
+    if (typeof fn !== 'function') throw new TypeError('fn must be a function');
     this.#globalModifiers = this.#globalModifiers.filter((x) => x !== fn);
   }
 
   /**
    * Add a temporary modifier applied to the next `uses` draws (default 1).
-   * The modifier returns same as global modifier.
-   * @param {WeightsCallback} fn
-   * @param {number} [uses=1]
+   * The modifier returns the same structure as a global modifier.
+   * @param {WeightsCallback} fn - Temporary modifier callback.
+   * @param {number} [uses=1] - Number of draws the modifier will be active for.
+   * @throws {TypeError} If `fn` is not a function.
+   * @throws {TypeError} If `uses` is not a number.
    */
   addTemporaryModifier(fn, uses = 1) {
+    if (typeof fn !== 'function') throw new TypeError('fn must be a function');
+    if (typeof uses !== 'number' || Number.isNaN(uses))
+      throw new TypeError('uses must be a number');
     this.#temporaryModifiers.push({ fn, uses: Math.max(1, Math.floor(uses)) });
   }
 
   /**
-   * Add a conditional rule (applied each draw); receives context {previousDraws, activeModifiers, metadata}.
-   * Should return a Map of itemId => deltaWeight (can be positive or negative).
-   * @param {WeightsCallback} ruleFn
+   * Add a conditional rule (applied each draw).
+   * Receives context `{previousDraws, activeModifiers, metadata}`.
+   * Should return a Map of `itemId => deltaWeight` (can be positive or negative).
+   * @param {WeightsCallback} ruleFn - Conditional rule function.
+   * @throws {TypeError} If `ruleFn` is not a function.
    */
   addConditionalRule(ruleFn) {
+    if (typeof ruleFn !== 'function') throw new TypeError('ruleFn must be a function');
     this.#conditionalRules.push(ruleFn);
   }
 
@@ -724,16 +805,24 @@ class TinyAdvancedRaffle {
 
   /**
    * Configure pity for an item.
-   * If item fails to appear for `threshold` draws, add `increment` to its base weight each draw until `cap` is reached.
-   * @param {string} itemId
-   * @param {Object} cfg
-   * @param {number} cfg.threshold
-   * @param {number} cfg.increment
-   * @param {number} [cfg.cap=Infinity]
+   * If the item fails to appear for `threshold` draws, add `increment` to its base weight each draw until `cap` is reached.
+   * @param {string} itemId - ID of the item to configure.
+   * @param {Object} cfg - Pity configuration.
+   * @param {number} cfg.threshold - Number of failed draws before applying pity.
+   * @param {number} cfg.increment - Additional weight to add each draw after threshold.
+   * @param {number} [cfg.cap=Infinity] - Maximum additional weight allowed.
+   * @throws {Error} If the item does not exist.
+   * @throws {TypeError} If parameters are invalid.
    */
   configurePity(itemId, cfg) {
     if (!this.#items.has(itemId)) throw new Error('Item not found');
+    if (typeof cfg !== 'object' || cfg === null) throw new TypeError('cfg must be an object');
     const { threshold, increment, cap = Infinity } = cfg;
+    if (typeof threshold !== 'number' || threshold <= 0)
+      throw new TypeError('threshold must be a positive number');
+    if (typeof increment !== 'number') throw new TypeError('increment must be a number');
+    if (typeof cap !== 'number') throw new TypeError('cap must be a number');
+
     this.#pitySystems.set(itemId, {
       threshold: Math.max(1, threshold),
       increment: Number(increment) || 0,
@@ -744,9 +833,13 @@ class TinyAdvancedRaffle {
   }
 
   /**
-   * @param {string} itemId
+   * Reset pity counters for a given item.
+   * @param {string} itemId - ID of the item.
+   * @throws {TypeError} If itemId is not a string.
    */
   resetPity(itemId) {
+    if (typeof itemId !== 'string' || !itemId.trim())
+      throw new TypeError('itemId must be a non-empty string');
     const p = this.#pitySystems.get(itemId);
     if (p) {
       p.counter = 0;
@@ -754,6 +847,9 @@ class TinyAdvancedRaffle {
     }
   }
 
+  /**
+   * Remove all pity configurations.
+   */
   clearPities() {
     this.#pitySystems.clear();
   }
@@ -763,24 +859,34 @@ class TinyAdvancedRaffle {
      =========================== */
 
   /**
-   * @param {string} itemId
+   * Exclude an item from the raffle.
+   * @param {string} itemId - ID of the item.
+   * @throws {TypeError} If `itemId` is not a string.
    */
   excludeItem(itemId) {
+    if (typeof itemId !== 'string') throw new TypeError('itemId must be a string');
     this.#exclusions.add(itemId);
   }
 
   /**
-   * @param {string} itemId
+   * Re-include an item in the raffle.
+   * @param {string} itemId - ID of the item.
+   * @throws {TypeError} If `itemId` is not a string.
    */
   includeItem(itemId) {
+    if (typeof itemId !== 'string') throw new TypeError('itemId must be a string');
     this.#exclusions.delete(itemId);
   }
 
   /**
-   * @param {string} name
-   * @returns {Set<string>}
+   * Ensure a group exists, creating it if necessary.
+   * @param {string} name - Group name.
+   * @returns {Set<string>} The group set.
+   * @throws {TypeError} If `name` is not a string.
+   * @private
    */
   _ensureGroup(name) {
+    if (typeof name !== 'string') throw new TypeError('name must be a string');
     let group = this.#groups.get(name);
     if (!group) {
       group = new Set();
@@ -790,10 +896,15 @@ class TinyAdvancedRaffle {
   }
 
   /**
-   * @param {string} itemId
-   * @param {string} groupName
+   * Add an item to a group.
+   * @param {string} itemId - ID of the item.
+   * @param {string} groupName - Name of the group.
+   * @throws {Error} If the item does not exist.
+   * @throws {TypeError} If parameters are not strings.
    */
   addToGroup(itemId, groupName) {
+    if (typeof itemId !== 'string' || typeof groupName !== 'string')
+      throw new TypeError('itemId and groupName must be strings');
     const it = this.#items.get(itemId);
     if (!it) throw new Error('Item missing');
     it.groups.add(groupName);
@@ -801,10 +912,14 @@ class TinyAdvancedRaffle {
   }
 
   /**
-   * @param {string} itemId
-   * @param {string} groupName
+   * Remove an item from a group.
+   * @param {string} itemId - ID of the item.
+   * @param {string} groupName - Name of the group.
+   * @throws {TypeError} If parameters are not strings.
    */
   removeFromGroup(itemId, groupName) {
+    if (typeof itemId !== 'string' || typeof groupName !== 'string')
+      throw new TypeError('itemId and groupName must be strings');
     const g = this.#groups.get(groupName);
     if (g) g.delete(itemId);
     const it = this.#items.get(itemId);
@@ -816,13 +931,18 @@ class TinyAdvancedRaffle {
      =========================== */
 
   /**
-   * Compute effective weights after applying modifiers, rules and pity.
-   * Returns Map(itemId -> effectiveWeight)
-   * context: {previousDraws, metadata}
-   * @param {ComputeEffectiveWeightsContext} [context={}]
-   * @returns {Map<string, number>}
+   * Compute effective weights after applying modifiers, rules, and pity adjustments.
+   * Starts with base weights, then applies global, temporary, conditional modifiers,
+   * pity increments, removes exclusions, and removes zero or negative weights.
+   *
+   * @param {ComputeEffectiveWeightsContext} [context={}] - Optional context with previous draws and metadata.
+   * @returns {Map<string, number>} A Map of itemId to effective weight.
+   * @throws {TypeError} If `context` is provided but is not an object.
    */
   computeEffectiveWeights(context = {}) {
+    if (typeof context !== 'object' || context === null)
+      throw new TypeError('context must be an object if provided');
+
     /**
      * Start from base weights
      * @type {Map<string, number>}
@@ -886,12 +1006,17 @@ class TinyAdvancedRaffle {
   }
 
   /**
-   * Convert weights -> probability distribution according to this.normalization
-   * returns array [{id, weight, p, cumulative}]
-   * @param {Map<string, number>} weights
-   * @returns {{ id: string; weight: number; p: number; cumulative: number; }[]}
+   * Convert a map of weights into a probability distribution array,
+   * normalized according to the current normalization method.
+   * Returns array with each element containing id, weight, probability (p),
+   * and cumulative probability (for sampling).
+   *
+   * @param {Map<string, number>} weights - Map of item IDs to their weights.
+   * @returns {Array<{id: string, weight: number, p: number, cumulative: number}>} Distribution array.
+   * @throws {TypeError} If `weights` is not a Map.
    */
   _weightsToDistribution(weights) {
+    if (!(weights instanceof Map)) throw new TypeError('weights must be a Map<string, number>');
     const arr = Array.from(weights.entries()).map(([id, w]) => ({ id, weight: w }));
     if (arr.length === 0) return [];
 
@@ -919,13 +1044,17 @@ class TinyAdvancedRaffle {
   }
 
   /**
-   * Draw a single item using current configuration.
-   * @param {Object} [opts]
-   * @param {DrawOne[]} [opts.previousDraws=[]] - history to pass to conditional rules / pity
-   * @param {ItemMetadata} [opts.metadata={}] - arbitrary metadata passed to conditional rules
-   * @returns {DrawOne|null} - {id, label, meta, prob} or null if no items
+   * Draw a single item from the raffle using current configuration.
+   * Uses previous draws and metadata to influence conditional rules and pity.
+   *
+   * @param {Object} [opts={}] - Optional draw options.
+   * @param {DrawOne[]} [opts.previousDraws=[]] - History of previous draws.
+   * @param {ItemMetadata} [opts.metadata={}] - Arbitrary metadata for conditional rules.
+   * @returns {DrawOne|null} The drawn item object or null if no items available.
+   * @throws {TypeError} If `opts` is not an object.
    */
   drawOne(opts = {}) {
+    if (typeof opts !== 'object' || opts === null) throw new TypeError('opts must be an object');
     const context = {
       previousDraws: opts.previousDraws ?? [],
       metadata: opts.metadata ?? {},
@@ -959,6 +1088,11 @@ class TinyAdvancedRaffle {
     return result;
   }
 
+  /**
+   * Internal helper to decrement usage counts of temporary modifiers,
+   * removing them when their uses reach zero.
+   * @private
+   */
   _consumeTemporaryModifiers() {
     for (let i = this.#temporaryModifiers.length - 1; i >= 0; --i) {
       const t = this.#temporaryModifiers[i];
@@ -968,16 +1102,23 @@ class TinyAdvancedRaffle {
   }
 
   /**
-   * Draw multiple items with various options.
-   * @param {number} count
-   * @param {Object} [opts]
-   * @param {ItemMetadata} [opts.metadata={}]
-   * @param {boolean} [opts.withReplacement=true]
-   * @param {boolean} [opts.ensureUnique=false] - attempt to make results unique in a single multi-draw
-   * @param {DrawOne[]} [opts.previousDraws=[]] - passed to compute rules/pity
-   * @returns {DrawOne[]} list of results same as drawOne
+   * Draw multiple items from the raffle with configurable options.
+   *
+   * @param {number} count - Number of items to draw.
+   * @param {Object} [opts={}] - Optional parameters.
+   * @param {ItemMetadata} [opts.metadata={}] - Metadata passed to conditional rules.
+   * @param {boolean} [opts.withReplacement=true] - Whether to allow the same item multiple times.
+   * @param {boolean} [opts.ensureUnique=false] - If true, attempts to ensure unique results in multi-draws.
+   * @param {DrawOne[]} [opts.previousDraws=[]] - Previous draw history for context.
+   * @returns {DrawOne[]} List of drawn items.
+   * @throws {TypeError} If `count` is not a positive integer.
+   * @throws {TypeError} If `opts` is not an object.
    */
   drawMany(count = 1, opts = {}) {
+    if (!Number.isInteger(count) || count <= 0)
+      throw new TypeError('count must be a positive integer');
+    if (typeof opts !== 'object' || opts === null) throw new TypeError('opts must be an object');
+
     const withReplacement = opts.withReplacement ?? true;
     const ensureUnique = opts.ensureUnique ?? false;
     const results = [];
@@ -1027,12 +1168,21 @@ class TinyAdvancedRaffle {
      =========================== */
 
   /**
-   * Simulate N draws and return frequency map and extras
-   * @param {number} n
-   * @param {Object} [opts]
-   * @returns {{ n: number; freq: Record<string, number>; }}
+   * Simulate `n` draws and return a frequency map of results.
+   * The engine state (pity counters, temporary modifiers) is cloned and restored after simulation
+   * so the current state is not affected.
+   *
+   * @param {number} n - Number of draws to simulate (must be positive integer).
+   * @param {Object} [opts={}] - Optional draw options to pass to `drawOne`.
+   * @returns {{ n: number; freq: Record<string, number>; }} An object with total draws and frequency per item id.
+   * @throws {TypeError} If `n` is not a positive integer.
+   * @throws {TypeError} If `opts` is provided but is not an object.
    */
   simulate(n = 1000, opts = {}) {
+    if (!Number.isInteger(n) || n <= 0) throw new TypeError('n must be a positive integer');
+    if (typeof opts !== 'object' || opts === null)
+      throw new TypeError('opts must be an object if provided');
+
     // clone state necessary: pity counters and temporary modifiers may mutate, so we'll clone the full engine state
     const snapshot = this._snapshotState();
     /** @type {Map<string, number>} */
@@ -1052,7 +1202,10 @@ class TinyAdvancedRaffle {
   }
 
   /**
-   * @returns {SnapshotState}
+   * Take a snapshot of the internal mutable state (items, pity systems, temporary modifiers, exclusions).
+   * Used internally for safe simulation and rollback.
+   *
+   * @returns {SnapshotState} Snapshot object representing current internal state.
    */
   _snapshotState() {
     return {
@@ -1064,14 +1217,26 @@ class TinyAdvancedRaffle {
   }
 
   /**
-   * @param {SnapshotState} snapshot
+   * Restore internal mutable state from a snapshot.
+   *
+   * @param {SnapshotState} snapshot - Snapshot object obtained from `_snapshotState`.
+   * @throws {TypeError} If snapshot is not an object or missing required properties.
    */
   _restoreState(snapshot) {
-    this.#items = new Map(JSON.parse(JSON.stringify(snapshot.items)));
-    this.#pitySystems = new Map(JSON.parse(JSON.stringify(snapshot.pity)));
+    if (typeof snapshot !== 'object' || snapshot === null)
+      throw new TypeError('snapshot must be a valid object');
+    if (
+      !('items' in snapshot) ||
+      !('pity' in snapshot) ||
+      !('tempMods' in snapshot) ||
+      !('exclusions' in snapshot)
+    )
+      throw new TypeError('snapshot is missing required properties');
+    this.items = new Map(JSON.parse(JSON.stringify(snapshot.items)));
+    this.pitySystems = new Map(JSON.parse(JSON.stringify(snapshot.pity)));
     // rehydrate sets where necessary (simple approach)
-    this.#temporaryModifiers = JSON.parse(snapshot.tempMods);
-    this.#exclusions = new Set(JSON.parse(snapshot.exclusions));
+    this.temporaryModifiers = JSON.parse(snapshot.tempMods);
+    this.exclusions = new Set(JSON.parse(snapshot.exclusions));
   }
 
   /* ===========================
@@ -1079,8 +1244,10 @@ class TinyAdvancedRaffle {
      =========================== */
 
   /**
-   * Export configuration to JSON (items, pity, groups, exclusions, normalization).
-   * @returns {ExportedJson}
+   * Export the current configuration to a JSON-serializable object.
+   * Contains all items, pity systems, exclusions, normalization mode, and seed.
+   *
+   * @returns {ExportedJson} Exported configuration object.
    */
   exportToJson() {
     const data = {
@@ -1101,13 +1268,44 @@ class TinyAdvancedRaffle {
   }
 
   /**
-   * Load configuration from JSON produced by exportToJson
-   * @param {ExportedJson} data
+   * Load configuration from JSON object produced by `exportToJson`.
+   * Clears current items and state before loading.
+   *
+   * @param {ExportedJson} data - Data to load from.
+   * @throws {TypeError} If `data` is not an object or missing required properties.
+   * @throws {TypeError} If `data.seed` is not a number, null, or undefined.
    */
   loadFromJson(data) {
-    if (!data) throw new Error('');
+    if (typeof data !== 'object' || data === null)
+      throw new TypeError('data must be a non-null object');
+    if (!Array.isArray(data.items) || !Array.isArray(data.pity) || !Array.isArray(data.exclusions))
+      throw new TypeError('data must have items, pity, and exclusions arrays');
+    if (typeof data.normalization !== 'string')
+      throw new TypeError('data.normalization must be a string');
+    if (data.seed !== undefined && data.seed !== null && typeof data.seed !== 'number')
+      throw new TypeError('data.seed must be a number, null, or undefined');
+
     this.clearList();
     for (const it of data.items) {
+      if (typeof it !== 'object' || it === null)
+        throw new TypeError('Each item must be a non-null object');
+      if (typeof it.id !== 'string' || !it.id.trim())
+        throw new TypeError('Each item.id must be a non-empty string');
+      if (typeof it.label !== 'string')
+        throw new TypeError(`Item with id "${it.id}" has invalid label; must be string`);
+      if (typeof it.baseWeight !== 'number' || !Number.isFinite(it.baseWeight) || it.baseWeight < 0)
+        throw new TypeError(
+          `Item with id "${it.id}" has invalid baseWeight; must be a finite non-negative number`,
+        );
+      if (it.groups !== undefined && !Array.isArray(it.groups))
+        throw new TypeError(
+          `Item with id "${it.id}" has invalid groups; must be an array of strings`,
+        );
+      if (it.groups && !it.groups.every((g) => typeof g === 'string'))
+        throw new TypeError(`Item with id "${it.id}" has groups containing non-string values`);
+      if (it.meta !== undefined && (typeof it.meta !== 'object' || it.meta === null))
+        throw new TypeError(`Item with id "${it.id}" has invalid meta; must be an object`);
+
       this.#items.set(it.id, {
         id: it.id,
         label: it.label,
@@ -1118,17 +1316,10 @@ class TinyAdvancedRaffle {
       });
       for (const g of it.groups || []) this._ensureGroup(g).add(it.id);
     }
-    this.#pitySystems = new Map(data.pity || []);
-    this.#exclusions = new Set(data.exclusions || []);
-    if (data.normalization) this.#normalization = data.normalization;
-
-    if (typeof data.seed !== 'undefined' && typeof data.seed !== 'number' && data.seed !== null)
-      throw new Error('');
-
-    if (data.seed !== undefined) {
-      this.#seed = data.seed;
-      if (this.#seed !== null) this.#rng = this._makeSeededRng(this.#seed);
-    }
+    this.pitySystems = new Map(data.pity || []);
+    this.exclusions = new Set(data.exclusions || []);
+    this.normalization = data.normalization;
+    if (data.seed !== undefined) this.seed = data.seed;
   }
 
   /* ===========================
@@ -1136,10 +1327,16 @@ class TinyAdvancedRaffle {
      =========================== */
 
   /**
-   * @param {number} seed
-   * @returns {RngGenerator}
+   * Create a deterministic pseudo-random number generator (PRNG) seeded with `seed`.
+   * Uses the mulberry32 algorithm.
+   *
+   * @param {number} seed - Seed value for PRNG (integer).
+   * @returns {RngGenerator} A function that returns a pseudo-random number in [0, 1).
+   * @throws {TypeError} If `seed` is not a finite number.
    */
   _makeSeededRng(seed) {
+    if (typeof seed !== 'number' || !Number.isFinite(seed))
+      throw new TypeError('seed must be a finite number');
     // mulberry32
     let t = seed >>> 0;
     return function () {
