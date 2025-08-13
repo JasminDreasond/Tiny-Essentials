@@ -5,6 +5,33 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>TinyAdvancedRaffle — Tester</title>
     <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: #4caf91 #1e1e1e;
+      }
+
+      *::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+
+      *::-webkit-scrollbar-thumb {
+        background-color: #4caf96;
+        border-radius: 10px;
+        border: 2px solid #1e1e1e;
+      }
+
+      *::-webkit-scrollbar-track {
+        background: #1e1e1e;
+        border-radius: 10px;
+      }
+
       /* ---------- professional, clean UI ---------- */
       :root {
         --bg: #0f1720;
@@ -44,7 +71,7 @@
           0 8px 40px rgba(2, 6, 23, 0.6),
           inset 0 1px 0 rgba(255, 255, 255, 0.02);
         display: grid;
-        grid-template-columns: 420px 1fr;
+        grid-template-columns: 590px 1fr;
         gap: 20px;
       }
 
@@ -52,7 +79,7 @@
       .panel {
         background: var(--glass);
         border-radius: var(--card-radius);
-        padding: 16px;
+        padding: 16px 22px;
         box-shadow: 0 6px 20px rgba(3, 8, 20, 0.6);
         overflow: auto;
         max-height: 80vh;

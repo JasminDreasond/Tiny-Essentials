@@ -129,8 +129,10 @@ import TinyNewWinEvents from './libs/TinyNewWinEvents.mjs';
 import TinyTextarea from './libs/TinyTextarea.mjs';
 import TinyGamepad from './libs/TinyGamepad.mjs';
 import TinyDayNightCycle from './libs/TinyDayNightCycle.mjs';
+import TinyAdvancedRaffle from './libs/TinyAdvancedRaffle.mjs';
 
 export {
+  TinyAdvancedRaffle,
   TinyDayNightCycle,
   TinyGamepad,
   TinyTextarea,
