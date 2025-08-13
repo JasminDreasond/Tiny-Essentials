@@ -656,6 +656,17 @@ class TinyAdvancedRaffle {
      =========================== */
 
   /**
+   * Check if an item exists in the system.
+   * @param {string} itemId - Item ID to check.
+   * @returns {boolean} `true` if the item exists, otherwise `false`.
+   * @throws {TypeError} If `itemId` is not a string.
+   */
+  hasItem(itemId) {
+    if (typeof itemId !== 'string') throw new TypeError('itemId must be a string');
+    return this.#items.has(itemId);
+  }
+
+  /**
    * Add or update an item.
    * @param {string} id - Unique item identifier.
    * @param {Object} [opts={}] - Item configuration options.
@@ -771,6 +782,17 @@ class TinyAdvancedRaffle {
      =========================== */
 
   /**
+   * Check if a persistent global modifier exists.
+   * @param {WeightsCallback} fn - Modifier callback function to check.
+   * @returns {boolean} `true` if the modifier exists, otherwise `false`.
+   * @throws {TypeError} If `fn` is not a function.
+   */
+  hasGlobalModifier(fn) {
+    if (typeof fn !== 'function') throw new TypeError('fn must be a function');
+    return this.#globalModifiers.includes(fn);
+  }
+
+  /**
    * Add a persistent modifier callback.
    * The callback receives `(weightsMap, context)` and must return a Map of overrides/additions or modifications.
    * @param {WeightsCallback} fn - Modifier callback function.
@@ -792,6 +814,17 @@ class TinyAdvancedRaffle {
   }
 
   /**
+   * Check if a specific temporary modifier exists.
+   * @param {WeightsCallback} fn - Temporary modifier callback to check.
+   * @returns {boolean} `true` if the modifier exists, otherwise `false`.
+   * @throws {TypeError} If `fn` is not a function.
+   */
+  hasTemporaryModifier(fn) {
+    if (typeof fn !== 'function') throw new TypeError('fn must be a function');
+    return this.#temporaryModifiers.some((mod) => mod.fn === fn);
+  }
+
+  /**
    * Add a temporary modifier applied to the next `uses` draws (default 1).
    * The modifier returns the same structure as a global modifier.
    * @param {WeightsCallback} fn - Temporary modifier callback.
@@ -807,6 +840,31 @@ class TinyAdvancedRaffle {
   }
 
   /**
+   * Remove a specific temporary modifier.
+   *
+   * @param {WeightsCallback} fn - The temporary modifier callback to remove.
+   * @returns {boolean} `true` if a modifier was removed, `false` otherwise.
+   * @throws {TypeError} If `fn` is not a function.
+   */
+  removeTemporaryModifier(fn) {
+    if (typeof fn !== 'function') throw new TypeError('fn must be a function');
+    const originalLength = this.#temporaryModifiers.length;
+    this.#temporaryModifiers = this.#temporaryModifiers.filter((mod) => mod.fn !== fn);
+    return this.#temporaryModifiers.length !== originalLength;
+  }
+
+  /**
+   * Check if a specific conditional rule exists.
+   * @param {WeightsCallback} ruleFn - Conditional rule function to check.
+   * @returns {boolean} `true` if the rule exists, otherwise `false`.
+   * @throws {TypeError} If `ruleFn` is not a function.
+   */
+  hasConditionalRule(ruleFn) {
+    if (typeof ruleFn !== 'function') throw new TypeError('ruleFn must be a function');
+    return this.#conditionalRules.includes(ruleFn);
+  }
+
+  /**
    * Add a conditional rule (applied each draw).
    * Receives context `{previousDraws, activeModifiers, metadata}`.
    * Should return a Map of `itemId => deltaWeight` (can be positive or negative).
@@ -818,9 +876,34 @@ class TinyAdvancedRaffle {
     this.#conditionalRules.push(ruleFn);
   }
 
+  /**
+   * Remove a specific conditional rule.
+   *
+   * @param {WeightsCallback} ruleFn - The conditional rule function to remove.
+   * @returns {boolean} `true` if a rule was removed, `false` otherwise.
+   * @throws {TypeError} If `ruleFn` is not a function.
+   */
+  removeConditionalRule(ruleFn) {
+    if (typeof ruleFn !== 'function') throw new TypeError('ruleFn must be a function');
+    const originalLength = this.#conditionalRules.length;
+    this.#conditionalRules = this.#conditionalRules.filter((fn) => fn !== ruleFn);
+    return this.#conditionalRules.length !== originalLength;
+  }
+
   /* ===========================
      Pity systems
      =========================== */
+
+  /**
+   * Check if a pity configuration exists for a given item.
+   * @param {string} itemId - Item ID to check.
+   * @returns {boolean} `true` if pity is configured, otherwise `false`.
+   * @throws {TypeError} If `itemId` is not a string.
+   */
+  hasPity(itemId) {
+    if (typeof itemId !== 'string') throw new TypeError('itemId must be a string');
+    return this.#pitySystems.has(itemId);
+  }
 
   /**
    * Configure pity for an item.
@@ -878,6 +961,17 @@ class TinyAdvancedRaffle {
      =========================== */
 
   /**
+   * Check if an item is excluded from the raffle.
+   * @param {string} itemId - Item ID to check.
+   * @returns {boolean} `true` if excluded, otherwise `false`.
+   * @throws {TypeError} If `itemId` is not a string.
+   */
+  hasExclusion(itemId) {
+    if (typeof itemId !== 'string') throw new TypeError('itemId must be a string');
+    return this.#exclusions.has(itemId);
+  }
+
+  /**
    * Exclude an item from the raffle.
    * @param {string} itemId - ID of the item.
    * @throws {TypeError} If `itemId` is not a string.
@@ -912,6 +1006,20 @@ class TinyAdvancedRaffle {
       this.#groups.set(name, group);
     }
     return group;
+  }
+
+  /**
+   * Check if an item is in a given group.
+   * @param {string} itemId - ID of the item.
+   * @param {string} groupName - Name of the group.
+   * @returns {boolean} `true` if the item is in the group, otherwise `false`.
+   * @throws {TypeError} If parameters are not strings.
+   */
+  hasInGroup(itemId, groupName) {
+    if (typeof itemId !== 'string' || typeof groupName !== 'string')
+      throw new TypeError('itemId and groupName must be strings');
+    const group = this.#groups.get(groupName);
+    return group ? group.has(itemId) : false;
   }
 
   /**
