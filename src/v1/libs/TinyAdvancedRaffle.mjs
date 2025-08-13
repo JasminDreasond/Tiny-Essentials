@@ -12,6 +12,13 @@ import TinyEvents from './TinyEvents.mjs';
  */
 
 /**
+ * Represents a temporary weight modifier that is applied for a limited number of draws.
+ * @typedef {Object} TempModifier
+ * @property {WeightsCallback} fn - Function that modifies the item weights.
+ * @property {number} uses - Number of draws this modifier remains active before being removed.
+ */
+
+/**
  * Represents the core data structure for an item in the raffle system.
  * @template {Set<string>|string[]} TGroups
  * @typedef {Object} ItemDataTemplate
@@ -69,15 +76,6 @@ import TinyEvents from './TinyEvents.mjs';
  * @property {number} cap - Maximum total pity weight allowed.
  * @property {number} counter - Current number of consecutive draws without a win.
  * @property {number} currentAdd - Current pity weight being applied.
- */
-
-/**
- * Serializable snapshot of the raffle state for persistence or rollback.
- * @typedef {Object} SnapshotState
- * @property {[string, ItemData][]} items - All registered items and their data.
- * @property {[string, Pity][]} pity - All pity configurations and states.
- * @property {string} tempMods - Serialized temporary weight modifiers.
- * @property {string} exclusions - List of excluded item IDs.
  */
 
 /**
@@ -328,7 +326,7 @@ class TinyAdvancedRaffle {
   /**
    * Temporary weight modifiers that are cleared after use or after a defined number of draws.
    * Each entry contains a modifier function and a remaining usage counter.
-   * @type {{ fn: WeightsCallback, uses: number }[]}
+   * @type {TempModifier[]}
    */
   #temporaryModifiers = [];
 
@@ -372,7 +370,23 @@ class TinyAdvancedRaffle {
    */
   #items = new Map();
 
+  /**
+   * Tracks how many times each item has been drawn in the raffle.
+   * Keys are item IDs, and values represent the frequency count.
+   * @type {Map<string, number>}
+   */
+  #freq = new Map();
+
   /* -------------------- GETTERS & SETTERS -------------------- */
+
+  /**
+   * Returns a plain object representation of the draw frequency map.
+   * The keys are item IDs and the values are the number of times each item was drawn.
+   * @returns {Record<string, number>} - Object with item IDs as keys and their respective draw counts.
+   */
+  get freq() {
+    return Object.fromEntries(this.#freq);
+  }
 
   /**
    * Returns the total number of registered items in the raffle.
@@ -445,7 +459,7 @@ class TinyAdvancedRaffle {
 
   /**
    * Gets all temporary modifiers with usage counters.
-   * @returns {{ fn: WeightsCallback, uses: number }[]} Array of temporary modifier entries.
+   * @returns {TempModifier[]} Array of temporary modifier entries.
    */
   get temporaryModifiers() {
     return [...this.#temporaryModifiers];
@@ -453,7 +467,7 @@ class TinyAdvancedRaffle {
 
   /**
    * Replaces all temporary modifiers.
-   * @param {{ fn: WeightsCallback, uses: number }[]} value - Each object must have a function and a positive integer usage count.
+   * @param {TempModifier[]} value - Each object must have a function and a positive integer usage count.
    * @throws {TypeError} If structure is invalid.
    */
   set temporaryModifiers(value) {
@@ -931,6 +945,26 @@ class TinyAdvancedRaffle {
      =========================== */
 
   /**
+   * Clears the draw frequency count for all items.
+   * Effectively resets the internal frequency map to an empty state.
+   */
+  resetAllFreq() {
+    this.#freq.clear();
+  }
+
+  /**
+   * Removes the draw frequency entry for a specific item.
+   * If the item ID does not exist in the frequency map, nothing happens.
+   *
+   * @param {string} itemId - Unique identifier of the item whose frequency should be reset.
+   * @throws {TypeError} If `itemId` is not a string.
+   */
+  resetFreq(itemId) {
+    if (typeof itemId !== 'string') throw new TypeError('itemId must be a string');
+    this.#freq.delete(itemId);
+  }
+
+  /**
    * Compute effective weights after applying modifiers, rules, and pity adjustments.
    * Starts with base weights, then applies global, temporary, conditional modifiers,
    * pity increments, removes exclusions, and removes zero or negative weights.
@@ -950,6 +984,7 @@ class TinyAdvancedRaffle {
       );
     if (
       'metadata' in context &&
+      typeof context.metadata !== 'undefined' &&
       (typeof context.metadata !== 'object' || context.metadata === null)
     )
       throw new TypeError(
@@ -1090,7 +1125,11 @@ class TinyAdvancedRaffle {
       throw new TypeError(
         `drawOne: opts.previousDraws must be an array if provided, got ${typeof opts.previousDraws}`,
       );
-    if ('metadata' in opts && (typeof opts.metadata !== 'object' || opts.metadata === null))
+    if (
+      'metadata' in opts &&
+      typeof opts.metadata !== 'undefined' &&
+      (typeof opts.metadata !== 'object' || opts.metadata === null)
+    )
       throw new TypeError(
         `drawOne: opts.metadata must be a non-null object if provided, got ${typeof opts.metadata}`,
       );
@@ -1125,6 +1164,11 @@ class TinyAdvancedRaffle {
     if (!item) return null;
     const result = { id: item.id, label: item.label, meta: { ...item.meta }, prob: chosen.p };
     this.#emit('draw', result);
+
+    // add frequence
+    if (result) this.#freq.set(result.id, (this.#freq.get(result.id) || 0) + 1);
+
+    // complete
     return result;
   }
 
@@ -1169,7 +1213,11 @@ class TinyAdvancedRaffle {
       throw new TypeError(
         `drawMany: opts.ensureUnique must be boolean if provided, got ${typeof opts.ensureUnique}`,
       );
-    if ('metadata' in opts && (typeof opts.metadata !== 'object' || opts.metadata === null))
+    if (
+      'metadata' in opts &&
+      typeof opts.metadata !== 'undefined' &&
+      (typeof opts.metadata !== 'object' || opts.metadata === null)
+    )
       throw new TypeError(
         `drawMany: opts.metadata must be a non-null object if provided, got ${typeof opts.metadata}`,
       );
@@ -1220,82 +1268,6 @@ class TinyAdvancedRaffle {
     }
 
     return results;
-  }
-
-  /* ===========================
-     Simulation & utils
-     =========================== */
-
-  /**
-   * Simulate `n` draws and return a frequency map of results.
-   * The engine state (pity counters, temporary modifiers) is cloned and restored after simulation
-   * so the current state is not affected.
-   *
-   * @param {number} n - Number of draws to simulate (must be positive integer).
-   * @param {Object} [opts={}] - Optional draw options to pass to `drawOne`.
-   * @returns {{ n: number; freq: Record<string, number>; }} An object with total draws and frequency per item id.
-   * @throws {TypeError} If `n` is not a positive integer.
-   * @throws {TypeError} If `opts` is provided but is not an object.
-   */
-  simulate(n = 1000, opts = {}) {
-    if (!Number.isInteger(n) || n <= 0) throw new TypeError('n must be a positive integer');
-    if (typeof opts !== 'object' || opts === null)
-      throw new TypeError('opts must be an object if provided');
-
-    // clone state necessary: pity counters and temporary modifiers may mutate, so we'll clone the full engine state
-    const snapshot = this._snapshotState();
-    /** @type {Map<string, number>} */
-    const freq = new Map();
-    for (let i = 0; i < n; ++i) {
-      const r = this.drawOne(opts);
-      if (!r) break;
-      freq.set(r.id, (freq.get(r.id) || 0) + 1);
-    }
-    // restore
-    this._restoreState(snapshot);
-    const result = {
-      n,
-      freq: Object.fromEntries(freq),
-    };
-    return result;
-  }
-
-  /**
-   * Take a snapshot of the internal mutable state (items, pity systems, temporary modifiers, exclusions).
-   * Used internally for safe simulation and rollback.
-   *
-   * @returns {SnapshotState} Snapshot object representing current internal state.
-   */
-  _snapshotState() {
-    return {
-      items: JSON.parse(JSON.stringify(Array.from(this.#items.entries()))),
-      pity: JSON.parse(JSON.stringify(Array.from(this.#pitySystems.entries()))),
-      tempMods: JSON.stringify(this.#temporaryModifiers),
-      exclusions: JSON.stringify(Array.from(this.#exclusions)),
-    };
-  }
-
-  /**
-   * Restore internal mutable state from a snapshot.
-   *
-   * @param {SnapshotState} snapshot - Snapshot object obtained from `_snapshotState`.
-   * @throws {TypeError} If snapshot is not an object or missing required properties.
-   */
-  _restoreState(snapshot) {
-    if (typeof snapshot !== 'object' || snapshot === null)
-      throw new TypeError('snapshot must be a valid object');
-    if (
-      !('items' in snapshot) ||
-      !('pity' in snapshot) ||
-      !('tempMods' in snapshot) ||
-      !('exclusions' in snapshot)
-    )
-      throw new TypeError('snapshot is missing required properties');
-    this.items = new Map(JSON.parse(JSON.stringify(snapshot.items)));
-    this.pitySystems = new Map(JSON.parse(JSON.stringify(snapshot.pity)));
-    // rehydrate sets where necessary (simple approach)
-    this.temporaryModifiers = JSON.parse(snapshot.tempMods);
-    this.exclusions = new Set(JSON.parse(snapshot.exclusions));
   }
 
   /* ===========================
