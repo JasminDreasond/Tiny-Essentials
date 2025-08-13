@@ -941,7 +941,20 @@ class TinyAdvancedRaffle {
    */
   computeEffectiveWeights(context = {}) {
     if (typeof context !== 'object' || context === null)
-      throw new TypeError('context must be an object if provided');
+      throw new TypeError(
+        `computeEffectiveWeights: parameter 'context' must be a non-null object, got ${typeof context}`,
+      );
+    if ('previousDraws' in context && !Array.isArray(context.previousDraws))
+      throw new TypeError(
+        `computeEffectiveWeights: context.previousDraws must be an array if provided, got ${typeof context.previousDraws}`,
+      );
+    if (
+      'metadata' in context &&
+      (typeof context.metadata !== 'object' || context.metadata === null)
+    )
+      throw new TypeError(
+        `computeEffectiveWeights: context.metadata must be a non-null object if provided, got ${typeof context.metadata}`,
+      );
 
     /**
      * Start from base weights
@@ -1016,7 +1029,22 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If `weights` is not a Map.
    */
   _weightsToDistribution(weights) {
-    if (!(weights instanceof Map)) throw new TypeError('weights must be a Map<string, number>');
+    if (!(weights instanceof Map))
+      throw new TypeError(
+        `_weightsToDistribution: parameter 'weights' must be a Map, got ${typeof weights}`,
+      );
+
+    for (const [key, val] of weights) {
+      if (typeof key !== 'string')
+        throw new TypeError(
+          `_weightsToDistribution: weights Map key must be string, got ${typeof key}`,
+        );
+      if (typeof val !== 'number' || !Number.isFinite(val) || val < 0)
+        throw new TypeError(
+          `_weightsToDistribution: weights Map value must be finite non-negative number, got ${val} for key ${key}`,
+        );
+    }
+
     const arr = Array.from(weights.entries()).map(([id, w]) => ({ id, weight: w }));
     if (arr.length === 0) return [];
 
@@ -1054,7 +1082,19 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If `opts` is not an object.
    */
   drawOne(opts = {}) {
-    if (typeof opts !== 'object' || opts === null) throw new TypeError('opts must be an object');
+    if (typeof opts !== 'object' || opts === null)
+      throw new TypeError(
+        `drawOne: parameter 'opts' must be a non-null object, got ${typeof opts}`,
+      );
+    if ('previousDraws' in opts && !Array.isArray(opts.previousDraws))
+      throw new TypeError(
+        `drawOne: opts.previousDraws must be an array if provided, got ${typeof opts.previousDraws}`,
+      );
+    if ('metadata' in opts && (typeof opts.metadata !== 'object' || opts.metadata === null))
+      throw new TypeError(
+        `drawOne: opts.metadata must be a non-null object if provided, got ${typeof opts.metadata}`,
+      );
+
     const context = {
       previousDraws: opts.previousDraws ?? [],
       metadata: opts.metadata ?? {},
@@ -1116,8 +1156,27 @@ class TinyAdvancedRaffle {
    */
   drawMany(count = 1, opts = {}) {
     if (!Number.isInteger(count) || count <= 0)
-      throw new TypeError('count must be a positive integer');
-    if (typeof opts !== 'object' || opts === null) throw new TypeError('opts must be an object');
+      throw new TypeError(`drawMany: parameter 'count' must be a positive integer, got ${count}`);
+    if (typeof opts !== 'object' || opts === null)
+      throw new TypeError(
+        `drawMany: parameter 'opts' must be a non-null object, got ${typeof opts}`,
+      );
+    if ('withReplacement' in opts && typeof opts.withReplacement !== 'boolean')
+      throw new TypeError(
+        `drawMany: opts.withReplacement must be boolean if provided, got ${typeof opts.withReplacement}`,
+      );
+    if ('ensureUnique' in opts && typeof opts.ensureUnique !== 'boolean')
+      throw new TypeError(
+        `drawMany: opts.ensureUnique must be boolean if provided, got ${typeof opts.ensureUnique}`,
+      );
+    if ('metadata' in opts && (typeof opts.metadata !== 'object' || opts.metadata === null))
+      throw new TypeError(
+        `drawMany: opts.metadata must be a non-null object if provided, got ${typeof opts.metadata}`,
+      );
+    if ('previousDraws' in opts && !Array.isArray(opts.previousDraws))
+      throw new TypeError(
+        `drawMany: opts.previousDraws must be an array if provided, got ${typeof opts.previousDraws}`,
+      );
 
     const withReplacement = opts.withReplacement ?? true;
     const ensureUnique = opts.ensureUnique ?? false;
