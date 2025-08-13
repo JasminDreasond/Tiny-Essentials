@@ -1466,6 +1466,61 @@ class TinyAdvancedRaffle {
     if (data.seed !== undefined) this.seed = data.seed;
   }
 
+  /**
+   * Creates a deep clone of the current instance, including all internal state.
+   * All Maps, Sets, and Arrays are fully duplicated to avoid shared references.
+   * Functions are copied by reference since they are immutable in JavaScript.
+   * @returns {TinyAdvancedRaffle} A new cloned instance, fully independent from the original.
+   */
+  clone() {
+    const cloneInstance = new TinyAdvancedRaffle();
+
+    // Primitive values
+    cloneInstance.#normalization = this.#normalization;
+    cloneInstance.#seed = this.#seed;
+
+    // Clone arrays
+    cloneInstance.#globalModifiers = [...this.#globalModifiers];
+    cloneInstance.#temporaryModifiers = this.#temporaryModifiers.map((mod) => ({
+      fn: mod.fn, // Functions are referenced (immutable)
+      uses: mod.uses,
+    }));
+    cloneInstance.#conditionalRules = [...this.#conditionalRules];
+
+    // Clone Map<string, Pity>
+    cloneInstance.#pitySystems = new Map(
+      [...this.#pitySystems.entries()].map(([key, value]) => [key, { ...value }]),
+    );
+
+    // Clone Set<string>
+    cloneInstance.#exclusions = new Set(this.#exclusions);
+
+    // Clone Map<string, Set<string>>
+    cloneInstance.#groups = new Map(
+      [...this.#groups.entries()].map(([groupName, set]) => [groupName, new Set(set)]),
+    );
+
+    // RNG function (copied by reference)
+    cloneInstance.#rng = this.#rng;
+
+    // Clone Map<string, ItemData>
+    cloneInstance.#items = new Map(
+      [...this.#items.entries()].map(([id, item]) => [
+        id,
+        {
+          ...item,
+          groups: new Set(item.groups),
+          meta: { ...item.meta },
+        },
+      ]),
+    );
+
+    // Clone Map<string, number>
+    cloneInstance.#freq = new Map(this.#freq);
+
+    return cloneInstance;
+  }
+
   /* ===========================
      RNG: seedable (mulberry32)
      =========================== */

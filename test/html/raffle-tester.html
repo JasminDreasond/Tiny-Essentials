@@ -611,9 +611,10 @@
         const seed = seedInput.value !== '' ? Number(seedInput.value) : null;
         if (seed !== null) engine.seed = seed;
         // simulation uses engine.simulate which snapshots state
-        const result = engine.simulate(n, {});
+        const cloneEngine = engine.clone();
+        cloneEngine.drawMany(n);
         // show top results in an alert + update a quick chart
-        const freqObj = result.freq;
+        const freqObj = cloneEngine.freq;
         console.log('simulate freq', freqObj);
         // convert to readable
         const items = Object.keys(freqObj)
