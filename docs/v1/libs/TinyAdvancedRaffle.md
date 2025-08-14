@@ -651,3 +651,24 @@ Creates a **deterministic pseudo-random number generator (PRNG)** using the **mu
 **Throws**
 
 * `TypeError` if `seed` is not a finite number.
+
+---
+
+## 🗑️ `destroy()`
+
+Completely **wipes** all internal data, breaks all references, and renders the raffle instance permanently unusable.
+After calling this method, **any further calls** to its functions will throw an error.
+
+**Use Cases**
+
+* Freeing memory in long-running applications.
+* Preventing accidental reuse after the raffle is no longer needed.
+* Security-sensitive scenarios where sensitive item data must be fully erased.
+
+**Example**
+
+```js
+const raffle = new TinyAdvancedRaffle();
+raffle.destroy();
+raffle.clone(); // ❌ Throws an error: instance has been destroyed
+```

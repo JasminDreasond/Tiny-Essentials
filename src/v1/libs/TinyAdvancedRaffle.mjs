@@ -317,6 +317,12 @@ class TinyAdvancedRaffle {
   ///////////////////////////////////////////////////
 
   /**
+   * Whether this instance has been destroyed.
+   * @type {boolean}
+   */
+  #isDestroyed = false;
+
+  /**
    * Normalization method used to adjust item weights before performing the draw.
    * Can define how the probabilities are scaled or balanced.
    * @type {Normalization}
@@ -394,6 +400,14 @@ class TinyAdvancedRaffle {
   /* -------------------- GETTERS & SETTERS -------------------- */
 
   /**
+   * Indicates whether this instance has been destroyed.
+   * @type {boolean}
+   */
+  get isDestroyed() {
+    return this.#isDestroyed;
+  }
+
+  /**
    * Returns a plain object representation of the draw frequency map.
    * The keys are item IDs and the values are the number of times each item was drawn.
    * @returns {Record<string, number>} - Object with item IDs as keys and their respective draw counts.
@@ -424,6 +438,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If value is not a non-empty string.
    */
   set normalization(value) {
+    this._checkDestroyed();
     if (typeof value !== 'string' || !value.trim()) {
       throw new TypeError(
         "normalization must be a non-empty string (e.g., 'relative', 'softmax').",
@@ -446,6 +461,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If not `null` or a finite number.
    */
   set seed(value) {
+    this._checkDestroyed();
     if (value !== null && (typeof value !== 'number' || !Number.isFinite(value)))
       throw new TypeError('seed must be a finite number or null.');
     this.#seed = value;
@@ -466,6 +482,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If not an array of functions.
    */
   set globalModifiers(value) {
+    this._checkDestroyed();
     if (!Array.isArray(value) || !value.every((fn) => typeof fn === 'function'))
       throw new TypeError('globalModifiers must be an array of functions (WeightsCallback).');
     this.#globalModifiers = value;
@@ -485,6 +502,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If structure is invalid.
    */
   set temporaryModifiers(value) {
+    this._checkDestroyed();
     if (
       !Array.isArray(value) ||
       !value.every(
@@ -511,6 +529,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If not an array of functions.
    */
   set conditionalRules(value) {
+    this._checkDestroyed();
     if (!Array.isArray(value) || !value.every((fn) => typeof fn === 'function'))
       throw new TypeError('conditionalRules must be an array of functions (WeightsCallback).');
     this.#conditionalRules = value;
@@ -530,6 +549,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If structure is invalid.
    */
   set pitySystems(value) {
+    this._checkDestroyed();
     if (
       !(value instanceof Map) ||
       ![...value.values()].every(
@@ -560,6 +580,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If not a Set of strings.
    */
   set exclusions(value) {
+    this._checkDestroyed();
     if (!(value instanceof Set) || ![...value].every((v) => typeof v === 'string'))
       throw new TypeError('exclusions must be a Set<string>.');
     this.#exclusions = value;
@@ -582,6 +603,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If not a valid Map<string, Set<string>>.
    */
   set groups(value) {
+    this._checkDestroyed();
     if (
       !(value instanceof Map) ||
       ![...value.values()].every(
@@ -606,6 +628,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If not a valid function.
    */
   set rng(value) {
+    this._checkDestroyed();
     if (typeof value !== 'function' || typeof value() !== 'number')
       throw new TypeError('rng must be a function returning a number (RngGenerator).');
     this.#rng = value;
@@ -630,6 +653,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If structure is invalid.
    */
   set items(value) {
+    this._checkDestroyed();
     if (
       !(value instanceof Map) ||
       ![...value.values()].every(
@@ -665,6 +689,16 @@ class TinyAdvancedRaffle {
     this.#seed = seed ?? null;
   }
 
+  /**
+   * Checks if the instance has been destroyed and throws an error if so.
+   * @private
+   * @throws {Error} If the instance has already been destroyed.
+   */
+  _checkDestroyed() {
+    if (this.#isDestroyed)
+      throw new Error('This instance has been destroyed and can no longer be used.');
+  }
+
   /* ===========================
      Public: Item management
      =========================== */
@@ -692,6 +726,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If any parameter has an invalid type.
    */
   addItem(id, opts = {}) {
+    this._checkDestroyed();
     if (typeof id !== 'string' || !id.trim()) throw new TypeError('id must be a non-empty string');
     if (typeof opts !== 'object' || opts === null) throw new TypeError('opts must be an object');
     let { weight = 1, label = id, meta = {}, groups = [] } = opts;
@@ -732,6 +767,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If id is not a string.
    */
   removeItem(id) {
+    this._checkDestroyed();
     if (typeof id !== 'string' || !id.trim()) throw new TypeError('id must be a non-empty string');
     const it = this.#items.get(id);
     if (!it) return false;
@@ -754,6 +790,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If weight is invalid.
    */
   setBaseWeight(id, weight) {
+    this._checkDestroyed();
     if (typeof id !== 'string' || !id.trim()) throw new TypeError('id must be a non-empty string');
     if (typeof weight !== 'number' || !Number.isFinite(weight) || weight < 0)
       throw new TypeError('weight must be a non-negative number');
@@ -786,6 +823,7 @@ class TinyAdvancedRaffle {
    * Clear all items from the system.
    */
   clearList() {
+    this._checkDestroyed();
     this.#items.clear();
     this.clearFreqs();
     this.clearPities();
@@ -813,6 +851,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If `fn` is not a function.
    */
   addGlobalModifier(fn) {
+    this._checkDestroyed();
     if (typeof fn !== 'function') throw new TypeError('fn must be a function');
     this.#globalModifiers.push(fn);
   }
@@ -823,6 +862,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If `fn` is not a function.
    */
   removeGlobalModifier(fn) {
+    this._checkDestroyed();
     if (typeof fn !== 'function') throw new TypeError('fn must be a function');
     this.#globalModifiers = this.#globalModifiers.filter((x) => x !== fn);
   }
@@ -847,6 +887,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If `uses` is not a number.
    */
   addTemporaryModifier(fn, uses = 1) {
+    this._checkDestroyed();
     if (typeof fn !== 'function') throw new TypeError('fn must be a function');
     if (typeof uses !== 'number' || Number.isNaN(uses))
       throw new TypeError('uses must be a number');
@@ -861,6 +902,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If `fn` is not a function.
    */
   removeTemporaryModifier(fn) {
+    this._checkDestroyed();
     if (typeof fn !== 'function') throw new TypeError('fn must be a function');
     const originalLength = this.#temporaryModifiers.length;
     this.#temporaryModifiers = this.#temporaryModifiers.filter((mod) => mod.fn !== fn);
@@ -886,6 +928,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If `ruleFn` is not a function.
    */
   addConditionalRule(ruleFn) {
+    this._checkDestroyed();
     if (typeof ruleFn !== 'function') throw new TypeError('ruleFn must be a function');
     this.#conditionalRules.push(ruleFn);
   }
@@ -898,6 +941,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If `ruleFn` is not a function.
    */
   removeConditionalRule(ruleFn) {
+    this._checkDestroyed();
     if (typeof ruleFn !== 'function') throw new TypeError('ruleFn must be a function');
     const originalLength = this.#conditionalRules.length;
     this.#conditionalRules = this.#conditionalRules.filter((fn) => fn !== ruleFn);
@@ -931,6 +975,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If parameters are invalid.
    */
   configurePity(itemId, cfg) {
+    this._checkDestroyed();
     if (!this.#items.has(itemId)) throw new Error('Item not found');
     if (typeof cfg !== 'object' || cfg === null) throw new TypeError('cfg must be an object');
     const { threshold, increment, cap = Infinity } = cfg;
@@ -954,6 +999,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If itemId is not a string.
    */
   resetPity(itemId) {
+    this._checkDestroyed();
     if (typeof itemId !== 'string' || !itemId.trim())
       throw new TypeError('itemId must be a non-empty string');
     const p = this.#pitySystems.get(itemId);
@@ -967,6 +1013,7 @@ class TinyAdvancedRaffle {
    * Remove all pity configurations.
    */
   clearPities() {
+    this._checkDestroyed();
     this.#pitySystems.clear();
   }
 
@@ -991,6 +1038,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If `itemId` is not a string.
    */
   excludeItem(itemId) {
+    this._checkDestroyed();
     if (typeof itemId !== 'string') throw new TypeError('itemId must be a string');
     this.#exclusions.add(itemId);
   }
@@ -1001,6 +1049,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If `itemId` is not a string.
    */
   includeItem(itemId) {
+    this._checkDestroyed();
     if (typeof itemId !== 'string') throw new TypeError('itemId must be a string');
     this.#exclusions.delete(itemId);
   }
@@ -1013,6 +1062,7 @@ class TinyAdvancedRaffle {
    * @private
    */
   _ensureGroup(name) {
+    this._checkDestroyed();
     if (typeof name !== 'string') throw new TypeError('name must be a string');
     let group = this.#groups.get(name);
     if (!group) {
@@ -1044,6 +1094,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If parameters are not strings.
    */
   addToGroup(itemId, groupName) {
+    this._checkDestroyed();
     if (typeof itemId !== 'string' || typeof groupName !== 'string')
       throw new TypeError('itemId and groupName must be strings');
     const it = this.#items.get(itemId);
@@ -1059,6 +1110,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If parameters are not strings.
    */
   removeFromGroup(itemId, groupName) {
+    this._checkDestroyed();
     if (typeof itemId !== 'string' || typeof groupName !== 'string')
       throw new TypeError('itemId and groupName must be strings');
     const g = this.#groups.get(groupName);
@@ -1076,6 +1128,7 @@ class TinyAdvancedRaffle {
    * Effectively resets the internal frequency map to an empty state.
    */
   clearFreqs() {
+    this._checkDestroyed();
     this.#freq.clear();
   }
 
@@ -1087,6 +1140,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If `itemId` is not a string.
    */
   resetFreq(itemId) {
+    this._checkDestroyed();
     if (typeof itemId !== 'string') throw new TypeError('itemId must be a string');
     this.#freq.delete(itemId);
   }
@@ -1101,6 +1155,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If `context` is provided but is not an object.
    */
   computeEffectiveWeights(context = {}) {
+    this._checkDestroyed();
     if (typeof context !== 'object' || context === null)
       throw new TypeError(
         `computeEffectiveWeights: parameter 'context' must be a non-null object, got ${typeof context}`,
@@ -1191,6 +1246,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If `weights` is not a Map.
    */
   _weightsToDistribution(weights) {
+    this._checkDestroyed();
     if (!(weights instanceof Map))
       throw new TypeError(
         `_weightsToDistribution: parameter 'weights' must be a Map, got ${typeof weights}`,
@@ -1244,6 +1300,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If `opts` is not an object.
    */
   drawOne(opts = {}) {
+    this._checkDestroyed();
     if (typeof opts !== 'object' || opts === null)
       throw new TypeError(
         `drawOne: parameter 'opts' must be a non-null object, got ${typeof opts}`,
@@ -1305,6 +1362,7 @@ class TinyAdvancedRaffle {
    * @private
    */
   _consumeTemporaryModifiers() {
+    this._checkDestroyed();
     for (let i = this.#temporaryModifiers.length - 1; i >= 0; --i) {
       const t = this.#temporaryModifiers[i];
       t.uses -= 1;
@@ -1326,6 +1384,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If `opts` is not an object.
    */
   drawMany(count = 1, opts = {}) {
+    this._checkDestroyed();
     if (!Number.isInteger(count) || count <= 0)
       throw new TypeError(`drawMany: parameter 'count' must be a positive integer, got ${count}`);
     if (typeof opts !== 'object' || opts === null)
@@ -1408,6 +1467,7 @@ class TinyAdvancedRaffle {
    * @returns {ExportedJson} Exported configuration object.
    */
   exportToJson() {
+    this._checkDestroyed();
     const data = {
       items: Array.from(this.#items.values()).map((it) => ({
         id: it.id,
@@ -1434,6 +1494,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If `data.seed` is not a number, null, or undefined.
    */
   loadFromJson(data) {
+    this._checkDestroyed();
     if (typeof data !== 'object' || data === null)
       throw new TypeError('data must be a non-null object');
     if (!Array.isArray(data.items) || !Array.isArray(data.pity) || !Array.isArray(data.exclusions))
@@ -1487,6 +1548,7 @@ class TinyAdvancedRaffle {
    * @returns {TinyAdvancedRaffle} A new cloned instance, fully independent from the original.
    */
   clone() {
+    this._checkDestroyed();
     const cloneInstance = new TinyAdvancedRaffle();
 
     // Primitive values
@@ -1548,6 +1610,7 @@ class TinyAdvancedRaffle {
    * @throws {TypeError} If `seed` is not a finite number.
    */
   _makeSeededRng(seed) {
+    this._checkDestroyed();
     if (typeof seed !== 'number' || !Number.isFinite(seed))
       throw new TypeError('seed must be a finite number');
     // mulberry32
@@ -1558,6 +1621,31 @@ class TinyAdvancedRaffle {
       r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
       return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
     };
+  }
+
+  /**
+   * Completely destroys the raffle instance, clearing all data,
+   * releasing references, and making the object unusable.
+   * Once destroyed, any further method calls will throw errors.
+   */
+  destroy() {
+    if (this.#isDestroyed) return;
+    this.#isDestroyed = true;
+
+    // Clear all Maps and Sets
+    this.#pitySystems.clear();
+    this.#exclusions.clear();
+    this.#groups.clear();
+    this.#items.clear();
+    this.#freq.clear();
+
+    // Clear arrays
+    this.#globalModifiers = [];
+    this.#temporaryModifiers = [];
+    this.#conditionalRules = [];
+
+    // Nullify core references
+    this.#seed = null;
   }
 }
 
