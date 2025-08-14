@@ -47,9 +47,13 @@ class TinyArrayPaginator {
   }
 
   /**
-   * Retrieves a paginated slice of the data along with pagination metadata.
-   * @param {number} [page=1] - The page number (1-based index). Must be a positive integer.
-   * @param {number} [perPage=10] - The number of items per page. Must be a positive integer.
+   * Filters data according to a search query and returns paginated results.
+   * @param {Object} settings
+   * @param {number} settings.page - The page number (1-based index).
+   * @param {number} settings.perPage - Items per page.
+   * @param {Record<string, any> | ((value: any, index: number, array: any[]) => boolean) | null} [settings.filter=null] - Filtering criteria:
+   *   - Object: key-value pairs for exact match or regex string
+   *   - Function: custom filter function returning true for items to include
    * @returns {{
    *   items: any[],            // The subset of items for the requested page.
    *   page: number,            // The current (validated) page number.
@@ -59,17 +63,36 @@ class TinyArrayPaginator {
    *   hasPrev: boolean,        // Whether a previous page exists.
    *   hasNext: boolean         // Whether a next page exists.
    * }}
-   * @throws {RangeError} If `page` or `perPage` are not positive integers.
    */
-  get(page = 1, perPage = 10) {
-    if (!Number.isInteger(page) || page < 1) {
+  get({ page, perPage, filter = null }) {
+    if (!Number.isInteger(page) || page < 1)
       throw new RangeError('Page number must be a positive integer.');
-    }
-    if (!Number.isInteger(perPage) || perPage < 1) {
+    if (!Number.isInteger(perPage) || perPage < 1)
       throw new RangeError('Items per page must be a positive integer.');
+
+    let dataToUse;
+
+    if (filter) {
+      // use cached filtered data if filter function is same
+      if (typeof filter === 'function') {
+        dataToUse = this.#data.filter(filter);
+      } else if (typeof filter === 'object') {
+        dataToUse = this.#data.filter((item) =>
+          Object.entries(filter).every(([key, value]) => {
+            const v = item[key];
+            if (value instanceof RegExp) return value.test(v);
+            if (typeof value === 'string' && typeof v === 'string') return v.includes(value);
+            return v === value;
+          }),
+        );
+      } else {
+        throw new TypeError('Filter must be an object or a function');
+      }
+    } else {
+      dataToUse = this.#data;
     }
 
-    const totalItems = this.#data.length;
+    const totalItems = dataToUse.length;
     const totalPages = Math.max(1, Math.ceil(totalItems / perPage));
 
     // Ensure page is within valid range
@@ -79,7 +102,7 @@ class TinyArrayPaginator {
     const end = start + perPage;
 
     return {
-      items: this.#data.slice(start, end),
+      items: dataToUse.slice(start, end),
       page: safePage,
       perPage,
       totalItems,
