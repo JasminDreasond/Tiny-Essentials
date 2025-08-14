@@ -6,13 +6,13 @@
 class TinyArrayPaginator {
   /**
    * Internal storage for the paginated data source.
-   * @type {any[]}
+   * @type {any[]|Set<any>}
    */
   #data;
 
   /**
    * Gets current stored array.
-   * @returns {any[]}
+   * @returns {any[]|Set<any>}
    */
   get data() {
     return this.#data;
@@ -20,11 +20,12 @@ class TinyArrayPaginator {
 
   /**
    * Replaces the current data array.
-   * @param {any[]} value - The new array to be used as the data source.
+   * @param {any[]|Set<any>} value - The new array to be used as the data source.
    * @throws {TypeError} If the provided value is not an array.
    */
   set data(value) {
-    if (!Array.isArray(value)) throw new TypeError('Paginator expects an array as data source.');
+    if (!Array.isArray(value) && !(value instanceof Set))
+      throw new TypeError('Paginator expects an array or Set as data source.');
     this.#data = value;
   }
 
@@ -33,16 +34,17 @@ class TinyArrayPaginator {
    * @returns {number} Total number of stored items.
    */
   get size() {
-    return this.#data.length;
+    return Array.isArray(this.#data) ? this.#data.length : this.#data.size;
   }
 
   /**
    * Creates a new paginator instance for the given data array.
-   * @param {any[]} [data=[]] - The array to be paginated.
+   * @param {any[]|Set<any>} data - The array to be paginated.
    * @throws {TypeError} If the provided data is not an array.
    */
-  constructor(data = []) {
-    if (!Array.isArray(data)) throw new TypeError('Paginator expects an array as data source.');
+  constructor(data) {
+    if (!Array.isArray(data) && !(data instanceof Set))
+      throw new TypeError('Paginator expects an array or Set as data source.');
     this.#data = data;
   }
 
@@ -71,13 +73,14 @@ class TinyArrayPaginator {
       throw new RangeError('Items per page must be a positive integer.');
 
     let dataToUse;
+    const data = Array.isArray(this.#data) ? this.#data : Array.from(this.#data);
 
     if (filter) {
       // use cached filtered data if filter function is same
       if (typeof filter === 'function') {
-        dataToUse = this.#data.filter(filter);
+        dataToUse = data.filter(filter);
       } else if (typeof filter === 'object') {
-        dataToUse = this.#data.filter((item) =>
+        dataToUse = data.filter((item) =>
           Object.entries(filter).every(([key, value]) => {
             const v = item[key];
             if (value instanceof RegExp) return value.test(v);
@@ -89,7 +92,7 @@ class TinyArrayPaginator {
         throw new TypeError('Filter must be an object or a function');
       }
     } else {
-      dataToUse = this.#data;
+      dataToUse = data;
     }
 
     const totalItems = dataToUse.length;
