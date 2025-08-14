@@ -130,8 +130,10 @@ import TinyTextarea from './libs/TinyTextarea.mjs';
 import TinyGamepad from './libs/TinyGamepad.mjs';
 import TinyDayNightCycle from './libs/TinyDayNightCycle.mjs';
 import TinyAdvancedRaffle from './libs/TinyAdvancedRaffle.mjs';
+import TinyArrayPaginator from './libs/TinyArrayPaginator.mjs';
 
 export {
+  TinyArrayPaginator,
   TinyAdvancedRaffle,
   TinyDayNightCycle,
   TinyGamepad,

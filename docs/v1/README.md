@@ -50,6 +50,7 @@ This folder contains the core scripts we have worked on so far. Each file is a m
 - ✨ **[TinyTextarea](./libs/TinyTextarea.md)** — A minimal auto-expanding `<textarea>` manager with configurable row limits, extra height padding, and real-time resize/input event hooks.
 - 🌞 **[TinyDayNightCycle](./libs/TinyDayNightCycle.md)** — A comprehensive day-night cycle system managing seasons, moons, time, and weather with configurable durations, phases, and dynamic weather selection.
 - 🎯 **[TinyAdvancedRaffle](./libs/TinyAdvancedRaffle.md)** — An advanced, seedable raffle system with weighted items, pity systems, exclusions, group management, modifiers, conditional rules, normalization modes, and JSON import/export.
+- 📄 **[TinyArrayPaginator](./libs/TinyArrayPaginator.md)** — A secure and flexible array pagination wrapper that returns paginated results along with metadata, supports filtering via predicates or object-based matching, and prevents direct modification of the source data. 
 
 ### 3. **`fileManager/`**
 * 📁 **[Main](./fileManager/main.md)** — A Node.js file/directory utility module with support for JSON, backups, renaming, size analysis, and more.

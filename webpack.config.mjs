@@ -88,5 +88,6 @@ addModule(1, './src/v1/build/TinyTextarea.mjs', 'TinyTextarea', true);
 addModule(1, './src/v1/build/TinyGamepad.mjs', 'TinyGamepad', true);
 addModule(1, './src/v1/build/TinyDayNightCycle.mjs', 'TinyDayNightCycle', true);
 addModule(1, './src/v1/build/TinyAdvancedRaffle.mjs', 'TinyAdvancedRaffle', true);
+addModule(1, './src/v1/build/TinyArrayPaginator.mjs', 'TinyArrayPaginator', true);
 
 export default modules;
