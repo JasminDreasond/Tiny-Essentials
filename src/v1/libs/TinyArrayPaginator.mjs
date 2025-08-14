@@ -1,4 +1,15 @@
 /**
+ * A predicate function used to determine whether an item should be included in the filtered results.
+ * Works similarly to the callback function of `Array.prototype.filter`.
+ *
+ * @callback GetFilter
+ * @param {any} value - The current element being processed in the array.
+ * @param {number} index - The index of the current element within the array.
+ * @param {any[]} array - The full array being processed.
+ * @returns {boolean} Returns `true` to include the element in the results, or `false` to exclude it.
+ */
+
+/**
  * A encapsulated wrapper for array pagination.
  * Provides methods to retrieve paginated results with metadata,
  * while keeping the source array safe from direct modifications.
@@ -53,7 +64,7 @@ class TinyArrayPaginator {
    * @param {Object} settings
    * @param {number} settings.page - The page number (1-based index).
    * @param {number} settings.perPage - Items per page.
-   * @param {Record<string, any> | ((value: any, index: number, array: any[]) => boolean) | null} [settings.filter=null] - Filtering criteria:
+   * @param {Record<string, any> | GetFilter} [settings.filter=null] - Filtering criteria:
    *   - Object: key-value pairs for exact match or regex string
    *   - Function: custom filter function returning true for items to include
    * @returns {{
@@ -66,7 +77,7 @@ class TinyArrayPaginator {
    *   hasNext: boolean         // Whether a next page exists.
    * }}
    */
-  get({ page, perPage, filter = null }) {
+  get({ page, perPage, filter }) {
     if (!Number.isInteger(page) || page < 1)
       throw new RangeError('Page number must be a positive integer.');
     if (!Number.isInteger(perPage) || perPage < 1)
@@ -78,6 +89,7 @@ class TinyArrayPaginator {
     if (filter) {
       // use cached filtered data if filter function is same
       if (typeof filter === 'function') {
+        // @ts-ignore
         dataToUse = data.filter(filter);
       } else if (typeof filter === 'object') {
         dataToUse = data.filter((item) =>
@@ -103,6 +115,8 @@ class TinyArrayPaginator {
 
     const start = (safePage - 1) * perPage;
     const end = start + perPage;
+    const hasPrev = safePage > 1;
+    const hasNext = safePage < totalPages;
 
     return {
       items: dataToUse.slice(start, end),
@@ -110,8 +124,8 @@ class TinyArrayPaginator {
       perPage,
       totalItems,
       totalPages,
-      hasPrev: safePage > 1,
-      hasNext: safePage < totalPages,
+      hasPrev,
+      hasNext,
     };
   }
 }
