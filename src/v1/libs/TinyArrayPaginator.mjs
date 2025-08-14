@@ -65,13 +65,13 @@ class TinyArrayPaginator {
    * @param {number} settings.page - The page number (1-based index).
    * @param {number} settings.perPage - Items per page.
    * @param {Record<string, any> | GetFilter} [settings.filter=null] - Filtering criteria:
-   *   - Object: key-value pairs for exact match or regex string
+   *   - Object: key-value pairs for exact match, substring match, or RegExp
    *   - Function: custom filter function returning true for items to include
    * @returns {{
    *   items: any[],            // The subset of items for the requested page.
    *   page: number,            // The current (validated) page number.
    *   perPage: number,         // Number of items per page used in the calculation.
-   *   totalItems: number,      // Total number of items in the data array.
+   *   totalItems: number,      // Total number of items in the filtered data.
    *   totalPages: number,      // Total number of pages available.
    *   hasPrev: boolean,        // Whether a previous page exists.
    *   hasNext: boolean         // Whether a next page exists.
@@ -83,20 +83,17 @@ class TinyArrayPaginator {
     if (!Number.isInteger(perPage) || perPage < 1)
       throw new RangeError('Items per page must be a positive integer.');
 
-    let dataToUse;
     const data = Array.isArray(this.#data) ? this.#data : Array.from(this.#data);
+    let dataToUse = data;
 
     if (filter) {
-      // use cached filtered data if filter function is same
       if (typeof filter === 'function') {
-        // @ts-ignore
-        dataToUse = data.filter(filter);
+        dataToUse = data.filter((item, idx, arr) => filter(item, idx, arr));
       } else if (typeof filter === 'object') {
         dataToUse = data.filter((item) =>
           Object.entries(filter).every(([key, value]) => {
             const v = item[key];
             if (value instanceof RegExp) return value.test(v);
-            if (typeof value === 'string' && typeof v === 'string') return v.includes(value);
             return v === value;
           }),
         );
