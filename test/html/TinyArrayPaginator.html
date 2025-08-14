@@ -109,6 +109,7 @@
       }));
 
       const paginator = new TinyArrayPaginator(dataset);
+      window.paginator = paginator;
 
       function render() {
         const page = parseInt(document.getElementById('page').value, 10);
