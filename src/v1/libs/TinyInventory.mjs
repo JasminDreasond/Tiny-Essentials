@@ -1,41 +1,77 @@
 /**
+ * @typedef {Object} ItemDef
+ * @property {string} id - Unique identifier for the item.
+ * @property {number} weight - Weight of a single unit of the item.
+ * @property {InventoryMetadata} metadata - Metadata specific to this item instance.
+ * @property {boolean} canStack - Whether multiple units can be stacked together.
+ * @property {number} maxStack - Maximum quantity allowed in a single stack (ignored if `canStack` is false).
+ * @property {Function|null} onUse - Callback triggered when the item is used.
+ * @property {string|null} type - Optional category/type identifier.
+ */
+
+/**
  * @typedef {Object} InventoryItem
+ * @property {string} id - Unique identifier for the item.
+ * @property {InventoryMetadata} metadata - Metadata specific to this item instance.
+ * @property {number} quantity
+ */
+
+/**
+ * @typedef {Object} SectionCfg
+ * @property {string} [id]
+ * @property {number} [slots=10]
+ * @property {InvSlots} items
+ */
+
+/**
+ * @typedef {Object} InvSection
  * @property {string} id
- * @property {string} name
- * @property {number} weight
- * @property {InventoryMetadata} metadata
- * @property {boolean} canStack
- * @property {number} maxStack
- * @property {Function | null} onUse
- * @property {string|null} type
+ * @property {number} slots
+ * @property {InvSlots} items
+ */
+
+/**
+ * @typedef {Set<InventoryItem>} InvSlots
  */
 
 /**
  * @typedef {Record<string|number|symbol, any>} InventoryMetadata
+ * Metadata object used to store arbitrary key-value pairs for an item.
+ */
+
+/**
+ * @typedef {function} AddItemEvent
+ */
+
+/**
+ * @typedef {function} RemoveItemEvent
+ */
+
+/**
+ * @typedef {function} UseItemEvent
  */
 
 class TinyInventory {
   /**
    * Registry of all item definitions available in TinyInventory.
    * Keys are item IDs, values are configuration objects created with {@link TinyInventory.defineItem}.
-   * @type {Map<string, InventoryItem>}
+   * @type {Map<string, ItemDef>}
    */
   static ItemRegistry = new Map();
 
   /**
    * Defines or updates an item type in the global item registry.
-   * This is used to set metadata such as name, weight, stackability, and custom behavior.
+   * Stores key properties such as weight, stackability rules, and optional behavior callbacks.
    *
    * @param {Object} config - Item configuration object.
    * @param {string} config.id - Unique identifier for the item.
-   * @param {string} config.name - Display name for the item.
    * @param {number} [config.weight=0] - Weight of a single unit of the item.
    * @param {InventoryMetadata} [config.metadata={}] - Default metadata for the item type.
-   * @param {boolean} [config.canStack=false] - Whether this item can be stacked in inventory.
-   * @param {number} [config.maxStack=1] - Maximum quantity per stack.
-   * @param {function|null} [config.onUse] - Optional callback triggered when the item is used.
-   * @param {string|null} [config.type=null] -
-   * @throws {Error} If the `id` is missing or not a string.
+   * @param {boolean} [config.canStack=false] - Whether multiple units of this item can be combined into a single stack.
+   * @param {number} [config.maxStack=1] - Maximum quantity allowed in a single stack (ignored if `canStack` is false).
+   * @param {function|null} [config.onUse=null] - Optional callback executed when the item is used.
+   * @param {string|null} [config.type=null] - Optional type/category identifier for the item.
+   * @throws {Error} If `id` is missing or not a string.
    */
   static defineItem(config) {
     if (!config?.id || typeof config.id !== 'string') {
@@ -43,7 +79,6 @@ class TinyInventory {
     }
     TinyInventory.ItemRegistry.set(config.id, {
       id: config.id,
-      name: config.name || config.id,
       weight: config.weight || 0,
       maxStack: config.maxStack || 1,
       metadata: config.metadata || {},
@@ -53,6 +88,27 @@ class TinyInventory {
     });
   }
 
+  /** @type {Map<string, { type: string|null; item: InventoryItem | null; }>} */
+  specialSlots = new Map();
+
+  /**
+   * Event listeners
+   */
+  events = {
+    /** @type {AddItemEvent[]} */
+    add: [],
+    /** @type {RemoveItemEvent[]} */
+    remove: [],
+    /** @type {UseItemEvent[]} */
+    use: [],
+  };
+
+  /** @type {InvSection[] | null} */
+  sections;
+
+  /** @type {InvSlots | null} */
+  items;
+
   /**
    * Creates a new TinyInventory instance.
    *
@@ -60,35 +116,32 @@ class TinyInventory {
    * @param {number|null} [options.maxWeight=null] - Maximum allowed total weight (null for no limit).
    * @param {number|null} [options.maxSlots=null] - Maximum number of item slots (null for no limit).
    * @param {boolean} [options.useSections=false] - Whether inventory is divided into separate sections.
-   * @param {Array<Object>} [options.sections=[]] - Section definitions (only used if `useSections` is true).
-   * @param {Array<string>} [options.specialSlots=[]] - IDs for special slots (e.g., "helmet", "weapon").
+   * @param {SectionCfg[]} [options.sections=[]] - Section definitions (only used if `useSections` is true).
+   * @param {Record<string, { type: string | null; }} [options.specialSlots] - IDs for special slots (e.g., "helmet", "weapon").
    */
   constructor(options = {}) {
     this.maxWeight = options.maxWeight ?? null;
     this.maxSlots = options.maxSlots ?? null;
     this.useSections = !!options.useSections;
     this.sections = this.useSections ? this.#initSections(options.sections ?? []) : null;
-    this.specialSlots = new Map((options.specialSlots ?? []).map((slot) => [slot, null]));
     this.items = this.useSections ? null : new Set();
-
-    // Event listeners
-    this.events = {
-      add: [],
-      remove: [],
-      use: [],
-    };
+    if (options.specialSlots) {
+      for (const name in options.specialSlots) {
+        this.specialSlots.set(name, { type: options.specialSlots[name].type ?? null, item: null });
+      }
+    }
   }
 
   /**
    * Initializes section data structures.
-   * @param {Array<Object>} sectionConfigs - Array of section configuration objects.
-   * @returns {Array<{id: string, slots: number, items: Set}>} Array of section objects.
+   * @param {SectionCfg[]} sectionConfigs - Array of section configuration objects.
+   * @returns {InvSection[]} Array of section objects.
    * @throws {Error} If `sectionConfigs` is not an array.
    */
   #initSections(sectionConfigs) {
     if (!Array.isArray(sectionConfigs)) throw new Error('Sections must be an array.');
     return sectionConfigs.map((cfg) => ({
-      id: cfg.id || `section_${Math.random().toString(36).substr(2, 5)}`,
+      id: cfg.id || `section_${Math.random().toString(36).substring(2, 5)}`,
       slots: cfg.slots || 10,
       items: new Set(),
     }));
@@ -134,7 +187,7 @@ class TinyInventory {
 
   /**
    * Registers a callback to be executed when an item is added.
-   * @param {function} callback - Function receiving the event payload.
+   * @param {AddItemEvent} callback - Function receiving the event payload.
    */
   onAddItem(callback) {
     this.events.add.push(callback);
@@ -142,7 +195,7 @@ class TinyInventory {
 
   /**
    * Registers a callback to be executed when an item is removed.
-   * @param {function} callback - Function receiving the event payload.
+   * @param {RemoveItemEvent} callback - Function receiving the event payload.
    */
   onRemoveItem(callback) {
     this.events.remove.push(callback);
@@ -150,7 +203,7 @@ class TinyInventory {
 
   /**
    * Registers a callback to be executed when an item is used.
-   * @param {function} callback - Function receiving the event payload.
+   * @param {UseItemEvent} callback - Function receiving the event payload.
    */
   onUseItem(callback) {
     this.events.use.push(callback);
@@ -170,10 +223,15 @@ class TinyInventory {
   addItem(itemId, quantity = 1, targetSection = null, metadata = {}) {
     const def = TinyInventory.ItemRegistry.get(itemId);
     if (!def) throw new Error(`Item '${itemId}' not defined in registry.`);
-
     let remaining = quantity;
+
+    /**
+     * @param {InventoryMetadata} a
+     * @param {InventoryMetadata} b
+     */
     const metadataEquals = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
+    /** @param {InvSlots} collection */
     const placeItem = (collection) => {
       // Try stacking only if allowed
       if (def.canStack) {
@@ -200,11 +258,11 @@ class TinyInventory {
       }
     };
 
-    if (targetSection && this.useSections) {
+    if (targetSection && this.useSections && this.sections) {
       const section = this.sections.find((s) => s.id === targetSection);
       if (!section) throw new Error(`Section '${targetSection}' not found.`);
       placeItem(section.items);
-    } else if (!this.useSections) {
+    } else if (!this.useSections && this.items) {
       placeItem(this.items);
     } else {
       throw new Error('Target section required for section-based inventory.');
@@ -224,9 +282,14 @@ class TinyInventory {
    */
   removeItem(itemId, quantity = 1) {
     let remaining = quantity;
-    const collections = this.useSections ? this.sections.map((s) => s.items) : [this.items];
+    const collections = this.useSections
+      ? this.sections
+        ? this.sections.map((s) => s.items)
+        : []
+      : [this.items];
 
     for (const collection of collections) {
+      if (!collection) continue;
       for (const item of Array.from(collection)) {
         if (item.id === itemId) {
           const removeQty = Math.min(item.quantity, remaining);
@@ -290,22 +353,21 @@ class TinyInventory {
 
     const def = TinyInventory.ItemRegistry.get(itemId);
     if (!def) throw new Error(`Item '${itemId}' not defined in registry.`);
-    const slotType = this.specialSlots.get(slotId)?.type || 'any';
-    if (slotType !== 'any' && def.type !== slotType) {
+    const current = this.specialSlots.get(slotId);
+    if (!current) throw new Error(`Slot '${slotId}' not defined in registry.`);
+    const slotType = current.type ?? null;
+    if (slotType !== null && def.type !== slotType)
       throw new Error(`Item '${itemId}' cannot be equipped in slot '${slotId}'`);
-    }
+
+    // If there is already something equipped in this slot, return to inventory
+    if (current.item) this.unequipItem(slotId);
 
     // Remove 1 inventory unit
     this.removeItem(itemId, 1);
 
-    // If there is already something equipped in this slot, return to inventory
-    const current = this.specialSlots.get(slotId);
-    if (current) {
-      this.addItem(current.id, 1, null, current.metadata);
-    }
-
     // Equip new piece (maintains only id and quantity = 1)
-    this.specialSlots.set(slotId, { id: itemId, quantity: 1, metadata: item.metadata });
+    current.item = { id: itemId, quantity: 1, metadata: item.metadata };
+    this.specialSlots.set(slotId, current);
   }
 
   /**
@@ -318,13 +380,15 @@ class TinyInventory {
     if (!this.specialSlots.has(slotId)) throw new Error(`Special slot '${slotId}' does not exist.`);
 
     const current = this.specialSlots.get(slotId);
-    if (!current) return false; // Empty slot
-
-    // Remove from Special Slot
-    this.specialSlots.set(slotId, null);
+    if (!current) throw new Error(`Slot '${slotId}' not defined in registry.`);
+    if (!current.item) return false; // Empty slot
 
     // Try to add back to inventory
-    this.addItem(current.id, 1, null, current.metadata);
+    this.addItem(current.item.id, 1, null, current.item.metadata);
+
+    // Remove from Special Slot
+    current.item = null;
+    this.specialSlots.set(slotId, current);
     return true;
   }
 
@@ -334,8 +398,12 @@ class TinyInventory {
    */
   getAllItems() {
     return this.useSections
-      ? this.sections.flatMap((s) => Array.from(s.items))
-      : Array.from(this.items);
+      ? this.sections
+        ? this.sections.flatMap((s) => Array.from(s.items))
+        : []
+      : this.items
+        ? Array.from(this.items)
+        : [];
   }
 
   /**
@@ -413,27 +481,36 @@ class TinyInventory {
 
   /**
    * Creates a TinyInventory instance from serialized JSON data.
-   * @param {string|Object} json - JSON string or parsed object.
+   * @param {string} json - JSON string or parsed object.
    * @returns {TinyInventory} New inventory instance populated with the saved data.
    */
   static fromJSON(json) {
     const data = typeof json === 'string' ? JSON.parse(json) : json;
+
     const inv = new TinyInventory({
       maxWeight: data.maxWeight,
       maxSlots: data.maxSlots,
       useSections: data.useSections,
-      sections: data.sections?.map((s) => ({ id: s.id, slots: s.slots })),
-      specialSlots: data.specialSlots?.map(([k]) => k),
+      sections: data.sections
+        ? // @ts-ignore
+          data.sections?.map((s) => ({ id: s.id, slots: s.slots }))
+        : undefined,
+      // @ts-ignore
+      specialSlots: data.specialSlots ? data.specialSlots?.map(([k]) => k) : undefined,
     });
     if (inv.useSections && data.sections) {
       for (let i = 0; i < data.sections.length; i++) {
-        for (const item of data.sections[i].items) {
-          inv.sections[i].items.add(item);
+        if (inv.sections) {
+          for (const item of data.sections[i].items) {
+            inv.sections[i].items.add(item);
+          }
         }
       }
     } else if (data.items) {
-      for (const item of data.items) {
-        inv.items.add(item);
+      if (inv.items) {
+        for (const item of data.items) {
+          inv.items.add(item);
+        }
       }
     }
     for (const [slot, value] of data.specialSlots || []) {
