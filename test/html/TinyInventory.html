@@ -1,0 +1,1057 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>TinyInventory – Professional Test Harness</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="./src/v1/scss/TinyNotify.scss" />
+    <style>
+      :root {
+        --bg: #0f1115;
+        --panel: #171a21;
+        --panel-2: #1f2430;
+        --text: #e6eaf2;
+        --muted: #9aa4b2;
+        --accent: #6aa2ff;
+        --ok: #4cd964;
+        --warn: #ffd666;
+        --bad: #ff6b6b;
+        --border: #2a3040;
+        --chip: #2b3242;
+        --code: #0b0d12;
+        --notify-color-bg: var(--chip);
+        --notify-color-text: var(--text);
+        --notify-close-color: var(--muted);
+        --notify-close-color-hover: var(--text);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font:
+          14px/1.45 system-ui,
+          Segoe UI,
+          Roboto,
+          Ubuntu,
+          'Helvetica Neue',
+          Arial;
+      }
+      h1,
+      h2,
+      h3 {
+        margin: 0 0 0.5rem;
+      }
+      h1 {
+        font-size: 1.6rem;
+      }
+      h2 {
+        font-size: 1.1rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      a {
+        color: var(--accent);
+      }
+      .wrap {
+        display: grid;
+        grid-template-columns: 570px 1fr;
+        gap: 16px;
+        padding: 16px;
+        min-height: 100vh;
+      }
+      .col {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 12px;
+      }
+      .card header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+      .row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .grid {
+        display: grid;
+        gap: 8px;
+      }
+      .grid-2 {
+        grid-template-columns: 1fr 1fr;
+      }
+      .grid-3 {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .grid-4 {
+        grid-template-columns: repeat(4, 1fr);
+      }
+      input,
+      select,
+      button,
+      textarea {
+        width: 100%;
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--panel-2);
+        color: var(--text);
+      }
+      textarea {
+        min-height: 86px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+      }
+      code,
+      pre {
+        background: var(--code);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 8px;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .btn {
+        cursor: pointer;
+        transition: 0.2s ease all;
+        font-weight: 600;
+        margin: 7px 0px;
+      }
+      .btn:hover {
+        filter: brightness(1.1);
+      }
+      .btn.primary {
+        background: var(--accent);
+        border-color: transparent;
+        color: #0b0d12;
+      }
+      .btn.ok {
+        background: var(--ok);
+        border-color: transparent;
+        color: #0b0d12;
+      }
+      .btn.warn {
+        background: var(--warn);
+        border-color: transparent;
+        color: #0b0d12;
+      }
+      .btn.bad {
+        background: var(--bad);
+        border-color: transparent;
+        color: #0b0d12;
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        justify-content: space-around;
+        margin-bottom: 7px;
+      }
+      .chip {
+        background: var(--chip);
+        border: 1px solid var(--border);
+        padding: 4px 8px;
+        border-radius: 999px;
+        font-size: 12px;
+      }
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+        overflow: auto;
+      }
+      .table th,
+      .table td {
+        border-bottom: 1px solid var(--border);
+        padding: 6px 8px;
+        text-align: left;
+        vertical-align: top;
+      }
+      .kpi {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .kpi div {
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px;
+      }
+      .kpi b {
+        display: block;
+        font-size: 1.2rem;
+      }
+      .list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-height: 240px;
+        overflow: auto;
+      }
+      .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+      }
+      .small {
+        font-size: 12px;
+      }
+      .inline {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .divider {
+        height: 1px;
+        background: var(--border);
+        margin: 8px 0;
+      }
+      .sticky {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        background: transparent;
+        padding-top: 4px;
+      }
+      @media (max-width: 1080px) {
+        .wrap {
+          grid-template-columns: 1fr;
+        }
+      }
+      .notify-container .notify .close {
+        right: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <!-- LEFT PANEL: Item Registry + Inventory Constructor -->
+      <div class="col">
+        <div class="card">
+          <header class="sticky">
+            <h1>TinyInventory Test Harness</h1>
+            <span class="muted">by Tiny AI 🐣</span>
+          </header>
+          <div class="kpi" id="kpi">
+            <div><span class="muted">Total Items</span><b id="kpiTotal">0</b></div>
+            <div><span class="muted">Total Stacks</span><b id="kpiStacks">0</b></div>
+            <div><span class="muted">Total Weight</span><b id="kpiWeight">0</b></div>
+            <div><span class="muted">Sections</span><b id="kpiSections">0</b></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <header><h2>Item Registry</h2></header>
+          <div class="grid grid-2">
+            <input id="ir_id" placeholder="id (e.g., apple)" />
+            <input id="ir_weight" type="number" step="0.01" placeholder="weight (0)" />
+            <select id="ir_canStack">
+              <option value="true">canStack: true</option>
+              <option value="false">canStack: false</option>
+            </select>
+            <input id="ir_maxStack" type="number" placeholder="maxStack (1)" />
+            <input id="ir_type" placeholder="type (optional, e.g., helmet)" />
+          </div>
+          <div class="grid">
+            <label class="muted small">Default Metadata (JSON)</label>
+            <textarea id="ir_metadata" class="mono" placeholder='{"rarity":"common"}'></textarea>
+            <label class="muted small">onUse Behavior</label>
+            <select id="ir_onUsePreset">
+              <option value="none">None</option>
+              <option value="consume1">Consume 1 & log</option>
+              <option value="heal25">Heal 25 (demo) & consume</option>
+              <option value="custom">Custom code (Function)</option>
+            </select>
+            <textarea
+              id="ir_onUseCode"
+              class="mono small"
+              placeholder="// function ({inventory, item, metadata, remove, ...args}) { /* ... */ }"
+            ></textarea>
+          </div>
+          <div class="row">
+            <button class="btn primary" id="ir_define">Define / Update Item</button>
+            <button class="btn" id="ir_clear">Clear Form</button>
+          </div>
+          <div class="divider"></div>
+          <div>
+            <table class="table mono small" id="registryTable">
+              <thead>
+                <tr>
+                  <th>id</th>
+                  <th>weight</th>
+                  <th>canStack</th>
+                  <th>maxStack</th>
+                  <th>type</th>
+                  <th>metadata</th>
+                  <th>onUse</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <header><h2>Create Inventory</h2></header>
+          <div class="grid grid-3">
+            <input id="ci_maxWeight" type="number" placeholder="maxWeight (null)" />
+            <input id="ci_maxSlots" type="number" placeholder="maxSlots (null)" />
+            <select id="ci_useSections">
+              <option value="false">useSections: false</option>
+              <option value="true">useSections: true</option>
+            </select>
+          </div>
+
+          <div id="ci_sectionsBox" style="display: none">
+            <div class="row">
+              <span class="muted small">Sections</span>
+              <button id="ci_addSection" class="btn">+ Add Section</button>
+            </div>
+            <div id="ci_sectionsList" class="list"></div>
+          </div>
+
+          <div class="divider"></div>
+          <div>
+            <div class="row">
+              <span class="muted small">Special Slots</span>
+              <button id="ci_addSlot" class="btn">+ Add Slot</button>
+            </div>
+            <div id="ci_slotsList" class="list"></div>
+          </div>
+
+          <div class="divider"></div>
+          <div class="row">
+            <button class="btn ok" id="ci_create">Create Inventory</button>
+            <span class="muted small" id="ci_status"></span>
+          </div>
+        </div>
+
+        <div class="card">
+          <header><h2>Serialization</h2></header>
+          <div class="row">
+            <button class="btn" id="ser_toJSON">Export JSON</button>
+            <button class="btn" id="ser_fromJSON">Import JSON</button>
+            <button class="btn warn" id="ser_diff">Diff vs Current</button>
+          </div>
+          <textarea id="ser_text" class="mono" placeholder="JSON will appear here..."></textarea>
+          <pre id="ser_diffOut" class="mono small" style="display: none"></pre>
+        </div>
+
+        <div class="card">
+          <header><h2>Stress / Random</h2></header>
+          <div class="grid grid-3">
+            <input id="st_runs" type="number" value="100" />
+            <button class="btn" id="st_addRandom">Add random items</button>
+            <button class="btn bad" id="st_clearInv">Clear inventory</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT PANEL: Actions & Views -->
+      <div class="col">
+        <div class="card">
+          <header><h2>Actions</h2></header>
+          <div class="grid grid-4">
+            <input id="ac_itemId" placeholder="itemId" />
+            <input id="ac_qty" type="number" value="1" />
+            <input id="ac_section" placeholder="sectionId (optional)" />
+            <input id="ac_metadata" class="mono" placeholder="instance metadata JSON (optional)" />
+          </div>
+          <div class="row">
+            <button class="btn primary" id="ac_add">Add</button>
+            <button class="btn" id="ac_remove">Remove</button>
+            <button class="btn" id="ac_use">Use</button>
+            <button class="btn" id="ac_has">Has?</button>
+          </div>
+
+          <div class="divider"></div>
+          <div class="grid grid-3">
+            <input id="ac_slotId" placeholder="slotId" />
+            <input id="ac_itemEquip" placeholder="itemId to equip" />
+            <button class="btn" id="ac_equip">Equip</button>
+          </div>
+          <div class="grid grid-3">
+            <input id="ac_slotUnequip" placeholder="slotId" />
+            <button class="btn" id="ac_unequip">Unequip</button>
+            <span></span>
+          </div>
+
+          <div class="divider"></div>
+          <div class="grid grid-2">
+            <input id="ac_findPredicate" class="mono" placeholder="item => item.id === 'apple'" />
+            <button class="btn" id="ac_find">find() / findItems()</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <header><h2>Inventory View</h2></header>
+          <div id="inv_summary" class="chips"></div>
+          <div id="inv_view"></div>
+        </div>
+
+        <div class="card">
+          <header><h2>Events</h2></header>
+          <div class="row">
+            <button class="btn" id="ev_clear">Clear Logs</button>
+            <span class="muted small">Logs: add/remove/use</span>
+          </div>
+          <div id="ev_logs" class="list mono small" style="max-height: 220px"></div>
+        </div>
+
+        <div class="card">
+          <header><h2>Diagnostics</h2></header>
+          <pre id="diag" class="mono small"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Include your TinyInventory class BEFORE this script.
+       Example:
+       <script src="TinyInventory.js"></script>
+       or expose it as window.TinyInventory -->
+    <script type="module" id="harness">
+      import { TinyInventory } from './src/v1/libs/TinyInventory.mjs';
+      import { TinyToastNotify } from './src/v1/libs/TinyToastNotify.mjs';
+
+      const tinyToast = new TinyToastNotify('bottom', 'right', 3000, 60);
+      window.TinyInventory = TinyInventory;
+      const $ = (s) => document.querySelector(s);
+      const $$ = (s) => Array.from(document.querySelectorAll(s));
+      const byId = (id) => document.getElementById(id);
+
+      /** @type {TinyInventory|null} */
+      let inv = null;
+
+      // ---------- Helpers ----------
+      function parseJSON(input, fallback = {}) {
+        if (!input || !String(input).trim()) return fallback;
+        try {
+          return JSON.parse(input);
+        } catch (e) {
+          toast('Invalid JSON: ' + e.message, 'bad');
+          return fallback;
+        }
+      }
+      function toast(msg, type = '') {
+        tinyToast.show(msg);
+        console.log('[UI]', msg, type);
+      }
+
+      function numberOrNull(v) {
+        if (v === '' || v === null || v === undefined) return null;
+        const n = Number(v);
+        return Number.isFinite(n) ? n : null;
+      }
+
+      function renderRegistry() {
+        const tbody = byId('registryTable').querySelector('tbody');
+        tbody.innerHTML = '';
+        for (const [id, def] of TinyInventory.ItemRegistry.entries()) {
+          const tr = document.createElement('tr');
+          const onUse = def.onUse ? 'fn' : '-';
+          tr.innerHTML = `
+          <td>${id}</td>
+          <td>${def.weight ?? 0}</td>
+          <td>${def.canStack ? 'yes' : 'no'}</td>
+          <td>${def.maxStack}</td>
+          <td>${def.type ?? '-'}</td>
+          <td class="small mono">${escapeHTML(JSON.stringify(def.metadata ?? {}))}</td>
+          <td>${onUse}</td>
+        `;
+          tbody.appendChild(tr);
+        }
+      }
+
+      function escapeHTML(s) {
+        return String(s).replace(
+          /[&<>"']/g,
+          (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
+        );
+      }
+
+      function refreshKPI() {
+        byId('kpiSections').textContent = inv?.useSections
+          ? String(inv.sections?.length ?? 0)
+          : '0';
+        byId('kpiStacks').textContent = String(inv ? inv.getAllItems().length : 0);
+        let total = 0;
+        if (inv) for (const it of inv.getAllItems()) total += it.quantity;
+        byId('kpiTotal').textContent = String(total);
+        byId('kpiWeight').textContent = inv ? String(inv.calculateWeight()) : '0';
+        renderDiag();
+      }
+
+      function renderInv() {
+        const container = byId('inv_view');
+        container.innerHTML = '';
+        if (!inv) {
+          container.innerHTML = '<div class="muted">No inventory created yet.</div>';
+          return;
+        }
+
+        const chip = (text) => {
+          const div = document.createElement('div');
+          div.classList.add('chip');
+          div.textContent = text;
+          return div;
+        }
+
+        // Summary chips
+        const sum = byId('inv_summary');
+        sum.innerHTML = '';
+        sum.append(chip(`maxWeight: ${inv.maxWeight ?? '∞'}`));
+        sum.append(chip(`maxSlots: ${inv.maxSlots ?? '∞'}`));
+        sum.append(chip(`useSections: ${String(inv.useSections)}`));
+
+        // Special slots
+        const sp = document.createElement('div');
+        sp.className = 'card';
+        sp.innerHTML = `<h3>Special Slots</h3>`;
+        const table = document.createElement('table');
+        table.className = 'table mono small';
+        table.innerHTML = `<thead><tr><th>slot</th><th>type</th><th>item</th><th>actions</th></tr></thead><tbody></tbody>`;
+        const tb = table.querySelector('tbody');
+        for (const [slotId, slot] of inv.specialSlots.entries()) {
+          const tr = document.createElement('tr');
+          const itemLabel = slot.item ? `${slot.item.id} x${slot.item.quantity}` : '-';
+          tr.innerHTML = `
+          <td>${slotId}</td>
+          <td>${slot.type ?? '-'}</td>
+          <td>${itemLabel}</td>
+          <td>
+            <div class="inline">
+              <input data-slot="${slotId}" class="mono small" placeholder="itemId to equip" style="width:160px">
+              <button class="btn" data-eq="${slotId}">Equip</button>
+              <button class="btn" data-uneq="${slotId}">Unequip</button>
+            </div>
+          </td>
+        `;
+          tb.appendChild(tr);
+        }
+        sp.appendChild(table);
+        container.appendChild(sp);
+
+        // Items
+        if (inv.useSections) {
+          inv.sections?.forEach((sec) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `<h3>Section: ${sec.id} <span class="muted small">[slots: ${sec.slots}]</span></h3>`;
+            card.appendChild(renderItemsTable(sec.items, sec.id));
+            container.appendChild(card);
+          });
+        } else {
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `<h3>Items</h3>`;
+          card.appendChild(renderItemsTable(inv.items, null));
+          container.appendChild(card);
+        }
+
+        refreshKPI();
+
+        // Bind dynamic equip/unequip
+        container.querySelectorAll('[data-eq]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const slotId = btn.getAttribute('data-eq');
+            const input = container.querySelector(`input[data-slot="${slotId}"]`);
+            const itemId = input.value.trim();
+            if (!itemId) return toast('ItemId required', 'warn');
+            try {
+              inv.equipItem(slotId, itemId);
+              logEvent('equip', { slotId, itemId });
+              renderInv();
+            } catch (e) {
+              toast(e.message, 'bad');
+            }
+          });
+        });
+        container.querySelectorAll('[data-uneq]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const slotId = btn.getAttribute('data-uneq');
+            try {
+              inv.unequipItem(slotId);
+              logEvent('unequip', { slotId });
+              renderInv();
+            } catch (e) {
+              toast(e.message, 'bad');
+            }
+          });
+        });
+      }
+
+      function renderItemsTable(set, sectionId) {
+        const table = document.createElement('table');
+        table.className = 'table mono small';
+        table.innerHTML = `<thead><tr><th>id</th><th>qty</th><th>metadata</th><th>actions</th></tr></thead><tbody></tbody>`;
+        const tb = table.querySelector('tbody');
+        for (const it of set) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+          <td>${it.id}</td>
+          <td>${it.quantity}</td>
+          <td class="small">${escapeHTML(JSON.stringify(it.metadata ?? {}))}</td>
+          <td>
+            <div class="inline">
+              <button class="btn" data-act="use" data-id="${it.id}">Use</button>
+              <button class="btn" data-act="rm1" data-id="${it.id}">-1</button>
+              <button class="btn bad" data-act="rmAll" data-id="${it.id}">Remove all</button>
+            </div>
+          </td>
+        `;
+          tb.appendChild(tr);
+        }
+        // Bind
+        tb.querySelectorAll('button[data-act]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-id');
+            const act = btn.getAttribute('data-act');
+            try {
+              if (act === 'use') {
+                inv.useItem(id);
+                logEvent('use-click', { id });
+              }
+              if (act === 'rm1') {
+                inv.removeItem(id, 1);
+                logEvent('remove-1', { id });
+              }
+              if (act === 'rmAll') {
+                const qty = inv.getItemCount(id);
+                inv.removeItem(id, qty);
+                logEvent('remove-all', { id, qty });
+              }
+              renderInv();
+            } catch (e) {
+              toast(e.message, 'bad');
+            }
+          });
+        });
+        return table;
+      }
+
+      function logEvent(type, payload) {
+        const box = byId('ev_logs');
+        const line = document.createElement('div');
+        line.textContent = `[${new Date().toLocaleTimeString()}] ${type} :: ${safeStr(payload)}`;
+        box.prepend(line);
+      }
+      function safeStr(v) {
+        try {
+          return JSON.stringify(v);
+        } catch {
+          return String(v);
+        }
+      }
+
+      function renderDiag() {
+        if (!inv) {
+          byId('diag').textContent = 'No inventory.';
+          return;
+        }
+        const obj = {
+          maxWeight: inv.maxWeight,
+          maxSlots: inv.maxSlots,
+          useSections: inv.useSections,
+          totalStacks: inv.getAllItems().length,
+          totalItems: inv.getAllItems().reduce((n, i) => n + i.quantity, 0),
+          weight: inv.calculateWeight(),
+          specialSlots: Array.from(inv.specialSlots.entries()).map(([k, v]) => ({
+            slotId: k,
+            type: v.type,
+            item: v.item,
+          })),
+          sections: inv.useSections
+            ? inv.sections?.map((s) => ({ id: s.id, slots: s.slots, stacks: [...s.items] }))
+            : null,
+          items: !inv.useSections ? [...(inv.items ?? [])] : null,
+        };
+        byId('diag').textContent = JSON.stringify(obj, null, 2);
+      }
+
+      // ---------- Item Registry UI ----------
+      byId('ir_define').addEventListener('click', () => {
+        const id = byId('ir_id').value.trim();
+        const weight = Number(byId('ir_weight').value || 0);
+        const canStack = byId('ir_canStack').value === 'true';
+        const maxStack = Number(byId('ir_maxStack').value || (canStack ? 99 : 1));
+        const type = byId('ir_type').value.trim() || null;
+        const metadata = parseJSON(byId('ir_metadata').value, {});
+        let onUse = null;
+        const preset = byId('ir_onUsePreset').value;
+        const code = byId('ir_onUseCode').value.trim();
+
+        if (preset === 'consume1') {
+          onUse = ({ remove, item }) => {
+            remove();
+            console.log('[onUse] consumed', item.id);
+          };
+        } else if (preset === 'heal25') {
+          onUse = ({ remove, item }) => {
+            remove();
+            console.log('[onUse] heal +25 from', item.id);
+          };
+        } else if (preset === 'custom' && code) {
+          try {
+            // eslint-disable-next-line no-new-func
+            onUse = new Function(
+              'ctx',
+              `
+            "use strict";
+            const {inventory, item, metadata, remove} = ctx;
+            ${code.startsWith('function') ? `return (${code})(ctx);` : code}
+          `,
+            );
+            const fwrap = onUse;
+            onUse = (ctx) => fwrap(ctx);
+          } catch (e) {
+            toast('Invalid onUse function: ' + e.message, 'bad');
+            onUse = null;
+          }
+        }
+
+        try {
+          TinyInventory.defineItem({ id, weight, metadata, canStack, maxStack, type, onUse });
+          renderRegistry();
+          toast(`Item '${id}' defined`, 'ok');
+        } catch (e) {
+          toast(e.message, 'bad');
+        }
+      });
+
+      byId('ir_clear').addEventListener('click', () => {
+        ['ir_id', 'ir_weight', 'ir_maxStack', 'ir_type', 'ir_metadata', 'ir_onUseCode'].forEach(
+          (id) => (byId(id).value = ''),
+        );
+        byId('ir_canStack').value = 'true';
+        byId('ir_onUsePreset').value = 'none';
+      });
+
+      renderRegistry();
+
+      // ---------- Create Inventory ----------
+      function addSectionRow(id = '', slots = 10) {
+        const div = document.createElement('div');
+        div.className = 'row';
+        div.innerHTML = `
+        <input class="sec_id" placeholder="section id" value="${id}">
+        <input class="sec_slots" type="number" placeholder="slots" value="${slots}">
+        <button class="btn bad">Remove</button>
+      `;
+        div.querySelector('button').addEventListener('click', () => div.remove());
+        byId('ci_sectionsList').appendChild(div);
+      }
+      function addSlotRow(id = '', type = '') {
+        const div = document.createElement('div');
+        div.className = 'row';
+        div.innerHTML = `
+        <input class="slot_id" placeholder="slot id" value="${id}">
+        <input class="slot_type" placeholder="type (optional)" value="${type}">
+        <button class="btn bad">Remove</button>
+      `;
+        div.querySelector('button').addEventListener('click', () => div.remove());
+        byId('ci_slotsList').appendChild(div);
+      }
+
+      byId('ci_useSections').addEventListener('change', (e) => {
+        const use = e.target.value === 'true';
+        byId('ci_sectionsBox').style.display = use ? '' : 'none';
+      });
+      byId('ci_addSection').addEventListener('click', () => addSectionRow('', 10));
+      byId('ci_addSlot').addEventListener('click', () => addSlotRow());
+
+      byId('ci_create').addEventListener('click', () => {
+        const maxWeight = numberOrNull(byId('ci_maxWeight').value);
+        const maxSlots = numberOrNull(byId('ci_maxSlots').value);
+        const useSections = byId('ci_useSections').value === 'true';
+        /** @type {Array<{id:string, slots:number}>} */
+        const sections = [];
+        if (useSections) {
+          $$('#ci_sectionsList .row').forEach((r) => {
+            const id = r.querySelector('.sec_id').value.trim() || undefined;
+            const slots = Number(r.querySelector('.sec_slots').value || 10);
+            sections.push({ id, slots });
+          });
+        }
+        /** @type {Record<string, {type:string|null}>} */
+        const specialSlots = {};
+        $$('#ci_slotsList .row').forEach((r) => {
+          const id = r.querySelector('.slot_id').value.trim();
+          const type = r.querySelector('.slot_type').value.trim() || null;
+          if (id) specialSlots[id] = { type };
+        });
+
+        try {
+          inv = new TinyInventory({ maxWeight, maxSlots, useSections, sections, specialSlots });
+          window.inventory = inv;
+          // attach event logs
+          inv.onAddItem((e) => logEvent('onAdd', e));
+          inv.onRemoveItem((e) => logEvent('onRemove', e));
+          inv.onUseItem((e) => logEvent('onUse', e));
+          byId('ci_status').textContent = 'Inventory created.';
+          renderInv();
+        } catch (e) {
+          toast(e.message, 'bad');
+        }
+      });
+
+      // ---------- Actions ----------
+      byId('ac_add').addEventListener('click', () => {
+        if (!inv) return toast('Create an inventory first', 'warn');
+        const id = byId('ac_itemId').value.trim();
+        const qty = Number(byId('ac_qty').value || 1);
+        const section = byId('ac_section').value.trim() || null;
+        const metadata = parseJSON(byId('ac_metadata').value, {});
+        try {
+          const rem = inv.addItem(id, qty, section || null, metadata);
+          if (rem > 0) toast(`Could not add ${rem} units due to maxStack`, 'warn');
+          else toast('Added', 'ok');
+          renderInv();
+        } catch (e) {
+          toast(e.message, 'bad');
+        }
+      });
+
+      byId('ac_remove').addEventListener('click', () => {
+        if (!inv) return toast('Create an inventory first', 'warn');
+        const id = byId('ac_itemId').value.trim();
+        const qty = Number(byId('ac_qty').value || 1);
+        try {
+          const ok = inv.removeItem(id, qty);
+          toast(ok ? 'Removed' : 'Not enough items', ok ? 'ok' : 'warn');
+          renderInv();
+        } catch (e) {
+          toast(e.message, 'bad');
+        }
+      });
+
+      byId('ac_use').addEventListener('click', () => {
+        if (!inv) return toast('Create an inventory first', 'warn');
+        const id = byId('ac_itemId').value.trim();
+        try {
+          const res = inv.useItem(id, { source: 'UI' });
+          toast('useItem executed (check console for returns)', 'ok');
+          console.log('[useItem return]', res);
+          renderInv();
+        } catch (e) {
+          toast(e.message, 'bad');
+        }
+      });
+
+      byId('ac_has').addEventListener('click', () => {
+        if (!inv) return toast('Create an inventory first', 'warn');
+        const id = byId('ac_itemId').value.trim();
+        const qty = Number(byId('ac_qty').value || 1);
+        toast(`hasItem(${id}, ${qty}) => ${inv.hasItem(id, qty)}`);
+      });
+
+      byId('ac_equip').addEventListener('click', () => {
+        if (!inv) return toast('Create an inventory first', 'warn');
+        const slotId = byId('ac_slotId').value.trim();
+        const itemId = byId('ac_itemEquip').value.trim();
+        try {
+          inv.equipItem(slotId, itemId);
+          renderInv();
+          toast(`Equipped '${itemId}' in '${slotId}'`, 'ok');
+        } catch (e) {
+          toast(e.message, 'bad');
+        }
+      });
+
+      byId('ac_unequip').addEventListener('click', () => {
+        if (!inv) return toast('Create an inventory first', 'warn');
+        const slotId = byId('ac_slotUnequip').value.trim();
+        try {
+          const ok = inv.unequipItem(slotId);
+          toast(ok ? 'Unequipped' : 'Slot empty', ok ? 'ok' : 'warn');
+          renderInv();
+        } catch (e) {
+          toast(e.message, 'bad');
+        }
+      });
+
+      byId('ac_find').addEventListener('click', () => {
+        if (!inv) return toast('Create an inventory first', 'warn');
+        const src = byId('ac_findPredicate').value.trim();
+        let fn;
+        try {
+          // eslint-disable-next-line no-new-func
+          fn = new Function('item', `return (${src});`);
+        } catch (e) {
+          return toast('Invalid predicate: ' + e.message, 'bad');
+        }
+        try {
+          const one = inv.findItem(fn);
+          const many = inv.findItems(fn);
+          console.log('[findItem]', one);
+          console.log('[findItems]', many);
+          toast(`findItem => ${one ? one.id + ' x' + one.quantity : 'undefined'}`);
+        } catch (e) {
+          toast(e.message, 'bad');
+        }
+      });
+
+      // ---------- Serialization ----------
+      byId('ser_toJSON').addEventListener('click', () => {
+        if (!inv) return toast('Create an inventory first', 'warn');
+        try {
+          const json = inv.toJSON ? inv.toJSON(2) : JSON.stringify(inv.toObject(), null, 2);
+          byId('ser_text').value = json;
+          toast('Exported JSON', 'ok');
+        } catch (e) {
+          toast(e.message, 'bad');
+        }
+      });
+
+      byId('ser_fromJSON').addEventListener('click', () => {
+        if (!TinyInventory || !TinyInventory.fromJSON)
+          return toast('Your TinyInventory is missing fromJSON()', 'bad');
+        const txt = byId('ser_text').value;
+        try {
+          inv = TinyInventory.fromJSON(txt, { validate: true, enforceLimits: false });
+          // re-bind events
+          inv.onAddItem((e) => logEvent('onAdd', e));
+          inv.onRemoveItem((e) => logEvent('onRemove', e));
+          inv.onUseItem((e) => logEvent('onUse', e));
+          renderInv();
+          toast('Inventory imported from JSON', 'ok');
+        } catch (e) {
+          toast(e.message, 'bad');
+        }
+      });
+
+      byId('ser_diff').addEventListener('click', () => {
+        if (!inv) return toast('Create an inventory first', 'warn');
+        const target = parseJSON(byId('ser_text').value, null);
+        if (!target) return toast('Provide JSON to diff against.', 'warn');
+        const current = inv.toObject ? inv.toObject() : null;
+        if (!current) return toast('Your TinyInventory is missing toObject()', 'bad');
+        const diff = jsonDiff(current, target);
+        const out = byId('ser_diffOut');
+        out.style.display = 'block';
+        out.textContent = JSON.stringify(diff, null, 2);
+      });
+
+      byId('ev_clear').addEventListener('click', () => (byId('ev_logs').innerHTML = ''));
+
+      // ---------- Stress / Random ----------
+      byId('st_addRandom').addEventListener('click', () => {
+        if (!inv) return toast('Create an inventory first', 'warn');
+        const runs = Number(byId('st_runs').value || 100);
+        const keys = [...TinyInventory.ItemRegistry.keys()];
+        if (!keys.length) return toast('Define items first', 'warn');
+        let added = 0;
+        for (let i = 0; i < runs; i++) {
+          const id = keys[Math.floor(Math.random() * keys.length)];
+          const qty = 1 + Math.floor(Math.random() * 3);
+          const meta = Math.random() < 0.4 ? { seed: Math.floor(Math.random() * 10) } : {};
+          try {
+            inv.addItem(id, qty, null, meta);
+            added++;
+          } catch (e) {
+            /* ignore */
+          }
+        }
+        toast(`Random add runs=${runs}, succeeded=${added}`, 'ok');
+        renderInv();
+      });
+
+      byId('st_clearInv').addEventListener('click', () => {
+        if (!inv) return toast('Create an inventory first', 'warn');
+        // Recreate inventory with same options, empty items
+        const opts = {
+          maxWeight: inv.maxWeight,
+          maxSlots: inv.maxSlots,
+          useSections: inv.useSections,
+          sections: inv.useSections ? inv.sections.map((s) => ({ id: s.id, slots: s.slots })) : [],
+          specialSlots: Object.fromEntries(
+            Array.from(inv.specialSlots.entries()).map(([k, v]) => [k, { type: v.type }]),
+          ),
+        };
+        inv = new TinyInventory(opts);
+        inv.onAddItem((e) => logEvent('onAdd', e));
+        inv.onRemoveItem((e) => logEvent('onRemove', e));
+        inv.onUseItem((e) => logEvent('onUse', e));
+        renderInv();
+        toast('Inventory cleared', 'warn');
+      });
+
+      // ---------- JSON diff (simple, readable) ----------
+      function jsonDiff(a, b, path = '$') {
+        const out = [];
+        if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) {
+          if (safeStr(a) !== safeStr(b)) out.push({ path, from: a, to: b });
+          return out;
+        }
+        const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+        for (const k of keys) {
+          const pa = a[k],
+            pb = b[k],
+            p = path + '.' + k;
+          if (typeof pa === 'object' && pa && typeof pb === 'object' && pb) {
+            out.push(...jsonDiff(pa, pb, p));
+          } else if (safeStr(pa) !== safeStr(pb)) {
+            out.push({ path: p, from: pa, to: pb });
+          }
+        }
+        return out;
+      }
+
+      // Initial seed: a few items to play quickly
+      (function seed() {
+        try {
+          TinyInventory.defineItem({
+            id: 'apple',
+            weight: 0.2,
+            canStack: true,
+            maxStack: 10,
+            metadata: { rarity: 'common' },
+            onUse: ({ remove }) => remove(),
+            type: null,
+          });
+          TinyInventory.defineItem({
+            id: 'potion',
+            weight: 0.5,
+            canStack: true,
+            maxStack: 5,
+            metadata: { heal: 25 },
+            onUse: ({ remove }) => {
+              console.log('Heal +25');
+              remove();
+            },
+            type: null,
+          });
+          TinyInventory.defineItem({
+            id: 'helmet_iron',
+            weight: 2,
+            canStack: false,
+            maxStack: 1,
+            metadata: { def: 2 },
+            type: 'helmet',
+          });
+          TinyInventory.defineItem({
+            id: 'sword_wood',
+            weight: 1.2,
+            canStack: false,
+            maxStack: 1,
+            metadata: { atk: 1 },
+            type: 'weapon',
+          });
+          renderRegistry();
+        } catch (e) {
+          /* ignore if already defined */
+        }
+      })();
+    </script>
+  </body>
+</html>
