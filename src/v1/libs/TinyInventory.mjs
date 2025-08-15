@@ -273,6 +273,28 @@ class TinyInventory {
   }
 
   /**
+   * Removes all unnecessary `null` values from the inventory, compacting the slots.
+   * Preserves the relative order of items and does not modify metadata.
+   * Works for both section-based and single-list inventories.
+   */
+  compactInventory() {
+    /** @param {Set<InventoryItem|null>} collection */
+    const compact = (collection) => {
+      const filtered = Array.from(collection).filter((i, index) => {
+        const result = i !== null;
+        if (!result) this.#triggerEvent('remove', { index, itemId: null, quantity: 1, collection });
+        return result;
+      });
+      collection.clear();
+      filtered.forEach((i) => collection.add(i));
+    };
+
+    if (this.useSections && this.sections) {
+      for (const section of this.sections) compact(section.items);
+    } else if (!this.useSections && this.items) compact(this.items);
+  }
+
+  /**
    * Adds an item to the inventory, respecting stackability rules, stack limits, and metadata matching.
    * If the item cannot be fully added (e.g., due to stack limits), the remaining quantity is returned.
    *
@@ -345,9 +367,26 @@ class TinyInventory {
    * @param {number} slotIndex - Index of the slot to set.
    * @param {InventoryItem|null} item - Item to place in the slot, or null to clear.
    * @param {string|null} [targetSection=null] - Section ID (if using sections).
-   * @throws {Error} If the section is invalid or index is out of range.
+   * @throws {Error} If the section is invalid, index is out of range, or item type is invalid.
    */
   setItem(slotIndex, item, targetSection = null) {
+    // Validate type: must be null or a proper InventoryItem object
+    const isInventoryItem =
+      item &&
+      typeof item === 'object' &&
+      typeof item.id === 'string' &&
+      typeof item.quantity === 'number' &&
+      !Number.isNaN(item.quantity) &&
+      Number.isFinite(item.quantity) &&
+      item.quantity > -1 &&
+      typeof item.metadata === 'object';
+
+    if (item !== null && !isInventoryItem)
+      throw new Error(`Invalid item type: must be null or a valid InventoryItem.`);
+
+    const def = item ? TinyInventory.ItemRegistry.get(item.id) : null;
+    if (item !== null && !def) throw new Error(`Item '${item.id}' not defined in registry.`);
+
     /** @type {InvSlots|null} */
     let collection = null;
 
