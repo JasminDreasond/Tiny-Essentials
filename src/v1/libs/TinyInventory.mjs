@@ -464,8 +464,8 @@ class TinyInventory {
    */
   moveItem(fromIndex, toIndex, fromSection = null, toSection = null) {
     const sourceCollection = this.useSections
-      ? this.sections.find((s) => s.id === fromSection)?.items
-      : this.items;
+      ? (this.sections?.find((s) => s.id === fromSection)?.items ?? null)
+      : (this.items ?? null);
 
     if (!sourceCollection) {
       throw new Error(`Source section '${fromSection}' not found.`);
