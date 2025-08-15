@@ -41,7 +41,7 @@
 /**
  * A collection of item stacks stored in the inventory.
  *
- * @typedef {Set<InventoryItem>} InvSlots
+ * @typedef {Set<InventoryItem|null>} InvSlots
  */
 
 /**
@@ -62,6 +62,12 @@
  * Event fired when an item is added to the inventory.
  *
  * @typedef {Function} AddItemEvent
+ */
+
+/**
+ * Event fired when an item is setted to the inventory.
+ *
+ * @typedef {Function} SetItemEvent
  */
 
 /**
@@ -89,9 +95,9 @@
  * @property {Array<{
  *   id: string;
  *   slots: number;
- *   items: InventoryItem[];
+ *   items: (InventoryItem|null)[];
  * }> | null} sections - List of section definitions with their items, or null if not using sections.
- * @property {InventoryItem[] | null} items - Flat inventory items if not using sections, or null if using sections.
+ * @property {(InventoryItem|null)[] | null} items - Flat inventory items if not using sections, or null if using sections.
  * @property {Record<string, SpecialSlot>} specialSlots - Special equipment or reserved slots keyed by ID.
  */
 
@@ -145,6 +151,8 @@ class TinyInventory {
     remove: [],
     /** @type {UseItemEvent[]} */
     use: [],
+    /** @type {SetItemEvent[]} */
+    set: [],
   };
 
   /** @type {InvSection[] | null} */
@@ -152,6 +160,9 @@ class TinyInventory {
 
   /** @type {InvSlots | null} */
   items;
+
+  /** @type {boolean} */
+  useSections;
 
   /**
    * Creates a new TinyInventory instance.
@@ -220,7 +231,7 @@ class TinyInventory {
 
   /**
    * Internal event trigger.
-   * @param {'add'|'remove'|'use'} type - Event type.
+   * @param {'add'|'remove'|'use'|'set'} type - Event type.
    * @param {Object} payload - Event data passed to listeners.
    */
   #triggerEvent(type, payload) {
@@ -235,6 +246,14 @@ class TinyInventory {
    */
   onAddItem(callback) {
     this.events.add.push(callback);
+  }
+
+  /**
+   * Registers a callback to be executed when an item is removed.
+   * @param {SetItemEvent} callback - Function receiving the event payload.
+   */
+  onSetItem(callback) {
+    this.events.set.push(callback);
   }
 
   /**
@@ -281,6 +300,7 @@ class TinyInventory {
       if (def.canStack) {
         for (const existing of collection) {
           if (
+            existing &&
             existing.id === itemId &&
             existing.quantity < def.maxStack &&
             metadataEquals(existing.metadata || {}, metadata)
@@ -319,6 +339,58 @@ class TinyInventory {
   }
 
   /**
+   * Sets an item at a specific slot index, replacing whatever was there.
+   * Can also be used to place `null` in the slot to clear it.
+   *
+   * @param {number} slotIndex - Index of the slot to set.
+   * @param {InventoryItem|null} item - Item to place in the slot, or null to clear.
+   * @param {string|null} [targetSection=null] - Section ID (if using sections).
+   * @throws {Error} If the section is invalid or index is out of range.
+   */
+  setItem(slotIndex, item, targetSection = null) {
+    /** @type {InvSlots|null} */
+    let collection = null;
+
+    if (targetSection && this.useSections && this.sections) {
+      const section = this.sections.find((s) => s.id === targetSection);
+      if (!section) throw new Error(`Section '${targetSection}' not found.`);
+      if (slotIndex < 0 || slotIndex >= section.slots) {
+        throw new Error(`Slot index ${slotIndex} out of range for section '${targetSection}'.`);
+      }
+      collection = section.items;
+    } else if (!this.useSections && this.items) {
+      if (this.maxSlots !== null && (slotIndex < 0 || slotIndex >= this.maxSlots)) {
+        throw new Error(`Slot index ${slotIndex} out of range.`);
+      }
+      collection = this.items;
+    } else {
+      throw new Error('Target section required for section-based inventory.');
+    }
+
+    // Convert the set to an array for index-based manipulation
+    const slotsArray = Array.from(collection);
+
+    // Fill empty slots with nulls if necessary
+    while (
+      this.maxSlots !== null &&
+      slotsArray.length < (this.useSections ? collection.size : this.maxSlots)
+    ) {
+      slotsArray.push(null);
+    }
+
+    // Set the slot
+    slotsArray[slotIndex] = item;
+
+    // Rebuild the collection from the updated array
+    collection.clear();
+    for (const slot of slotsArray) {
+      if (slot !== undefined) collection.add(slot);
+    }
+
+    this.#triggerEvent('set', { slotIndex, item, targetSection });
+  }
+
+  /**
    * Removes a given quantity of an item from the inventory.
    * @param {string} itemId - ID of the item to remove.
    * @param {number} [quantity=1] - Quantity to remove.
@@ -336,13 +408,18 @@ class TinyInventory {
       const collection = collections[index];
       if (!collection) continue;
       for (const item of Array.from(collection)) {
-        if (item.id === itemId) {
+        if (item && item.id === itemId) {
           const removeQty = Math.min(item.quantity, remaining);
           item.quantity -= removeQty;
           remaining -= removeQty;
           if (item.quantity <= 0) collection.delete(item);
           if (remaining <= 0) {
-            this.#triggerEvent('remove', { index, itemId, quantity, collection });
+            this.#triggerEvent('remove', {
+              index,
+              itemId,
+              quantity: quantity - remaining,
+              collection,
+            });
             return true;
           }
         }
@@ -448,18 +525,23 @@ class TinyInventory {
   }
 
   /**
-   * Returns all items currently stored in the inventory (across all sections if applicable).
+   * Returns all items currently stored in the inventory (across all sections if applicable),
+   * excluding null or undefined entries.
    * @returns {InventoryItem[]} Array of item objects.
    */
   getAllItems() {
-    /** @returns {InventoryItem[]} */
+    /** @returns {(InventoryItem | null)[]} */
     const getItems = () => {
       if (this.useSections) {
         if (this.sections) return this.sections.flatMap((s) => Array.from(s.items));
       } else if (this.items) return Array.from(this.items);
       return [];
     };
-    const data = [...getItems()];
+    /**
+     * Merge all sources and remove null/undefined
+     * @type {InventoryItem[]}
+     */
+    const data = [...getItems()].filter(Boolean);
     this.specialSlots.forEach((value) => {
       const item = value.item;
       if (item) data.push(item);
@@ -552,20 +634,28 @@ class TinyInventory {
         ? this.sections.map((s) => ({
             id: s.id,
             slots: s.slots,
-            items: Array.from(s.items).map((it) => ({
-              id: it.id,
-              quantity: it.quantity,
-              metadata: it.metadata ?? {},
-            })),
+            items: Array.from(s.items).map((it) =>
+              it
+                ? {
+                    id: it.id,
+                    quantity: it.quantity,
+                    metadata: it.metadata ?? {},
+                  }
+                : null,
+            ),
           }))
         : null,
 
       items: this.items
-        ? Array.from(this.items).map((it) => ({
-            id: it.id,
-            quantity: it.quantity,
-            metadata: it.metadata ?? {},
-          }))
+        ? Array.from(this.items).map((it) =>
+            it
+              ? {
+                  id: it.id,
+                  quantity: it.quantity,
+                  metadata: it.metadata ?? {},
+                }
+              : null,
+          )
         : null,
 
       specialSlots: special,
@@ -645,35 +735,41 @@ class TinyInventory {
           const target = inv.sections?.[idx];
           if (!target) return;
           const items = Array.isArray(s.items) ? s.items : [];
-          for (const it of items) {
-            ensureItemDef(it.id);
-            const safeItem = {
-              id: String(it.id),
-              quantity: Math.max(1, Number(it.quantity) || 1),
-              metadata: it.metadata && typeof it.metadata === 'object' ? it.metadata : {},
-            };
-            if (enforceLimits) {
-              // Respect limits during load by using addItem (which enforces rules)
-              inv.addItem(safeItem.id, safeItem.quantity, target.id, safeItem.metadata);
-            } else {
-              target.items.add(safeItem);
-            }
+          for (const index in items) {
+            const it = items[index];
+            if (it !== null) {
+              ensureItemDef(it.id);
+              const safeItem = {
+                id: String(it.id),
+                quantity: Math.max(1, Number(it.quantity) || 1),
+                metadata: it.metadata && typeof it.metadata === 'object' ? it.metadata : {},
+              };
+              if (enforceLimits) {
+                // Respect limits during load by using addItem (which enforces rules)
+                inv.setItem(Number(index), safeItem, target.id);
+              } else {
+                target.items.add(safeItem);
+              }
+            } else inv.setItem(Number(index), null, target.id);
           }
         });
       }
     } else if (Array.isArray(obj.items) && inv.items) {
-      for (const it of obj.items) {
-        ensureItemDef(it.id);
-        const safeItem = {
-          id: String(it.id),
-          quantity: Math.max(1, Number(it.quantity) || 1),
-          metadata: it.metadata && typeof it.metadata === 'object' ? it.metadata : {},
-        };
-        if (enforceLimits) {
-          inv.addItem(safeItem.id, safeItem.quantity, null, safeItem.metadata);
-        } else {
-          inv.items.add(safeItem);
-        }
+      for (const index in obj.items) {
+        const it = obj.items[index];
+        if (it !== null) {
+          ensureItemDef(it.id);
+          const safeItem = {
+            id: String(it.id),
+            quantity: Math.max(1, Number(it.quantity) || 1),
+            metadata: it.metadata && typeof it.metadata === 'object' ? it.metadata : {},
+          };
+          if (enforceLimits) {
+            inv.setItem(Number(index), safeItem, null);
+          } else {
+            inv.items.add(safeItem);
+          }
+        } else inv.setItem(Number(index), null, null);
       }
     }
 
