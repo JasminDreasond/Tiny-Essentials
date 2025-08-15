@@ -541,7 +541,7 @@ class TinyInventory {
      * Merge all sources and remove null/undefined
      * @type {InventoryItem[]}
      */
-    const data = [...getItems()].filter(Boolean);
+    const data = [...getItems()].filter((item) => item !== null);
     this.specialSlots.forEach((value) => {
       const item = value.item;
       if (item) data.push(item);
