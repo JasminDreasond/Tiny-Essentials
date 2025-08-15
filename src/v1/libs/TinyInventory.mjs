@@ -1,4 +1,22 @@
 /**
+ * Cleans up unnecessary trailing nulls in a collection.
+ * @param {InvSlots} collection
+ */
+function cleanNulls(collection) {
+  const arr = Array.from(collection);
+  let lastIndex = arr.length - 1;
+
+  // Find last non-null index
+  while (lastIndex >= 0 && arr[lastIndex] === null) lastIndex--;
+
+  // Slice up to last non-null + 1
+  const cleaned = arr.slice(0, lastIndex + 1);
+
+  collection.clear();
+  for (const slot of cleaned) collection.add(slot);
+}
+
+/**
  * Represents a registered item definition in the global registry.
  *
  * @typedef {Object} ItemDef
@@ -409,24 +427,62 @@ class TinyInventory {
     // Convert the set to an array for index-based manipulation
     const slotsArray = Array.from(collection);
 
-    // Fill empty slots with nulls if necessary
-    while (
-      this.maxSlots !== null &&
-      slotsArray.length < (this.useSections ? collection.size : this.maxSlots)
-    ) {
-      slotsArray.push(null);
-    }
+    // Fill empty slots with nulls only up to the desired index
+    while (slotsArray.length <= slotIndex) slotsArray.push(null);
 
     // Set the slot
     slotsArray[slotIndex] = item;
 
     // Rebuild the collection from the updated array
     collection.clear();
-    for (const slot of slotsArray) {
-      if (slot !== undefined) collection.add(slot);
-    }
+    for (const slot of slotsArray) collection.add(slot);
+
+    // Cleanup unnecessary trailing nulls
+    cleanNulls(collection);
 
     this.#triggerEvent('set', { slotIndex, item, targetSection });
+  }
+
+  /**
+   * Deletes an item from a specific slot by setting it to null.
+   *
+   * @param {number} slotIndex - Index of the slot to delete from.
+   * @param {string|null} [targetSection=null] - Section ID (if using sections).
+   */
+  deleteItem(slotIndex, targetSection = null) {
+    this.setItem(slotIndex, null, targetSection);
+  }
+
+  /**
+   * Moves an item from one slot to another (possibly across sections).
+   *
+   * @param {number} fromIndex - Source slot index.
+   * @param {number} toIndex - Target slot index.
+   * @param {string|null} [fromSection=null] - Source section ID.
+   * @param {string|null} [toSection=null] - Target section ID.
+   * @throws {Error} If the source slot is empty or the move is invalid.
+   */
+  moveItem(fromIndex, toIndex, fromSection = null, toSection = null) {
+    const sourceCollection = this.useSections
+      ? this.sections.find((s) => s.id === fromSection)?.items
+      : this.items;
+
+    if (!sourceCollection) {
+      throw new Error(`Source section '${fromSection}' not found.`);
+    }
+
+    const slotsArray = Array.from(sourceCollection);
+    const item = slotsArray[fromIndex];
+
+    if (!item) {
+      throw new Error(`No item found in slot ${fromIndex}.`);
+    }
+
+    // Place the item in the new slot
+    this.setItem(toIndex, item, toSection);
+
+    // Clear the original slot
+    this.setItem(fromIndex, null, fromSection);
   }
 
   /**
@@ -453,6 +509,7 @@ class TinyInventory {
           remaining -= removeQty;
           if (item.quantity <= 0) collection.delete(item);
           if (remaining <= 0) {
+            cleanNulls(collection);
             this.#triggerEvent('remove', {
               index,
               itemId,
@@ -463,6 +520,7 @@ class TinyInventory {
           }
         }
       }
+      cleanNulls(collection);
     }
 
     /** @type {boolean} */
@@ -474,6 +532,7 @@ class TinyInventory {
         deletedItem = true;
       }
     });
+
     return deletedItem;
   }
 
