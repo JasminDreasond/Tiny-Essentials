@@ -441,13 +441,19 @@ class TinyInventory {
    * @returns {InventoryItem[]} Array of item objects.
    */
   getAllItems() {
-    return this.useSections
-      ? this.sections
-        ? this.sections.flatMap((s) => Array.from(s.items))
-        : []
-      : this.items
-        ? Array.from(this.items)
-        : [];
+    /** @returns {InventoryItem[]} */
+    const getItems = () => {
+      if (this.useSections) {
+        if (this.sections) return this.sections.flatMap((s) => Array.from(s.items));
+      } else if (this.items) return Array.from(this.items);
+      return [];
+    };
+    const data = [...getItems()];
+    this.specialSlots.forEach((value) => {
+      const item = value.item;
+      if (item) data.push(item);
+    });
+    return data;
   }
 
   /**
