@@ -462,7 +462,9 @@ class TinyInventory {
    * @param {string|null} [toSection=null] - Target section ID.
    * @throws {Error} If the source slot is empty or the move is invalid.
    */
-  moveItem(fromIndex, toIndex, fromSection = null, toSection = null) {
+  moveItem(fromIndex, toIndex, fromSection = null, toSection = undefined) {
+    if (typeof fromSection !== 'string') throw new TypeError('fromSection must be a string.');
+
     const sourceCollection = this.useSections
       ? (this.sections?.find((s) => s.id === fromSection)?.items ?? null)
       : (this.items ?? null);
@@ -478,11 +480,14 @@ class TinyInventory {
       throw new Error(`No item found in slot ${fromIndex}.`);
     }
 
+    /** @type {[string|null, string|null]} */
+    const transport = [fromSection, toSection !== null ? (toSection ?? fromSection) : null];
+
     // Place the item in the new slot
-    this.setItem(toIndex, item, toSection);
+    this.setItem(toIndex, item, transport[1]);
 
     // Clear the original slot
-    this.setItem(fromIndex, null, fromSection);
+    this.setItem(fromIndex, null, transport[0]);
   }
 
   /**
