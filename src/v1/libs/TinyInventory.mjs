@@ -1,54 +1,98 @@
 /**
+ * Represents a registered item definition in the global registry.
+ *
  * @typedef {Object} ItemDef
  * @property {string} id - Unique identifier for the item.
  * @property {number} weight - Weight of a single unit of the item.
- * @property {InventoryMetadata} metadata - Metadata specific to this item instance.
+ * @property {InventoryMetadata} metadata - Default metadata for the item type.
  * @property {boolean} canStack - Whether multiple units can be stacked together.
- * @property {number} maxStack - Maximum quantity allowed in a single stack (ignored if `canStack` is false).
+ * @property {number} maxStack - Maximum quantity per stack (ignored if `canStack` is false).
  * @property {Function|null} onUse - Callback triggered when the item is used.
  * @property {string|null} type - Optional category/type identifier.
  */
 
 /**
+ * Represents an individual stored item instance in the inventory.
+ *
  * @typedef {Object} InventoryItem
  * @property {string} id - Unique identifier for the item.
  * @property {InventoryMetadata} metadata - Metadata specific to this item instance.
- * @property {number} quantity
+ * @property {number} quantity - Number of units in this stack.
  */
 
 /**
+ * Configuration object for creating a section in the inventory.
+ *
  * @typedef {Object} SectionCfg
- * @property {string} [id]
- * @property {number} [slots=10]
- * @property {InvSlots} items
+ * @property {string} [id] - Optional unique section identifier.
+ * @property {number} [slots=10] - Maximum number of item slots in the section.
+ * @property {InvSlots} items - Items contained in the section.
  */
 
 /**
+ * Represents an active inventory section with its stored items.
+ *
  * @typedef {Object} InvSection
- * @property {string} id
- * @property {number} slots
- * @property {InvSlots} items
+ * @property {string} id - Unique identifier for the section.
+ * @property {number} slots - Maximum number of item slots.
+ * @property {InvSlots} items - Items currently stored in this section.
  */
 
 /**
+ * A collection of item stacks stored in the inventory.
+ *
  * @typedef {Set<InventoryItem>} InvSlots
  */
 
 /**
- * @typedef {Record<string|number|symbol, any>} InventoryMetadata
  * Metadata object used to store arbitrary key-value pairs for an item.
+ *
+ * @typedef {Record<string|number|symbol, any>} InventoryMetadata
  */
 
 /**
- * @typedef {function} AddItemEvent
+ * Represents a special slot (e.g., equipment) in the inventory.
+ *
+ * @typedef {Object} SpecialSlot
+ * @property {string|null} type - Optional slot category/type.
+ * @property {InventoryItem|null} item - Item currently equipped in this slot.
  */
 
 /**
- * @typedef {function} RemoveItemEvent
+ * Event fired when an item is added to the inventory.
+ *
+ * @typedef {Function} AddItemEvent
  */
 
 /**
- * @typedef {function} UseItemEvent
+ * Event fired when an item is removed from the inventory.
+ *
+ * @typedef {Function} RemoveItemEvent
+ */
+
+/**
+ * Event fired when an item is used.
+ *
+ * @typedef {Function} UseItemEvent
+ */
+
+/**
+ * Represents the fully serialized structure of a TinyInventory instance.
+ * Intended for pure JSON storage and transmission.
+ *
+ * @typedef {Object} SerializedInventory
+ * @property {'TinyInventory'} __schema - Schema identifier for validation.
+ * @property {number} version - Serialized format version.
+ * @property {number|null} maxWeight - Maximum allowed weight, or null if unlimited.
+ * @property {number|null} maxSlots - Maximum allowed slots, or null if unlimited.
+ * @property {boolean} useSections - Whether the inventory uses sections.
+ * @property {Array<{
+ *   id: string;
+ *   slots: number;
+ *   items: InventoryItem[];
+ * }> | null} sections - List of section definitions with their items, or null if not using sections.
+ * @property {InventoryItem[] | null} items - Flat inventory items if not using sections, or null if using sections.
+ * @property {Record<string, SpecialSlot>} specialSlots - Special equipment or reserved slots keyed by ID.
  */
 
 class TinyInventory {
@@ -88,7 +132,7 @@ class TinyInventory {
     });
   }
 
-  /** @type {Map<string, { type: string|null; item: InventoryItem | null; }>} */
+  /** @type {Map<string, SpecialSlot>} */
   specialSlots = new Map();
 
   /**
@@ -117,7 +161,7 @@ class TinyInventory {
    * @param {number|null} [options.maxSlots=null] - Maximum number of item slots (null for no limit).
    * @param {boolean} [options.useSections=false] - Whether inventory is divided into separate sections.
    * @param {SectionCfg[]} [options.sections=[]] - Section definitions (only used if `useSections` is true).
-   * @param {Record<string, { type: string | null; }} [options.specialSlots] - IDs for special slots (e.g., "helmet", "weapon").
+   * @param {Record<string, { type: string | null; }>} [options.specialSlots] - IDs for special slots (e.g., "helmet", "weapon").
    */
   constructor(options = {}) {
     this.maxWeight = options.maxWeight ?? null;
@@ -459,64 +503,211 @@ class TinyInventory {
   }
 
   /**
-   * Serializes the inventory into a JSON string.
-   * @returns {string} Serialized JSON representation of the inventory.
+   * Creates a plain JSON-safe object representing the current inventory state.
+   * Functions (e.g., onUse) are NOT serialized; only instance state is saved.
+   * @returns {SerializedInventory} A plain object safe to JSON.stringify.
    */
-  toJSON() {
-    return JSON.stringify({
+  toObject() {
+    /** @type {Record<string, { type: string|null, item: InventoryItem|null }>} */
+    const special = {};
+    for (const [slotId, slotObj] of this.specialSlots.entries()) {
+      special[slotId] = {
+        type: slotObj?.type ?? null,
+        item: slotObj?.item
+          ? {
+              id: slotObj.item.id,
+              quantity: slotObj.item.quantity,
+              metadata: slotObj.item.metadata ?? {},
+            }
+          : null,
+      };
+    }
+
+    return {
+      __schema: 'TinyInventory',
+      version: 1,
+
       maxWeight: this.maxWeight,
       maxSlots: this.maxSlots,
-      useSections: this.useSections,
+      useSections: !!this.useSections,
+
       sections: this.sections
         ? this.sections.map((s) => ({
             id: s.id,
             slots: s.slots,
-            items: Array.from(s.items),
+            items: Array.from(s.items).map((it) => ({
+              id: it.id,
+              quantity: it.quantity,
+              metadata: it.metadata ?? {},
+            })),
           }))
         : null,
-      items: this.items ? Array.from(this.items) : null,
-      specialSlots: Array.from(this.specialSlots.entries()),
-    });
+
+      items: this.items
+        ? Array.from(this.items).map((it) => ({
+            id: it.id,
+            quantity: it.quantity,
+            metadata: it.metadata ?? {},
+          }))
+        : null,
+
+      specialSlots: special,
+    };
   }
 
   /**
-   * Creates a TinyInventory instance from serialized JSON data.
-   * @param {string} json - JSON string or parsed object.
-   * @returns {TinyInventory} New inventory instance populated with the saved data.
+   * Serializes the inventory to a JSON string.
+   * @param {number} [space=0] - Pretty-print indentation (e.g., 2).
+   * @returns {string} JSON string.
    */
-  static fromJSON(json) {
-    const data = typeof json === 'string' ? JSON.parse(json) : json;
+  toJSON(space = 0) {
+    return JSON.stringify(this.toObject(), null, space);
+  }
+
+  /**
+   * Rebuilds a TinyInventory from a plain object created by {@link TinyInventory.toObject}.
+   * Item definitions (ItemRegistry) must be already defined externally; this method only restores state.
+   *
+   * @param {SerializedInventory} obj - Parsed JSON object.
+   * @param {Object} [options]
+   * @param {boolean} [options.validate=true] - If true, validates item IDs against the registry.
+   * @param {boolean} [options.enforceLimits=false] - If true, enforces weight/slot limits during load (may drop excess items).
+   * @returns {TinyInventory} A new TinyInventory instance populated with the saved state.
+   * @throws {Error} If validation fails and `validate` is true.
+   */
+  static fromObject(obj, options = {}) {
+    const { validate = true, enforceLimits = false } = options;
+
+    if (!obj || typeof obj !== 'object') {
+      throw new Error('Invalid state: expected object.');
+    }
+    if (obj.__schema !== 'TinyInventory' || typeof obj.version !== 'number') {
+      throw new Error('Invalid or missing schema header.');
+    }
+    if (obj.version !== 1) {
+      throw new Error(`Unsupported TinyInventory state version: ${obj.version}`);
+    }
+
+    // Prepare constructor options
+    /** @type {SectionCfg[]} */
+    const sectionCfgs = Array.isArray(obj.sections)
+      ? obj.sections.map((s) => ({ id: s.id, slots: s.slots, items: new Set() }))
+      : [];
+
+    /** @type {Record<string, {type: string|null}>} */
+    const specialDefs = {};
+    if (obj.specialSlots && typeof obj.specialSlots === 'object') {
+      for (const key of Object.keys(obj.specialSlots)) {
+        specialDefs[key] = { type: obj.specialSlots[key]?.type ?? null };
+      }
+    }
 
     const inv = new TinyInventory({
-      maxWeight: data.maxWeight,
-      maxSlots: data.maxSlots,
-      useSections: data.useSections,
-      sections: data.sections
-        ? // @ts-ignore
-          data.sections?.map((s) => ({ id: s.id, slots: s.slots }))
-        : undefined,
-      // @ts-ignore
-      specialSlots: data.specialSlots ? data.specialSlots?.map(([k]) => k) : undefined,
+      maxWeight: obj.maxWeight ?? null,
+      maxSlots: obj.maxSlots ?? null,
+      useSections: !!obj.useSections,
+      sections: sectionCfgs,
+      specialSlots: specialDefs,
     });
-    if (inv.useSections && data.sections) {
-      for (let i = 0; i < data.sections.length; i++) {
-        if (inv.sections) {
-          for (const item of data.sections[i].items) {
-            inv.sections[i].items.add(item);
+
+    /**
+     * Helper to validate item ID if required
+     * @param {string} id
+     */
+    const ensureItemDef = (id) => {
+      if (!validate) return;
+      if (!TinyInventory.ItemRegistry.has(id)) {
+        throw new Error(`Item '${id}' not defined in registry.`);
+      }
+    };
+
+    // Restore items
+    if (inv.useSections) {
+      if (Array.isArray(obj.sections)) {
+        obj.sections.forEach((s, idx) => {
+          const target = inv.sections?.[idx];
+          if (!target) return;
+          const items = Array.isArray(s.items) ? s.items : [];
+          for (const it of items) {
+            ensureItemDef(it.id);
+            const safeItem = {
+              id: String(it.id),
+              quantity: Math.max(1, Number(it.quantity) || 1),
+              metadata: it.metadata && typeof it.metadata === 'object' ? it.metadata : {},
+            };
+            if (enforceLimits) {
+              // Respect limits during load by using addItem (which enforces rules)
+              inv.addItem(safeItem.id, safeItem.quantity, target.id, safeItem.metadata);
+            } else {
+              target.items.add(safeItem);
+            }
+          }
+        });
+      }
+    } else if (Array.isArray(obj.items) && inv.items) {
+      for (const it of obj.items) {
+        ensureItemDef(it.id);
+        const safeItem = {
+          id: String(it.id),
+          quantity: Math.max(1, Number(it.quantity) || 1),
+          metadata: it.metadata && typeof it.metadata === 'object' ? it.metadata : {},
+        };
+        if (enforceLimits) {
+          inv.addItem(safeItem.id, safeItem.quantity, null, safeItem.metadata);
+        } else {
+          inv.items.add(safeItem);
+        }
+      }
+    }
+
+    // Restore special slots
+    if (obj.specialSlots && typeof obj.specialSlots === 'object') {
+      for (const [slotId, slotData] of Object.entries(obj.specialSlots)) {
+        // Ensure slot exists (constructor already created it)
+        if (!inv.specialSlots.has(slotId)) continue;
+
+        const slot = inv.specialSlots.get(slotId);
+        if (!slot) continue;
+        // Keep the type from constructor; ignore type from payload if mismatched
+        // but we still try to restore the item if present.
+        const item = slotData?.item;
+        if (item && item.id) {
+          ensureItemDef(item.id);
+          const safeEquipped = {
+            id: String(item.id),
+            quantity: Math.max(1, Number(item.quantity) || 1),
+            metadata: item.metadata && typeof item.metadata === 'object' ? item.metadata : {},
+          };
+
+          if (enforceLimits) {
+            // When enforcing limits, attempt to equip via method:
+            // 1) Add to inventory, 2) Equip (will validate type), 3) Remove from inventory.
+            inv.addItem(safeEquipped.id, safeEquipped.quantity, null, safeEquipped.metadata);
+            try {
+              inv.equipItem(slotId, safeEquipped.id);
+            } catch {
+              // If cannot equip, leave it in inventory
+            }
+          } else {
+            slot.item = safeEquipped;
+            inv.specialSlots.set(slotId, slot);
           }
         }
       }
-    } else if (data.items) {
-      if (inv.items) {
-        for (const item of data.items) {
-          inv.items.add(item);
-        }
-      }
     }
-    for (const [slot, value] of data.specialSlots || []) {
-      inv.specialSlots.set(slot, value);
-    }
+
     return inv;
+  }
+
+  /**
+   * Rebuilds a TinyInventory from a JSON string produced by {@link TinyInventory.toJSON}.
+   * @param {string} json - JSON string.
+   * @param {Object} [options] - See {@link TinyInventory.fromObject}.
+   * @returns {TinyInventory} A new TinyInventory instance.
+   */
+  static fromJSON(json, options) {
+    const obj = JSON.parse(json);
+    return TinyInventory.fromObject(obj, options);
   }
 }
 
