@@ -25,7 +25,7 @@ function cleanNulls(collection) {
  * @property {InventoryMetadata} metadata - Default metadata for the item type.
  * @property {boolean} canStack - Whether multiple units can be stacked together.
  * @property {number} maxStack - Maximum quantity per stack (ignored if `canStack` is false).
- * @property {Function|null} onUse - Callback triggered when the item is used.
+ * @property {OnUse|null} onUse - Callback triggered when the item is used.
  * @property {string|null} type - Optional category/type identifier.
  */
 
@@ -101,6 +101,34 @@ function cleanNulls(collection) {
  */
 
 /**
+ * A function executed when an inventory item is used.
+ * Can be assigned to handle custom "on use" behavior.
+ *
+ * @typedef {Function} OnUse
+ * @returns {void} - Does not return a value.
+ */
+
+/**
+ * Callback used to filter items by matching metadata.
+ *
+ * @callback GetItemsByMetadataCallback
+ * @param {InventoryMetadata} metadata - The metadata object to match against.
+ * @param {InventoryItem} item - The current item being evaluated.
+ * @returns {boolean} - `true` if the item matches the metadata, otherwise `false`.
+ */
+
+/**
+ * Callback used when searching for an item in an inventory collection.
+ * Works similarly to `Array.prototype.find()` conditions.
+ *
+ * @callback FindItemCallback
+ * @param {InventoryItem} value - The current inventory item being evaluated.
+ * @param {number} index - The index of the current item in the array.
+ * @param {InventoryItem[]} items - The array of all inventory items.
+ * @returns {boolean} - `true` if the item matches the search criteria, otherwise `false`.
+ */
+
+/**
  * Represents the fully serialized structure of a TinyInventory instance.
  * Intended for pure JSON storage and transmission.
  *
@@ -137,7 +165,7 @@ class TinyInventory {
    * @param {InventoryMetadata} [config.metadata={}] - Default metadata for the item type.
    * @param {boolean} [config.canStack=false] - Whether multiple units of this item can be combined into a single stack.
    * @param {number} [config.maxStack=1] - Maximum quantity allowed in a single stack (ignored if `canStack` is false).
-   * @param {function|null} [config.onUse=null] - Optional callback executed when the item is used.
+   * @param {OnUse|null} [config.onUse=null] - Optional callback executed when the item is used.
    * @param {string|null} [config.type=null] - Optional type/category identifier for the item.
    * @throws {Error} If `id` is missing or not a string.
    */
@@ -459,7 +487,7 @@ class TinyInventory {
    * @param {number} fromIndex - Source slot index.
    * @param {number} toIndex - Target slot index.
    * @param {string|null} [fromSection=null] - Source section ID.
-   * @param {string|null} [toSection=null] - Target section ID.
+   * @param {string|null} [toSection] - Target section ID.
    * @throws {Error} If the source slot is empty or the move is invalid.
    */
   moveItem(fromIndex, toIndex, fromSection = null, toSection = undefined) {
@@ -654,7 +682,7 @@ class TinyInventory {
 
   /**
    * Finds all items matching a given metadata filter function.
-   * @param {function(Object, Object): boolean} filterFn - Function receiving (itemTypeMetadata, itemInstance).
+   * @param {GetItemsByMetadataCallback} filterFn - Function receiving (itemTypeMetadata, itemInstance).
    * @returns {InventoryItem[]} Array of matching items.
    */
   getItemsByMetadata(filterFn) {
@@ -667,8 +695,8 @@ class TinyInventory {
 
   /**
    * Finds the first item matching the given predicate.
-   * @param {function(Object): boolean} predicate - Function receiving the item instance.
-   * @returns {Object|undefined} The first matching item, or undefined if none match.
+   * @param {FindItemCallback} predicate - Function receiving the item instance.
+   * @returns {InventoryItem|undefined} The first matching item, or undefined if none match.
    */
   findItem(predicate) {
     return this.getAllItems().find(predicate);
@@ -676,7 +704,7 @@ class TinyInventory {
 
   /**
    * Finds all items matching the given predicate.
-   * @param {function(Object): boolean} predicate - Function receiving the item instance.
+   * @param {FindItemCallback} predicate - Function receiving the item instance.
    * @returns {InventoryItem[]} Array of matching items.
    */
   findItems(predicate) {
