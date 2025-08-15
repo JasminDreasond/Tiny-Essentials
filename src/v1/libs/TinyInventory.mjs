@@ -332,7 +332,8 @@ class TinyInventory {
         : []
       : [this.items];
 
-    for (const collection of collections) {
+    for (const index in collections) {
+      const collection = collections[index];
       if (!collection) continue;
       for (const item of Array.from(collection)) {
         if (item.id === itemId) {
@@ -341,13 +342,23 @@ class TinyInventory {
           remaining -= removeQty;
           if (item.quantity <= 0) collection.delete(item);
           if (remaining <= 0) {
-            this.#triggerEvent('remove', { itemId, quantity });
+            this.#triggerEvent('remove', { index, itemId, quantity, collection });
             return true;
           }
         }
       }
     }
-    return false;
+
+    /** @type {boolean} */
+    let deletedItem = false;
+    this.specialSlots.forEach((value, key) => {
+      if (value.item && value.item.id === itemId) {
+        value.item = null;
+        this.#triggerEvent('remove', { index: key, itemId, quantity: 1, collection: null });
+        deletedItem = true;
+      }
+    });
+    return deletedItem;
   }
 
   /**
