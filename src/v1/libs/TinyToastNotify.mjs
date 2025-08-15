@@ -303,10 +303,10 @@ class TinyToastNotify {
 
     // Optional hover effect
     closeBtn.addEventListener('mouseenter', () => {
-      closeBtn.style.color = 'var(--notif-close-color-hover)';
+      closeBtn.style.color = 'var(--notify-close-color-hover)';
     });
     closeBtn.addEventListener('mouseleave', () => {
-      closeBtn.style.color = 'var(--notif-close-color)';
+      closeBtn.style.color = 'var(--notify-close-color)';
     });
 
     // Avatar
