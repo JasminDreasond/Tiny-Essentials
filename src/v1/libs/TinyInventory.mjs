@@ -109,6 +109,11 @@ function cleanNulls(collection) {
  */
 
 /**
+ * Represents the supported event types for inventory actions.
+ * @typedef {'add'|'remove'|'use'|'set'} EventsType
+ */
+
+/**
  * Callback used to filter items by matching metadata.
  *
  * @callback GetItemsByMetadataCallback
@@ -261,29 +266,79 @@ class TinyInventory {
   }
   /**
    * Checks if there is available space based on slot and weight limits.
+   * @param {number} [extraHeight=0] - Additional weight to consider in the calculation.
    * @returns {boolean} True if there is space; false otherwise.
    */
-  hasSpace() {
-    if (this.maxSlots !== null && this.getAllItems().length >= this.maxSlots) {
-      return false;
-    }
-    if (this.maxWeight !== null && this.calculateWeight() > this.maxWeight) {
-      return false;
-    }
+  hasSpace(extraHeight = 0) {
+    if (this.isFull() || this.isHeavy(extraHeight)) return false;
     return true;
+  }
+
+  /**
+   * Checks if the inventory weight exceeds the maximum allowed limit,
+   * optionally considering an additional weight.
+   *
+   * @param {number} [extraHeight=0] - Additional weight to consider in the calculation.
+   * @returns {boolean} - Returns `true` if the total weight (current + extra) exceeds `maxWeight`, otherwise `false`.
+   */
+  isHeavy(extraHeight = 0) {
+    if (this.maxWeight !== null && this.calculateWeight() + extraHeight > this.maxWeight)
+      return true;
+    return false;
+  }
+
+  /**
+   * Checks if the inventory has reached its maximum slot capacity.
+   *
+   * @returns {boolean} - Returns `true` if the total number of items is greater than or equal to `maxSlots`, otherwise `false`.
+   */
+  isFull() {
+    if (this.maxSlots !== null && this.getAllItems().length >= this.maxSlots) return true;
+    return false;
   }
 
   /** --------------------- PUBLIC METHODS --------------------- */
 
   /**
    * Internal event trigger.
-   * @param {'add'|'remove'|'use'|'set'} type - Event type.
+   * @param {EventsType} type - Event type.
    * @param {Object} payload - Event data passed to listeners.
    */
   #triggerEvent(type, payload) {
     if (this.events[type]) {
       for (const cb of this.events[type]) cb(payload);
     }
+  }
+
+  /**
+   * Unregisters a specific callback for the given event type.
+   * @param {EventsType} eventType - The event type to remove from.
+   * @param {Function} callback - The callback function to remove.
+   */
+  off(eventType, callback) {
+    if (!this.events[eventType]) return;
+    const list = this.events[eventType];
+    const index = list.indexOf(callback);
+    if (index !== -1) list.splice(index, 1);
+  }
+
+  /**
+   * Unregisters all callbacks for the given event type.
+   * @param {EventsType} eventType - The event type to clear.
+   */
+  offAll(eventType) {
+    if (!this.events[eventType]) return;
+    this.events[eventType] = [];
+  }
+
+  /**
+   * Returns a shallow copy of the callbacks for a given event type.
+   * @param {EventsType} eventType - The event type to clone.
+   * @returns {Function[]} A cloned array of callback functions.
+   */
+  cloneEventCallbacks(eventType) {
+    if (!this.events[eventType]) return [];
+    return [...this.events[eventType]];
   }
 
   /**
@@ -383,7 +438,7 @@ class TinyInventory {
 
       // Add new stacks (or single items if canStack is false)
       while (remaining > 0) {
-        if (!this.hasSpace()) throw new Error('Inventory is full or overweight.');
+        if (!this.hasSpace(def.weight)) throw new Error('Inventory is full or overweight.');
         const stackQty = def.canStack ? Math.min(def.maxStack, remaining) : 1;
         collection.add({ id: itemId, quantity: stackQty, metadata });
         remaining -= stackQty;
@@ -431,7 +486,8 @@ class TinyInventory {
       throw new Error(`Invalid item type: must be null or a valid InventoryItem.`);
 
     const def = item ? TinyInventory.ItemRegistry.get(item.id) : null;
-    if (item !== null && !def) throw new Error(`Item '${item.id}' not defined in registry.`);
+    if (item !== null || !def)
+      throw new Error(`Item '${item?.id ?? 'unknown'}' not defined in registry.`);
 
     /** @type {InvSlots|null} */
     let collection = null;
@@ -454,6 +510,12 @@ class TinyInventory {
 
     // Convert the set to an array for index-based manipulation
     const slotsArray = Array.from(collection);
+    const oldItemData = slotsArray[slotIndex]
+      ? (TinyInventory.ItemRegistry.get(slotsArray[slotIndex].id) ?? null)
+      : null;
+
+    if (!this.hasSpace(def.weight - (oldItemData ? oldItemData.weight : 0)))
+      throw new Error('Inventory is full or overweight.');
 
     // Fill empty slots with nulls only up to the desired index
     while (slotsArray.length <= slotIndex) slotsArray.push(null);
