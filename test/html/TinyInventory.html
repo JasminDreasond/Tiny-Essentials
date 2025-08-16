@@ -351,7 +351,7 @@
         <div class="card">
           <header><h2>Stress / Random</h2></header>
           <div class="grid grid-3">
-            <input id="st_runs" type="number" value="100" />
+            <input id="st_runs" type="number" value="10" />
             <button class="btn" id="st_addRandom">Add random items</button>
             <button class="btn bad" id="st_clearInv">Clear inventory</button>
           </div>
@@ -596,17 +596,21 @@
         table.className = 'table mono small';
         table.innerHTML = `<thead><tr><th>id</th><th>qty</th><th>metadata</th><th>actions</th></tr></thead><tbody></tbody>`;
         const tb = table.querySelector('tbody');
-        for (const it of set) {
+        const setArray = Array.from(set);
+        for (const index in setArray) {
+          const it = setArray[index];
+          if (!it) continue;
           const tr = document.createElement('tr');
+          const data = `data-id="${it.id}" data-index="${index}" data-section-id="${sectionId}"`;
           tr.innerHTML = `
           <td>${it.id}</td>
           <td>${it.quantity}</td>
           <td class="small">${escapeHTML(JSON.stringify(it.metadata ?? {}))}</td>
           <td>
             <div class="inline">
-              <button class="btn" data-act="use" data-id="${it.id}">Use</button>
-              <button class="btn" data-act="rm1" data-id="${it.id}">-1</button>
-              <button class="btn bad" data-act="rmAll" data-id="${it.id}">Remove all</button>
+              <button class="btn" data-act="use" ${data}>Use</button>
+              <button class="btn" data-act="rm1" ${data}>-1</button>
+              <button class="btn bad" data-act="rmAll" ${data}>Remove all</button>
             </div>
           </td>
         `;
@@ -616,10 +620,14 @@
         tb.querySelectorAll('button[data-act]').forEach((btn) => {
           btn.addEventListener('click', () => {
             const id = btn.getAttribute('data-id');
+            const index = parseInt(btn.getAttribute('data-index'));
             const act = btn.getAttribute('data-act');
+            let sectionId = btn.getAttribute('data-section-id');
+            if (sectionId?.toLowerCase() === 'null') sectionId = null;
+
             try {
               if (act === 'use') {
-                inv.useItem(id);
+                inv.useItem({ slotIndex: index, sectionId });
                 logEvent('use-click', { id });
               }
               if (act === 'rm1') {
@@ -633,6 +641,7 @@
               }
               renderInv();
             } catch (e) {
+              console.error(e);
               toast(e.message, 'bad');
             }
           });
@@ -947,7 +956,7 @@
       // ---------- Stress / Random ----------
       byId('st_addRandom').addEventListener('click', () => {
         if (!inv) return toast('Create an inventory first', 'warn');
-        const runs = Number(byId('st_runs').value || 100);
+        const runs = Number(byId('st_runs').value || 10);
         const keys = [...TinyInventory.ItemRegistry.keys()];
         if (!keys.length) return toast('Define items first', 'warn');
         let added = 0;

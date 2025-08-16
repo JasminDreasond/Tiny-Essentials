@@ -557,7 +557,7 @@ class TinyInventory {
       throw new Error(`Invalid item type: must be null or a valid InventoryItem.`);
 
     const def = item ? TinyInventory.ItemRegistry.get(item.id) : null;
-    if (item !== null || !def)
+    if (item !== null && !def)
       throw new Error(`Item '${item?.id ?? 'unknown'}' not defined in registry.`);
 
     /** @type {InvSlots|null} */
@@ -585,7 +585,7 @@ class TinyInventory {
       ? (TinyInventory.ItemRegistry.get(slotsArray[slotIndex].id) ?? null)
       : null;
 
-    if (!this.hasSpace(def.weight - (oldItemData ? oldItemData.weight : 0)))
+    if (!this.hasSpace((def ? def.weight : 0) - (oldItemData ? oldItemData.weight : 0)))
       throw new Error('Inventory is full or overweight.');
 
     // Fill empty slots with nulls only up to the desired index
@@ -694,6 +694,7 @@ class TinyInventory {
               item,
               collection,
               targetSection: collectionsName[colIndex],
+              specialSlot: null,
             });
             return true;
           }
@@ -782,9 +783,16 @@ class TinyInventory {
         itemDef: def,
         remove: () => {
           if (locationType === 'special' && specialSlot) {
-            this.setSpecialSlot(specialSlot, null);
+            const slot = this.specialSlots.get(specialSlot);
+            if (!slot?.item) throw new Error(`Special slot '${specialSlot}' is empty.`);
+            if (slot.item.quantity > 1) {
+              slot.item.quantity -= 1;
+              this.specialSlots.set(specialSlot, slot);
+            } else this.setSpecialSlot(specialSlot, null);
           } else if (typeof slotIndex === 'number') {
-            this.setItem(slotIndex, null, sectionId);
+            if (item.quantity > 1) {
+              this.setItem(slotIndex, { ...item, quantity: item.quantity - 1 }, sectionId);
+            } else this.setItem(slotIndex, null, sectionId);
           } else throw new Error('');
         },
         ...args,
