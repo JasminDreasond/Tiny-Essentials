@@ -793,7 +793,7 @@ class TinyInventory {
             if (item.quantity > 1) {
               this.setItem(slotIndex, { ...item, quantity: item.quantity - 1 }, sectionId);
             } else this.setItem(slotIndex, null, sectionId);
-          } else throw new Error('');
+          } else throw new Error(`Invalid remove operation: no valid slotIndex or specialSlot provided.`);
         },
         ...args,
       };
