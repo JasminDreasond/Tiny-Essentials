@@ -1,22 +1,4 @@
 /**
- * Cleans up unnecessary trailing nulls in a collection.
- * @param {InvSlots} collection
- */
-function cleanNulls(collection) {
-  const arr = Array.from(collection);
-  let lastIndex = arr.length - 1;
-
-  // Find last non-null index
-  while (lastIndex >= 0 && arr[lastIndex] === null) lastIndex--;
-
-  // Slice up to last non-null + 1
-  const cleaned = arr.slice(0, lastIndex + 1);
-
-  collection.clear();
-  for (const slot of cleaned) collection.add(slot);
-}
-
-/**
  * Represents a registered item definition in the global registry.
  *
  * @typedef {Object} ItemDef
@@ -153,6 +135,25 @@ function cleanNulls(collection) {
  */
 
 class TinyInventory {
+  /**
+   * Cleans up unnecessary trailing nulls in a collection.
+   * @param {InvSlots} collection
+   * @private
+   */
+  static _cleanNulls(collection) {
+    const arr = Array.from(collection);
+    let lastIndex = arr.length - 1;
+
+    // Find last non-null index
+    while (lastIndex >= 0 && arr[lastIndex] === null) lastIndex--;
+
+    // Slice up to last non-null + 1
+    const cleaned = arr.slice(0, lastIndex + 1);
+
+    collection.clear();
+    for (const slot of cleaned) collection.add(slot);
+  }
+
   /**
    * Registry of all item definitions available in TinyInventory.
    * Keys are item IDs, values are configuration objects created with {@link TinyInventory.defineItem}.
@@ -379,11 +380,21 @@ class TinyInventory {
    * Works for both section-based and single-list inventories.
    */
   compactInventory() {
-    /** @param {Set<InventoryItem|null>} collection */
-    const compact = (collection) => {
+    /**
+     * @param {Set<InventoryItem|null>} collection
+     * @param {string|null} targetSection
+     */
+    const compact = (collection, targetSection) => {
       const filtered = Array.from(collection).filter((i, index) => {
         const result = i !== null;
-        if (!result) this.#triggerEvent('remove', { index, itemId: null, quantity: 1, collection });
+        if (!result)
+          this.#triggerEvent('remove', {
+            index,
+            item: null,
+            collection,
+            targetSection,
+            specialSlot: null,
+          });
         return result;
       });
       collection.clear();
@@ -391,8 +402,8 @@ class TinyInventory {
     };
 
     if (this.useSections && this.sections) {
-      for (const section of this.sections) compact(section.items);
-    } else if (!this.useSections && this.items) compact(this.items);
+      for (const section of this.sections) compact(section.items, section.id);
+    } else if (!this.useSections && this.items) compact(this.items, null);
   }
 
   /**
@@ -417,8 +428,11 @@ class TinyInventory {
      */
     const metadataEquals = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
-    /** @param {InvSlots} collection */
-    const placeItem = (collection) => {
+    /**
+     * @param {InvSlots} collection
+     * @param {string|null} targetSection
+     */
+    const placeItem = (collection, targetSection) => {
       // Try stacking only if allowed
       if (def.canStack) {
         for (const existing of collection) {
@@ -440,7 +454,15 @@ class TinyInventory {
       while (remaining > 0) {
         if (!this.hasSpace(def.weight)) throw new Error('Inventory is full or overweight.');
         const stackQty = def.canStack ? Math.min(def.maxStack, remaining) : 1;
-        collection.add({ id: itemId, quantity: stackQty, metadata });
+        const item = { id: itemId, quantity: stackQty, metadata };
+        collection.add(item);
+        this.#triggerEvent('add', {
+          item,
+          index: collection.size - 1,
+          collection,
+          targetSection,
+          specialSlot: null,
+        });
         remaining -= stackQty;
       }
     };
@@ -448,17 +470,66 @@ class TinyInventory {
     if (targetSection && this.useSections && this.sections) {
       const section = this.sections.find((s) => s.id === targetSection);
       if (!section) throw new Error(`Section '${targetSection}' not found.`);
-      placeItem(section.items);
+      placeItem(section.items, targetSection);
     } else if (!this.useSections && this.items) {
-      placeItem(this.items);
+      placeItem(this.items, null);
     } else {
       throw new Error('Target section required for section-based inventory.');
     }
 
-    this.#triggerEvent('add', { itemId, quantity: quantity - remaining, metadata });
-
     // Return remaining if some quantity couldn't be added due to maxStack
     return remaining;
+  }
+
+  /**
+   * Sets or clears an item in a special slot.
+   *
+   * @param {string} slotName - Name of the special slot.
+   * @param {InventoryItem|null} item - Item to place, or null to clear.
+   * @throws {Error} If the slot does not exist, or item is invalid.
+   */
+  setSpecialSlot(slotName, item) {
+    if (!this.specialSlots || !(slotName in this.specialSlots)) {
+      throw new Error(`Special slot '${slotName}' not found.`);
+    }
+
+    // Validate type: must be null or a proper InventoryItem object
+    const isInventoryItem =
+      item &&
+      typeof item === 'object' &&
+      typeof item.id === 'string' &&
+      typeof item.quantity === 'number' &&
+      !Number.isNaN(item.quantity) &&
+      Number.isFinite(item.quantity) &&
+      item.quantity > -1 &&
+      typeof item.metadata === 'object';
+
+    if (item !== null && !isInventoryItem)
+      throw new Error(`Invalid item type: must be null or a valid InventoryItem.`);
+
+    const def = item ? TinyInventory.ItemRegistry.get(item.id) : null;
+    if (item !== null && !def)
+      throw new Error(`Item '${item?.id ?? 'unknown'}' not defined in registry.`);
+
+    // Slot check
+    const slot = this.specialSlots.get(slotName);
+    if (!slot) throw new Error(`Special slot ${slotName} out of range for section '${slotName}'.`);
+
+    // Weight check
+    const oldWeight = slot.item ? (TinyInventory.ItemRegistry.get(slot.item.id)?.weight ?? 0) : 0;
+    const newWeight = def ? def.weight : 0;
+    if (!this.hasSpace(newWeight - oldWeight)) throw new Error('Inventory is full or overweight.');
+
+    // Set or clear
+    slot.item = item;
+
+    this.#triggerEvent('set', {
+      index: null,
+      item,
+      collection: null,
+      targetSection: null,
+      specialSlot: slotName,
+    });
   }
 
   /**
@@ -528,9 +599,15 @@ class TinyInventory {
     for (const slot of slotsArray) collection.add(slot);
 
     // Cleanup unnecessary trailing nulls
-    cleanNulls(collection);
+    TinyInventory._cleanNulls(collection);
 
-    this.#triggerEvent('set', { slotIndex, item, targetSection });
+    this.#triggerEvent('set', {
+      index: slotIndex,
+      collection,
+      item,
+      targetSection,
+      specialSlot: null,
+    });
   }
 
   /**
@@ -593,29 +670,36 @@ class TinyInventory {
         ? this.sections.map((s) => s.items)
         : []
       : [this.items];
+    const collectionsName = this.useSections
+      ? this.sections
+        ? this.sections.map((s) => s.id)
+        : []
+      : [null];
 
-    for (const index in collections) {
-      const collection = collections[index];
+    for (const colIndex in collections) {
+      const collection = collections[colIndex];
       if (!collection) continue;
-      for (const item of Array.from(collection)) {
+      const collArray = Array.from(collection);
+      for (const index in collArray) {
+        const item = collArray[index];
         if (item && item.id === itemId) {
           const removeQty = Math.min(item.quantity, remaining);
           item.quantity -= removeQty;
           remaining -= removeQty;
           if (item.quantity <= 0) collection.delete(item);
           if (remaining <= 0) {
-            cleanNulls(collection);
+            TinyInventory._cleanNulls(collection);
             this.#triggerEvent('remove', {
               index,
-              itemId,
-              quantity: quantity - remaining,
+              item,
               collection,
+              targetSection: collectionsName[colIndex],
             });
             return true;
           }
         }
       }
-      cleanNulls(collection);
+      TinyInventory._cleanNulls(collection);
     }
 
     /** @type {boolean} */
@@ -623,7 +707,13 @@ class TinyInventory {
     this.specialSlots.forEach((value, key) => {
       if (value.item && value.item.id === itemId) {
         value.item = null;
-        this.#triggerEvent('remove', { index: key, itemId, quantity: 1, collection: null });
+        this.#triggerEvent('remove', {
+          index: null,
+          item: value.item,
+          collection: null,
+          targetSection: null,
+          specialSlot: key,
+        });
         deletedItem = true;
       }
     });
@@ -632,31 +722,76 @@ class TinyInventory {
   }
 
   /**
-   * Uses an item, triggering its `onUse` callback if defined.
-   * Automatically removes one quantity if `remove` is called inside the callback.
+   * Uses an item from a specific slot, section, or special slot,
+   * triggering its `onUse` callback if defined.
+   * Automatically removes the item if `remove()` is called inside the callback.
    *
-   * @param {string} itemId - ID of the item to use.
+   * @param {Object} location - Item location data.
+   * @param {number} [location.slotIndex] - Index in normal inventory or section.
+   * @param {string|null} [location.sectionId=null] - Section ID (if applicable).
+   * @param {string} [location.specialSlot] - Name of the special slot (if applicable).
    * @param {...any} args - Additional arguments passed to the `onUse` handler.
-   * @returns {any} The return value of the `onUse` callback, or `null` if no callback exists.
-   * @throws {Error} If the item is not found in the inventory.
+   * @returns {any} - The return value of the `onUse` callback, or `null` if no callback exists.
+   * @throws {Error} - If the item is not found in the specified location.
    */
-  useItem(itemId, ...args) {
-    const item = this.getAllItems().find((it) => it.id === itemId);
-    if (!item) throw new Error(`Item '${itemId}' not found in inventory.`);
-    const def = TinyInventory.ItemRegistry.get(itemId);
-    if (!def) throw new Error(`Item '${itemId}' not defined in registry.`);
+  useItem({ slotIndex, sectionId = null, specialSlot }, ...args) {
+    /** @type {InventoryItem|null} */
+    let item = null;
+    /** @type {'normal'|'special'|'section'} */
+    let locationType = 'normal'; // "normal" | "section" | "special"
+    /** @type {InvSlots | null} */
+    let collection = null;
+
+    // Get item
+    if (specialSlot) {
+      if (!this.specialSlots.has(specialSlot))
+        throw new Error(`Special slot '${specialSlot}' not found.`);
+      // @ts-ignore
+      item = this.specialSlots.get(specialSlot).item;
+      locationType = 'special';
+    } else {
+      collection = this.useSections
+        ? (this.sections?.find((s) => s.id === sectionId)?.items ?? null)
+        : (this.items ?? null);
+      if (!collection) throw new Error(`Section '${sectionId}' not found.`);
+      item = Array.from(collection)[slotIndex ?? -1] ?? null;
+      locationType = this.useSections ? 'section' : 'normal';
+    }
+
+    // Check item
+    if (!item) {
+      throw new Error(
+        locationType === 'special'
+          ? `No item found in special slot '${specialSlot}'.`
+          : `No item found in slot ${slotIndex} of ${locationType === 'section' ? `section '${sectionId}'` : 'main inventory'}.`,
+      );
+    }
+
+    // Get item info
+    const def = TinyInventory.ItemRegistry.get(item.id);
+    if (!def) throw new Error(`Item '${item.id}' not defined in registry.`);
 
     if (def.onUse) {
       const onUse = {
         inventory: this,
         item,
-        metadata: def.metadata,
-        remove: () => this.removeItem(itemId, 1),
+        index: slotIndex ?? null,
+        targetSection: sectionId,
+        specialSlot: specialSlot ?? null,
+        collection,
+        itemDef: def,
+        remove: () => {
+          if (locationType === 'special' && specialSlot) {
+            this.setSpecialSlot(specialSlot, null);
+          } else if (typeof slotIndex === 'number') {
+            this.setItem(slotIndex, null, sectionId);
+          } else throw new Error('');
+        },
         ...args,
       };
 
       const result = def.onUse(onUse);
-      this.#triggerEvent('use', { ...onUse, itemId });
+      this.#triggerEvent('use', { ...onUse, itemId: item.id });
       return result;
     }
     return null;
