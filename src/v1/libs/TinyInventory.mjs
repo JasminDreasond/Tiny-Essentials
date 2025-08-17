@@ -216,6 +216,13 @@ class TinyInventory {
   /** @type {boolean} */
   useSections;
 
+  get size() {
+    const items = this.getAllItems();
+    let amount = 0;
+    for (const item of items) amount += item.quantity;
+    return amount;
+  }
+
   /**
    * Creates a new TinyInventory instance.
    *
@@ -274,7 +281,7 @@ class TinyInventory {
    * @returns {boolean} True if there is space; false otherwise.
    */
   hasSpace({ weight = 0, length = 0 } = {}) {
-    if (this.isFull(length) || this.isHeavy(weight)) return false;
+    if (this.areFullSlots(length) || this.isHeavy(weight)) return false;
     return true;
   }
 
@@ -292,13 +299,26 @@ class TinyInventory {
   }
 
   /**
+   * Checks if the inventory slots has reached its maximum slot capacity.
+   *
+   * @param {number} [extraLength=0] - Additional length to consider in the calculation.
+   * @returns {boolean} - Returns `true` if the total number of items is greater than or equal to `maxSlots`, otherwise `false`.
+   */
+  areFullSlots(extraLength = 0) {
+    console.log(this.size + extraLength, this.maxSlots);
+    if (this.maxSlots !== null && this.size + extraLength > this.maxSlots)
+      return true;
+    return false;
+  }
+
+  /**
    * Checks if the inventory has reached its maximum slot capacity.
    *
    * @param {number} [extraLength=0] - Additional length to consider in the calculation.
    * @returns {boolean} - Returns `true` if the total number of items is greater than or equal to `maxSlots`, otherwise `false`.
    */
   isFull(extraLength = 0) {
-    if (this.maxSlots !== null && this.getAllItems().length + extraLength >= this.maxSlots)
+    if (this.maxSlots !== null && this.size + extraLength >= this.maxSlots)
       return true;
     return false;
   }
@@ -448,6 +468,8 @@ class TinyInventory {
             metadataEquals(existing.metadata || {}, metadata)
           ) {
             const canAdd = Math.min(def.maxStack - existing.quantity, remaining);
+            if (!this.hasSpace({ weight: def.weight * canAdd, length: canAdd }))
+              throw new Error('Inventory is full or overweight.');
             existing.quantity += canAdd;
             remaining -= canAdd;
             if (remaining <= 0) return;
@@ -457,9 +479,9 @@ class TinyInventory {
 
       // Add new stacks (or single items if canStack is false)
       while (remaining > 0) {
-        if (!this.hasSpace({ weight: def.weight }))
-          throw new Error('Inventory is full or overweight.');
         const stackQty = def.canStack ? Math.min(def.maxStack, remaining) : 1;
+        if (!this.hasSpace({ weight: def.weight * stackQty, length: stackQty }))
+          throw new Error('Inventory is full or overweight.');
         const item = { id: itemId, quantity: stackQty, metadata };
         collection.add(item);
         this.#triggerEvent('add', {
