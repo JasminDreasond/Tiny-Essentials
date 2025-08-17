@@ -18,6 +18,7 @@ const __dirname = path.dirname(__filename);
 // Define a pasta pública
 const publicDir = path.join(__dirname, './html');
 const imgDir = path.join(__dirname, './img');
+const errorsDir = path.join(__dirname, './errors');
 const projectRoot = path.join(__dirname, '../');
 
 app.use((req, res, next) => {
@@ -270,6 +271,24 @@ app.get(
 // Middleware para servir arquivos estáticos
 app.use(express.static(publicDir));
 app.use(express.static(imgDir));
+app.use(express.static(errorsDir));
+
+// ---------------------
+// Catch 404 and forward to error handler
+// ---------------------
+app.use((req, res, next) => {
+  res.status(404);
+  res.sendFile(path.join(__dirname, 'errors/404.html'));
+});
+
+// ---------------------
+// Error handler (500 and others)
+// ---------------------
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(err.status || 500);
+  res.sendFile(path.join(__dirname, 'errors/500.html'));
+});
 
 // Inicia o servidor
 app.listen(port, '127.0.0.1', () => {

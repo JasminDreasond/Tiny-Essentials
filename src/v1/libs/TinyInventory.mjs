@@ -216,6 +216,12 @@ class TinyInventory {
   /** @type {boolean} */
   useSections;
 
+  /**
+   * Gets the total quantity of items in the inventory.
+   * Unlike slot count, this sums up the `quantity` of each item.
+   *
+   * @returns {number} - The total number of item units stored in the inventory.
+   */
   get size() {
     const items = this.getAllItems();
     let amount = 0;
