@@ -265,13 +265,16 @@ class TinyInventory {
       return total + (def?.weight || 0) * item.quantity;
     }, 0);
   }
+
   /**
    * Checks if there is available space based on slot and weight limits.
-   * @param {number} [extraHeight=0] - Additional weight to consider in the calculation.
+   * @param {Object} [settings={}] - Optional configuration for the space check.
+   * @param {number} [settings.weight=0] - Extra weight to include in the calculation (e.g., previewing an item addition).
+   * @param {number} [settings.length=0] - Extra item count to include in the calculation (e.g., previewing a slot usage).
    * @returns {boolean} True if there is space; false otherwise.
    */
-  hasSpace(extraHeight = 0) {
-    if (this.isFull() || this.isHeavy(extraHeight)) return false;
+  hasSpace({ weight = 0, length = 0 } = {}) {
+    if (this.isFull(length) || this.isHeavy(weight)) return false;
     return true;
   }
 
@@ -279,11 +282,11 @@ class TinyInventory {
    * Checks if the inventory weight exceeds the maximum allowed limit,
    * optionally considering an additional weight.
    *
-   * @param {number} [extraHeight=0] - Additional weight to consider in the calculation.
+   * @param {number} [extraWeight=0] - Additional weight to consider in the calculation.
    * @returns {boolean} - Returns `true` if the total weight (current + extra) exceeds `maxWeight`, otherwise `false`.
    */
-  isHeavy(extraHeight = 0) {
-    if (this.maxWeight !== null && this.calculateWeight() + extraHeight > this.maxWeight)
+  isHeavy(extraWeight = 0) {
+    if (this.maxWeight !== null && this.calculateWeight() + extraWeight > this.maxWeight)
       return true;
     return false;
   }
@@ -291,10 +294,12 @@ class TinyInventory {
   /**
    * Checks if the inventory has reached its maximum slot capacity.
    *
+   * @param {number} [extraLength=0] - Additional length to consider in the calculation.
    * @returns {boolean} - Returns `true` if the total number of items is greater than or equal to `maxSlots`, otherwise `false`.
    */
-  isFull() {
-    if (this.maxSlots !== null && this.getAllItems().length >= this.maxSlots) return true;
+  isFull(extraLength = 0) {
+    if (this.maxSlots !== null && this.getAllItems().length + extraLength >= this.maxSlots)
+      return true;
     return false;
   }
 
@@ -452,7 +457,8 @@ class TinyInventory {
 
       // Add new stacks (or single items if canStack is false)
       while (remaining > 0) {
-        if (!this.hasSpace(def.weight)) throw new Error('Inventory is full or overweight.');
+        if (!this.hasSpace({ weight: def.weight }))
+          throw new Error('Inventory is full or overweight.');
         const stackQty = def.canStack ? Math.min(def.maxStack, remaining) : 1;
         const item = { id: itemId, quantity: stackQty, metadata };
         collection.add(item);
@@ -516,9 +522,28 @@ class TinyInventory {
     if (!slot) throw new Error(`Special slot ${slotName} out of range for section '${slotName}'.`);
 
     // Weight check
-    const oldWeight = slot.item ? (TinyInventory.ItemRegistry.get(slot.item.id)?.weight ?? 0) : 0;
-    const newWeight = def ? def.weight : 0;
-    if (!this.hasSpace(newWeight - oldWeight)) throw new Error('Inventory is full or overweight.');
+    const oldItemData = slot.item ? TinyInventory.ItemRegistry.get(slot.item.id) : null;
+
+    /**
+     * @param {InventoryItem|null} [theItem]
+     * @param {ItemDef|null} [itemDef]
+     * @returns {number}
+     */
+    const getTotalWeight = (theItem, itemDef) => (itemDef ? itemDef.weight * (theItem ? 1 : 0) : 0);
+
+    /**
+     * @param {InventoryItem|null} [theItem]
+     * @returns {number}
+     */
+    const getTotalLength = (theItem) => (theItem ? 1 : 0);
+
+    if (
+      !this.hasSpace({
+        weight: getTotalWeight(item, def) - getTotalWeight(slot.item, oldItemData),
+        length: getTotalLength(item) - getTotalLength(slot.item),
+      })
+    )
+      throw new Error('Inventory is full or overweight.');
 
     // Set or clear
     slot.item = item;
@@ -581,11 +606,29 @@ class TinyInventory {
 
     // Convert the set to an array for index-based manipulation
     const slotsArray = Array.from(collection);
-    const oldItemData = slotsArray[slotIndex]
-      ? (TinyInventory.ItemRegistry.get(slotsArray[slotIndex].id) ?? null)
-      : null;
+    const oldItem = slotsArray[slotIndex] ?? null;
+    const oldItemData = oldItem ? (TinyInventory.ItemRegistry.get(oldItem.id) ?? null) : null;
 
-    if (!this.hasSpace((def ? def.weight : 0) - (oldItemData ? oldItemData.weight : 0)))
+    /**
+     * @param {InventoryItem|null} [theItem]
+     * @param {ItemDef|null} [itemDef]
+     * @returns {number}
+     */
+    const getTotalWeight = (theItem, itemDef) =>
+      itemDef ? itemDef.weight * (theItem ? theItem.quantity : 0) : 0;
+
+    /**
+     * @param {InventoryItem|null} [theItem]
+     * @returns {number}
+     */
+    const getTotalLength = (theItem) => (theItem ? theItem.quantity : 0);
+
+    if (
+      !this.hasSpace({
+        weight: getTotalWeight(item, def) - getTotalWeight(oldItem, oldItemData),
+        length: getTotalLength(item) - getTotalLength(oldItem),
+      })
+    )
       throw new Error('Inventory is full or overweight.');
 
     // Fill empty slots with nulls only up to the desired index
@@ -793,7 +836,10 @@ class TinyInventory {
             if (item.quantity > 1) {
               this.setItem(slotIndex, { ...item, quantity: item.quantity - 1 }, sectionId);
             } else this.setItem(slotIndex, null, sectionId);
-          } else throw new Error(`Invalid remove operation: no valid slotIndex or specialSlot provided.`);
+          } else
+            throw new Error(
+              `Invalid remove operation: no valid slotIndex or specialSlot provided.`,
+            );
         },
         ...args,
       };
