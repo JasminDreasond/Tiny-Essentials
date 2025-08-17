@@ -486,10 +486,8 @@
           ? String(inv.sections?.length ?? 0)
           : '0';
         byId('kpiStacks').textContent = String(inv ? inv.getAllItems().length : 0);
-        let total = 0;
-        if (inv) for (const it of inv.getAllItems()) total += it?.quantity ?? 0;
-        byId('kpiTotal').textContent = String(total);
-        byId('kpiWeight').textContent = inv ? String(inv.calculateWeight()) : '0';
+        byId('kpiTotal').textContent = String(inv.size);
+        byId('kpiWeight').textContent = inv ? String(inv.weight) : '0';
         renderDiag();
       }
 
@@ -681,7 +679,7 @@
           useSections: inv.useSections,
           totalStacks: inv.getAllItems().length,
           totalItems: inv.getAllItems().reduce((n, i) => n + i.quantity, 0),
-          weight: inv.calculateWeight(),
+          weight: inv.weight,
           specialSlots: Array.from(inv.specialSlots.entries()).map(([k, v]) => ({
             slotId: k,
             type: v.type,

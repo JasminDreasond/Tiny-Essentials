@@ -224,6 +224,18 @@ class TinyInventory {
   }
 
   /**
+   * Gets the total weight of all items in the inventory.
+   * @returns {number} The total weight.
+   */
+  get weight() {
+    return this.getAllItems().reduce((total, item) => {
+      const def = TinyInventory.ItemRegistry.get(item.id);
+      if (!def) throw new Error(`Item '${item.id}' not defined in registry.`);
+      return total + (def?.weight || 0) * item.quantity;
+    }, 0);
+  }
+
+  /**
    * Creates a new TinyInventory instance.
    *
    * @param {Object} [options={}] - Configuration options for the inventory.
@@ -262,18 +274,6 @@ class TinyInventory {
   }
 
   /**
-   * Calculates the total weight of all items in the inventory.
-   * @returns {number} The total weight.
-   */
-  calculateWeight() {
-    return this.getAllItems().reduce((total, item) => {
-      const def = TinyInventory.ItemRegistry.get(item.id);
-      if (!def) throw new Error(`Item '${item.id}' not defined in registry.`);
-      return total + (def?.weight || 0) * item.quantity;
-    }, 0);
-  }
-
-  /**
    * Checks if there is available space based on slot and weight limits.
    * @param {Object} [settings={}] - Optional configuration for the space check.
    * @param {number} [settings.weight=0] - Extra weight to include in the calculation (e.g., previewing an item addition).
@@ -293,8 +293,7 @@ class TinyInventory {
    * @returns {boolean} - Returns `true` if the total weight (current + extra) exceeds `maxWeight`, otherwise `false`.
    */
   isHeavy(extraWeight = 0) {
-    if (this.maxWeight !== null && this.calculateWeight() + extraWeight > this.maxWeight)
-      return true;
+    if (this.maxWeight !== null && this.weight + extraWeight > this.maxWeight) return true;
     return false;
   }
 
@@ -305,9 +304,7 @@ class TinyInventory {
    * @returns {boolean} - Returns `true` if the total number of items is greater than or equal to `maxSlots`, otherwise `false`.
    */
   areFullSlots(extraLength = 0) {
-    console.log(this.size + extraLength, this.maxSlots);
-    if (this.maxSlots !== null && this.size + extraLength > this.maxSlots)
-      return true;
+    if (this.maxSlots !== null && this.size + extraLength > this.maxSlots) return true;
     return false;
   }
 
@@ -318,8 +315,7 @@ class TinyInventory {
    * @returns {boolean} - Returns `true` if the total number of items is greater than or equal to `maxSlots`, otherwise `false`.
    */
   isFull(extraLength = 0) {
-    if (this.maxSlots !== null && this.size + extraLength >= this.maxSlots)
-      return true;
+    if (this.maxSlots !== null && this.size + extraLength >= this.maxSlots) return true;
     return false;
   }
 
