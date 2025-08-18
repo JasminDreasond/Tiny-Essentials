@@ -363,8 +363,6 @@
               placeholder="item => item.id === 'apple'"
             />
             <button class="btn" id="ac_find_retrieval">find() / findItems()</button>
-            <input id="ac_metadata_retrieval" class="mono" placeholder="{'rarity':'common'}" />
-            <button class="btn" id="ac_getItemsByMetadata">getItemsByMetadata()</button>
           </div>
           <pre id="retrieval_results" class="mono small"></pre>
         </div>
@@ -1099,24 +1097,6 @@
           );
         } catch (e) {
           toast('Error finding item: ' + e.message, 'bad');
-        }
-      });
-
-      byId('ac_getItemsByMetadata').addEventListener('click', () => {
-        if (!inv) {
-          toast('Create an inventory first.', 'warn');
-          return;
-        }
-        const metadataJson = byId('ac_metadata_retrieval').value;
-        const metadata = parseJSON(metadataJson);
-
-        try {
-          const items = inv.getItemsByMetadata(metadata);
-          byId('retrieval_results').textContent =
-            `getItemsByMetadata() results (${items.length}):\n${JSON.stringify(items, null, 2)}`;
-          toast(`getItemsByMetadata() count: ${items.length}.`, 'ok');
-        } catch (e) {
-          toast('Error getting items by metadata: ' + e.message, 'bad');
         }
       });
 
