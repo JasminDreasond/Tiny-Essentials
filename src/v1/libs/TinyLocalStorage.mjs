@@ -11,7 +11,6 @@ const customDecoders = new Map();
 const customTypesFreezed = new Set([
   'string',
   'boolean',
-  'number',
   'object',
   'array',
   String,
@@ -955,6 +954,20 @@ TinyLocalStorage.registerJsonType(
   {
     check: (value) => value.__regexp__,
     decode: (value) => new RegExp(value.source, value.flags),
+  },
+  true,
+);
+
+// Number
+TinyLocalStorage.registerJsonType(
+  'number',
+  (value) => ({
+    __number__: true,
+    value: value.toString(),
+  }),
+  {
+    check: (value) => value.__number__,
+    decode: (value) => Number(value.value),
   },
   true,
 );
