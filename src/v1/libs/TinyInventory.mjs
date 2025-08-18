@@ -477,12 +477,13 @@ class TinyInventory {
      * @param {string|null} targetSection
      */
     const placeItem = (collection, targetSection) => {
+      const collArray = Array.from(collection);
+
       // Step 1: Fill existing stacks first
       let madeProgress = true;
       while (remaining > 0 && madeProgress) {
         madeProgress = false;
 
-        const collArray = Array.from(collection);
         for (const index in collArray) {
           const existing = collArray[index];
           if (
@@ -492,7 +493,6 @@ class TinyInventory {
             metadataEquals(existing.metadata, metadata)
           ) {
             const canAdd = Math.min(maxStack - existing.quantity, remaining);
-
             if (!this.hasSpace({ weight: def.weight * canAdd, length: canAdd })) continue;
 
             existing.quantity += canAdd;
@@ -506,15 +506,42 @@ class TinyInventory {
               targetSection,
               specialSlot: null,
             });
-            if (remaining <= 0) break; // all done
+            if (remaining <= 0) break;
           }
         }
       }
 
-      // Step 2: If still remaining, create new stacks
+      // Step 2: Place remaining into null slots first
+      if (remaining > 0) {
+        for (const index in collArray) {
+          if (collArray[index] === null) {
+            const stackQty = Math.min(maxStack, remaining);
+            if (!this.hasSpace({ weight: def.weight * stackQty, length: stackQty })) continue;
+
+            const item = { id: itemId, quantity: stackQty, metadata };
+            collArray[index] = item;
+            remaining -= stackQty;
+            collection.clear();
+            for (const index2 in collArray) collection.add(collArray[index2]);
+
+            this.#triggerEvent('add', {
+              item,
+              index,
+              collection,
+              targetSection,
+              specialSlot: null,
+            });
+
+            if (remaining <= 0) break;
+          }
+        }
+      }
+
+      // Step 3: If still remaining, push new stacks to the end
       while (remaining > 0) {
         const stackQty = Math.min(maxStack, remaining);
         if (!this.hasSpace({ weight: def.weight * stackQty, length: stackQty })) return;
+
         const item = { id: itemId, quantity: stackQty, metadata };
         collection.add(item);
         this.#triggerEvent('add', {
