@@ -477,20 +477,37 @@ class TinyInventory {
      * @param {string|null} targetSection
      */
     const placeItem = (collection, targetSection) => {
-      // Step 1: Try to fill existing stacks first
-      for (const existing of collection) {
-        if (
-          existing &&
-          existing.id === itemId &&
-          existing.quantity < maxStack &&
-          metadataEquals(existing.metadata || {}, metadata)
-        ) {
-          const canAdd = Math.min(maxStack - existing.quantity, remaining);
-          if (!this.hasSpace({ weight: def.weight * canAdd, length: canAdd })) return;
-          console.log(canAdd);
-          existing.quantity += canAdd;
-          remaining -= canAdd;
-          if (remaining <= 0) return; // done
+      // Step 1: Fill existing stacks first
+      let madeProgress = true;
+      while (remaining > 0 && madeProgress) {
+        madeProgress = false;
+
+        const collArray = Array.from(collection);
+        for (const index in collArray) {
+          const existing = collArray[index];
+          if (
+            existing &&
+            existing.id === itemId &&
+            existing.quantity < maxStack &&
+            metadataEquals(existing.metadata, metadata)
+          ) {
+            const canAdd = Math.min(maxStack - existing.quantity, remaining);
+
+            if (!this.hasSpace({ weight: def.weight * canAdd, length: canAdd })) continue;
+
+            existing.quantity += canAdd;
+            remaining -= canAdd;
+            madeProgress = true;
+
+            this.#triggerEvent('add', {
+              item: existing,
+              index,
+              collection,
+              targetSection,
+              specialSlot: null,
+            });
+            if (remaining <= 0) break; // all done
+          }
         }
       }
 
@@ -498,7 +515,6 @@ class TinyInventory {
       while (remaining > 0) {
         const stackQty = Math.min(maxStack, remaining);
         if (!this.hasSpace({ weight: def.weight * stackQty, length: stackQty })) return;
-        console.log(stackQty);
         const item = { id: itemId, quantity: stackQty, metadata };
         collection.add(item);
         this.#triggerEvent('add', {
