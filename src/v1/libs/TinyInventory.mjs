@@ -1008,20 +1008,23 @@ class TinyInventory {
 
   /**
    * Equips an item from the inventory into a special slot.
-   * Behavior:
-   * - If the same item is already equipped and stackable, it will merge quantities up to `maxStack`.
-   *   Any leftover remains in the original inventory slot.
-   * - If another item is equipped (different ID or non-stackable), the current one is moved back to inventory
-   *   and the new item is equipped (up to its stack limit). Any leftover stays in the inventory.
    *
-   * @param {string} slotId - ID of the special slot.
-   * @param {number} slotIndex - Index of the slot in the inventory.
-   * @param {string} sectionId - Section ID in the inventory.
-   * @param {number} [quantity=1] - Quantity to attempt to equip.
-   * @returns {number} The amount that could NOT be equipped (leftover in the inventory slot).
-   * @throws {Error} If the slot does not exist, item type mismatches the slot, or inventory lacks the required amount.
+   * Behavior:
+   * 1. If the same item is already equipped and stackable, it will merge quantities up to `maxStack`.
+   *    Any leftover remains in the original inventory slot.
+   * 2. If another item is equipped (different ID or non-stackable), the current one is moved back to inventory
+   *    and the new item is equipped (up to its stack limit). Any leftover stays in the inventory.
+   *
+   * @param {Object} configs - Configuration object for equipping the item.
+   * @param {string} configs.slotId - ID of the special slot where the item will be equipped.
+   * @param {number} configs.slotIndex - Index of the inventory slot containing the item to equip.
+   * @param {string} [configs.sectionId] - Section ID of the inventory (required if using sections).
+   * @param {number} [configs.quantity=1] - Quantity of the item to equip.
+   * @returns {number} Amount of the item that could NOT be equipped (leftover remains in inventory).
+   * @throws {Error} If the special slot does not exist, if the item type mismatches the slot,
+   *                 or if the inventory lacks the required quantity.
    */
-  equipItem(slotId, slotIndex, sectionId, quantity = 1) {
+  equipItem({ slotId, slotIndex, sectionId, quantity = 1 }) {
     if (quantity <= 0 || !Number.isFinite(quantity))
       throw new Error(`Invalid quantity '${quantity}'.`);
 

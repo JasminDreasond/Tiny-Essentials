@@ -425,9 +425,10 @@
           </div>
 
           <div class="divider"></div>
-          <div class="grid grid-3">
+          <div class="grid grid-4" style="margin-bottom: 7px">
             <input id="ac_slotId" placeholder="slotId" />
-            <input id="ac_itemEquip" placeholder="itemId to equip" />
+            <input id="ac_itemEquip" placeholder="slotIndex to equip" />
+            <input id="ac_sectionIdEquip" placeholder="sectionId to equip" />
             <button class="btn" id="ac_equip">Equip</button>
           </div>
           <div class="grid grid-3">
@@ -590,7 +591,8 @@
           <td>${itemLabel}</td>
           <td>
             <div class="inline">
-              <input data-slot="${slotId}" class="mono small" placeholder="itemId to equip" style="width:160px">
+              <input data-slot="${slotId}" class="mono small" placeholder="slotIndex to equip" style="width:160px">
+              <input data-section="${slotId}" class="mono small" placeholder="slotIndex to equip" style="width:160px">
               <button class="btn" data-eq="${slotId}">Equip</button>
               <button class="btn" data-uneq="${slotId}">Unequip</button>
             </div>
@@ -625,11 +627,13 @@
           btn.addEventListener('click', () => {
             const slotId = btn.getAttribute('data-eq');
             const input = container.querySelector(`input[data-slot="${slotId}"]`);
-            const itemId = input.value.trim();
-            if (!itemId) return toast('ItemId required', 'warn');
+            const slotIndex = input.value.trim();
+            const input2 = container.querySelector(`input[data-section="${slotId}"]`);
+            const sectionId = input2.value.trim();
+            if (!slotIndex) return toast('slotIndex required', 'warn');
             try {
-              inv.equipItem(slotId, itemId);
-              logEvent('equip', { slotId, itemId });
+              inv.equipItem({ slotId, slotIndex, sectionId });
+              logEvent('equip', { slotId, slotIndex });
               renderInv();
             } catch (e) {
               console.error(e);
@@ -952,9 +956,10 @@
       byId('ac_equip').addEventListener('click', () => {
         if (!inv) return toast('Create an inventory first', 'warn');
         const slotId = byId('ac_slotId').value.trim();
-        const itemId = byId('ac_itemEquip').value.trim();
+        const slotIndex = byId('ac_itemEquip').value.trim();
+        const sectionId = byId('ac_sectionIdEquip').value.trim();
         try {
-          inv.equipItem(slotId, itemId);
+          inv.equipItem({ slotId, slotIndex, sectionId });
           renderInv();
           toast(`Equipped '${itemId}' in '${slotId}'`, 'ok');
         } catch (e) {
