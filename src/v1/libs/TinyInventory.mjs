@@ -453,7 +453,11 @@ class TinyInventory {
     const def = TinyInventory.ItemRegistry.get(itemId);
     if (!def) throw new Error(`Item '${itemId}' not defined in registry.`);
     let remaining = quantity;
-    const maxStack = def.canStack ? (def.maxStack <= this.maxStack ? def.maxStack : this.maxStack) : 1;
+    const maxStack = def.canStack
+      ? def.maxStack <= this.maxStack
+        ? def.maxStack
+        : this.maxStack
+      : 1;
 
     /**
      * @param {InventoryMetadata} a
@@ -476,8 +480,7 @@ class TinyInventory {
             metadataEquals(existing.metadata || {}, metadata)
           ) {
             const canAdd = Math.min(maxStack - existing.quantity, remaining);
-            if (!this.hasSpace({ weight: def.weight * canAdd, length: canAdd }))
-              return;
+            if (!this.hasSpace({ weight: def.weight * canAdd, length: canAdd })) return;
             existing.quantity += canAdd;
             remaining -= canAdd;
             if (remaining <= 0) return; // done
@@ -488,8 +491,7 @@ class TinyInventory {
       // Step 2: If still remaining, create new stacks
       while (remaining > 0) {
         const stackQty = def.canStack ? Math.min(maxStack, remaining) : 1;
-        if (!this.hasSpace({ weight: def.weight * stackQty, length: stackQty }))
-          return;
+        if (!this.hasSpace({ weight: def.weight * stackQty, length: stackQty })) return;
         const item = { id: itemId, quantity: stackQty, metadata };
         collection.add(item);
         this.#triggerEvent('add', {
@@ -616,9 +618,15 @@ class TinyInventory {
       throw new Error(`Item '${item?.id ?? 'unknown'}' not defined in registry.`);
 
     if (def && item) {
-      const maxStack = def.canStack ? (def.maxStack <= this.maxStack ? def.maxStack : this.maxStack) : 1;
+      const maxStack = def.canStack
+        ? def.maxStack <= this.maxStack
+          ? def.maxStack
+          : this.maxStack
+        : 1;
       if (item.quantity > maxStack)
-        throw new Error(`Item '${item.id}' exceeds max stack size. Allowed: ${maxStack}, got: ${item.quantity}.`);
+        throw new Error(
+          `Item '${item.id}' exceeds max stack size. Allowed: ${maxStack}, got: ${item.quantity}.`,
+        );
     }
 
     /** @type {InvSlots|null} */

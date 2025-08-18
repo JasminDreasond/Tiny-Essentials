@@ -372,7 +372,7 @@
         <div class="card">
           <header><h2>Transfer Item</h2></header>
           <div class="grid grid-2">
-            <input id="tr_itemId" placeholder="itemId" />
+            <input id="tr_itemId" type="number" placeholder="itemId" />
             <input id="tr_qty" type="number" value="1" />
             <input id="tr_fromSection" placeholder="fromSection (optional)" />
             <input id="tr_toSection" placeholder="toSection (optional)" />
@@ -509,6 +509,12 @@
         if (v === '' || v === null || v === undefined) return null;
         const n = Number(v);
         return Number.isFinite(n) ? n : null;
+      }
+
+      function numberOrInfinity(v) {
+        if (v === '' || v === null || v === undefined) return Infinity;
+        const n = Number(v);
+        return Number.isFinite(n) ? n : Infinity;
       }
 
       function renderRegistry() {
@@ -739,6 +745,7 @@
           maxWeight: inv.maxWeight,
           maxSlots: inv.maxSlots,
           useSections: inv.useSections,
+          maxStack: inv.maxStack.toString(),
           totalStacks: inv.getAllItems().length,
           totalItems: inv.getAllItems().reduce((n, i) => n + i.quantity, 0),
           weight: inv.weight,
@@ -853,7 +860,7 @@
       byId('ci_create').addEventListener('click', () => {
         const maxWeight = numberOrNull(byId('ci_maxWeight').value);
         const maxSlots = numberOrNull(byId('ci_maxSlots').value);
-        const maxStack = numberOrNull(byId('ci_maxStack').value) || Infinity;
+        const maxStack = numberOrInfinity(byId('ci_maxStack').value);
         const useSections = byId('ci_useSections').value === 'true';
         /** @type {Array<{id:string, slots:number}>} */
         const sections = [];
@@ -873,7 +880,14 @@
         });
 
         try {
-          inv = new TinyInventory({ maxWeight, maxSlots, useSections, sections, specialSlots, maxStack });
+          inv = new TinyInventory({
+            maxWeight,
+            maxSlots,
+            useSections,
+            sections,
+            specialSlots,
+            maxStack,
+          });
           window.inventory = inv;
           // attach event logs
           inv.onAddItem((e) => logEvent('onAdd', e));
@@ -1053,6 +1067,78 @@
         const result = inv.isFull();
         byId('inv_isFull_result').textContent = result ? 'Yes' : 'No';
         toast(`isFull(): ${result ? 'Yes' : 'No'}`, result ? 'warn' : 'ok');
+      });
+
+      // ---------- Item Retrieval ----------
+      byId('ac_find_retrieval').addEventListener('click', () => {
+        if (!inv) {
+          toast('Create an inventory first.', 'warn');
+          return;
+        }
+        const predicateCode = byId('ac_findPredicate_retrieval').value;
+        let predicate;
+        try {
+          // eslint-disable-next-line no-eval
+          predicate = eval(`(${predicateCode})`);
+          if (typeof predicate !== 'function') {
+            throw new Error('Predicate must be a function.');
+          }
+        } catch (e) {
+          toast('Invalid predicate code: ' + e.message, 'bad');
+          return;
+        }
+
+        try {
+          const foundItem = inv.findItem(predicate);
+          const foundItems = inv.findItems(predicate);
+          byId('retrieval_results').textContent =
+            `find() result: ${foundItem ? JSON.stringify(foundItem, null, 2) : 'None'}\n\nfindItems() results (${foundItems.length}):\n${JSON.stringify(foundItems, null, 2)}`;
+          toast(
+            `find() result: ${foundItem ? foundItem.id : 'None'}. findItems() count: ${foundItems.length}.`,
+            'ok',
+          );
+        } catch (e) {
+          toast('Error finding item: ' + e.message, 'bad');
+        }
+      });
+
+      byId('ac_getItemsByMetadata').addEventListener('click', () => {
+        if (!inv) {
+          toast('Create an inventory first.', 'warn');
+          return;
+        }
+        const metadataJson = byId('ac_metadata_retrieval').value;
+        const metadata = parseJSON(metadataJson);
+
+        try {
+          const items = inv.getItemsByMetadata(metadata);
+          byId('retrieval_results').textContent =
+            `getItemsByMetadata() results (${items.length}):\n${JSON.stringify(items, null, 2)}`;
+          toast(`getItemsByMetadata() count: ${items.length}.`, 'ok');
+        } catch (e) {
+          toast('Error getting items by metadata: ' + e.message, 'bad');
+        }
+      });
+
+      // ---------- Transfer Item ----------
+      byId('tr_transfer').addEventListener('click', () => {
+        if (!inv) {
+          toast('Create an inventory first.', 'warn');
+          return;
+        }
+        const fromIndex = numberOrNull(byId('tr_itemId').value) || 0;
+        const toIndex = numberOrNull(byId('tr_qty').value) || 0;
+        const fromSection = byId('tr_fromSection').value || null;
+        const toSection = byId('tr_toSection').value || null;
+
+        try {
+          const transferred = inv.moveItem(fromIndex, toIndex, fromSection, toSection);
+          toast(`Transferred ${transferred} x ${itemId}.`, 'ok');
+          renderInv();
+          refreshKPI();
+        } catch (e) {
+          toast('Error transferring item: ' + e.message, 'bad');
+        }
       });
 
       // ---------- Serialization ----------
