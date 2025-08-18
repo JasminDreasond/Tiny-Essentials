@@ -576,7 +576,7 @@ class TinyInventory {
    * @returns {InventoryItem|null} The item object or null if empty.
    * @throws {Error} If the section does not exist or slot index is out of bounds.
    */
-  getItem(slotIndex, sectionId) {
+  getItemFrom(slotIndex, sectionId) {
     /**
      * @param {InvSlots} collection
      * @param {string|null} targetSection
@@ -584,7 +584,7 @@ class TinyInventory {
     const getItem = (collection, targetSection) => {
       const slots = Array.from(collection);
       if (slotIndex < 0 || slotIndex >= slots.length)
-        throw new Error(`Slot index '${slotIndex}' out of bounds in section '${sectionId}'.`);
+        throw new Error(`Slot index '${slotIndex}' out of bounds in section '${targetSection}'.`);
       return slots[slotIndex] ?? null;
     };
 
@@ -592,7 +592,7 @@ class TinyInventory {
       const section = this.sections.find((s) => s.id === sectionId);
       if (!section) throw new Error(`Section '${sectionId}' not found.`);
       return getItem(section.items, sectionId);
-    } else if (!this.useSections && this.items) return getItem(this.items, null);
+    } else if (!this.useSections && this.items) return getItem(this.items, 'inventory');
     else throw new Error('Target section required for section-based inventory.');
   }
 
@@ -1030,7 +1030,7 @@ class TinyInventory {
 
     if (!this.specialSlots.has(slotId)) throw new Error(`Special slot '${slotId}' does not exist.`);
 
-    const invItem = this.getItem(slotIndex, sectionId);
+    const invItem = this.getItemFrom(slotIndex, sectionId);
     if (!invItem)
       throw new Error(`No item found in inventory slot ${slotIndex} of section '${sectionId}'.`);
     if (invItem.quantity < quantity)
