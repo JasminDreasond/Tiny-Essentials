@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tiny Essentials - Test Panel</title>
+    <style>
+      /* Reset */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #1d1f21, #2c2f33);
+        color: #eee;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      header {
+        background: #23272a;
+        padding: 1.5rem 2rem;
+        text-align: center;
+        border-bottom: 2px solid #7289da;
+      }
+
+      header h1 {
+        font-size: 1.9rem;
+        color: #7289da;
+        margin-bottom: 0.3rem;
+      }
+
+      header p {
+        font-size: 1rem;
+        color: #bbb;
+      }
+
+      main {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem;
+      }
+
+      .intro-box {
+        max-width: 700px;
+        background: #2c2f33;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        text-align: center;
+      }
+
+      .intro-box h2 {
+        font-size: 1.4rem;
+        color: #ffcc70;
+        margin-bottom: 1rem;
+      }
+
+      .intro-box p {
+        font-size: 1rem;
+        color: #ccc;
+        margin-bottom: 1.2rem;
+        line-height: 1.5;
+      }
+
+      .code-sample {
+        background: #1d1f21;
+        color: #ffcc70;
+        font-family: monospace;
+        padding: 0.8rem 1rem;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        display: inline-block;
+        margin-top: 0.5rem;
+      }
+
+      footer {
+        background: #23272a;
+        text-align: center;
+        padding: 0.9rem;
+        font-size: 0.85rem;
+        color: #888;
+        border-top: 1px solid #333;
+      }
+
+      footer span {
+        color: #ffcc70;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>✨ Tiny Essentials - Test Panel</h1>
+      <p>Your playground for experiments and little essentials</p>
+    </header>
+
+    <main>
+      <div class="intro-box">
+        <h2>How to access the tests?</h2>
+        <p>
+          This is just the homepage — the real fun begins when you pick which test you want! To open
+          a test file, simply write its name in the URL bar, pointing to the
+          <span style="color: #7289da">test/html</span> folder of this project.
+        </p>
+        <p>For example, if you want to run <em>test.html</em>, type:</p>
+        <div class="code-sample">localhost<span id="port"></span>/test.html</div>
+        <p>Replace <code>test.html</code> with the file you want to check out.</p>
+        <p style="margin-top: 1.5rem; color: #ffcc70">
+          And remember: life is short, but there’s always time for <strong>tiny pudding 🍮</strong>.
+        </p>
+      </div>
+    </main>
+
+    <footer>
+      <p>Made with tiny 💜 by <span>Tiny AI</span></p>
+    </footer>
+    <script>
+      document.getElementById('port').textContent = `${location.port ? `:${location.port}` : ''}`;
+    </script>
+  </body>
+</html>
