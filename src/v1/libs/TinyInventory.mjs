@@ -473,6 +473,7 @@ class TinyInventory {
         ) {
           const canAdd = Math.min(maxStack - existing.quantity, remaining);
           if (!this.hasSpace({ weight: def.weight * canAdd, length: canAdd })) return;
+          console.log(canAdd);
           existing.quantity += canAdd;
           remaining -= canAdd;
           if (remaining <= 0) return; // done
@@ -483,6 +484,7 @@ class TinyInventory {
       while (remaining > 0) {
         const stackQty = Math.min(maxStack, remaining);
         if (!this.hasSpace({ weight: def.weight * stackQty, length: stackQty })) return;
+        console.log(stackQty);
         const item = { id: itemId, quantity: stackQty, metadata };
         collection.add(item);
         this.#triggerEvent('add', {
@@ -508,6 +510,32 @@ class TinyInventory {
 
     // Return remaining if some quantity couldn't be added due to maxStack
     return remaining;
+  }
+
+  /**
+   * Gets the item stored in a special slot.
+   * @param {string} slotId - The special slot ID.
+   * @returns {InventoryItem|null} The item object or null if empty.
+   * @throws {Error} If the special slot does not exist.
+   */
+  getSpecialItem(slotId) {
+    if (!this.specialSlots.has(slotId)) 
+      throw new Error(`Special slot '${slotId}' does not exist.`);
+    const slot = this.specialSlots.get(slotId);
+    return slot?.item ?? null;
+  }
+
+  /**
+   * Gets the type of a special slot.
+   * @param {string} slotId - The special slot ID.
+   * @returns {string|null} The slot type, or null if no type restriction.
+   * @throws {Error} If the special slot does not exist.
+   */
+  getSpecialSlotType(slotId) {
+    if (!this.specialSlots.has(slotId)) 
+      throw new Error(`Special slot '${slotId}' does not exist.`);
+    const slot = this.specialSlots.get(slotId);
+    return slot?.type ?? null;
   }
 
   /**
@@ -578,6 +606,42 @@ class TinyInventory {
       targetSection: null,
       specialSlot: slotName,
     });
+  }
+
+  /**
+   * Deletes an item from a specific special slot by setting it to null.
+   *
+   * @param {string} slotName - Special slot to delete from.
+   */
+  deleteSpecialItem(slotName) {
+    this.setSpecialSlot(slotName, null);
+  }
+
+  /**
+   * Gets the item stored at a specific slot in a section.
+   * @param {number} slotIndex - The slot index within the section.
+   * @param {string} [sectionId] - The section identifier.
+   * @returns {InventoryItem|null} The item object or null if empty.
+   * @throws {Error} If the section does not exist or slot index is out of bounds.
+   */
+  getItem(slotIndex, sectionId) {
+    /**
+     * @param {InvSlots} collection
+     * @param {string|null} targetSection
+     */
+    const getItem = (collection, targetSection) => {
+      const slots = Array.from(collection);
+      if (slotIndex < 0 || slotIndex >= slots.length)
+        throw new Error(`Slot index '${slotIndex}' out of bounds in section '${sectionId}'.`);
+      return slots[slotIndex] ?? null;
+    };
+
+    if (sectionId && this.useSections && this.sections) {
+      const section = this.sections.find((s) => s.id === sectionId);
+      if (!section) throw new Error(`Section '${sectionId}' not found.`);
+      return getItem(section.items, sectionId);
+    } else if (!this.useSections && this.items) return getItem(this.items, null);
+    else throw new Error('Target section required for section-based inventory.');
   }
 
   /**
@@ -732,28 +796,25 @@ class TinyInventory {
   }
 
   /**
-   * Removes a given quantity of an item from the inventory.
+   * Removes a given quantity of an item from the inventory, including special slots.
    * @param {string} itemId - ID of the item to remove.
    * @param {number} [quantity=1] - Quantity to remove.
-   * @returns {boolean} True if the requested quantity was removed; false if insufficient quantity.
+   * @returns {boolean} True if fully removed; false if insufficient quantity.
    */
   removeItem(itemId, quantity = 1) {
     let remaining = quantity;
+
+    // Remove from normal/section inventory first
     const collections = this.useSections
-      ? this.sections
-        ? this.sections.map((s) => s.items)
-        : []
+      ? (this.sections?.map((s) => s.items) ?? [])
       : [this.items];
-    const collectionsName = this.useSections
-      ? this.sections
-        ? this.sections.map((s) => s.id)
-        : []
-      : [null];
+    const collectionsName = this.useSections ? (this.sections?.map((s) => s.id) ?? []) : [null];
 
     for (const colIndex in collections) {
       const collection = collections[colIndex];
       if (!collection) continue;
       const collArray = Array.from(collection);
+
       for (const index in collArray) {
         const item = collArray[index];
         if (item && item.id === itemId) {
@@ -777,23 +838,27 @@ class TinyInventory {
       TinyInventory._cleanNulls(collection);
     }
 
-    /** @type {boolean} */
-    let deletedItem = false;
-    this.specialSlots.forEach((value, key) => {
-      if (value.item && value.item.id === itemId) {
-        value.item = null;
+    // If not enough removed, check special slots
+    this.specialSlots.forEach((slot, key) => {
+      if (remaining > 0 && slot.item && slot.item.id === itemId) {
+        const removeQty = Math.min(slot.item.quantity, remaining);
+        slot.item.quantity -= removeQty;
+        if (slot.item.quantity < 0) slot.item.quantity = 0;
+        remaining -= removeQty;
+        if (slot.item.quantity <= 0) slot.item = null;
+        this.specialSlots.set(key, slot);
+
         this.#triggerEvent('remove', {
           index: null,
-          item: value.item,
+          item: slot.item,
           collection: null,
           targetSection: null,
           specialSlot: key,
         });
-        deletedItem = true;
       }
     });
 
-    return deletedItem;
+    return remaining <= 0;
   }
 
   /**
@@ -883,56 +948,117 @@ class TinyInventory {
   }
 
   /**
-   * Equips an item into a special slot, removing it from the main inventory.
-   * If another item is already equipped, it is moved back into the inventory.
+   * Equips an item from the inventory into a special slot.
+   * Behavior:
+   * - If the same item is already equipped and stackable, it will merge quantities up to `maxStack`.
+   *   Any leftover remains in the original inventory slot.
+   * - If another item is equipped (different ID or non-stackable), the current one is moved back to inventory
+   *   and the new item is equipped (up to its stack limit). Any leftover stays in the inventory.
    *
    * @param {string} slotId - ID of the special slot.
-   * @param {string} itemId - ID of the item to equip.
-   * @throws {Error} If the slot does not exist or the item cannot be equipped in that slot.
+   * @param {number} slotIndex - Index of the slot in the inventory.
+   * @param {string} sectionId - Section ID in the inventory.
+   * @param {number} [quantity=1] - Quantity to attempt to equip.
+   * @returns {number} The amount that could NOT be equipped (leftover in the inventory slot).
+   * @throws {Error} If the slot does not exist, item type mismatches the slot, or inventory lacks the required amount.
    */
-  equipItem(slotId, itemId) {
+  equipItem(slotId, slotIndex, sectionId, quantity = 1) {
+    if (quantity <= 0 || !Number.isFinite(quantity))
+      throw new Error(`Invalid quantity '${quantity}'.`);
+
     if (!this.specialSlots.has(slotId)) throw new Error(`Special slot '${slotId}' does not exist.`);
 
-    const item = this.getAllItems().find((it) => it.id === itemId);
-    if (!item) throw new Error(`Item '${itemId}' not found in inventory.`);
+    const invItem = this.getItem(slotIndex, sectionId);
+    if (!invItem)
+      throw new Error(`No item found in inventory slot ${slotIndex} of section '${sectionId}'.`);
+    if (invItem.quantity < quantity)
+      throw new Error(`Not enough quantity of item '${invItem.id}' in inventory slot.`);
 
-    const def = TinyInventory.ItemRegistry.get(itemId);
-    if (!def) throw new Error(`Item '${itemId}' not defined in registry.`);
+    const def = TinyInventory.ItemRegistry.get(invItem.id);
+    if (!def) throw new Error(`Item '${invItem.id}' not defined in registry.`);
+
     const current = this.specialSlots.get(slotId);
     if (!current) throw new Error(`Slot '${slotId}' not defined in registry.`);
+
     const slotType = current.type ?? null;
     if (slotType !== null && def.type !== slotType)
-      throw new Error(`Item '${itemId}' cannot be equipped in slot '${slotId}'`);
+      throw new Error(`Item '${invItem.id}' cannot be equipped in slot '${slotId}'.`);
 
-    // If there is already something equipped in this slot, return to inventory
-    if (current.item) this.unequipItem(slotId);
+    const maxStack = Math.min(def.maxStack, this.maxStack);
 
-    // Remove 1 inventory unit
-    this.removeItem(itemId, 1);
+    // CASE 1: Same item already equipped & stackable → merge
+    if (current.item && current.item.id === invItem.id) {
+      const availableSpace = Math.max(0, maxStack - current.item.quantity);
+      if (availableSpace <= 0) return quantity; // nothing fits
 
-    // Equip new piece (maintains only id and quantity = 1)
-    current.item = { id: itemId, quantity: 1, metadata: item.metadata };
+      const toEquip = Math.min(quantity, availableSpace);
+
+      // Remove from inventory slot
+      this.removeItem(invItem.id, toEquip);
+
+      // Merge into special slot
+      current.item.quantity += toEquip;
+      this.specialSlots.set(slotId, current);
+
+      return quantity - toEquip;
+    }
+
+    // CASE 2: Different item equipped → swap
+    if (current.item) {
+      this.unequipItem(slotId); // moves old one back to inventory
+    }
+
+    // Equip new item into slot
+    const toEquip = Math.min(quantity, maxStack);
+
+    this.removeItem(invItem.id, toEquip);
+    current.item = {
+      id: invItem.id,
+      quantity: toEquip,
+      metadata: invItem.metadata,
+    };
     this.specialSlots.set(slotId, current);
+
+    return quantity - toEquip;
   }
 
   /**
-   * Unequips an item from a special slot and returns it to the inventory.
+   * Unequips a specific quantity of an item from a special slot
+   * and returns it to the inventory.
+   *
+   * If no quantity is specified, removes the entire stack.
+   *
    * @param {string} slotId - ID of the special slot.
-   * @returns {boolean} True if an item was unequipped; false if the slot was already empty.
-   * @throws {Error} If the slot does not exist.
+   * @param {number|null} [quantity=null] - Quantity to unequip (default: all).
+   * @returns {boolean} True if any item was unequipped; false if slot empty.
+   * @throws {Error} If the slot does not exist or invalid quantity.
    */
-  unequipItem(slotId) {
+  unequipItem(slotId, quantity = null) {
     if (!this.specialSlots.has(slotId)) throw new Error(`Special slot '${slotId}' does not exist.`);
 
     const current = this.specialSlots.get(slotId);
     if (!current) throw new Error(`Slot '${slotId}' not defined in registry.`);
     if (!current.item) return false; // Empty slot
 
-    // Try to add back to inventory
-    this.addItem(current.item.id, 1, null, current.item.metadata);
+    const item = current.item;
+    const unequipQty = quantity === null ? item.quantity : quantity;
 
-    // Remove from Special Slot
-    current.item = null;
+    if (unequipQty <= 0) throw new Error(`Invalid unequip quantity: ${unequipQty}`);
+    if (unequipQty > item.quantity)
+      throw new Error(`Not enough items in slot '${slotId}' to unequip.`);
+
+    // Return to inventory with requested quantity
+    this.addItem(item.id, unequipQty, null, item.metadata);
+
+    if (unequipQty === item.quantity) {
+      // Fully emptied
+      current.item = null;
+    } else {
+      // Partially reduced
+      item.quantity -= unequipQty;
+      current.item = item;
+    }
+
     this.specialSlots.set(slotId, current);
     return true;
   }
@@ -1210,7 +1336,7 @@ class TinyInventory {
             // 1) Add to inventory, 2) Equip (will validate type), 3) Remove from inventory.
             inv.addItem(safeEquipped.id, safeEquipped.quantity, null, safeEquipped.metadata);
             try {
-              inv.equipItem(slotId, safeEquipped.id);
+              inv.setSpecialSlot(slotId, safeEquipped);
             } catch {
               // If cannot equip, leave it in inventory
             }
