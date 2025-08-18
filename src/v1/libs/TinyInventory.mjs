@@ -153,6 +153,8 @@ class TinyInventory {
     for (const slot of cleaned) collection.add(slot);
   }
 
+  /////////////////////////////////////////////////////////////////
+
   /**
    * Registry of all item definitions available in TinyInventory.
    * Keys are item IDs, values are configuration objects created with {@link TinyInventory.defineItem}.
@@ -187,6 +189,8 @@ class TinyInventory {
     });
   }
 
+  /////////////////////////////////////////////////////////////////
+
   /** @type {Map<string, SpecialSlot>} */
   specialSlots = new Map();
 
@@ -216,6 +220,8 @@ class TinyInventory {
   /** @type {number} */
   maxStack;
 
+  /////////////////////////////////////////////////////////////////
+
   /**
    * Gets the total quantity of items in the inventory.
    * Unlike slot count, this sums up the `quantity` of each item.
@@ -240,6 +246,8 @@ class TinyInventory {
       return total + (def?.weight || 0) * item.quantity;
     }, 0);
   }
+
+  /////////////////////////////////////////////////////////////////
 
   /**
    * Creates a new TinyInventory instance.
@@ -280,6 +288,8 @@ class TinyInventory {
       items: new Set(),
     }));
   }
+
+  /////////////////////////////////////////////////////////////////
 
   /**
    * Checks if there is available space based on slot and weight limits.
@@ -327,7 +337,7 @@ class TinyInventory {
     return false;
   }
 
-  /** --------------------- PUBLIC METHODS --------------------- */
+  /////////////////////////////////////////////////////////////////
 
   /**
    * Internal event trigger.
@@ -403,6 +413,8 @@ class TinyInventory {
     this.events.use.push(callback);
   }
 
+  /////////////////////////////////////////////////////////////////
+
   /**
    * Removes all unnecessary `null` values from the inventory, compacting the slots.
    * Preserves the relative order of items and does not modify metadata.
@@ -434,6 +446,8 @@ class TinyInventory {
       for (const section of this.sections) compact(section.items, section.id);
     } else if (!this.useSections && this.items) compact(this.items, null);
   }
+
+  /////////////////////////////////////////////////////////////////
 
   /**
    * Adds an item to the inventory, respecting stackability rules, stack limits, and metadata matching.
@@ -510,111 +524,6 @@ class TinyInventory {
 
     // Return remaining if some quantity couldn't be added due to maxStack
     return remaining;
-  }
-
-  /**
-   * Gets the item stored in a special slot.
-   * @param {string} slotId - The special slot ID.
-   * @returns {InventoryItem|null} The item object or null if empty.
-   * @throws {Error} If the special slot does not exist.
-   */
-  getSpecialItem(slotId) {
-    if (!this.specialSlots.has(slotId)) 
-      throw new Error(`Special slot '${slotId}' does not exist.`);
-    const slot = this.specialSlots.get(slotId);
-    return slot?.item ?? null;
-  }
-
-  /**
-   * Gets the type of a special slot.
-   * @param {string} slotId - The special slot ID.
-   * @returns {string|null} The slot type, or null if no type restriction.
-   * @throws {Error} If the special slot does not exist.
-   */
-  getSpecialSlotType(slotId) {
-    if (!this.specialSlots.has(slotId)) 
-      throw new Error(`Special slot '${slotId}' does not exist.`);
-    const slot = this.specialSlots.get(slotId);
-    return slot?.type ?? null;
-  }
-
-  /**
-   * Sets or clears an item in a special slot.
-   *
-   * @param {string} slotName - Name of the special slot.
-   * @param {InventoryItem|null} item - Item to place, or null to clear.
-   * @throws {Error} If the slot does not exist, or item is invalid.
-   */
-  setSpecialSlot(slotName, item) {
-    if (!this.specialSlots || !(slotName in this.specialSlots)) {
-      throw new Error(`Special slot '${slotName}' not found.`);
-    }
-
-    // Validate type: must be null or a proper InventoryItem object
-    const isInventoryItem =
-      item &&
-      typeof item === 'object' &&
-      typeof item.id === 'string' &&
-      typeof item.quantity === 'number' &&
-      !Number.isNaN(item.quantity) &&
-      Number.isFinite(item.quantity) &&
-      item.quantity > -1 &&
-      typeof item.metadata === 'object';
-
-    if (item !== null && !isInventoryItem)
-      throw new Error(`Invalid item type: must be null or a valid InventoryItem.`);
-
-    const def = item ? TinyInventory.ItemRegistry.get(item.id) : null;
-    if (item !== null && !def)
-      throw new Error(`Item '${item?.id ?? 'unknown'}' not defined in registry.`);
-
-    // Slot check
-    const slot = this.specialSlots.get(slotName);
-    if (!slot) throw new Error(`Special slot ${slotName} out of range for section '${slotName}'.`);
-
-    // Weight check
-    const oldItemData = slot.item ? TinyInventory.ItemRegistry.get(slot.item.id) : null;
-
-    /**
-     * @param {InventoryItem|null} [theItem]
-     * @param {ItemDef|null} [itemDef]
-     * @returns {number}
-     */
-    const getTotalWeight = (theItem, itemDef) => (itemDef ? itemDef.weight * (theItem ? 1 : 0) : 0);
-
-    /**
-     * @param {InventoryItem|null} [theItem]
-     * @returns {number}
-     */
-    const getTotalLength = (theItem) => (theItem ? 1 : 0);
-
-    if (
-      !this.hasSpace({
-        weight: getTotalWeight(item, def) - getTotalWeight(slot.item, oldItemData),
-        length: getTotalLength(item) - getTotalLength(slot.item),
-      })
-    )
-      throw new Error('Inventory is full or overweight.');
-
-    // Set or clear
-    slot.item = item;
-
-    this.#triggerEvent('set', {
-      index: null,
-      item,
-      collection: null,
-      targetSection: null,
-      specialSlot: slotName,
-    });
-  }
-
-  /**
-   * Deletes an item from a specific special slot by setting it to null.
-   *
-   * @param {string} slotName - Special slot to delete from.
-   */
-  deleteSpecialItem(slotName) {
-    this.setSpecialSlot(slotName, null);
   }
 
   /**
@@ -861,6 +770,8 @@ class TinyInventory {
     return remaining <= 0;
   }
 
+  /////////////////////////////////////////////////////////////////
+
   /**
    * Uses an item from a specific slot, section, or special slot,
    * triggering its `onUse` callback if defined.
@@ -945,6 +856,111 @@ class TinyInventory {
       return result;
     }
     return null;
+  }
+
+  /////////////////////////////////////////////////////////////////
+
+  /**
+   * Gets the item stored in a special slot.
+   * @param {string} slotId - The special slot ID.
+   * @returns {InventoryItem|null} The item object or null if empty.
+   * @throws {Error} If the special slot does not exist.
+   */
+  getSpecialItem(slotId) {
+    if (!this.specialSlots.has(slotId)) throw new Error(`Special slot '${slotId}' does not exist.`);
+    const slot = this.specialSlots.get(slotId);
+    return slot?.item ?? null;
+  }
+
+  /**
+   * Gets the type of a special slot.
+   * @param {string} slotId - The special slot ID.
+   * @returns {string|null} The slot type, or null if no type restriction.
+   * @throws {Error} If the special slot does not exist.
+   */
+  getSpecialSlotType(slotId) {
+    if (!this.specialSlots.has(slotId)) throw new Error(`Special slot '${slotId}' does not exist.`);
+    const slot = this.specialSlots.get(slotId);
+    return slot?.type ?? null;
+  }
+
+  /**
+   * Sets or clears an item in a special slot.
+   *
+   * @param {string} slotName - Name of the special slot.
+   * @param {InventoryItem|null} item - Item to place, or null to clear.
+   * @throws {Error} If the slot does not exist, or item is invalid.
+   */
+  setSpecialSlot(slotName, item) {
+    if (!this.specialSlots || !(slotName in this.specialSlots)) {
+      throw new Error(`Special slot '${slotName}' not found.`);
+    }
+
+    // Validate type: must be null or a proper InventoryItem object
+    const isInventoryItem =
+      item &&
+      typeof item === 'object' &&
+      typeof item.id === 'string' &&
+      typeof item.quantity === 'number' &&
+      !Number.isNaN(item.quantity) &&
+      Number.isFinite(item.quantity) &&
+      item.quantity > -1 &&
+      typeof item.metadata === 'object';
+
+    if (item !== null && !isInventoryItem)
+      throw new Error(`Invalid item type: must be null or a valid InventoryItem.`);
+
+    const def = item ? TinyInventory.ItemRegistry.get(item.id) : null;
+    if (item !== null && !def)
+      throw new Error(`Item '${item?.id ?? 'unknown'}' not defined in registry.`);
+
+    // Slot check
+    const slot = this.specialSlots.get(slotName);
+    if (!slot) throw new Error(`Special slot ${slotName} out of range for section '${slotName}'.`);
+
+    // Weight check
+    const oldItemData = slot.item ? TinyInventory.ItemRegistry.get(slot.item.id) : null;
+
+    /**
+     * @param {InventoryItem|null} [theItem]
+     * @param {ItemDef|null} [itemDef]
+     * @returns {number}
+     */
+    const getTotalWeight = (theItem, itemDef) => (itemDef ? itemDef.weight * (theItem ? 1 : 0) : 0);
+
+    /**
+     * @param {InventoryItem|null} [theItem]
+     * @returns {number}
+     */
+    const getTotalLength = (theItem) => (theItem ? 1 : 0);
+
+    if (
+      !this.hasSpace({
+        weight: getTotalWeight(item, def) - getTotalWeight(slot.item, oldItemData),
+        length: getTotalLength(item) - getTotalLength(slot.item),
+      })
+    )
+      throw new Error('Inventory is full or overweight.');
+
+    // Set or clear
+    slot.item = item;
+
+    this.#triggerEvent('set', {
+      index: null,
+      item,
+      collection: null,
+      targetSection: null,
+      specialSlot: slotName,
+    });
+  }
+
+  /**
+   * Deletes an item from a specific special slot by setting it to null.
+   *
+   * @param {string} slotName - Special slot to delete from.
+   */
+  deleteSpecialItem(slotName) {
+    this.setSpecialSlot(slotName, null);
   }
 
   /**
@@ -1063,6 +1079,8 @@ class TinyInventory {
     return true;
   }
 
+  /////////////////////////////////////////////////////////////////
+
   /**
    * Returns all items currently stored in the inventory (across all sections if applicable),
    * excluding null or undefined entries.
@@ -1140,6 +1158,8 @@ class TinyInventory {
     return this.getItemCount(itemId) >= quantity;
   }
 
+  /////////////////////////////////////////////////////////////////
+
   /**
    * Creates a plain JSON-safe object representing the current inventory state.
    * Functions (e.g., onUse) are NOT serialized; only instance state is saved.
@@ -1209,6 +1229,8 @@ class TinyInventory {
   toJSON(space = 0) {
     return JSON.stringify(this.toObject(), null, space);
   }
+
+  /////////////////////////////////////////////////////////////////
 
   /**
    * Rebuilds a TinyInventory from a plain object created by {@link TinyInventory.toObject}.
