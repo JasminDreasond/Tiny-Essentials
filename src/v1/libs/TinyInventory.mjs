@@ -5,8 +5,7 @@
  * @property {string} id - Unique identifier for the item.
  * @property {number} weight - Weight of a single unit of the item.
  * @property {InventoryMetadata} metadata - Default metadata for the item type.
- * @property {boolean} canStack - Whether multiple units can be stacked together.
- * @property {number} maxStack - Maximum quantity per stack (ignored if `canStack` is false).
+ * @property {number} maxStack - Maximum quantity per stack.
  * @property {OnUse|null} onUse - Callback triggered when the item is used.
  * @property {string|null} type - Optional category/type identifier.
  */
@@ -169,8 +168,7 @@ class TinyInventory {
    * @param {string} config.id - Unique identifier for the item.
    * @param {number} [config.weight=0] - Weight of a single unit of the item.
    * @param {InventoryMetadata} [config.metadata={}] - Default metadata for the item type.
-   * @param {boolean} [config.canStack=false] - Whether multiple units of this item can be combined into a single stack.
-   * @param {number} [config.maxStack=1] - Maximum quantity allowed in a single stack (ignored if `canStack` is false).
+   * @param {number} [config.maxStack=1] - Maximum quantity allowed in a single stack.
    * @param {OnUse|null} [config.onUse=null] - Optional callback executed when the item is used.
    * @param {string|null} [config.type=null] - Optional type/category identifier for the item.
    * @throws {Error} If `id` is missing or not a string.
@@ -184,7 +182,6 @@ class TinyInventory {
       weight: config.weight || 0,
       maxStack: config.maxStack || 1,
       metadata: config.metadata || {},
-      canStack: config.canStack ?? false,
       type: config.type ?? null,
       onUse: typeof config.onUse === 'function' ? config.onUse : null,
     });
@@ -453,11 +450,7 @@ class TinyInventory {
     const def = TinyInventory.ItemRegistry.get(itemId);
     if (!def) throw new Error(`Item '${itemId}' not defined in registry.`);
     let remaining = quantity;
-    const maxStack = def.canStack
-      ? def.maxStack <= this.maxStack
-        ? def.maxStack
-        : this.maxStack
-      : 1;
+    const maxStack = def.maxStack <= this.maxStack ? def.maxStack : this.maxStack;
 
     /**
      * @param {InventoryMetadata} a
@@ -471,26 +464,24 @@ class TinyInventory {
      */
     const placeItem = (collection, targetSection) => {
       // Step 1: Try to fill existing stacks first
-      if (def.canStack) {
-        for (const existing of collection) {
-          if (
-            existing &&
-            existing.id === itemId &&
-            existing.quantity < maxStack &&
-            metadataEquals(existing.metadata || {}, metadata)
-          ) {
-            const canAdd = Math.min(maxStack - existing.quantity, remaining);
-            if (!this.hasSpace({ weight: def.weight * canAdd, length: canAdd })) return;
-            existing.quantity += canAdd;
-            remaining -= canAdd;
-            if (remaining <= 0) return; // done
-          }
+      for (const existing of collection) {
+        if (
+          existing &&
+          existing.id === itemId &&
+          existing.quantity < maxStack &&
+          metadataEquals(existing.metadata || {}, metadata)
+        ) {
+          const canAdd = Math.min(maxStack - existing.quantity, remaining);
+          if (!this.hasSpace({ weight: def.weight * canAdd, length: canAdd })) return;
+          existing.quantity += canAdd;
+          remaining -= canAdd;
+          if (remaining <= 0) return; // done
         }
       }
 
       // Step 2: If still remaining, create new stacks
       while (remaining > 0) {
-        const stackQty = def.canStack ? Math.min(maxStack, remaining) : 1;
+        const stackQty = Math.min(maxStack, remaining);
         if (!this.hasSpace({ weight: def.weight * stackQty, length: stackQty })) return;
         const item = { id: itemId, quantity: stackQty, metadata };
         collection.add(item);
@@ -618,11 +609,7 @@ class TinyInventory {
       throw new Error(`Item '${item?.id ?? 'unknown'}' not defined in registry.`);
 
     if (def && item) {
-      const maxStack = def.canStack
-        ? def.maxStack <= this.maxStack
-          ? def.maxStack
-          : this.maxStack
-        : 1;
+      const maxStack = def.maxStack <= this.maxStack ? def.maxStack : this.maxStack;
       if (item.quantity > maxStack)
         throw new Error(
           `Item '${item.id}' exceeds max stack size. Allowed: ${maxStack}, got: ${item.quantity}.`,

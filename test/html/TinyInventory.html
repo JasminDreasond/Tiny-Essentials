@@ -265,10 +265,6 @@
           <div class="grid grid-2">
             <input id="ir_id" placeholder="id (e.g., apple)" />
             <input id="ir_weight" type="number" step="0.01" placeholder="weight (0)" />
-            <select id="ir_canStack">
-              <option value="true">canStack: true</option>
-              <option value="false">canStack: false</option>
-            </select>
             <input id="ir_maxStack" type="number" placeholder="maxStack (1)" />
             <input id="ir_type" placeholder="type (optional, e.g., helmet)" />
           </div>
@@ -299,7 +295,6 @@
                 <tr>
                   <th>id</th>
                   <th>weight</th>
-                  <th>canStack</th>
                   <th>maxStack</th>
                   <th>type</th>
                   <th>metadata</th>
@@ -370,8 +365,8 @@
         <div class="card">
           <header><h2>Transfer Item</h2></header>
           <div class="grid grid-2">
-            <input id="tr_itemId" type="number" placeholder="itemId" />
-            <input id="tr_qty" type="number" value="1" />
+            <input id="tr_fromIndex" type="number" placeholder="fromIndex" />
+            <input id="tr_toIndex" type="number" placeholder="toIndex" />
             <input id="tr_fromSection" placeholder="fromSection (optional)" />
             <input id="tr_toSection" placeholder="toSection (optional)" />
             <button class="btn primary" id="tr_transfer">Transfer Item</button>
@@ -524,7 +519,6 @@
           tr.innerHTML = `
           <td>${id}</td>
           <td>${def.weight ?? 0}</td>
-          <td>${def.canStack ? 'yes' : 'no'}</td>
           <td>${def.maxStack}</td>
           <td>${def.type ?? '-'}</td>
           <td class="small mono">${escapeHTML(JSON.stringify(def.metadata ?? {}))}</td>
@@ -764,8 +758,7 @@
       byId('ir_define').addEventListener('click', () => {
         const id = byId('ir_id').value.trim();
         const weight = Number(byId('ir_weight').value || 0);
-        const canStack = byId('ir_canStack').value === 'true';
-        const maxStack = Number(byId('ir_maxStack').value || (canStack ? 99 : 1));
+        const maxStack = Number(byId('ir_maxStack').value || 1);
         const type = byId('ir_type').value.trim() || null;
         const metadata = parseJSON(byId('ir_metadata').value, {});
         let onUse = null;
@@ -803,7 +796,7 @@
         }
 
         try {
-          TinyInventory.defineItem({ id, weight, metadata, canStack, maxStack, type, onUse });
+          TinyInventory.defineItem({ id, weight, metadata, maxStack, type, onUse });
           renderRegistry();
           toast(`Item '${id}' defined`, 'ok');
         } catch (e) {
@@ -817,7 +810,6 @@
         ['ir_id', 'ir_weight', 'ir_maxStack', 'ir_type', 'ir_metadata', 'ir_onUseCode'].forEach(
           (id) => (byId(id).value = ''),
         );
-        byId('ir_canStack').value = 'true';
         byId('ir_onUsePreset').value = 'none';
         refreshKPI();
       });
@@ -1106,8 +1098,8 @@
           toast('Create an inventory first.', 'warn');
           return;
         }
-        const fromIndex = numberOrNull(byId('tr_itemId').value) || 0;
-        const toIndex = numberOrNull(byId('tr_qty').value) || 0;
+        const fromIndex = numberOrNull(byId('tr_fromIndex').value) || 0;
+        const toIndex = numberOrNull(byId('tr_toIndex').value) || 0;
         const fromSection = byId('tr_fromSection').value || null;
         const toSection = byId('tr_toSection').value || null;
 
@@ -1241,7 +1233,6 @@
           TinyInventory.defineItem({
             id: 'apple',
             weight: 0.2,
-            canStack: true,
             maxStack: 10,
             metadata: { rarity: 'common' },
             onUse: ({ remove }) => remove(),
@@ -1250,7 +1241,6 @@
           TinyInventory.defineItem({
             id: 'potion',
             weight: 0.5,
-            canStack: true,
             maxStack: 5,
             metadata: { heal: 25 },
             onUse: ({ remove }) => {
@@ -1262,7 +1252,6 @@
           TinyInventory.defineItem({
             id: 'helmet_iron',
             weight: 2,
-            canStack: false,
             maxStack: 1,
             metadata: { def: 2 },
             type: 'helmet',
@@ -1270,7 +1259,6 @@
           TinyInventory.defineItem({
             id: 'sword_wood',
             weight: 1.2,
-            canStack: false,
             maxStack: 1,
             metadata: { atk: 1 },
             type: 'weapon',
