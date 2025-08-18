@@ -216,6 +216,9 @@ class TinyInventory {
   /** @type {boolean} */
   useSections;
 
+  /** @type {number} */
+  maxStack;
+
   /**
    * Gets the total quantity of items in the inventory.
    * Unlike slot count, this sums up the `quantity` of each item.
@@ -249,12 +252,14 @@ class TinyInventory {
    * @param {number|null} [options.maxSlots=null] - Maximum number of item slots (null for no limit).
    * @param {boolean} [options.useSections=false] - Whether inventory is divided into separate sections.
    * @param {SectionCfg[]} [options.sections=[]] - Section definitions (only used if `useSections` is true).
+   * @param {number} [options.maxStack=Infinity] - Global maximum stack size (per slot).
    * @param {Record<string, { type: string | null; }>} [options.specialSlots] - IDs for special slots (e.g., "helmet", "weapon").
    */
   constructor(options = {}) {
     this.maxWeight = options.maxWeight ?? null;
     this.maxSlots = options.maxSlots ?? null;
     this.useSections = !!options.useSections;
+    this.maxStack = options.maxStack ?? Infinity;
     this.sections = this.useSections ? this.#initSections(options.sections ?? []) : null;
     this.items = this.useSections ? null : new Set();
     if (options.specialSlots) {
@@ -448,6 +453,7 @@ class TinyInventory {
     const def = TinyInventory.ItemRegistry.get(itemId);
     if (!def) throw new Error(`Item '${itemId}' not defined in registry.`);
     let remaining = quantity;
+    const maxStack = def.canStack ? (def.maxStack <= this.maxStack ? def.maxStack : this.maxStack) : 1;
 
     /**
      * @param {InventoryMetadata} a
@@ -460,30 +466,30 @@ class TinyInventory {
      * @param {string|null} targetSection
      */
     const placeItem = (collection, targetSection) => {
-      // Try stacking only if allowed
+      // Step 1: Try to fill existing stacks first
       if (def.canStack) {
         for (const existing of collection) {
           if (
             existing &&
             existing.id === itemId &&
-            existing.quantity < def.maxStack &&
+            existing.quantity < maxStack &&
             metadataEquals(existing.metadata || {}, metadata)
           ) {
-            const canAdd = Math.min(def.maxStack - existing.quantity, remaining);
+            const canAdd = Math.min(maxStack - existing.quantity, remaining);
             if (!this.hasSpace({ weight: def.weight * canAdd, length: canAdd }))
-              throw new Error('Inventory is full or overweight.');
+              return;
             existing.quantity += canAdd;
             remaining -= canAdd;
-            if (remaining <= 0) return;
+            if (remaining <= 0) return; // done
           }
         }
       }
 
-      // Add new stacks (or single items if canStack is false)
+      // Step 2: If still remaining, create new stacks
       while (remaining > 0) {
-        const stackQty = def.canStack ? Math.min(def.maxStack, remaining) : 1;
+        const stackQty = def.canStack ? Math.min(maxStack, remaining) : 1;
         if (!this.hasSpace({ weight: def.weight * stackQty, length: stackQty }))
-          throw new Error('Inventory is full or overweight.');
+          return;
         const item = { id: itemId, quantity: stackQty, metadata };
         collection.add(item);
         this.#triggerEvent('add', {
@@ -608,6 +614,12 @@ class TinyInventory {
     const def = item ? TinyInventory.ItemRegistry.get(item.id) : null;
     if (item !== null && !def)
       throw new Error(`Item '${item?.id ?? 'unknown'}' not defined in registry.`);
+
+    if (def && item) {
+      const maxStack = def.canStack ? (def.maxStack <= this.maxStack ? def.maxStack : this.maxStack) : 1;
+      if (item.quantity > maxStack)
+        throw new Error(`Item '${item.id}' exceeds max stack size. Allowed: ${maxStack}, got: ${item.quantity}.`);
+    }
 
     /** @type {InvSlots|null} */
     let collection = null;

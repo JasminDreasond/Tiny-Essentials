@@ -252,6 +252,15 @@
         </div>
 
         <div class="card">
+          <header><h2>Stress / Random</h2></header>
+          <div class="grid grid-3">
+            <input id="st_runs" type="number" value="10" />
+            <button class="btn" id="st_addRandom">Add random items</button>
+            <button class="btn bad" id="st_clearInv">Clear inventory</button>
+          </div>
+        </div>
+
+        <div class="card">
           <header><h2>Item Registry</h2></header>
           <div class="grid grid-2">
             <input id="ir_id" placeholder="id (e.g., apple)" />
@@ -307,6 +316,7 @@
           <div class="grid grid-3">
             <input id="ci_maxWeight" type="number" placeholder="maxWeight (null)" />
             <input id="ci_maxSlots" type="number" placeholder="maxSlots (null)" />
+            <input id="ci_maxStack" type="number" placeholder="maxStack (Infinity)" />
             <select id="ci_useSections">
               <option value="false">useSections: false</option>
               <option value="true">useSections: true</option>
@@ -338,6 +348,39 @@
         </div>
 
         <div class="card">
+          <header><h2>Inventory Management</h2></header>
+          <div class="row">
+            <button class="btn" id="inv_compact">Compact Inventory</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <header><h2>Item Retrieval</h2></header>
+          <div class="grid grid-2">
+            <input
+              id="ac_findPredicate_retrieval"
+              class="mono"
+              placeholder="item => item.id === 'apple'"
+            />
+            <button class="btn" id="ac_find_retrieval">find() / findItems()</button>
+            <input id="ac_metadata_retrieval" class="mono" placeholder="{'rarity':'common'}" />
+            <button class="btn" id="ac_getItemsByMetadata">getItemsByMetadata()</button>
+          </div>
+          <pre id="retrieval_results" class="mono small"></pre>
+        </div>
+
+        <div class="card">
+          <header><h2>Transfer Item</h2></header>
+          <div class="grid grid-2">
+            <input id="tr_itemId" placeholder="itemId" />
+            <input id="tr_qty" type="number" value="1" />
+            <input id="tr_fromSection" placeholder="fromSection (optional)" />
+            <input id="tr_toSection" placeholder="toSection (optional)" />
+            <button class="btn primary" id="tr_transfer">Transfer Item</button>
+          </div>
+        </div>
+
+        <div class="card">
           <header><h2>Serialization</h2></header>
           <div class="row">
             <button class="btn" id="ser_toJSON">Export JSON</button>
@@ -347,19 +390,32 @@
           <textarea id="ser_text" class="mono" placeholder="JSON will appear here..."></textarea>
           <pre id="ser_diffOut" class="mono small" style="display: none"></pre>
         </div>
-
-        <div class="card">
-          <header><h2>Stress / Random</h2></header>
-          <div class="grid grid-3">
-            <input id="st_runs" type="number" value="10" />
-            <button class="btn" id="st_addRandom">Add random items</button>
-            <button class="btn bad" id="st_clearInv">Clear inventory</button>
-          </div>
-        </div>
       </div>
 
       <!-- RIGHT PANEL: Actions & Views -->
       <div class="col">
+        <div class="card">
+          <header><h2>Inventory Status</h2></header>
+          <div class="grid grid-4">
+            <center>
+              <button class="btn" id="inv_hasSpace">hasSpace()</button>
+              <span id="inv_hasSpace_result"></span>
+            </center>
+            <center>
+              <button class="btn" id="inv_isHeavy">isHeavy()</button>
+              <span id="inv_isHeavy_result"></span>
+            </center>
+            <center>
+              <button class="btn" id="inv_areFullSlots">areFullSlots()</button>
+              <span id="inv_areFullSlots_result"></span>
+            </center>
+            <center>
+              <button class="btn" id="inv_isFull">isFull()</button>
+              <span id="inv_isFull_result"></span>
+            </center>
+          </div>
+        </div>
+
         <div class="card">
           <header><h2>Actions</h2></header>
           <div class="grid grid-4">
@@ -488,6 +544,12 @@
         byId('kpiStacks').textContent = String(inv ? inv.getAllItems().length : 0);
         byId('kpiTotal').textContent = String(inv.size);
         byId('kpiWeight').textContent = inv ? String(inv.weight) : '0';
+
+        byId('inv_hasSpace_result').textContent = inv && inv.hasSpace() ? 'Yes' : 'No';
+        byId('inv_isHeavy_result').textContent = inv && inv.isHeavy() ? 'Yes' : 'No';
+        byId('inv_areFullSlots_result').textContent = inv && inv.areFullSlots() ? 'Yes' : 'No';
+        byId('inv_isFull_result').textContent = inv && inv.isFull() ? 'Yes' : 'No';
+
         renderDiag();
       }
 
@@ -791,6 +853,7 @@
       byId('ci_create').addEventListener('click', () => {
         const maxWeight = numberOrNull(byId('ci_maxWeight').value);
         const maxSlots = numberOrNull(byId('ci_maxSlots').value);
+        const maxStack = numberOrNull(byId('ci_maxStack').value) || Infinity;
         const useSections = byId('ci_useSections').value === 'true';
         /** @type {Array<{id:string, slots:number}>} */
         const sections = [];
@@ -810,7 +873,7 @@
         });
 
         try {
-          inv = new TinyInventory({ maxWeight, maxSlots, useSections, sections, specialSlots });
+          inv = new TinyInventory({ maxWeight, maxSlots, useSections, sections, specialSlots, maxStack });
           window.inventory = inv;
           // attach event logs
           inv.onAddItem((e) => logEvent('onAdd', e));
@@ -933,6 +996,63 @@
           toast(e.message, 'bad');
         }
         refreshKPI();
+      });
+
+      // ---------- Inventory Management ----------
+      byId('inv_compact').addEventListener('click', () => {
+        if (!inv) {
+          toast('Create an inventory first.', 'warn');
+          return;
+        }
+        try {
+          inv.compactInventory();
+          toast('Inventory compacted!', 'ok');
+          renderInv();
+          refreshKPI();
+        } catch (e) {
+          toast('Error compacting inventory: ' + e.message, 'bad');
+        }
+      });
+
+      // ---------- Inventory Status ----------
+      byId('inv_hasSpace').addEventListener('click', () => {
+        if (!inv) {
+          toast('Create an inventory first.', 'warn');
+          return;
+        }
+        const result = inv.hasSpace();
+        byId('inv_hasSpace_result').textContent = result ? 'Yes' : 'No';
+        toast(`hasSpace(): ${result ? 'Yes' : 'No'}`, result ? 'ok' : 'warn');
+      });
+
+      byId('inv_isHeavy').addEventListener('click', () => {
+        if (!inv) {
+          toast('Create an inventory first.', 'warn');
+          return;
+        }
+        const result = inv.isHeavy();
+        byId('inv_isHeavy_result').textContent = result ? 'Yes' : 'No';
+        toast(`isHeavy(): ${result ? 'Yes' : 'No'}`, result ? 'warn' : 'ok');
+      });
+
+      byId('inv_areFullSlots').addEventListener('click', () => {
+        if (!inv) {
+          toast('Create an inventory first.', 'warn');
+          return;
+        }
+        const result = inv.areFullSlots();
+        byId('inv_areFullSlots_result').textContent = result ? 'Yes' : 'No';
+        toast(`areFullSlots(): ${result ? 'Yes' : 'No'}`, result ? 'warn' : 'ok');
+      });
+
+      byId('inv_isFull').addEventListener('click', () => {
+        if (!inv) {
+          toast('Create an inventory first.', 'warn');
+          return;
+        }
+        const result = inv.isFull();
+        byId('inv_isFull_result').textContent = result ? 'Yes' : 'No';
+        toast(`isFull(): ${result ? 'Yes' : 'No'}`, result ? 'warn' : 'ok');
       });
 
       // ---------- Serialization ----------
