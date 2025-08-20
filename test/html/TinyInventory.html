@@ -392,7 +392,7 @@
       <div class="col">
         <div class="card">
           <header><h2>Inventory Status</h2></header>
-          <div class="grid grid-4">
+          <div class="grid grid-3">
             <center>
               <button class="btn" id="inv_hasSpace">hasSpace()</button>
               <span id="inv_hasSpace_result"></span>
@@ -402,12 +402,20 @@
               <span id="inv_isHeavy_result"></span>
             </center>
             <center>
-              <button class="btn" id="inv_areFullSlots">areFullSlots()</button>
-              <span id="inv_areFullSlots_result"></span>
+              <button class="btn" id="inv_areFull">areFull()</button>
+              <span id="inv_areFull_result"></span>
             </center>
             <center>
               <button class="btn" id="inv_isFull">isFull()</button>
               <span id="inv_isFull_result"></span>
+            </center>
+            <center>
+              <button class="btn" id="inv_areFullSlots">areFull()</button>
+              <span id="inv_areFullSlots_result"></span>
+            </center>
+            <center>
+              <button class="btn" id="inv_isFullSlots">isFull()</button>
+              <span id="inv_isFullSlots_result"></span>
             </center>
           </div>
         </div>
@@ -549,8 +557,10 @@
 
         byId('inv_hasSpace_result').textContent = inv && inv.hasSpace() ? 'Yes' : 'No';
         byId('inv_isHeavy_result').textContent = inv && inv.isHeavy() ? 'Yes' : 'No';
-        byId('inv_areFullSlots_result').textContent = inv && inv.areFullSlots() ? 'Yes' : 'No';
+        byId('inv_areFull_result').textContent = inv && inv.areFull() ? 'Yes' : 'No';
         byId('inv_isFull_result').textContent = inv && inv.isFull() ? 'Yes' : 'No';
+        byId('inv_areFullSlots_result').textContent = inv && inv.areFullSlots() ? 'Yes' : 'No';
+        byId('inv_isFullSlots_result').textContent = inv && inv.isFullSlots() ? 'Yes' : 'No';
 
         renderDiag();
       }
@@ -1063,14 +1073,14 @@
         toast(`isHeavy(): ${result ? 'Yes' : 'No'}`, result ? 'warn' : 'ok');
       });
 
-      byId('inv_areFullSlots').addEventListener('click', () => {
+      byId('inv_areFull').addEventListener('click', () => {
         if (!inv) {
           toast('Create an inventory first.', 'warn');
           return;
         }
-        const result = inv.areFullSlots();
-        byId('inv_areFullSlots_result').textContent = result ? 'Yes' : 'No';
-        toast(`areFullSlots(): ${result ? 'Yes' : 'No'}`, result ? 'warn' : 'ok');
+        const result = inv.areFull();
+        byId('inv_areFull_result').textContent = result ? 'Yes' : 'No';
+        toast(`areFull(): ${result ? 'Yes' : 'No'}`, result ? 'warn' : 'ok');
       });
 
       byId('inv_isFull').addEventListener('click', () => {
@@ -1081,6 +1091,26 @@
         const result = inv.isFull();
         byId('inv_isFull_result').textContent = result ? 'Yes' : 'No';
         toast(`isFull(): ${result ? 'Yes' : 'No'}`, result ? 'warn' : 'ok');
+      });
+
+      byId('inv_areFullSlots').addEventListener('click', () => {
+        if (!inv) {
+          toast('Create an inventory first.', 'warn');
+          return;
+        }
+        const result = inv.areFullSlots();
+        byId('inv_areFullSlots_result').textContent = result ? 'Yes' : 'No';
+        toast(`areFullSlots(): ${result ? 'Yes' : 'No'}`, result ? 'warn' : 'ok');
+      });
+
+      byId('inv_isFullSlots').addEventListener('click', () => {
+        if (!inv) {
+          toast('Create an inventory first.', 'warn');
+          return;
+        }
+        const result = inv.isFullSlots();
+        byId('inv_isFullSlots_result').textContent = result ? 'Yes' : 'No';
+        toast(`isFullSlots(): ${result ? 'Yes' : 'No'}`, result ? 'warn' : 'ok');
       });
 
       // ---------- Item Retrieval ----------
