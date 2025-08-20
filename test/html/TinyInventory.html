@@ -667,12 +667,13 @@
         for (const index in setArray) {
           const it = setArray[index];
           if (!it) continue;
+          const medadataString = escapeHTML(JSON.stringify(it.metadata ?? {}));
           const tr = document.createElement('tr');
-          const data = `data-id="${it.id}" data-index="${index}" data-section-id="${sectionId}"`;
+          const data = `data-id="${it.id}" data-index="${index}" data-section-id="${sectionId}" data-metadata="${medadataString}"`;
           tr.innerHTML = `
           <td>${it.id}</td>
           <td>${it.quantity}</td>
-          <td class="small">${escapeHTML(JSON.stringify(it.metadata ?? {}))}</td>
+          <td class="small">${medadataString}</td>
           <td>
             <div class="inline">
               <button class="btn" data-act="use" ${data}>Use</button>
@@ -691,6 +692,12 @@
             const act = btn.getAttribute('data-act');
             let sectionId = btn.getAttribute('data-section-id');
             if (sectionId?.toLowerCase() === 'null') sectionId = null;
+            let metadata = {};
+            try {
+              metadata = JSON.parse(btn.getAttribute('data-metadata'));
+            } catch {
+              metadata = {};
+            }
 
             try {
               if (act === 'use') {
@@ -698,12 +705,12 @@
                 logEvent('use-click', { id });
               }
               if (act === 'rm1') {
-                inv.removeItem(id, 1);
+                inv.removeItem({ itemId: id, quantity: 1, metadata });
                 logEvent('remove-1', { id });
               }
               if (act === 'rmAll') {
                 const qty = inv.getItemCount(id);
-                inv.removeItem(id, qty);
+                inv.removeItem({ itemId: id, quantity: qty, metadata });
                 logEvent('remove-all', { id, qty });
               }
               renderInv();
@@ -885,6 +892,7 @@
           window.inventory = inv;
           // attach event logs
           inv.onAddItem((e) => logEvent('onAdd', e));
+          inv.onSetItem((e) => logEvent('onSet', e));
           inv.onRemoveItem((e) => logEvent('onRemove', e));
           inv.onUseItem((e) => logEvent('onUse', e));
           byId('ci_status').textContent = 'Inventory created.';
@@ -919,8 +927,14 @@
         if (!inv) return toast('Create an inventory first', 'warn');
         const id = byId('ac_itemId').value.trim();
         const qty = Number(byId('ac_qty').value || 1);
+        metadata = {};
         try {
-          const ok = inv.removeItem(id, qty);
+          metadata = JSON.parse(byId('ac_metadata').value || '{}');
+        } catch {
+          metadata = {};
+        }
+        try {
+          const ok = inv.removeItem({ itemId: id, quantity: qty, metadata });
           toast(ok ? 'Removed' : 'Not enough items', ok ? 'ok' : 'warn');
           renderInv();
         } catch (e) {
