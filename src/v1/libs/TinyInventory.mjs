@@ -123,13 +123,7 @@
  * @property {number} version - Serialized format version.
  * @property {number|null} maxWeight - Maximum allowed weight, or null if unlimited.
  * @property {number|null} maxSlots - Maximum allowed slots, or null if unlimited.
- * @property {boolean} useSections - Whether the inventory uses sections.
- * @property {Array<{
- *   id: string;
- *   slots: number;
- *   items: (InventoryItem|null)[];
- * }> | null} sections - List of section definitions with their items, or null if not using sections.
- * @property {(InventoryItem|null)[] | null} items - Flat inventory items if not using sections, or null if using sections.
+ * @property {(InventoryItem|null)[] | null} items - Flat inventory items.
  * @property {Record<string, SpecialSlot>} specialSlots - Special equipment or reserved slots keyed by ID.
  */
 
@@ -208,14 +202,8 @@ class TinyInventory {
     set: [],
   };
 
-  /** @type {InvSection[] | null} */
-  sections;
-
-  /** @type {InvSlots | null} */
+  /** @type {InvSlots} */
   items;
-
-  /** @type {boolean} */
-  useSections;
 
   /** @type {number} */
   maxStack;
@@ -265,8 +253,6 @@ class TinyInventory {
    * @param {number|null} [options.maxWeight=null] - Maximum allowed total weight (null for no limit).
    * @param {number|null} [options.maxSlots=null] - Maximum number of item slots (null for no limit).
    * @param {number|null} [options.maxSize=null] - Maximum number of total item amount (null for no limit).
-   * @param {boolean} [options.useSections=false] - Whether inventory is divided into separate sections.
-   * @param {SectionCfg[]} [options.sections=[]] - Section definitions (only used if `useSections` is true).
    * @param {number} [options.maxStack=Infinity] - Global maximum stack size (per slot).
    * @param {Record<string, { type: string | null; }>} [options.specialSlots] - IDs for special slots (e.g., "helmet", "weapon").
    */
@@ -274,30 +260,13 @@ class TinyInventory {
     this.maxWeight = options.maxWeight ?? null;
     this.maxSlots = options.maxSlots ?? null;
     this.maxSize = options.maxSize ?? null;
-    this.useSections = !!options.useSections;
     this.maxStack = options.maxStack ?? Infinity;
-    this.sections = this.useSections ? this.#initSections(options.sections ?? []) : null;
-    this.items = this.useSections ? null : new Set();
+    this.items = new Set();
     if (options.specialSlots) {
       for (const name in options.specialSlots) {
         this.specialSlots.set(name, { type: options.specialSlots[name].type ?? null, item: null });
       }
     }
-  }
-
-  /**
-   * Initializes section data structures.
-   * @param {SectionCfg[]} sectionConfigs - Array of section configuration objects.
-   * @returns {InvSection[]} Array of section objects.
-   * @throws {Error} If `sectionConfigs` is not an array.
-   */
-  #initSections(sectionConfigs) {
-    if (!Array.isArray(sectionConfigs)) throw new Error('Sections must be an array.');
-    return sectionConfigs.map((cfg) => ({
-      id: cfg.id || `section_${Math.random().toString(36).substring(2, 5)}`,
-      slots: cfg.slots || 10,
-      items: new Set(),
-    }));
   }
 
   /////////////////////////////////////////////////////////////////
@@ -458,9 +427,8 @@ class TinyInventory {
   compactInventory() {
     /**
      * @param {Set<InventoryItem|null>} collection
-     * @param {string|null} targetSection
      */
-    const compact = (collection, targetSection) => {
+    const compact = (collection) => {
       const filtered = Array.from(collection).filter((i, index) => {
         const result = i !== null;
         if (!result)
@@ -468,7 +436,6 @@ class TinyInventory {
             index,
             item: null,
             collection,
-            targetSection,
             specialSlot: null,
           });
         return result;
@@ -477,9 +444,7 @@ class TinyInventory {
       filtered.forEach((i) => collection.add(i));
     };
 
-    if (this.useSections && this.sections) {
-      for (const section of this.sections) compact(section.items, section.id);
-    } else if (!this.useSections && this.items) compact(this.items, null);
+    compact(this.items);
   }
 
   /////////////////////////////////////////////////////////////////
@@ -490,12 +455,11 @@ class TinyInventory {
    *
    * @param {string} itemId - ID of the item to add.
    * @param {number} [quantity=1] - Quantity to add.
-   * @param {string|null} [targetSection=null] - Section ID (if using sections).
    * @param {InventoryMetadata} [metadata={}] - Instance-specific metadata (must match for stacking).
    * @returns {number} Quantity that could not be added (0 if all were added).
    * @throws {Error} If the item is not registered or the section is invalid.
    */
-  addItem(itemId, quantity = 1, targetSection = null, metadata = {}) {
+  addItem(itemId, quantity = 1, metadata = {}) {
     const def = TinyInventory.ItemRegistry.get(itemId);
     if (!def) throw new Error(`Item '${itemId}' not defined in registry.`);
     let remaining = quantity;
@@ -509,9 +473,8 @@ class TinyInventory {
 
     /**
      * @param {InvSlots} collection
-     * @param {string|null} targetSection
      */
-    const placeItem = (collection, targetSection) => {
+    const placeItem = (collection) => {
       const collArray = Array.from(collection);
 
       // Step 1: Fill existing stacks first
@@ -538,7 +501,6 @@ class TinyInventory {
               item: existing,
               index,
               collection,
-              targetSection,
               specialSlot: null,
             });
             if (remaining <= 0) break;
@@ -563,7 +525,6 @@ class TinyInventory {
               item,
               index,
               collection,
-              targetSection,
               specialSlot: null,
             });
 
@@ -584,22 +545,13 @@ class TinyInventory {
           item,
           index: collection.size - 1,
           collection,
-          targetSection,
           specialSlot: null,
         });
         remaining -= stackQty;
       }
     };
 
-    if (targetSection && this.useSections && this.sections) {
-      const section = this.sections.find((s) => s.id === targetSection);
-      if (!section) throw new Error(`Section '${targetSection}' not found.`);
-      placeItem(section.items, targetSection);
-    } else if (!this.useSections && this.items) {
-      placeItem(this.items, null);
-    } else {
-      throw new Error('Target section required for section-based inventory.');
-    }
+    placeItem(this.items);
 
     // Return remaining if some quantity couldn't be added due to maxStack
     return remaining;
@@ -608,28 +560,21 @@ class TinyInventory {
   /**
    * Gets the item stored at a specific slot in a section.
    * @param {number} slotIndex - The slot index within the section.
-   * @param {string} [sectionId] - The section identifier.
    * @returns {InventoryItem|null} The item object or null if empty.
    * @throws {Error} If the section does not exist or slot index is out of bounds.
    */
-  getItemFrom(slotIndex, sectionId) {
+  getItemFrom(slotIndex) {
     /**
      * @param {InvSlots} collection
-     * @param {string|null} targetSection
      */
-    const getItem = (collection, targetSection) => {
+    const getItem = (collection) => {
       const slots = Array.from(collection);
       if (slotIndex < 0 || slotIndex >= slots.length)
-        throw new Error(`Slot index '${slotIndex}' out of bounds in section '${targetSection}'.`);
+        throw new Error(`Slot index '${slotIndex}' out of bounds .`);
       return slots[slotIndex] ?? null;
     };
 
-    if (sectionId && this.useSections && this.sections) {
-      const section = this.sections.find((s) => s.id === sectionId);
-      if (!section) throw new Error(`Section '${sectionId}' not found.`);
-      return getItem(section.items, sectionId);
-    } else if (!this.useSections && this.items) return getItem(this.items, 'inventory');
-    else throw new Error('Target section required for section-based inventory.');
+    return getItem(this.items);
   }
 
   /**
@@ -638,10 +583,9 @@ class TinyInventory {
    *
    * @param {number} slotIndex - Index of the slot to set.
    * @param {InventoryItem|null} item - Item to place in the slot, or null to clear.
-   * @param {string|null} [targetSection=null] - Section ID (if using sections).
    * @throws {Error} If the section is invalid, index is out of range, or item type is invalid.
    */
-  setItem(slotIndex, item, targetSection = null) {
+  setItem(slotIndex, item) {
     // Validate type: must be null or a proper InventoryItem object
     const isInventoryItem =
       item &&
@@ -668,24 +612,9 @@ class TinyInventory {
         );
     }
 
-    /** @type {InvSlots|null} */
-    let collection = null;
-
-    if (targetSection && this.useSections && this.sections) {
-      const section = this.sections.find((s) => s.id === targetSection);
-      if (!section) throw new Error(`Section '${targetSection}' not found.`);
-      if (slotIndex < 0 || slotIndex >= section.slots) {
-        throw new Error(`Slot index ${slotIndex} out of range for section '${targetSection}'.`);
-      }
-      collection = section.items;
-    } else if (!this.useSections && this.items) {
-      if (this.maxSlots !== null && (slotIndex < 0 || slotIndex >= this.maxSlots)) {
-        throw new Error(`Slot index ${slotIndex} out of range.`);
-      }
-      collection = this.items;
-    } else {
-      throw new Error('Target section required for section-based inventory.');
-    }
+    if (this.maxSlots !== null && (slotIndex < 0 || slotIndex >= this.maxSlots))
+      throw new Error(`Slot index ${slotIndex} out of range.`);
+    const collection = this.items;
 
     // Convert the set to an array for index-based manipulation
     const slotsArray = Array.from(collection);
@@ -731,7 +660,6 @@ class TinyInventory {
       index: slotIndex,
       collection,
       item,
-      targetSection,
       specialSlot: null,
     });
   }
@@ -740,47 +668,29 @@ class TinyInventory {
    * Deletes an item from a specific slot by setting it to null.
    *
    * @param {number} slotIndex - Index of the slot to delete from.
-   * @param {string|null} [targetSection=null] - Section ID (if using sections).
    */
-  deleteItem(slotIndex, targetSection = null) {
-    this.setItem(slotIndex, null, targetSection);
+  deleteItem(slotIndex) {
+    this.setItem(slotIndex, null);
   }
 
   /**
-   * Moves an item from one slot to another (possibly across sections).
+   * Moves an item from one slot to another.
    *
    * @param {number} fromIndex - Source slot index.
    * @param {number} toIndex - Target slot index.
-   * @param {string|null} [fromSection=null] - Source section ID.
-   * @param {string|null} [toSection] - Target section ID.
    * @throws {Error} If the source slot is empty or the move is invalid.
    */
-  moveItem(fromIndex, toIndex, fromSection = null, toSection = undefined) {
-    if (typeof fromSection !== 'string') throw new TypeError('fromSection must be a string.');
-
-    const sourceCollection = this.useSections
-      ? (this.sections?.find((s) => s.id === fromSection)?.items ?? null)
-      : (this.items ?? null);
-
-    if (!sourceCollection) {
-      throw new Error(`Source section '${fromSection}' not found.`);
-    }
-
-    const slotsArray = Array.from(sourceCollection);
+  moveItem(fromIndex, toIndex) {
+    const slotsArray = Array.from(this.items);
     const item = slotsArray[fromIndex];
 
-    if (!item) {
-      throw new Error(`No item found in slot ${fromIndex}.`);
-    }
-
-    /** @type {[string|null, string|null]} */
-    const transport = [fromSection, toSection !== null ? (toSection ?? fromSection) : null];
+    if (!item) throw new Error(`No item found in slot ${fromIndex}.`);
 
     // Place the item in the new slot
-    this.setItem(toIndex, item, transport[1]);
+    this.setItem(toIndex, item);
 
     // Clear the original slot
-    this.setItem(fromIndex, null, transport[0]);
+    this.setItem(fromIndex, null);
   }
 
   /**
@@ -801,10 +711,7 @@ class TinyInventory {
     const metadataEquals = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
     // Remove from normal/section inventory first
-    const collections = this.useSections
-      ? (this.sections?.map((s) => s.items) ?? [])
-      : [this.items];
-    const collectionsName = this.useSections ? (this.sections?.map((s) => s.id) ?? []) : [null];
+    const collections = [this.items];
 
     for (const colIndex in collections) {
       const collection = collections[colIndex];
@@ -824,7 +731,6 @@ class TinyInventory {
               index,
               item,
               collection,
-              targetSection: collectionsName[colIndex],
               specialSlot: null,
             });
             return true;
@@ -853,7 +759,6 @@ class TinyInventory {
           index: null,
           item: slot.item,
           collection: null,
-          targetSection: null,
           specialSlot: key,
         });
       }
@@ -871,13 +776,12 @@ class TinyInventory {
    *
    * @param {Object} location - Item location data.
    * @param {number} [location.slotIndex] - Index in normal inventory or section.
-   * @param {string|null} [location.sectionId=null] - Section ID (if applicable).
    * @param {string} [location.specialSlot] - Name of the special slot (if applicable).
    * @param {...any} args - Additional arguments passed to the `onUse` handler.
    * @returns {any} - The return value of the `onUse` callback, or `null` if no callback exists.
    * @throws {Error} - If the item is not found in the specified location.
    */
-  useItem({ slotIndex, sectionId = null, specialSlot }, ...args) {
+  useItem({ slotIndex, specialSlot }, ...args) {
     /** @type {InventoryItem|null} */
     let item = null;
     /** @type {'normal'|'special'|'section'} */
@@ -893,12 +797,9 @@ class TinyInventory {
       item = this.specialSlots.get(specialSlot).item;
       locationType = 'special';
     } else {
-      collection = this.useSections
-        ? (this.sections?.find((s) => s.id === sectionId)?.items ?? null)
-        : (this.items ?? null);
-      if (!collection) throw new Error(`Section '${sectionId}' not found.`);
+      collection = this.items;
       item = Array.from(collection)[slotIndex ?? -1] ?? null;
-      locationType = this.useSections ? 'section' : 'normal';
+      locationType = 'normal';
     }
 
     // Check item
@@ -906,7 +807,7 @@ class TinyInventory {
       throw new Error(
         locationType === 'special'
           ? `No item found in special slot '${specialSlot}'.`
-          : `No item found in slot ${slotIndex} of ${locationType === 'section' ? `section '${sectionId}'` : 'main inventory'}.`,
+          : `No item found in slot ${slotIndex} of inventory.`,
       );
     }
 
@@ -919,7 +820,6 @@ class TinyInventory {
         inventory: this,
         item,
         index: slotIndex ?? null,
-        targetSection: sectionId,
         specialSlot: specialSlot ?? null,
         collection,
         itemDef: def,
@@ -933,8 +833,8 @@ class TinyInventory {
             } else this.setSpecialSlot(specialSlot, null);
           } else if (typeof slotIndex === 'number') {
             if (item.quantity > 1) {
-              this.setItem(slotIndex, { ...item, quantity: item.quantity - 1 }, sectionId);
-            } else this.setItem(slotIndex, null, sectionId);
+              this.setItem(slotIndex, { ...item, quantity: item.quantity - 1 });
+            } else this.setItem(slotIndex, null);
           } else
             throw new Error(
               `Invalid remove operation: no valid slotIndex or specialSlot provided.`,
@@ -1041,7 +941,6 @@ class TinyInventory {
       index: null,
       item,
       collection: null,
-      targetSection: null,
       specialSlot: slotName,
     });
   }
@@ -1067,22 +966,20 @@ class TinyInventory {
    * @param {Object} configs - Configuration object for equipping the item.
    * @param {string} configs.slotId - ID of the special slot where the item will be equipped.
    * @param {number} configs.slotIndex - Index of the inventory slot containing the item to equip.
-   * @param {string} [configs.sectionId] - Section ID of the inventory (required if using sections).
    * @param {InventoryMetadata} [configs.metadata={}] - Metadata to match when removing (e.g., durability, enchantments).
    * @param {number} [configs.quantity=1] - Quantity of the item to equip.
    * @returns {number} Amount of the item that could NOT be equipped (leftover remains in inventory).
    * @throws {Error} If the special slot does not exist, if the item type mismatches the slot,
    *                 or if the inventory lacks the required quantity.
    */
-  equipItem({ slotId, slotIndex, sectionId, metadata, quantity = 1 }) {
+  equipItem({ slotId, slotIndex, metadata, quantity = 1 }) {
     if (quantity <= 0 || !Number.isFinite(quantity))
       throw new Error(`Invalid quantity '${quantity}'.`);
 
     if (!this.specialSlots.has(slotId)) throw new Error(`Special slot '${slotId}' does not exist.`);
 
-    const invItem = this.getItemFrom(slotIndex, sectionId);
-    if (!invItem)
-      throw new Error(`No item found in inventory slot ${slotIndex} of section '${sectionId}'.`);
+    const invItem = this.getItemFrom(slotIndex);
+    if (!invItem) throw new Error(`No item found in inventory slot ${slotIndex}.`);
     if (invItem.quantity < quantity)
       throw new Error(`Not enough quantity of item '${invItem.id}' in inventory slot.`);
 
@@ -1160,7 +1057,7 @@ class TinyInventory {
       throw new Error(`Not enough items in slot '${slotId}' to unequip.`);
 
     // Return to inventory with requested quantity
-    this.addItem(item.id, unequipQty, null, item.metadata);
+    this.addItem(item.id, unequipQty, item.metadata);
 
     if (unequipQty === item.quantity) {
       // Fully emptied
@@ -1178,23 +1075,16 @@ class TinyInventory {
   /////////////////////////////////////////////////////////////////
 
   /**
-   * Returns all items currently stored in the inventory (across all sections if applicable),
+   * Returns all items currently stored in the inventory,
    * excluding null or undefined entries.
    * @returns {InventoryItem[]} Array of item objects.
    */
   getAllItems() {
-    /** @returns {(InventoryItem | null)[]} */
-    const getItems = () => {
-      if (this.useSections) {
-        if (this.sections) return this.sections.flatMap((s) => Array.from(s.items));
-      } else if (this.items) return Array.from(this.items);
-      return [];
-    };
     /**
      * Merge all sources and remove null/undefined
      * @type {InventoryItem[]}
      */
-    const data = [...getItems()].filter((item) => item !== null);
+    const data = [...Array.from(this.items)].filter((item) => item !== null);
     this.specialSlots.forEach((value) => {
       const item = value.item;
       if (item) data.push(item);
@@ -1283,23 +1173,6 @@ class TinyInventory {
 
       maxWeight: this.maxWeight,
       maxSlots: this.maxSlots,
-      useSections: !!this.useSections,
-
-      sections: this.sections
-        ? this.sections.map((s) => ({
-            id: s.id,
-            slots: s.slots,
-            items: Array.from(s.items).map((it) =>
-              it
-                ? {
-                    id: it.id,
-                    quantity: it.quantity,
-                    metadata: it.metadata ?? {},
-                  }
-                : null,
-            ),
-          }))
-        : null,
 
       items: this.items
         ? Array.from(this.items).map((it) =>
@@ -1353,11 +1226,6 @@ class TinyInventory {
     }
 
     // Prepare constructor options
-    /** @type {SectionCfg[]} */
-    const sectionCfgs = Array.isArray(obj.sections)
-      ? obj.sections.map((s) => ({ id: s.id, slots: s.slots, items: new Set() }))
-      : [];
-
     /** @type {Record<string, {type: string|null}>} */
     const specialDefs = {};
     if (obj.specialSlots && typeof obj.specialSlots === 'object') {
@@ -1369,8 +1237,6 @@ class TinyInventory {
     const inv = new TinyInventory({
       maxWeight: obj.maxWeight ?? null,
       maxSlots: obj.maxSlots ?? null,
-      useSections: !!obj.useSections,
-      sections: sectionCfgs,
       specialSlots: specialDefs,
     });
 
@@ -1386,32 +1252,7 @@ class TinyInventory {
     };
 
     // Restore items
-    if (inv.useSections) {
-      if (Array.isArray(obj.sections)) {
-        obj.sections.forEach((s, idx) => {
-          const target = inv.sections?.[idx];
-          if (!target) return;
-          const items = Array.isArray(s.items) ? s.items : [];
-          for (const index in items) {
-            const it = items[index];
-            if (it !== null) {
-              ensureItemDef(it.id);
-              const safeItem = {
-                id: String(it.id),
-                quantity: Math.max(1, Number(it.quantity) || 1),
-                metadata: it.metadata && typeof it.metadata === 'object' ? it.metadata : {},
-              };
-              if (enforceLimits) {
-                // Respect limits during load by using addItem (which enforces rules)
-                inv.setItem(Number(index), safeItem, target.id);
-              } else {
-                target.items.add(safeItem);
-              }
-            } else inv.setItem(Number(index), null, target.id);
-          }
-        });
-      }
-    } else if (Array.isArray(obj.items) && inv.items) {
+    if (Array.isArray(obj.items) && inv.items) {
       for (const index in obj.items) {
         const it = obj.items[index];
         if (it !== null) {
@@ -1422,11 +1263,11 @@ class TinyInventory {
             metadata: it.metadata && typeof it.metadata === 'object' ? it.metadata : {},
           };
           if (enforceLimits) {
-            inv.setItem(Number(index), safeItem, null);
+            inv.setItem(Number(index), safeItem);
           } else {
             inv.items.add(safeItem);
           }
-        } else inv.setItem(Number(index), null, null);
+        } else inv.setItem(Number(index), null);
       }
     }
 
@@ -1452,7 +1293,7 @@ class TinyInventory {
           if (enforceLimits) {
             // When enforcing limits, attempt to equip via method:
             // 1) Add to inventory, 2) Equip (will validate type), 3) Remove from inventory.
-            inv.addItem(safeEquipped.id, safeEquipped.quantity, null, safeEquipped.metadata);
+            inv.addItem(safeEquipped.id, safeEquipped.quantity, safeEquipped.metadata);
             try {
               inv.setSpecialSlot(slotId, safeEquipped);
             } catch {

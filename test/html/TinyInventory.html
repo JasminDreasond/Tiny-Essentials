@@ -181,7 +181,7 @@
       }
       .kpi {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 8px;
       }
       .kpi div {
@@ -247,7 +247,6 @@
             <div><span class="muted">Total Items</span><b id="kpiTotal">0</b></div>
             <div><span class="muted">Total Stacks</span><b id="kpiStacks">0</b></div>
             <div><span class="muted">Total Weight</span><b id="kpiWeight">0</b></div>
-            <div><span class="muted">Sections</span><b id="kpiSections">0</b></div>
           </div>
         </div>
 
@@ -314,20 +313,6 @@
             <input id="ci_maxSize" type="number" placeholder="maxSize (null)" />
             <input id="ci_maxStack" type="number" placeholder="maxStack (Infinity)" />
           </div>
-          <div class="grid grid-1">
-            <select id="ci_useSections" style="margin-top: 7px">
-              <option value="false">useSections: false</option>
-              <option value="true">useSections: true</option>
-            </select>
-          </div>
-
-          <div id="ci_sectionsBox" style="display: none">
-            <div class="row">
-              <span class="muted small">Sections</span>
-              <button id="ci_addSection" class="btn">+ Add Section</button>
-            </div>
-            <div id="ci_sectionsList" class="list"></div>
-          </div>
 
           <div class="divider"></div>
           <div>
@@ -370,8 +355,6 @@
           <div class="grid grid-2">
             <input id="tr_fromIndex" type="number" placeholder="fromIndex" />
             <input id="tr_toIndex" type="number" placeholder="toIndex" />
-            <input id="tr_fromSection" placeholder="fromSection (optional)" />
-            <input id="tr_toSection" placeholder="toSection (optional)" />
             <button class="btn primary" id="tr_transfer">Transfer Item</button>
           </div>
         </div>
@@ -425,13 +408,11 @@
           <div class="grid grid-4">
             <input id="ac_itemId" placeholder="itemId" />
             <input id="ac_qty" type="number" value="1" />
-            <input id="ac_section" placeholder="sectionId (optional)" />
             <input id="ac_metadata" class="mono" placeholder="instance metadata JSON (optional)" />
           </div>
           <div class="row">
             <button class="btn primary" id="ac_add">Add</button>
             <button class="btn" id="ac_remove">Remove</button>
-            <button class="btn" id="ac_use">Use</button>
             <button class="btn" id="ac_has">Has?</button>
           </div>
 
@@ -439,7 +420,6 @@
           <div class="grid grid-4" style="margin-bottom: 7px">
             <input id="ac_slotId" placeholder="slotId" />
             <input id="ac_itemEquip" placeholder="slotIndex to equip" />
-            <input id="ac_sectionIdEquip" placeholder="sectionId to equip" />
             <button class="btn" id="ac_equip">Equip</button>
           </div>
           <div class="grid grid-3">
@@ -548,9 +528,6 @@
       }
 
       function refreshKPI() {
-        byId('kpiSections').textContent = inv?.useSections
-          ? String(inv.sections?.length ?? 0)
-          : '0';
         byId('kpiStacks').textContent = String(inv ? inv.slotsSize : 0);
         byId('kpiTotal').textContent = String(inv.size);
         byId('kpiWeight').textContent = inv ? String(inv.weight) : '0';
@@ -585,7 +562,6 @@
         sum.innerHTML = '';
         sum.append(chip(`maxWeight: ${inv.maxWeight ?? '∞'}`));
         sum.append(chip(`maxSlots: ${inv.maxSlots ?? '∞'}`));
-        sum.append(chip(`useSections: ${String(inv.useSections)}`));
 
         // Special slots
         const sp = document.createElement('div');
@@ -605,7 +581,6 @@
           <td>
             <div class="inline">
               <input data-slot="${slotId}" class="mono small" placeholder="slotIndex to equip" style="width:160px">
-              <input data-section="${slotId}" class="mono small" placeholder="slotIndex to equip" style="width:160px">
               <button class="btn" data-eq="${slotId}">Equip</button>
               <button class="btn" data-uneq="${slotId}">Unequip</button>
             </div>
@@ -617,21 +592,11 @@
         container.appendChild(sp);
 
         // Items
-        if (inv.useSections) {
-          inv.sections?.forEach((sec) => {
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `<h3>Section: ${sec.id} <span class="muted small">[slots: ${sec.slots}]</span></h3>`;
-            card.appendChild(renderItemsTable(sec.items, sec.id));
-            container.appendChild(card);
-          });
-        } else {
-          const card = document.createElement('div');
-          card.className = 'card';
-          card.innerHTML = `<h3>Items</h3>`;
-          card.appendChild(renderItemsTable(inv.items, null));
-          container.appendChild(card);
-        }
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `<h3>Items</h3>`;
+        card.appendChild(renderItemsTable(inv.items));
+        container.appendChild(card);
 
         refreshKPI();
 
@@ -641,11 +606,9 @@
             const slotId = btn.getAttribute('data-eq');
             const input = container.querySelector(`input[data-slot="${slotId}"]`);
             const slotIndex = input.value.trim();
-            const input2 = container.querySelector(`input[data-section="${slotId}"]`);
-            const sectionId = input2.value.trim();
             if (!slotIndex) return toast('slotIndex required', 'warn');
             try {
-              inv.equipItem({ slotId, slotIndex, sectionId });
+              inv.equipItem({ slotId, slotIndex });
               logEvent('equip', { slotId, slotIndex });
               renderInv();
             } catch (e) {
@@ -671,7 +634,7 @@
         });
       }
 
-      function renderItemsTable(set, sectionId) {
+      function renderItemsTable(set) {
         const table = document.createElement('table');
         table.className = 'table mono small';
         table.innerHTML = `<thead><tr><th>id</th><th>qty</th><th>metadata</th><th>actions</th></tr></thead><tbody></tbody>`;
@@ -682,7 +645,7 @@
           if (!it) continue;
           const medadataString = escapeHTML(JSON.stringify(it.metadata ?? {}));
           const tr = document.createElement('tr');
-          const data = `data-id="${it.id}" data-index="${index}" data-section-id="${sectionId}" data-metadata="${medadataString}"`;
+          const data = `data-id="${it.id}" data-index="${index}" data-metadata="${medadataString}"`;
           tr.innerHTML = `
           <td>${it.id}</td>
           <td>${it.quantity}</td>
@@ -703,8 +666,6 @@
             const id = btn.getAttribute('data-id');
             const index = parseInt(btn.getAttribute('data-index'));
             const act = btn.getAttribute('data-act');
-            let sectionId = btn.getAttribute('data-section-id');
-            if (sectionId?.toLowerCase() === 'null') sectionId = null;
             let metadata = {};
             try {
               metadata = JSON.parse(btn.getAttribute('data-metadata'));
@@ -714,7 +675,7 @@
 
             try {
               if (act === 'use') {
-                inv.useItem({ slotIndex: index, sectionId });
+                inv.useItem({ slotIndex: index });
                 logEvent('use-click', { id });
               }
               if (act === 'rm1') {
@@ -760,7 +721,6 @@
         const obj = {
           maxWeight: inv.maxWeight,
           maxSlots: inv.maxSlots,
-          useSections: inv.useSections,
           maxStack: inv.maxStack.toString(),
           totalStacks: inv.getAllItems().length,
           totalItems: inv.getAllItems().reduce((n, i) => n + i.quantity, 0),
@@ -770,10 +730,7 @@
             type: v.type,
             item: v.item,
           })),
-          sections: inv.useSections
-            ? inv.sections?.map((s) => ({ id: s.id, slots: s.slots, stacks: [...s.items] }))
-            : null,
-          items: !inv.useSections ? [...(inv.items ?? [])] : null,
+          items: [...(inv.items ?? [])],
         };
         byId('diag').textContent = JSON.stringify(obj, null, 2);
       }
@@ -841,17 +798,6 @@
       renderRegistry();
 
       // ---------- Create Inventory ----------
-      function addSectionRow(id = '', slots = 10) {
-        const div = document.createElement('div');
-        div.className = 'row';
-        div.innerHTML = `
-        <input class="sec_id" placeholder="section id" value="${id}">
-        <input class="sec_slots" type="number" placeholder="slots" value="${slots}">
-        <button class="btn bad">Remove</button>
-      `;
-        div.querySelector('button').addEventListener('click', () => div.remove());
-        byId('ci_sectionsList').appendChild(div);
-      }
       function addSlotRow(id = '', type = '') {
         const div = document.createElement('div');
         div.className = 'row';
@@ -864,11 +810,6 @@
         byId('ci_slotsList').appendChild(div);
       }
 
-      byId('ci_useSections').addEventListener('change', (e) => {
-        const use = e.target.value === 'true';
-        byId('ci_sectionsBox').style.display = use ? '' : 'none';
-      });
-      byId('ci_addSection').addEventListener('click', () => addSectionRow('', 10));
       byId('ci_addSlot').addEventListener('click', () => addSlotRow());
 
       byId('ci_create').addEventListener('click', () => {
@@ -876,16 +817,6 @@
         const maxSlots = numberOrNull(byId('ci_maxSlots').value);
         const maxSize = numberOrNull(byId('ci_maxSize').value);
         const maxStack = numberOrInfinity(byId('ci_maxStack').value);
-        const useSections = byId('ci_useSections').value === 'true';
-        /** @type {Array<{id:string, slots:number}>} */
-        const sections = [];
-        if (useSections) {
-          $$('#ci_sectionsList .row').forEach((r) => {
-            const id = r.querySelector('.sec_id').value.trim() || undefined;
-            const slots = Number(r.querySelector('.sec_slots').value || 10);
-            sections.push({ id, slots });
-          });
-        }
         /** @type {Record<string, {type:string|null}>} */
         const specialSlots = {};
         $$('#ci_slotsList .row').forEach((r) => {
@@ -898,8 +829,6 @@
           inv = new TinyInventory({
             maxWeight,
             maxSlots,
-            useSections,
-            sections,
             specialSlots,
             maxStack,
             maxSize,
@@ -924,10 +853,9 @@
         if (!inv) return toast('Create an inventory first', 'warn');
         const id = byId('ac_itemId').value.trim();
         const qty = Number(byId('ac_qty').value || 1);
-        const section = byId('ac_section').value.trim() || null;
         const metadata = parseJSON(byId('ac_metadata').value, {});
         try {
-          const rem = inv.addItem(id, qty, section || null, metadata);
+          const rem = inv.addItem(id, qty, metadata);
           if (rem > 0) toast(`Could not add ${rem} units due to maxStack`, 'warn');
           else toast('Added', 'ok');
           renderInv();
@@ -959,21 +887,6 @@
         refreshKPI();
       });
 
-      byId('ac_use').addEventListener('click', () => {
-        if (!inv) return toast('Create an inventory first', 'warn');
-        const id = byId('ac_itemId').value.trim();
-        try {
-          const res = inv.useItem(id, { source: 'UI' });
-          toast('useItem executed (check console for returns)', 'ok');
-          console.log('[useItem return]', res);
-          renderInv();
-        } catch (e) {
-          console.error(e);
-          toast(e.message, 'bad');
-        }
-        refreshKPI();
-      });
-
       byId('ac_has').addEventListener('click', () => {
         if (!inv) return toast('Create an inventory first', 'warn');
         const id = byId('ac_itemId').value.trim();
@@ -986,9 +899,8 @@
         if (!inv) return toast('Create an inventory first', 'warn');
         const slotId = byId('ac_slotId').value.trim();
         const slotIndex = byId('ac_itemEquip').value.trim();
-        const sectionId = byId('ac_sectionIdEquip').value.trim();
         try {
-          inv.equipItem({ slotId, slotIndex, sectionId });
+          inv.equipItem({ slotId, slotIndex });
           renderInv();
           toast(`Equipped '${itemId}' in '${slotId}'`, 'ok');
         } catch (e) {
@@ -1154,11 +1066,9 @@
         }
         const fromIndex = numberOrNull(byId('tr_fromIndex').value) || 0;
         const toIndex = numberOrNull(byId('tr_toIndex').value) || 0;
-        const fromSection = byId('tr_fromSection').value || null;
-        const toSection = byId('tr_toSection').value || null;
 
         try {
-          const transferred = inv.moveItem(fromIndex, toIndex, fromSection, toSection);
+          const transferred = inv.moveItem(fromIndex, toIndex);
           toast(`Transferred ${transferred} x ${itemId}.`, 'ok');
           renderInv();
           refreshKPI();
@@ -1227,7 +1137,7 @@
           const qty = 1 + Math.floor(Math.random() * 3);
           const meta = Math.random() < 0.4 ? { seed: Math.floor(Math.random() * 10) } : {};
           try {
-            inv.addItem(id, qty, null, meta);
+            inv.addItem(id, qty, meta);
             added++;
           } catch (e) {
             console.error(e);
@@ -1245,8 +1155,6 @@
         const opts = {
           maxWeight: inv.maxWeight,
           maxSlots: inv.maxSlots,
-          useSections: inv.useSections,
-          sections: inv.useSections ? inv.sections.map((s) => ({ id: s.id, slots: s.slots })) : [],
           specialSlots: Object.fromEntries(
             Array.from(inv.specialSlots.entries()).map(([k, v]) => [k, { type: v.type }]),
           ),
