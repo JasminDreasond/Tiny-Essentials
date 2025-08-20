@@ -453,13 +453,15 @@ class TinyInventory {
    * Adds an item to the inventory, respecting stackability rules, stack limits, and metadata matching.
    * If the item cannot be fully added (e.g., due to stack limits), the remaining quantity is returned.
    *
-   * @param {string} itemId - ID of the item to add.
-   * @param {number} [quantity=1] - Quantity to add.
-   * @param {InventoryMetadata} [metadata={}] - Instance-specific metadata (must match for stacking).
+   * @param {Object} options - Item addition configuration.
+   * @param {string} options.itemId - ID of the item to add.
+   * @param {boolean} [options.forceSpace=false] - Forces the item to be added even if space or stack limits would normally prevent it.
+   * @param {number} [options.quantity=1] - Quantity to add.
+   * @param {InventoryMetadata} [options.metadata={}] - Instance-specific metadata (must match for stacking).
    * @returns {number} Quantity that could not be added (0 if all were added).
    * @throws {Error} If the item is not registered or the section is invalid.
    */
-  addItem(itemId, quantity = 1, metadata = {}) {
+  addItem({ itemId, quantity = 1, metadata = {}, forceSpace = false }) {
     const def = TinyInventory.ItemRegistry.get(itemId);
     if (!def) throw new Error(`Item '${itemId}' not defined in registry.`);
     let remaining = quantity;
@@ -471,87 +473,88 @@ class TinyInventory {
      */
     const metadataEquals = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
-    /**
-     * @param {InvSlots} collection
-     */
-    const placeItem = (collection) => {
-      const collArray = Array.from(collection);
+    const collArray = Array.from(this.items);
 
-      // Step 1: Fill existing stacks first
-      let madeProgress = true;
-      while (remaining > 0 && madeProgress) {
-        madeProgress = false;
+    // Step 1: Fill existing stacks first
+    let madeProgress = true;
+    while (remaining > 0 && madeProgress) {
+      madeProgress = false;
 
-        for (const index in collArray) {
-          const existing = collArray[index];
+      for (const index in collArray) {
+        const existing = collArray[index];
+        if (
+          existing &&
+          existing.id === itemId &&
+          existing.quantity < maxStack &&
+          metadataEquals(existing.metadata, metadata)
+        ) {
+          const canAdd = Math.min(maxStack - existing.quantity, remaining);
+          if (!forceSpace && !this.hasSpace({ weight: def.weight * canAdd, sizeLength: canAdd }))
+            continue;
+
+          existing.quantity += canAdd;
+          remaining -= canAdd;
+          madeProgress = true;
+
+          this.#triggerEvent('add', {
+            item: existing,
+            index,
+            collection: this.items,
+            specialSlot: null,
+          });
+          if (remaining <= 0) break;
+        }
+      }
+    }
+
+    // Step 2: Place remaining into null slots first
+    if (remaining > 0) {
+      for (const index in collArray) {
+        if (collArray[index] === null) {
+          const stackQty = Math.min(maxStack, remaining);
           if (
-            existing &&
-            existing.id === itemId &&
-            existing.quantity < maxStack &&
-            metadataEquals(existing.metadata, metadata)
-          ) {
-            const canAdd = Math.min(maxStack - existing.quantity, remaining);
-            if (!this.hasSpace({ weight: def.weight * canAdd, sizeLength: canAdd })) continue;
+            !forceSpace &&
+            !this.hasSpace({ weight: def.weight * stackQty, sizeLength: stackQty })
+          )
+            continue;
 
-            existing.quantity += canAdd;
-            remaining -= canAdd;
-            madeProgress = true;
+          const item = { id: itemId, quantity: stackQty, metadata };
+          collArray[index] = item;
+          remaining -= stackQty;
+          this.items.clear();
+          for (const index2 in collArray) this.items.add(collArray[index2]);
 
-            this.#triggerEvent('add', {
-              item: existing,
-              index,
-              collection,
-              specialSlot: null,
-            });
-            if (remaining <= 0) break;
-          }
+          this.#triggerEvent('add', {
+            item,
+            index,
+            collection: this.items,
+            specialSlot: null,
+          });
+
+          if (remaining <= 0) break;
         }
       }
+    }
 
-      // Step 2: Place remaining into null slots first
-      if (remaining > 0) {
-        for (const index in collArray) {
-          if (collArray[index] === null) {
-            const stackQty = Math.min(maxStack, remaining);
-            if (!this.hasSpace({ weight: def.weight * stackQty, sizeLength: stackQty })) continue;
+    // Step 3: If still remaining, push new stacks to the end
+    while (remaining > 0) {
+      const stackQty = Math.min(maxStack, remaining);
+      if (
+        !forceSpace &&
+        !this.hasSpace({ weight: def.weight * stackQty, sizeLength: stackQty, slotsLength: 1 })
+      )
+        break;
 
-            const item = { id: itemId, quantity: stackQty, metadata };
-            collArray[index] = item;
-            remaining -= stackQty;
-            collection.clear();
-            for (const index2 in collArray) collection.add(collArray[index2]);
-
-            this.#triggerEvent('add', {
-              item,
-              index,
-              collection,
-              specialSlot: null,
-            });
-
-            if (remaining <= 0) break;
-          }
-        }
-      }
-
-      // Step 3: If still remaining, push new stacks to the end
-      while (remaining > 0) {
-        const stackQty = Math.min(maxStack, remaining);
-        if (!this.hasSpace({ weight: def.weight * stackQty, sizeLength: stackQty, slotsLength: 1 }))
-          return;
-
-        const item = { id: itemId, quantity: stackQty, metadata };
-        collection.add(item);
-        this.#triggerEvent('add', {
-          item,
-          index: collection.size - 1,
-          collection,
-          specialSlot: null,
-        });
-        remaining -= stackQty;
-      }
-    };
-
-    placeItem(this.items);
+      const item = { id: itemId, quantity: stackQty, metadata };
+      this.items.add(item);
+      this.#triggerEvent('add', {
+        item,
+        index: this.items.size - 1,
+        collection: this.items,
+        specialSlot: null,
+      });
+      remaining -= stackQty;
+    }
 
     // Return remaining if some quantity couldn't be added due to maxStack
     return remaining;
@@ -564,28 +567,23 @@ class TinyInventory {
    * @throws {Error} If the section does not exist or slot index is out of bounds.
    */
   getItemFrom(slotIndex) {
-    /**
-     * @param {InvSlots} collection
-     */
-    const getItem = (collection) => {
-      const slots = Array.from(collection);
-      if (slotIndex < 0 || slotIndex >= slots.length)
-        throw new Error(`Slot index '${slotIndex}' out of bounds .`);
-      return slots[slotIndex] ?? null;
-    };
-
-    return getItem(this.items);
+    const slots = Array.from(this.items);
+    if (slotIndex < 0 || slotIndex >= slots.length)
+      throw new Error(`Slot index '${slotIndex}' out of bounds .`);
+    return slots[slotIndex] ?? null;
   }
 
   /**
    * Sets an item at a specific slot index, replacing whatever was there.
    * Can also be used to place `null` in the slot to clear it.
    *
-   * @param {number} slotIndex - Index of the slot to set.
-   * @param {InventoryItem|null} item - Item to place in the slot, or null to clear.
+   * @param {Object} options - Item addition configuration.
+   * @param {number} options.slotIndex - Index of the slot to set.
+   * @param {InventoryItem|null} options.item - Item to place in the slot, or null to clear.
+   * @param {boolean} [options.forceSpace=false] - Forces the item to be added even if space or stack limits would normally prevent it.
    * @throws {Error} If the section is invalid, index is out of range, or item type is invalid.
    */
-  setItem(slotIndex, item) {
+  setItem({ slotIndex, item, forceSpace = false }) {
     // Validate type: must be null or a proper InventoryItem object
     const isInventoryItem =
       item &&
@@ -614,10 +612,9 @@ class TinyInventory {
 
     if (this.maxSlots !== null && (slotIndex < 0 || slotIndex >= this.maxSlots))
       throw new Error(`Slot index ${slotIndex} out of range.`);
-    const collection = this.items;
 
     // Convert the set to an array for index-based manipulation
-    const slotsArray = Array.from(collection);
+    const slotsArray = Array.from(this.items);
     const oldItem = slotsArray[slotIndex] ?? null;
     const oldItemData = oldItem ? (TinyInventory.ItemRegistry.get(oldItem.id) ?? null) : null;
 
@@ -636,6 +633,7 @@ class TinyInventory {
     const getTotalLength = (theItem) => (theItem ? theItem.quantity : 0);
 
     if (
+      !forceSpace &&
       !this.hasSpace({
         weight: getTotalWeight(item, def) - getTotalWeight(oldItem, oldItemData),
         sizeLength: getTotalLength(item) - getTotalLength(oldItem),
@@ -650,15 +648,15 @@ class TinyInventory {
     slotsArray[slotIndex] = item;
 
     // Rebuild the collection from the updated array
-    collection.clear();
-    for (const slot of slotsArray) collection.add(slot);
+    this.items.clear();
+    for (const slot of slotsArray) this.items.add(slot);
 
     // Cleanup unnecessary trailing nulls
-    TinyInventory._cleanNulls(collection);
+    TinyInventory._cleanNulls(this.items);
 
     this.#triggerEvent('set', {
       index: slotIndex,
-      collection,
+      collection: this.items,
       item,
       specialSlot: null,
     });
@@ -668,9 +666,10 @@ class TinyInventory {
    * Deletes an item from a specific slot by setting it to null.
    *
    * @param {number} slotIndex - Index of the slot to delete from.
+   * @param {boolean} [forceSpace=false] - Forces the item to be added even if space or stack limits would normally prevent it.
    */
-  deleteItem(slotIndex) {
-    this.setItem(slotIndex, null);
+  deleteItem(slotIndex, forceSpace = false) {
+    this.setItem({ slotIndex, item: null, forceSpace });
   }
 
   /**
@@ -678,19 +677,20 @@ class TinyInventory {
    *
    * @param {number} fromIndex - Source slot index.
    * @param {number} toIndex - Target slot index.
+   * @param {boolean} [forceSpace=false] - Forces the item to be added even if space or stack limits would normally prevent it.
    * @throws {Error} If the source slot is empty or the move is invalid.
    */
-  moveItem(fromIndex, toIndex) {
+  moveItem(fromIndex, toIndex, forceSpace = false) {
     const slotsArray = Array.from(this.items);
     const item = slotsArray[fromIndex];
 
     if (!item) throw new Error(`No item found in slot ${fromIndex}.`);
 
     // Place the item in the new slot
-    this.setItem(toIndex, item);
+    this.setItem({ slotIndex: toIndex, item, forceSpace });
 
     // Clear the original slot
-    this.setItem(fromIndex, null);
+    this.setItem({ slotIndex: fromIndex, item: null, forceSpace });
   }
 
   /**
@@ -711,34 +711,28 @@ class TinyInventory {
     const metadataEquals = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
     // Remove from normal/section inventory first
-    const collections = [this.items];
+    const collArray = Array.from(this.items);
 
-    for (const colIndex in collections) {
-      const collection = collections[colIndex];
-      if (!collection) continue;
-      const collArray = Array.from(collection);
-
-      for (const index in collArray) {
-        const item = collArray[index];
-        if (item && item.id === itemId && metadataEquals(item.metadata, metadata)) {
-          const removeQty = Math.min(item.quantity, remaining);
-          item.quantity -= removeQty;
-          remaining -= removeQty;
-          if (item.quantity <= 0) collection.delete(item);
-          if (remaining <= 0) {
-            TinyInventory._cleanNulls(collection);
-            this.#triggerEvent('remove', {
-              index,
-              item,
-              collection,
-              specialSlot: null,
-            });
-            return true;
-          }
+    for (const index in collArray) {
+      const item = collArray[index];
+      if (item && item.id === itemId && metadataEquals(item.metadata, metadata)) {
+        const removeQty = Math.min(item.quantity, remaining);
+        item.quantity -= removeQty;
+        remaining -= removeQty;
+        if (item.quantity <= 0) this.items.delete(item);
+        if (remaining <= 0) {
+          TinyInventory._cleanNulls(this.items);
+          this.#triggerEvent('remove', {
+            index,
+            item,
+            collection: this.items,
+            specialSlot: null,
+          });
+          return true;
         }
       }
-      TinyInventory._cleanNulls(collection);
     }
+    TinyInventory._cleanNulls(this.items);
 
     // If not enough removed, check special slots
     this.specialSlots.forEach((slot, key) => {
@@ -777,11 +771,12 @@ class TinyInventory {
    * @param {Object} location - Item location data.
    * @param {number} [location.slotIndex] - Index in normal inventory or section.
    * @param {string} [location.specialSlot] - Name of the special slot (if applicable).
+   * @param {boolean} [location.forceSpace=false] - Forces the item to be added even if space or stack limits would normally prevent it.
    * @param {...any} args - Additional arguments passed to the `onUse` handler.
    * @returns {any} - The return value of the `onUse` callback, or `null` if no callback exists.
    * @throws {Error} - If the item is not found in the specified location.
    */
-  useItem({ slotIndex, specialSlot }, ...args) {
+  useItem({ slotIndex, specialSlot, forceSpace = false }, ...args) {
     /** @type {InventoryItem|null} */
     let item = null;
     /** @type {'normal'|'special'|'section'} */
@@ -830,11 +825,15 @@ class TinyInventory {
             if (slot.item.quantity > 1) {
               slot.item.quantity -= 1;
               this.specialSlots.set(specialSlot, slot);
-            } else this.setSpecialSlot(specialSlot, null);
+            } else this.setSpecialSlot({ slotId: specialSlot, item: null, forceSpace });
           } else if (typeof slotIndex === 'number') {
             if (item.quantity > 1) {
-              this.setItem(slotIndex, { ...item, quantity: item.quantity - 1 });
-            } else this.setItem(slotIndex, null);
+              this.setItem({
+                slotIndex,
+                item: { ...item, quantity: item.quantity - 1 },
+                forceSpace,
+              });
+            } else this.setItem({ slotIndex, item: null, forceSpace });
           } else
             throw new Error(
               `Invalid remove operation: no valid slotIndex or specialSlot provided.`,
@@ -879,14 +878,15 @@ class TinyInventory {
   /**
    * Sets or clears an item in a special slot.
    *
-   * @param {string} slotName - Name of the special slot.
-   * @param {InventoryItem|null} item - Item to place, or null to clear.
+   * @param {Object} options - Item addition configuration.
+   * @param {string} options.slotId - Name of the special slot.
+   * @param {InventoryItem|null} options.item - Item to place, or null to clear.
+   * @param {boolean} [options.forceSpace=false] - Forces the item to be added even if space or stack limits would normally prevent it.
    * @throws {Error} If the slot does not exist, or item is invalid.
    */
-  setSpecialSlot(slotName, item) {
-    if (!this.specialSlots || !(slotName in this.specialSlots)) {
-      throw new Error(`Special slot '${slotName}' not found.`);
-    }
+  setSpecialSlot({ slotId, item, forceSpace = false }) {
+    if (!this.specialSlots || !(slotId in this.specialSlots))
+      throw new Error(`Special slot '${slotId}' not found.`);
 
     // Validate type: must be null or a proper InventoryItem object
     const isInventoryItem =
@@ -907,8 +907,8 @@ class TinyInventory {
       throw new Error(`Item '${item?.id ?? 'unknown'}' not defined in registry.`);
 
     // Slot check
-    const slot = this.specialSlots.get(slotName);
-    if (!slot) throw new Error(`Special slot ${slotName} out of range for section '${slotName}'.`);
+    const slot = this.specialSlots.get(slotId);
+    if (!slot) throw new Error(`Special slot ${slotId} out of range for section '${slotId}'.`);
 
     // Weight check
     const oldItemData = slot.item ? TinyInventory.ItemRegistry.get(slot.item.id) : null;
@@ -927,6 +927,7 @@ class TinyInventory {
     const getTotalLength = (theItem) => (theItem ? 1 : 0);
 
     if (
+      !forceSpace &&
       !this.hasSpace({
         weight: getTotalWeight(item, def) - getTotalWeight(slot.item, oldItemData),
         sizeLength: getTotalLength(item) - getTotalLength(slot.item),
@@ -941,17 +942,18 @@ class TinyInventory {
       index: null,
       item,
       collection: null,
-      specialSlot: slotName,
+      specialSlot: slotId,
     });
   }
 
   /**
    * Deletes an item from a specific special slot by setting it to null.
    *
-   * @param {string} slotName - Special slot to delete from.
+   * @param {string} slotId - Special slot to delete from.
+   * @param {boolean} [forceSpace=false] - Forces the item to be added even if space or stack limits would normally prevent it.
    */
-  deleteSpecialItem(slotName) {
-    this.setSpecialSlot(slotName, null);
+  deleteSpecialItem(slotId, forceSpace = false) {
+    this.setSpecialSlot({ slotId, item: null, forceSpace });
   }
 
   /**
@@ -968,11 +970,12 @@ class TinyInventory {
    * @param {number} configs.slotIndex - Index of the inventory slot containing the item to equip.
    * @param {InventoryMetadata} [configs.metadata={}] - Metadata to match when removing (e.g., durability, enchantments).
    * @param {number} [configs.quantity=1] - Quantity of the item to equip.
+   * @param {boolean} [configs.forceSpace=false] - Forces the item to be added even if space or stack limits would normally prevent it.
    * @returns {number} Amount of the item that could NOT be equipped (leftover remains in inventory).
    * @throws {Error} If the special slot does not exist, if the item type mismatches the slot,
    *                 or if the inventory lacks the required quantity.
    */
-  equipItem({ slotId, slotIndex, metadata, quantity = 1 }) {
+  equipItem({ slotId, slotIndex, metadata, quantity = 1, forceSpace = false }) {
     if (quantity <= 0 || !Number.isFinite(quantity))
       throw new Error(`Invalid quantity '${quantity}'.`);
 
@@ -1014,7 +1017,7 @@ class TinyInventory {
 
     // CASE 2: Different item equipped → swap
     if (current.item) {
-      this.unequipItem(slotId); // moves old one back to inventory
+      this.unequipItem({ slotId, forceSpace }); // moves old one back to inventory
     }
 
     // Equip new item into slot
@@ -1037,12 +1040,14 @@ class TinyInventory {
    *
    * If no quantity is specified, removes the entire stack.
    *
-   * @param {string} slotId - ID of the special slot.
-   * @param {number|null} [quantity=null] - Quantity to unequip (default: all).
+   * @param {Object} config - Item location data.
+   * @param {string} config.slotId - ID of the special slot.
+   * @param {number|null} [config.quantity=null] - Quantity to unequip (default: all).
+   * @param {boolean} [config.forceSpace=false] - Forces the item to be added even if space or stack limits would normally prevent it.
    * @returns {boolean} True if any item was unequipped; false if slot empty.
    * @throws {Error} If the slot does not exist or invalid quantity.
    */
-  unequipItem(slotId, quantity = null) {
+  unequipItem({ slotId, quantity = null, forceSpace = false }) {
     if (!this.specialSlots.has(slotId)) throw new Error(`Special slot '${slotId}' does not exist.`);
 
     const current = this.specialSlots.get(slotId);
@@ -1057,7 +1062,7 @@ class TinyInventory {
       throw new Error(`Not enough items in slot '${slotId}' to unequip.`);
 
     // Return to inventory with requested quantity
-    this.addItem(item.id, unequipQty, item.metadata);
+    this.addItem({ itemId: item.id, quantity: unequipQty, metadata: item.metadata, forceSpace });
 
     if (unequipQty === item.quantity) {
       // Fully emptied
@@ -1263,11 +1268,11 @@ class TinyInventory {
             metadata: it.metadata && typeof it.metadata === 'object' ? it.metadata : {},
           };
           if (enforceLimits) {
-            inv.setItem(Number(index), safeItem);
+            inv.setItem({ slotIndex: Number(index), item: safeItem, forceSpace: true });
           } else {
             inv.items.add(safeItem);
           }
-        } else inv.setItem(Number(index), null);
+        } else inv.setItem({ slotIndex: Number(index), item: null, forceSpace: true });
       }
     }
 
@@ -1293,9 +1298,14 @@ class TinyInventory {
           if (enforceLimits) {
             // When enforcing limits, attempt to equip via method:
             // 1) Add to inventory, 2) Equip (will validate type), 3) Remove from inventory.
-            inv.addItem(safeEquipped.id, safeEquipped.quantity, safeEquipped.metadata);
+            inv.addItem({
+              itemId: safeEquipped.id,
+              quantity: safeEquipped.quantity,
+              metadata: safeEquipped.metadata,
+              forceSpace: true,
+            });
             try {
-              inv.setSpecialSlot(slotId, safeEquipped);
+              inv.setSpecialSlot({ slotId, item: safeEquipped, forceSpace: true });
             } catch {
               // If cannot equip, leave it in inventory
             }
