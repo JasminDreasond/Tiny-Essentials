@@ -352,7 +352,7 @@
 
         <div class="card">
           <header><h2>Transfer Item</h2></header>
-          <div class="grid grid-2">
+          <div class="grid grid-3">
             <input id="tr_fromIndex" type="number" placeholder="fromIndex" />
             <input id="tr_toIndex" type="number" placeholder="toIndex" />
             <button class="btn primary" id="tr_transfer">Transfer Item</button>
@@ -393,11 +393,11 @@
               <span id="inv_isFull_result"></span>
             </center>
             <center>
-              <button class="btn" id="inv_areFullSlots">areFull()</button>
+              <button class="btn" id="inv_areFullSlots">areFullSlots()</button>
               <span id="inv_areFullSlots_result"></span>
             </center>
             <center>
-              <button class="btn" id="inv_isFullSlots">isFull()</button>
+              <button class="btn" id="inv_isFullSlots">isFullSlots()</button>
               <span id="inv_isFullSlots_result"></span>
             </center>
           </div>
@@ -405,7 +405,7 @@
 
         <div class="card">
           <header><h2>Actions</h2></header>
-          <div class="grid grid-4">
+          <div class="grid grid-3">
             <input id="ac_itemId" placeholder="itemId" />
             <input id="ac_qty" type="number" value="1" />
             <input id="ac_metadata" class="mono" placeholder="instance metadata JSON (optional)" />
@@ -417,12 +417,12 @@
           </div>
 
           <div class="divider"></div>
-          <div class="grid grid-4" style="margin-bottom: 7px">
+          <div class="grid grid-3" style="margin-bottom: 7px">
             <input id="ac_slotId" placeholder="slotId" />
             <input id="ac_itemEquip" placeholder="slotIndex to equip" />
             <button class="btn" id="ac_equip">Equip</button>
           </div>
-          <div class="grid grid-3">
+          <div class="grid grid-2">
             <input id="ac_slotUnequip" placeholder="slotId" />
             <button class="btn" id="ac_unequip">Unequip</button>
             <span></span>
