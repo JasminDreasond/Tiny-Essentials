@@ -308,11 +308,14 @@
 
         <div class="card">
           <header><h2>Create Inventory</h2></header>
-          <div class="grid grid-3">
+          <div class="grid grid-2">
             <input id="ci_maxWeight" type="number" placeholder="maxWeight (null)" />
             <input id="ci_maxSlots" type="number" placeholder="maxSlots (null)" />
+            <input id="ci_maxSize" type="number" placeholder="maxSize (null)" />
             <input id="ci_maxStack" type="number" placeholder="maxStack (Infinity)" />
-            <select id="ci_useSections">
+          </div>
+          <div class="grid grid-1">
+            <select id="ci_useSections" style="margin-top: 7px">
               <option value="false">useSections: false</option>
               <option value="true">useSections: true</option>
             </select>
@@ -540,7 +543,7 @@
         byId('kpiSections').textContent = inv?.useSections
           ? String(inv.sections?.length ?? 0)
           : '0';
-        byId('kpiStacks').textContent = String(inv ? inv.getAllItems().length : 0);
+        byId('kpiStacks').textContent = String(inv ? inv.slotsSize : 0);
         byId('kpiTotal').textContent = String(inv.size);
         byId('kpiWeight').textContent = inv ? String(inv.weight) : '0';
 
@@ -861,6 +864,7 @@
       byId('ci_create').addEventListener('click', () => {
         const maxWeight = numberOrNull(byId('ci_maxWeight').value);
         const maxSlots = numberOrNull(byId('ci_maxSlots').value);
+        const maxSize = numberOrNull(byId('ci_maxSize').value);
         const maxStack = numberOrInfinity(byId('ci_maxStack').value);
         const useSections = byId('ci_useSections').value === 'true';
         /** @type {Array<{id:string, slots:number}>} */
@@ -888,6 +892,7 @@
             sections,
             specialSlots,
             maxStack,
+            maxSize,
           });
           window.inventory = inv;
           // attach event logs
