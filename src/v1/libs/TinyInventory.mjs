@@ -127,6 +127,20 @@
  * @property {Record<string, SpecialSlot>} specialSlots - Special equipment or reserved slots keyed by ID.
  */
 
+/**
+ * Represents an entry from the inventory as a pair containing the item and its index in the collection.
+ * @typedef {[InventoryItem, number]} ItemListData
+ */
+
+/**
+ * Payload data dispatched when an inventory event occurs (e.g., add, remove, equip, unequip).
+ * @typedef {Object} EventPayload
+ * @property {number|null} index - Index of the item in its collection (null if not applicable).
+ * @property {InventoryItem|null} item - The item affected by the event.
+ * @property {boolean} isCollection - Whether the item came from a section/collection (true) or not.
+ * @property {string|null} specialSlot - ID of the special slot involved in the event, if any.
+ */
+
 class TinyInventory {
   /**
    * Cleans up unnecessary trailing nulls in a collection.
@@ -346,7 +360,7 @@ class TinyInventory {
   /**
    * Internal event trigger.
    * @param {EventsType} type - Event type.
-   * @param {Object} payload - Event data passed to listeners.
+   * @param {EventPayload} payload - Event data passed to listeners.
    */
   #triggerEvent(type, payload) {
     if (this.events[type]) {
@@ -425,26 +439,19 @@ class TinyInventory {
    * Works for both section-based and single-list inventories.
    */
   compactInventory() {
-    /**
-     * @param {Set<InventoryItem|null>} collection
-     */
-    const compact = (collection) => {
-      const filtered = Array.from(collection).filter((i, index) => {
-        const result = i !== null;
-        if (!result)
-          this.#triggerEvent('remove', {
-            index,
-            item: null,
-            collection,
-            specialSlot: null,
-          });
-        return result;
-      });
-      collection.clear();
-      filtered.forEach((i) => collection.add(i));
-    };
-
-    compact(this.items);
+    const filtered = Array.from(this.items).filter((i, index) => {
+      const result = i !== null;
+      if (!result)
+        this.#triggerEvent('remove', {
+          index,
+          item: null,
+          isCollection: true,
+          specialSlot: null,
+        });
+      return result;
+    });
+    this.items.clear();
+    filtered.forEach((i) => this.items.add(i));
   }
 
   /////////////////////////////////////////////////////////////////
@@ -497,9 +504,9 @@ class TinyInventory {
           madeProgress = true;
 
           this.#triggerEvent('add', {
-            item: existing,
-            index,
-            collection: this.items,
+            item: this.#cloneItemData(existing),
+            index: Number(index),
+            isCollection: true,
             specialSlot: null,
           });
           if (remaining <= 0) break;
@@ -525,9 +532,9 @@ class TinyInventory {
           for (const index2 in collArray) this.items.add(collArray[index2]);
 
           this.#triggerEvent('add', {
-            item,
-            index,
-            collection: this.items,
+            item: this.#cloneItemData(item),
+            index: Number(index),
+            isCollection: true,
             specialSlot: null,
           });
 
@@ -548,9 +555,9 @@ class TinyInventory {
       const item = { id: itemId, quantity: stackQty, metadata };
       this.items.add(item);
       this.#triggerEvent('add', {
-        item,
+        item: this.#cloneItemData(item),
         index: this.items.size - 1,
-        collection: this.items,
+        isCollection: true,
         specialSlot: null,
       });
       remaining -= stackQty;
@@ -570,7 +577,7 @@ class TinyInventory {
     const slots = Array.from(this.items);
     if (slotIndex < 0 || slotIndex >= slots.length)
       throw new Error(`Slot index '${slotIndex}' out of bounds .`);
-    return slots[slotIndex] ?? null;
+    return slots[slotIndex] ? this.#cloneItemData(slots[slotIndex]) : null;
   }
 
   /**
@@ -656,8 +663,8 @@ class TinyInventory {
 
     this.#triggerEvent('set', {
       index: slotIndex,
-      collection: this.items,
-      item,
+      isCollection: true,
+      item: item ? this.#cloneItemData(item) : null,
       specialSlot: null,
     });
   }
@@ -723,9 +730,9 @@ class TinyInventory {
         if (remaining <= 0) {
           TinyInventory._cleanNulls(this.items);
           this.#triggerEvent('remove', {
-            index,
-            item,
-            collection: this.items,
+            index: Number(index),
+            item: this.#cloneItemData(item),
+            isCollection: true,
             specialSlot: null,
           });
           return true;
@@ -751,8 +758,8 @@ class TinyInventory {
 
         this.#triggerEvent('remove', {
           index: null,
-          item: slot.item,
-          collection: null,
+          item: slot.item ? this.#cloneItemData(slot.item) : null,
+          isCollection: false,
           specialSlot: key,
         });
       }
@@ -813,10 +820,10 @@ class TinyInventory {
     if (def.onUse) {
       const onUse = {
         inventory: this,
-        item,
+        item: this.#cloneItemData(item),
         index: slotIndex ?? null,
         specialSlot: specialSlot ?? null,
-        collection,
+        isCollection: !!collection,
         itemDef: def,
         remove: () => {
           if (locationType === 'special' && specialSlot) {
@@ -843,7 +850,7 @@ class TinyInventory {
       };
 
       const result = def.onUse(onUse);
-      this.#triggerEvent('use', { ...onUse, itemId: item.id });
+      this.#triggerEvent('use', onUse);
       return result;
     }
     return null;
@@ -860,7 +867,7 @@ class TinyInventory {
   getSpecialItem(slotId) {
     if (!this.specialSlots.has(slotId)) throw new Error(`Special slot '${slotId}' does not exist.`);
     const slot = this.specialSlots.get(slotId);
-    return slot?.item ?? null;
+    return slot?.item ? this.#cloneItemData(slot.item) : null;
   }
 
   /**
@@ -940,8 +947,8 @@ class TinyInventory {
 
     this.#triggerEvent('set', {
       index: null,
-      item,
-      collection: null,
+      item: item ? this.#cloneItemData(item) : null,
+      isCollection: false,
       specialSlot: slotId,
     });
   }
@@ -1080,16 +1087,34 @@ class TinyInventory {
   /////////////////////////////////////////////////////////////////
 
   /**
+   * Creates a deep clone of an inventory item, ensuring metadata is copied safely.
+   * @param {InventoryItem} item - The item to clone.
+   * @returns {InventoryItem} A new inventory item object with identical data.
+   */
+  #cloneItemData(item) {
+    return { id: item.id, quantity: item.quantity, metadata: { ...item.metadata } };
+  }
+
+  /**
+   * Returns all items from the inventory with their respective indexes.
+   * @returns {ItemListData[]} An array where each entry is `[InventoryItem, index]`.
+   */
+  getItemList() {
+    // @ts-ignore
+    return [...Array.from(this.items)]
+      .map((item, index) => [item ? this.#cloneItemData(item) : null, index])
+      .filter((item) => item[0] !== null);
+  }
+
+  /**
    * Returns all items currently stored in the inventory,
    * excluding null or undefined entries.
    * @returns {InventoryItem[]} Array of item objects.
    */
   getAllItems() {
-    /**
-     * Merge all sources and remove null/undefined
-     * @type {InventoryItem[]}
-     */
-    const data = [...Array.from(this.items)].filter((item) => item !== null);
+    const data = [...Array.from(this.items)]
+      .filter((item) => item !== null)
+      .map(this.#cloneItemData);
     this.specialSlots.forEach((value) => {
       const item = value.item;
       if (item) data.push(item);
