@@ -20,24 +20,6 @@
  */
 
 /**
- * Configuration object for creating a section in the inventory.
- *
- * @typedef {Object} SectionCfg
- * @property {string} [id] - Optional unique section identifier.
- * @property {number} [slots=10] - Maximum number of item slots in the section.
- * @property {InvSlots} items - Items contained in the section.
- */
-
-/**
- * Represents an active inventory section with its stored items.
- *
- * @typedef {Object} InvSection
- * @property {string} id - Unique identifier for the section.
- * @property {number} slots - Maximum number of item slots.
- * @property {InvSlots} items - Items currently stored in this section.
- */
-
-/**
  * A collection of item stacks stored in the inventory.
  *
  * @typedef {Set<InventoryItem|null>} InvSlots
@@ -137,8 +119,9 @@
  * @typedef {Object} EventPayload
  * @property {number|null} index - Index of the item in its collection (null if not applicable).
  * @property {InventoryItem|null} item - The item affected by the event.
- * @property {boolean} isCollection - Whether the item came from a section/collection (true) or not.
+ * @property {boolean} isCollection - Whether the item came from a collection (true) or not.
  * @property {string|null} specialSlot - ID of the special slot involved in the event, if any.
+ * @property {(forceSpace: boolean) => void} remove - Function to remove the item from its slot, optionally forcing space rules.
  */
 
 class TinyInventory {
@@ -436,7 +419,6 @@ class TinyInventory {
   /**
    * Removes all unnecessary `null` values from the inventory, compacting the slots.
    * Preserves the relative order of items and does not modify metadata.
-   * Works for both section-based and single-list inventories.
    */
   compactInventory() {
     const filtered = Array.from(this.items).filter((i, index) => {
@@ -447,6 +429,7 @@ class TinyInventory {
           item: null,
           isCollection: true,
           specialSlot: null,
+          remove: () => undefined,
         });
       return result;
     });
@@ -466,7 +449,7 @@ class TinyInventory {
    * @param {number} [options.quantity=1] - Quantity to add.
    * @param {InventoryMetadata} [options.metadata={}] - Instance-specific metadata (must match for stacking).
    * @returns {number} Quantity that could not be added (0 if all were added).
-   * @throws {Error} If the item is not registered or the section is invalid.
+   * @throws {Error} If the item is not registered.
    */
   addItem({ itemId, quantity = 1, metadata = {}, forceSpace = false }) {
     const def = TinyInventory.ItemRegistry.get(itemId);
@@ -508,6 +491,12 @@ class TinyInventory {
             index: Number(index),
             isCollection: true,
             specialSlot: null,
+            remove: this.#removeItemCallback({
+              locationType: 'normal',
+              slotIndex: Number(index),
+              forceSpace,
+              item: existing,
+            }),
           });
           if (remaining <= 0) break;
         }
@@ -536,6 +525,12 @@ class TinyInventory {
             index: Number(index),
             isCollection: true,
             specialSlot: null,
+            remove: this.#removeItemCallback({
+              locationType: 'normal',
+              slotIndex: Number(index),
+              forceSpace,
+              item,
+            }),
           });
 
           if (remaining <= 0) break;
@@ -559,6 +554,12 @@ class TinyInventory {
         index: this.items.size - 1,
         isCollection: true,
         specialSlot: null,
+        remove: this.#removeItemCallback({
+          locationType: 'normal',
+          slotIndex: this.items.size - 1,
+          forceSpace,
+          item,
+        }),
       });
       remaining -= stackQty;
     }
@@ -568,10 +569,10 @@ class TinyInventory {
   }
 
   /**
-   * Gets the item stored at a specific slot in a section.
-   * @param {number} slotIndex - The slot index within the section.
+   * Gets the item stored at a specific slot.
+   * @param {number} slotIndex - The slot index.
    * @returns {InventoryItem|null} The item object or null if empty.
-   * @throws {Error} If the section does not exist or slot index is out of bounds.
+   * @throws {Error} If the slot index is out of bounds.
    */
   getItemFrom(slotIndex) {
     const slots = Array.from(this.items);
@@ -588,7 +589,7 @@ class TinyInventory {
    * @param {number} options.slotIndex - Index of the slot to set.
    * @param {InventoryItem|null} options.item - Item to place in the slot, or null to clear.
    * @param {boolean} [options.forceSpace=false] - Forces the item to be added even if space or stack limits would normally prevent it.
-   * @throws {Error} If the section is invalid, index is out of range, or item type is invalid.
+   * @throws {Error} If the index is out of range, or item type is invalid.
    */
   setItem({ slotIndex, item, forceSpace = false }) {
     // Validate type: must be null or a proper InventoryItem object
@@ -666,6 +667,14 @@ class TinyInventory {
       isCollection: true,
       item: item ? this.#cloneItemData(item) : null,
       specialSlot: null,
+      remove: item
+        ? this.#removeItemCallback({
+            locationType: 'normal',
+            slotIndex,
+            forceSpace,
+            item,
+          })
+        : () => undefined,
     });
   }
 
@@ -717,7 +726,7 @@ class TinyInventory {
      */
     const metadataEquals = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
-    // Remove from normal/section inventory first
+    // Remove from inventory first
     const collArray = Array.from(this.items);
 
     for (const index in collArray) {
@@ -734,6 +743,11 @@ class TinyInventory {
             item: this.#cloneItemData(item),
             isCollection: true,
             specialSlot: null,
+            remove: this.#removeItemCallback({
+              locationType: 'normal',
+              slotIndex: Number(index),
+              item,
+            }),
           });
           return true;
         }
@@ -761,6 +775,13 @@ class TinyInventory {
           item: slot.item ? this.#cloneItemData(slot.item) : null,
           isCollection: false,
           specialSlot: key,
+          remove: slot.item
+            ? this.#removeItemCallback({
+                locationType: 'special',
+                specialSlot: key,
+                item: slot.item,
+              })
+            : () => undefined,
         });
       }
     });
@@ -771,12 +792,46 @@ class TinyInventory {
   /////////////////////////////////////////////////////////////////
 
   /**
-   * Uses an item from a specific slot, section, or special slot,
+ * Creates a callback that removes an item from a normal slot or a special slot.
+ * The callback decrements the quantity or clears the slot when empty.
+ *
+ * @param {Object} config - Removal configuration.
+ * @param {'special'|'normal'} config.locationType - Type of slot where the item resides.
+ * @param {InventoryItem} config.item - Item to remove.
+ * @param {string} [config.specialSlot] - ID of the special slot if locationType is 'special'.
+ * @param {number} [config.slotIndex] - Index of the slot if locationType is 'normal'.
+ * @param {boolean} [config.forceSpace=false] - Whether to force the slot update even if blocked by space restrictions.
+ * @returns {(forceSpace?: boolean) => void} A callback function that executes the removal.
+ */
+  #removeItemCallback({ locationType, specialSlot, slotIndex, item, forceSpace = false }) {
+    return (fs = forceSpace) => {
+      if (locationType === 'special' && specialSlot) {
+        const slot = this.specialSlots.get(specialSlot);
+        if (!slot?.item) throw new Error(`Special slot '${specialSlot}' is empty.`);
+        if (slot.item.quantity > 1) {
+          slot.item.quantity -= 1;
+          this.specialSlots.set(specialSlot, slot);
+        } else this.setSpecialSlot({ slotId: specialSlot, item: null, forceSpace: fs });
+      } else if (typeof slotIndex === 'number') {
+        if (item.quantity > 1) {
+          this.setItem({
+            slotIndex,
+            item: { ...item, quantity: item.quantity - 1 },
+            forceSpace: fs,
+          });
+        } else this.setItem({ slotIndex, item: null, forceSpace: fs });
+      } else
+        throw new Error(`Invalid remove operation: no valid slotIndex or specialSlot provided.`);
+    };
+  }
+
+  /**
+   * Uses an item from a specific slot, or special slot,
    * triggering its `onUse` callback if defined.
    * Automatically removes the item if `remove()` is called inside the callback.
    *
    * @param {Object} location - Item location data.
-   * @param {number} [location.slotIndex] - Index in normal inventory or section.
+   * @param {number} [location.slotIndex] - Index in inventory.
    * @param {string} [location.specialSlot] - Name of the special slot (if applicable).
    * @param {boolean} [location.forceSpace=false] - Forces the item to be added even if space or stack limits would normally prevent it.
    * @param {...any} args - Additional arguments passed to the `onUse` handler.
@@ -786,8 +841,8 @@ class TinyInventory {
   useItem({ slotIndex, specialSlot, forceSpace = false }, ...args) {
     /** @type {InventoryItem|null} */
     let item = null;
-    /** @type {'normal'|'special'|'section'} */
-    let locationType = 'normal'; // "normal" | "section" | "special"
+    /** @type {'normal'|'special'} */
+    let locationType = 'normal'; // "normal"| "special"
     /** @type {InvSlots | null} */
     let collection = null;
 
@@ -825,27 +880,13 @@ class TinyInventory {
         specialSlot: specialSlot ?? null,
         isCollection: !!collection,
         itemDef: def,
-        remove: () => {
-          if (locationType === 'special' && specialSlot) {
-            const slot = this.specialSlots.get(specialSlot);
-            if (!slot?.item) throw new Error(`Special slot '${specialSlot}' is empty.`);
-            if (slot.item.quantity > 1) {
-              slot.item.quantity -= 1;
-              this.specialSlots.set(specialSlot, slot);
-            } else this.setSpecialSlot({ slotId: specialSlot, item: null, forceSpace });
-          } else if (typeof slotIndex === 'number') {
-            if (item.quantity > 1) {
-              this.setItem({
-                slotIndex,
-                item: { ...item, quantity: item.quantity - 1 },
-                forceSpace,
-              });
-            } else this.setItem({ slotIndex, item: null, forceSpace });
-          } else
-            throw new Error(
-              `Invalid remove operation: no valid slotIndex or specialSlot provided.`,
-            );
-        },
+        remove: this.#removeItemCallback({
+          locationType,
+          specialSlot,
+          slotIndex,
+          forceSpace,
+          item,
+        }),
         ...args,
       };
 
@@ -915,7 +956,7 @@ class TinyInventory {
 
     // Slot check
     const slot = this.specialSlots.get(slotId);
-    if (!slot) throw new Error(`Special slot ${slotId} out of range for section '${slotId}'.`);
+    if (!slot) throw new Error(`Special slot ${slotId} out of range for slot '${slotId}'.`);
 
     // Weight check
     const oldItemData = slot.item ? TinyInventory.ItemRegistry.get(slot.item.id) : null;
@@ -950,6 +991,14 @@ class TinyInventory {
       item: item ? this.#cloneItemData(item) : null,
       isCollection: false,
       specialSlot: slotId,
+      remove: item
+        ? this.#removeItemCallback({
+            locationType: 'special',
+            specialSlot: slotId,
+            forceSpace,
+            item,
+          })
+        : () => undefined,
     });
   }
 
