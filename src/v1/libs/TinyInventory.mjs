@@ -6,7 +6,7 @@
  * @property {number} weight - Weight of a single unit of the item.
  * @property {InventoryMetadata} metadata - Default metadata for the item type.
  * @property {number} maxStack - Maximum quantity per stack.
- * @property {OnUse|null} onUse - Callback triggered when the item is used.
+ * @property {OnUseEvent|null} onUse - Callback triggered when the item is used.
  * @property {string|null} type - Optional category/type identifier.
  */
 
@@ -40,34 +40,39 @@
  */
 
 /**
+ * Generic event callback triggered by inventory actions.
+ * @typedef {(payload: EventPayload) => void} OnEvent
+ */
+
+/**
  * Event fired when an item is added to the inventory.
  *
- * @typedef {Function} AddItemEvent
+ * @typedef {OnEvent} AddItemEvent
  */
 
 /**
  * Event fired when an item is setted to the inventory.
  *
- * @typedef {Function} SetItemEvent
+ * @typedef {OnEvent} SetItemEvent
  */
 
 /**
  * Event fired when an item is removed from the inventory.
  *
- * @typedef {Function} RemoveItemEvent
+ * @typedef {OnEvent} RemoveItemEvent
  */
 
 /**
  * Event fired when an item is used.
  *
- * @typedef {Function} UseItemEvent
+ * @typedef {OnEvent} UseItemEvent
  */
 
 /**
  * A function executed when an inventory item is used.
  * Can be assigned to handle custom "on use" behavior.
  *
- * @typedef {Function} OnUse
+ * @typedef {OnEvent} OnUseEvent
  * @returns {void} - Does not return a value.
  */
 
@@ -162,7 +167,7 @@ class TinyInventory {
    * @param {number} [config.weight=0] - Weight of a single unit of the item.
    * @param {InventoryMetadata} [config.metadata={}] - Default metadata for the item type.
    * @param {number} [config.maxStack=1] - Maximum quantity allowed in a single stack.
-   * @param {OnUse|null} [config.onUse=null] - Optional callback executed when the item is used.
+   * @param {OnUseEvent|null} [config.onUse=null] - Optional callback executed when the item is used.
    * @param {string|null} [config.type=null] - Optional type/category identifier for the item.
    * @throws {Error} If `id` is missing or not a string.
    */
@@ -354,7 +359,7 @@ class TinyInventory {
   /**
    * Unregisters a specific callback for the given event type.
    * @param {EventsType} eventType - The event type to remove from.
-   * @param {Function} callback - The callback function to remove.
+   * @param {OnEvent} callback - The callback function to remove.
    */
   off(eventType, callback) {
     if (!this.events[eventType]) return;
@@ -375,7 +380,7 @@ class TinyInventory {
   /**
    * Returns a shallow copy of the callbacks for a given event type.
    * @param {EventsType} eventType - The event type to clone.
-   * @returns {Function[]} A cloned array of callback functions.
+   * @returns {OnEvent[]} A cloned array of callback functions.
    */
   cloneEventCallbacks(eventType) {
     if (!this.events[eventType]) return [];
@@ -792,17 +797,17 @@ class TinyInventory {
   /////////////////////////////////////////////////////////////////
 
   /**
- * Creates a callback that removes an item from a normal slot or a special slot.
- * The callback decrements the quantity or clears the slot when empty.
- *
- * @param {Object} config - Removal configuration.
- * @param {'special'|'normal'} config.locationType - Type of slot where the item resides.
- * @param {InventoryItem} config.item - Item to remove.
- * @param {string} [config.specialSlot] - ID of the special slot if locationType is 'special'.
- * @param {number} [config.slotIndex] - Index of the slot if locationType is 'normal'.
- * @param {boolean} [config.forceSpace=false] - Whether to force the slot update even if blocked by space restrictions.
- * @returns {(forceSpace?: boolean) => void} A callback function that executes the removal.
- */
+   * Creates a callback that removes an item from a normal slot or a special slot.
+   * The callback decrements the quantity or clears the slot when empty.
+   *
+   * @param {Object} config - Removal configuration.
+   * @param {'special'|'normal'} config.locationType - Type of slot where the item resides.
+   * @param {InventoryItem} config.item - Item to remove.
+   * @param {string} [config.specialSlot] - ID of the special slot if locationType is 'special'.
+   * @param {number} [config.slotIndex] - Index of the slot if locationType is 'normal'.
+   * @param {boolean} [config.forceSpace=false] - Whether to force the slot update even if blocked by space restrictions.
+   * @returns {(forceSpace?: boolean) => void} A callback function that executes the removal.
+   */
   #removeItemCallback({ locationType, specialSlot, slotIndex, item, forceSpace = false }) {
     return (fs = forceSpace) => {
       if (locationType === 'special' && specialSlot) {
