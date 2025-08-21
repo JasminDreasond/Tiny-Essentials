@@ -110,6 +110,8 @@
  * @property {number} version - Serialized format version.
  * @property {number|null} maxWeight - Maximum allowed weight, or null if unlimited.
  * @property {number|null} maxSlots - Maximum allowed slots, or null if unlimited.
+ * @property {number|null} maxSize - Maximum allowed size for items, or null if unlimited.
+ * @property {number} maxStack - Maximum stack size allowed per item.
  * @property {(InventoryItem|null)[] | null} items - Flat inventory items.
  * @property {Record<string, SpecialSlot>} specialSlots - Special equipment or reserved slots keyed by ID.
  */
@@ -188,12 +190,12 @@ class TinyInventory {
   /////////////////////////////////////////////////////////////////
 
   /** @type {Map<string, SpecialSlot>} */
-  specialSlots = new Map();
+  #specialSlots = new Map();
 
   /**
    * Event listeners
    */
-  events = {
+  #events = {
     /** @type {AddItemEvent[]} */
     add: [],
     /** @type {RemoveItemEvent[]} */
@@ -205,10 +207,19 @@ class TinyInventory {
   };
 
   /** @type {InvSlots} */
-  items;
+  #items;
 
   /** @type {number} */
-  maxStack;
+  #maxStack;
+
+  /** @type {number|null} */
+  #maxSize;
+
+  /** @type {number|null} */
+  #maxSlots;
+
+  /** @type {number|null} */
+  #maxWeight;
 
   /////////////////////////////////////////////////////////////////
 
@@ -259,14 +270,14 @@ class TinyInventory {
    * @param {Record<string, { type: string | null; }>} [options.specialSlots] - IDs for special slots (e.g., "helmet", "weapon").
    */
   constructor(options = {}) {
-    this.maxWeight = options.maxWeight ?? null;
-    this.maxSlots = options.maxSlots ?? null;
-    this.maxSize = options.maxSize ?? null;
-    this.maxStack = options.maxStack ?? Infinity;
-    this.items = new Set();
+    this.#maxWeight = options.maxWeight ?? null;
+    this.#maxSlots = options.maxSlots ?? null;
+    this.#maxSize = options.maxSize ?? null;
+    this.#maxStack = options.maxStack ?? Infinity;
+    this.#items = new Set();
     if (options.specialSlots) {
       for (const name in options.specialSlots) {
-        this.specialSlots.set(name, { type: options.specialSlots[name].type ?? null, item: null });
+        this.#specialSlots.set(name, { type: options.specialSlots[name].type ?? null, item: null });
       }
     }
   }
@@ -295,7 +306,7 @@ class TinyInventory {
    * @returns {boolean} - Returns `true` if the total weight (current + extra) exceeds `maxWeight`, otherwise `false`.
    */
   isHeavy(extraWeight = 0) {
-    if (this.maxWeight !== null && this.weight + extraWeight > this.maxWeight) return true;
+    if (this.#maxWeight !== null && this.weight + extraWeight > this.#maxWeight) return true;
     return false;
   }
 
@@ -306,7 +317,7 @@ class TinyInventory {
    * @returns {boolean} - Returns `true` if the total number of items is greater than or equal to `maxSlots`, otherwise `false`.
    */
   areFull(extraLength = 0) {
-    if (this.maxSize !== null && this.size + extraLength > this.maxSize) return true;
+    if (this.#maxSize !== null && this.size + extraLength > this.#maxSize) return true;
     return false;
   }
 
@@ -317,7 +328,7 @@ class TinyInventory {
    * @returns {boolean} - Returns `true` if the total number of items is greater than or equal to `maxSlots`, otherwise `false`.
    */
   isFull(extraLength = 0) {
-    if (this.maxSize !== null && this.size + extraLength >= this.maxSize) return true;
+    if (this.#maxSize !== null && this.size + extraLength >= this.#maxSize) return true;
     return false;
   }
 
@@ -328,7 +339,7 @@ class TinyInventory {
    * @returns {boolean} - Returns `true` if the total number of items is greater than or equal to `maxSlots`, otherwise `false`.
    */
   areFullSlots(extraLength = 0) {
-    if (this.maxSlots !== null && this.slotsSize + extraLength > this.maxSlots) return true;
+    if (this.#maxSlots !== null && this.slotsSize + extraLength > this.#maxSlots) return true;
     return false;
   }
 
@@ -339,7 +350,7 @@ class TinyInventory {
    * @returns {boolean} - Returns `true` if the total number of items is greater than or equal to `maxSlots`, otherwise `false`.
    */
   isFullSlots(extraLength = 0) {
-    if (this.maxSlots !== null && this.slotsSize + extraLength >= this.maxSlots) return true;
+    if (this.#maxSlots !== null && this.slotsSize + extraLength >= this.#maxSlots) return true;
     return false;
   }
 
@@ -351,8 +362,8 @@ class TinyInventory {
    * @param {EventPayload} payload - Event data passed to listeners.
    */
   #triggerEvent(type, payload) {
-    if (this.events[type]) {
-      for (const cb of this.events[type]) cb(payload);
+    if (this.#events[type]) {
+      for (const cb of this.#events[type]) cb(payload);
     }
   }
 
@@ -362,8 +373,8 @@ class TinyInventory {
    * @param {OnEvent} callback - The callback function to remove.
    */
   off(eventType, callback) {
-    if (!this.events[eventType]) return;
-    const list = this.events[eventType];
+    if (!this.#events[eventType]) return;
+    const list = this.#events[eventType];
     const index = list.indexOf(callback);
     if (index !== -1) list.splice(index, 1);
   }
@@ -373,8 +384,8 @@ class TinyInventory {
    * @param {EventsType} eventType - The event type to clear.
    */
   offAll(eventType) {
-    if (!this.events[eventType]) return;
-    this.events[eventType] = [];
+    if (!this.#events[eventType]) return;
+    this.#events[eventType] = [];
   }
 
   /**
@@ -383,8 +394,8 @@ class TinyInventory {
    * @returns {OnEvent[]} A cloned array of callback functions.
    */
   cloneEventCallbacks(eventType) {
-    if (!this.events[eventType]) return [];
-    return [...this.events[eventType]];
+    if (!this.#events[eventType]) return [];
+    return [...this.#events[eventType]];
   }
 
   /**
@@ -392,7 +403,7 @@ class TinyInventory {
    * @param {AddItemEvent} callback - Function receiving the event payload.
    */
   onAddItem(callback) {
-    this.events.add.push(callback);
+    this.#events.add.push(callback);
   }
 
   /**
@@ -400,7 +411,7 @@ class TinyInventory {
    * @param {SetItemEvent} callback - Function receiving the event payload.
    */
   onSetItem(callback) {
-    this.events.set.push(callback);
+    this.#events.set.push(callback);
   }
 
   /**
@@ -408,7 +419,7 @@ class TinyInventory {
    * @param {RemoveItemEvent} callback - Function receiving the event payload.
    */
   onRemoveItem(callback) {
-    this.events.remove.push(callback);
+    this.#events.remove.push(callback);
   }
 
   /**
@@ -416,7 +427,7 @@ class TinyInventory {
    * @param {UseItemEvent} callback - Function receiving the event payload.
    */
   onUseItem(callback) {
-    this.events.use.push(callback);
+    this.#events.use.push(callback);
   }
 
   /////////////////////////////////////////////////////////////////
@@ -426,7 +437,7 @@ class TinyInventory {
    * Preserves the relative order of items and does not modify metadata.
    */
   compactInventory() {
-    const filtered = Array.from(this.items).filter((i, index) => {
+    const filtered = Array.from(this.#items).filter((i, index) => {
       const result = i !== null;
       if (!result)
         this.#triggerEvent('remove', {
@@ -438,8 +449,8 @@ class TinyInventory {
         });
       return result;
     });
-    this.items.clear();
-    filtered.forEach((i) => this.items.add(i));
+    this.#items.clear();
+    filtered.forEach((i) => this.#items.add(i));
   }
 
   /////////////////////////////////////////////////////////////////
@@ -460,7 +471,7 @@ class TinyInventory {
     const def = TinyInventory.ItemRegistry.get(itemId);
     if (!def) throw new Error(`Item '${itemId}' not defined in registry.`);
     let remaining = quantity;
-    const maxStack = def.maxStack <= this.maxStack ? def.maxStack : this.maxStack;
+    const maxStack = def.maxStack <= this.#maxStack ? def.maxStack : this.#maxStack;
 
     /**
      * @param {InventoryMetadata} a
@@ -468,7 +479,7 @@ class TinyInventory {
      */
     const metadataEquals = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
-    const collArray = Array.from(this.items);
+    const collArray = Array.from(this.#items);
 
     // Step 1: Fill existing stacks first
     let madeProgress = true;
@@ -522,8 +533,8 @@ class TinyInventory {
           const item = { id: itemId, quantity: stackQty, metadata };
           collArray[index] = item;
           remaining -= stackQty;
-          this.items.clear();
-          for (const index2 in collArray) this.items.add(collArray[index2]);
+          this.#items.clear();
+          for (const index2 in collArray) this.#items.add(collArray[index2]);
 
           this.#triggerEvent('add', {
             item: this.#cloneItemData(item),
@@ -553,15 +564,15 @@ class TinyInventory {
         break;
 
       const item = { id: itemId, quantity: stackQty, metadata };
-      this.items.add(item);
+      this.#items.add(item);
       this.#triggerEvent('add', {
         item: this.#cloneItemData(item),
-        index: this.items.size - 1,
+        index: this.#items.size - 1,
         isCollection: true,
         specialSlot: null,
         remove: this.#removeItemCallback({
           locationType: 'normal',
-          slotIndex: this.items.size - 1,
+          slotIndex: this.#items.size - 1,
           forceSpace,
           item,
         }),
@@ -580,7 +591,7 @@ class TinyInventory {
    * @throws {Error} If the slot index is out of bounds.
    */
   getItemFrom(slotIndex) {
-    const slots = Array.from(this.items);
+    const slots = Array.from(this.#items);
     if (slotIndex < 0 || slotIndex >= slots.length)
       throw new Error(`Slot index '${slotIndex}' out of bounds .`);
     return slots[slotIndex] ? this.#cloneItemData(slots[slotIndex]) : null;
@@ -616,18 +627,18 @@ class TinyInventory {
       throw new Error(`Item '${item?.id ?? 'unknown'}' not defined in registry.`);
 
     if (def && item) {
-      const maxStack = def.maxStack <= this.maxStack ? def.maxStack : this.maxStack;
+      const maxStack = def.maxStack <= this.#maxStack ? def.maxStack : this.#maxStack;
       if (item.quantity > maxStack)
         throw new Error(
           `Item '${item.id}' exceeds max stack size. Allowed: ${maxStack}, got: ${item.quantity}.`,
         );
     }
 
-    if (this.maxSlots !== null && (slotIndex < 0 || slotIndex >= this.maxSlots))
+    if (this.#maxSlots !== null && (slotIndex < 0 || slotIndex >= this.#maxSlots))
       throw new Error(`Slot index ${slotIndex} out of range.`);
 
     // Convert the set to an array for index-based manipulation
-    const slotsArray = Array.from(this.items);
+    const slotsArray = Array.from(this.#items);
     const oldItem = slotsArray[slotIndex] ?? null;
     const oldItemData = oldItem ? (TinyInventory.ItemRegistry.get(oldItem.id) ?? null) : null;
 
@@ -661,11 +672,11 @@ class TinyInventory {
     slotsArray[slotIndex] = item;
 
     // Rebuild the collection from the updated array
-    this.items.clear();
-    for (const slot of slotsArray) this.items.add(slot);
+    this.#items.clear();
+    for (const slot of slotsArray) this.#items.add(slot);
 
     // Cleanup unnecessary trailing nulls
-    TinyInventory._cleanNulls(this.items);
+    TinyInventory._cleanNulls(this.#items);
 
     this.#triggerEvent('set', {
       index: slotIndex,
@@ -702,7 +713,7 @@ class TinyInventory {
    * @throws {Error} If the source slot is empty or the move is invalid.
    */
   moveItem(fromIndex, toIndex, forceSpace = false) {
-    const slotsArray = Array.from(this.items);
+    const slotsArray = Array.from(this.#items);
     const item = slotsArray[fromIndex];
 
     if (!item) throw new Error(`No item found in slot ${fromIndex}.`);
@@ -732,7 +743,7 @@ class TinyInventory {
     const metadataEquals = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
     // Remove from inventory first
-    const collArray = Array.from(this.items);
+    const collArray = Array.from(this.#items);
 
     for (const index in collArray) {
       const item = collArray[index];
@@ -740,9 +751,9 @@ class TinyInventory {
         const removeQty = Math.min(item.quantity, remaining);
         item.quantity -= removeQty;
         remaining -= removeQty;
-        if (item.quantity <= 0) this.items.delete(item);
+        if (item.quantity <= 0) this.#items.delete(item);
         if (remaining <= 0) {
-          TinyInventory._cleanNulls(this.items);
+          TinyInventory._cleanNulls(this.#items);
           this.#triggerEvent('remove', {
             index: Number(index),
             item: this.#cloneItemData(item),
@@ -758,10 +769,10 @@ class TinyInventory {
         }
       }
     }
-    TinyInventory._cleanNulls(this.items);
+    TinyInventory._cleanNulls(this.#items);
 
     // If not enough removed, check special slots
-    this.specialSlots.forEach((slot, key) => {
+    this.#specialSlots.forEach((slot, key) => {
       if (
         remaining > 0 &&
         slot.item &&
@@ -773,7 +784,7 @@ class TinyInventory {
         if (slot.item.quantity < 0) slot.item.quantity = 0;
         remaining -= removeQty;
         if (slot.item.quantity <= 0) slot.item = null;
-        this.specialSlots.set(key, slot);
+        this.#specialSlots.set(key, slot);
 
         this.#triggerEvent('remove', {
           index: null,
@@ -811,11 +822,11 @@ class TinyInventory {
   #removeItemCallback({ locationType, specialSlot, slotIndex, item, forceSpace = false }) {
     return (fs = forceSpace) => {
       if (locationType === 'special' && specialSlot) {
-        const slot = this.specialSlots.get(specialSlot);
+        const slot = this.#specialSlots.get(specialSlot);
         if (!slot?.item) throw new Error(`Special slot '${specialSlot}' is empty.`);
         if (slot.item.quantity > 1) {
           slot.item.quantity -= 1;
-          this.specialSlots.set(specialSlot, slot);
+          this.#specialSlots.set(specialSlot, slot);
         } else this.setSpecialSlot({ slotId: specialSlot, item: null, forceSpace: fs });
       } else if (typeof slotIndex === 'number') {
         if (item.quantity > 1) {
@@ -853,13 +864,13 @@ class TinyInventory {
 
     // Get item
     if (specialSlot) {
-      if (!this.specialSlots.has(specialSlot))
+      if (!this.#specialSlots.has(specialSlot))
         throw new Error(`Special slot '${specialSlot}' not found.`);
       // @ts-ignore
-      item = this.specialSlots.get(specialSlot).item;
+      item = this.#specialSlots.get(specialSlot).item;
       locationType = 'special';
     } else {
-      collection = this.items;
+      collection = this.#items;
       item = Array.from(collection)[slotIndex ?? -1] ?? null;
       locationType = 'normal';
     }
@@ -905,14 +916,24 @@ class TinyInventory {
   /////////////////////////////////////////////////////////////////
 
   /**
+   * Checks if a special slot with the given ID exists in the inventory.
+   * @param {string} slotId - ID of the special slot.
+   * @returns {boolean} True if the slot exists, otherwise false.
+   */
+  hasSpecialSlot(slotId) {
+    return this.#specialSlots.has(slotId);
+  }
+
+  /**
    * Gets the item stored in a special slot.
    * @param {string} slotId - The special slot ID.
    * @returns {InventoryItem|null} The item object or null if empty.
    * @throws {Error} If the special slot does not exist.
    */
   getSpecialItem(slotId) {
-    if (!this.specialSlots.has(slotId)) throw new Error(`Special slot '${slotId}' does not exist.`);
-    const slot = this.specialSlots.get(slotId);
+    if (!this.#specialSlots.has(slotId))
+      throw new Error(`Special slot '${slotId}' does not exist.`);
+    const slot = this.#specialSlots.get(slotId);
     return slot?.item ? this.#cloneItemData(slot.item) : null;
   }
 
@@ -923,8 +944,9 @@ class TinyInventory {
    * @throws {Error} If the special slot does not exist.
    */
   getSpecialSlotType(slotId) {
-    if (!this.specialSlots.has(slotId)) throw new Error(`Special slot '${slotId}' does not exist.`);
-    const slot = this.specialSlots.get(slotId);
+    if (!this.#specialSlots.has(slotId))
+      throw new Error(`Special slot '${slotId}' does not exist.`);
+    const slot = this.#specialSlots.get(slotId);
     return slot?.type ?? null;
   }
 
@@ -938,7 +960,7 @@ class TinyInventory {
    * @throws {Error} If the slot does not exist, or item is invalid.
    */
   setSpecialSlot({ slotId, item, forceSpace = false }) {
-    if (!this.specialSlots || !(slotId in this.specialSlots))
+    if (!this.#specialSlots || !(slotId in this.#specialSlots))
       throw new Error(`Special slot '${slotId}' not found.`);
 
     // Validate type: must be null or a proper InventoryItem object
@@ -960,7 +982,7 @@ class TinyInventory {
       throw new Error(`Item '${item?.id ?? 'unknown'}' not defined in registry.`);
 
     // Slot check
-    const slot = this.specialSlots.get(slotId);
+    const slot = this.#specialSlots.get(slotId);
     if (!slot) throw new Error(`Special slot ${slotId} out of range for slot '${slotId}'.`);
 
     // Weight check
@@ -1040,7 +1062,8 @@ class TinyInventory {
     if (quantity <= 0 || !Number.isFinite(quantity))
       throw new Error(`Invalid quantity '${quantity}'.`);
 
-    if (!this.specialSlots.has(slotId)) throw new Error(`Special slot '${slotId}' does not exist.`);
+    if (!this.#specialSlots.has(slotId))
+      throw new Error(`Special slot '${slotId}' does not exist.`);
 
     const invItem = this.getItemFrom(slotIndex);
     if (!invItem) throw new Error(`No item found in inventory slot ${slotIndex}.`);
@@ -1050,14 +1073,14 @@ class TinyInventory {
     const def = TinyInventory.ItemRegistry.get(invItem.id);
     if (!def) throw new Error(`Item '${invItem.id}' not defined in registry.`);
 
-    const current = this.specialSlots.get(slotId);
+    const current = this.#specialSlots.get(slotId);
     if (!current) throw new Error(`Slot '${slotId}' not defined in registry.`);
 
     const slotType = current.type ?? null;
     if (slotType !== null && def.type !== slotType)
       throw new Error(`Item '${invItem.id}' cannot be equipped in slot '${slotId}'.`);
 
-    const maxStack = Math.min(def.maxStack, this.maxStack);
+    const maxStack = Math.min(def.maxStack, this.#maxStack);
 
     // CASE 1: Same item already equipped & stackable → merge
     if (current.item && current.item.id === invItem.id) {
@@ -1071,7 +1094,7 @@ class TinyInventory {
 
       // Merge into special slot
       current.item.quantity += toEquip;
-      this.specialSlots.set(slotId, current);
+      this.#specialSlots.set(slotId, current);
 
       return quantity - toEquip;
     }
@@ -1090,7 +1113,7 @@ class TinyInventory {
       quantity: toEquip,
       metadata: invItem.metadata,
     };
-    this.specialSlots.set(slotId, current);
+    this.#specialSlots.set(slotId, current);
 
     return quantity - toEquip;
   }
@@ -1109,9 +1132,10 @@ class TinyInventory {
    * @throws {Error} If the slot does not exist or invalid quantity.
    */
   unequipItem({ slotId, quantity = null, forceSpace = false }) {
-    if (!this.specialSlots.has(slotId)) throw new Error(`Special slot '${slotId}' does not exist.`);
+    if (!this.#specialSlots.has(slotId))
+      throw new Error(`Special slot '${slotId}' does not exist.`);
 
-    const current = this.specialSlots.get(slotId);
+    const current = this.#specialSlots.get(slotId);
     if (!current) throw new Error(`Slot '${slotId}' not defined in registry.`);
     if (!current.item) return false; // Empty slot
 
@@ -1134,7 +1158,7 @@ class TinyInventory {
       current.item = item;
     }
 
-    this.specialSlots.set(slotId, current);
+    this.#specialSlots.set(slotId, current);
     return true;
   }
 
@@ -1155,7 +1179,7 @@ class TinyInventory {
    */
   getItemList() {
     // @ts-ignore
-    return [...Array.from(this.items)]
+    return [...Array.from(this.#items)]
       .map((item, index) => [item ? this.#cloneItemData(item) : null, index])
       .filter((item) => item[0] !== null);
   }
@@ -1166,10 +1190,10 @@ class TinyInventory {
    * @returns {InventoryItem[]} Array of item objects.
    */
   getAllItems() {
-    const data = [...Array.from(this.items)]
+    const data = [...Array.from(this.#items)]
       .filter((item) => item !== null)
       .map(this.#cloneItemData);
-    this.specialSlots.forEach((value) => {
+    this.#specialSlots.forEach((value) => {
       const item = value.item;
       if (item) data.push(item);
     });
@@ -1238,7 +1262,7 @@ class TinyInventory {
   toObject() {
     /** @type {Record<string, { type: string|null, item: InventoryItem|null }>} */
     const special = {};
-    for (const [slotId, slotObj] of this.specialSlots.entries()) {
+    for (const [slotId, slotObj] of this.#specialSlots.entries()) {
       special[slotId] = {
         type: slotObj?.type ?? null,
         item: slotObj?.item
@@ -1255,11 +1279,13 @@ class TinyInventory {
       __schema: 'TinyInventory',
       version: 1,
 
-      maxWeight: this.maxWeight,
-      maxSlots: this.maxSlots,
+      maxWeight: this.#maxWeight,
+      maxSlots: this.#maxSlots,
+      maxSize: this.#maxSize,
+      maxStack: this.#maxStack,
 
-      items: this.items
-        ? Array.from(this.items).map((it) =>
+      items: this.#items
+        ? Array.from(this.#items).map((it) =>
             it
               ? {
                   id: it.id,
@@ -1321,6 +1347,8 @@ class TinyInventory {
     const inv = new TinyInventory({
       maxWeight: obj.maxWeight ?? null,
       maxSlots: obj.maxSlots ?? null,
+      maxSize: obj.maxSize ?? null,
+      maxStack: obj.maxStack ?? null,
       specialSlots: specialDefs,
     });
 
@@ -1336,7 +1364,7 @@ class TinyInventory {
     };
 
     // Restore items
-    if (Array.isArray(obj.items) && inv.items) {
+    if (Array.isArray(obj.items)) {
       for (const index in obj.items) {
         const it = obj.items[index];
         if (it !== null) {
@@ -1349,7 +1377,12 @@ class TinyInventory {
           if (enforceLimits) {
             inv.setItem({ slotIndex: Number(index), item: safeItem, forceSpace: true });
           } else {
-            inv.items.add(safeItem);
+            inv.addItem({
+              itemId: safeItem.id,
+              quantity: safeItem.quantity,
+              metadata: safeItem.metadata,
+              forceSpace: true,
+            });
           }
         } else inv.setItem({ slotIndex: Number(index), item: null, forceSpace: true });
       }
@@ -1359,10 +1392,8 @@ class TinyInventory {
     if (obj.specialSlots && typeof obj.specialSlots === 'object') {
       for (const [slotId, slotData] of Object.entries(obj.specialSlots)) {
         // Ensure slot exists (constructor already created it)
-        if (!inv.specialSlots.has(slotId)) continue;
+        if (!inv.hasSpecialSlot(slotId)) continue;
 
-        const slot = inv.specialSlots.get(slotId);
-        if (!slot) continue;
         // Keep the type from constructor; ignore type from payload if mismatched
         // but we still try to restore the item if present.
         const item = slotData?.item;
@@ -1389,8 +1420,7 @@ class TinyInventory {
               // If cannot equip, leave it in inventory
             }
           } else {
-            slot.item = safeEquipped;
-            inv.specialSlots.set(slotId, slot);
+            inv.setSpecialSlot({ slotId, item: safeEquipped, forceSpace: true });
           }
         }
       }
