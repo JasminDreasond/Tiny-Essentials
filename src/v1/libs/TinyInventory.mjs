@@ -1389,13 +1389,7 @@ class TinyInventory {
     for (const [slotId, slotObj] of this.#specialSlots.entries()) {
       special[slotId] = {
         type: slotObj?.type ?? null,
-        item: slotObj?.item
-          ? {
-              id: slotObj.item.id,
-              quantity: slotObj.item.quantity,
-              metadata: slotObj.item.metadata ?? {},
-            }
-          : null,
+        item: slotObj?.item ? this.#cloneItemData(slotObj.item) : null,
       };
     }
 
@@ -1409,15 +1403,7 @@ class TinyInventory {
       maxStack: this.#maxStack,
 
       items: this.#items
-        ? Array.from(this.#items).map((it) =>
-            it
-              ? {
-                  id: it.id,
-                  quantity: it.quantity,
-                  metadata: it.metadata ?? {},
-                }
-              : null,
-          )
+        ? Array.from(this.#items).map((it) => (it ? this.#cloneItemData(it) : null))
         : null,
 
       specialSlots: special,
@@ -1440,24 +1426,16 @@ class TinyInventory {
    * Item definitions (ItemRegistry) must be already defined externally; this method only restores state.
    *
    * @param {SerializedInventory} obj - Parsed JSON object.
-   * @param {Object} [options]
-   * @param {boolean} [options.validate=true] - If true, validates item IDs against the registry.
-   * @param {boolean} [options.enforceLimits=false] - If true, enforces weight/slot limits during load (may drop excess items).
    * @returns {TinyInventory} A new TinyInventory instance populated with the saved state.
    * @throws {Error} If validation fails and `validate` is true.
    */
-  static fromObject(obj, options = {}) {
-    const { validate = true, enforceLimits = false } = options;
-
-    if (!obj || typeof obj !== 'object') {
+  static fromObject(obj) {
+    if (!obj || typeof obj !== 'object') 
       throw new Error('Invalid state: expected object.');
-    }
-    if (obj.__schema !== 'TinyInventory' || typeof obj.version !== 'number') {
+    if (obj.__schema !== 'TinyInventory' || typeof obj.version !== 'number') 
       throw new Error('Invalid or missing schema header.');
-    }
-    if (obj.version !== 1) {
+    if (obj.version !== 1) 
       throw new Error(`Unsupported TinyInventory state version: ${obj.version}`);
-    }
 
     // Prepare constructor options
     /** @type {Record<string, {type: string|null}>} */
@@ -1476,38 +1454,17 @@ class TinyInventory {
       specialSlots: specialDefs,
     });
 
-    /**
-     * Helper to validate item ID if required
-     * @param {string} id
-     */
-    const ensureItemDef = (id) => {
-      if (!validate) return;
-      if (!TinyInventory.ItemRegistry.has(id)) {
-        throw new Error(`Item '${id}' not defined in registry.`);
-      }
-    };
-
     // Restore items
     if (Array.isArray(obj.items)) {
       for (const index in obj.items) {
         const it = obj.items[index];
         if (it !== null) {
-          ensureItemDef(it.id);
           const safeItem = {
             id: String(it.id),
             quantity: Math.max(1, Number(it.quantity) || 1),
             metadata: it.metadata && typeof it.metadata === 'object' ? it.metadata : {},
           };
-          if (enforceLimits) {
-            inv.setItem({ slotIndex: Number(index), item: safeItem, forceSpace: true });
-          } else {
-            inv.addItem({
-              itemId: safeItem.id,
-              quantity: safeItem.quantity,
-              metadata: safeItem.metadata,
-              forceSpace: true,
-            });
-          }
+          inv.setItem({ slotIndex: Number(index), item: safeItem, forceSpace: true });
         } else inv.setItem({ slotIndex: Number(index), item: null, forceSpace: true });
       }
     }
@@ -1522,30 +1479,12 @@ class TinyInventory {
         // but we still try to restore the item if present.
         const item = slotData?.item;
         if (item && item.id) {
-          ensureItemDef(item.id);
           const safeEquipped = {
             id: String(item.id),
             quantity: Math.max(1, Number(item.quantity) || 1),
             metadata: item.metadata && typeof item.metadata === 'object' ? item.metadata : {},
           };
-
-          if (enforceLimits) {
-            // When enforcing limits, attempt to equip via method:
-            // 1) Add to inventory, 2) Equip (will validate type), 3) Remove from inventory.
-            inv.addItem({
-              itemId: safeEquipped.id,
-              quantity: safeEquipped.quantity,
-              metadata: safeEquipped.metadata,
-              forceSpace: true,
-            });
-            try {
-              inv.setSpecialSlot({ slotId, item: safeEquipped, forceSpace: true });
-            } catch {
-              // If cannot equip, leave it in inventory
-            }
-          } else {
-            inv.setSpecialSlot({ slotId, item: safeEquipped, forceSpace: true });
-          }
+          inv.setSpecialSlot({ slotId, item: safeEquipped, forceSpace: true });
         }
       }
     }
@@ -1556,12 +1495,11 @@ class TinyInventory {
   /**
    * Rebuilds a TinyInventory from a JSON string produced by {@link TinyInventory.toJSON}.
    * @param {string} json - JSON string.
-   * @param {Object} [options] - See {@link TinyInventory.fromObject}.
    * @returns {TinyInventory} A new TinyInventory instance.
    */
-  static fromJSON(json, options) {
+  static fromJSON(json) {
     const obj = JSON.parse(json);
-    return TinyInventory.fromObject(obj, options);
+    return TinyInventory.fromObject(obj);
   }
 }
 
