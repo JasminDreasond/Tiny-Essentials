@@ -131,8 +131,12 @@ import TinyGamepad from './libs/TinyGamepad.mjs';
 import TinyDayNightCycle from './libs/TinyDayNightCycle.mjs';
 import TinyAdvancedRaffle from './libs/TinyAdvancedRaffle.mjs';
 import TinyArrayPaginator from './libs/TinyArrayPaginator.mjs';
+import TinyInventory from './libs/TinyInventory.mjs';
+import TinyInventoryTrade from './libs/TinyInventoryTrade.mjs';
 
 export {
+  TinyInventory,
+  TinyInventoryTrade,
   TinyArrayPaginator,
   TinyAdvancedRaffle,
   TinyDayNightCycle,

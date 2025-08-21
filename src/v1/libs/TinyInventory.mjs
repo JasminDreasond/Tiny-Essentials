@@ -138,6 +138,17 @@
  * @property {number[]} placesAdded - Array of slot indexes in the inventory where the item was successfully added.
  */
 
+/**
+ * TinyInventory — A flexible inventory management system.
+ *
+ * This class provides:
+ * - Standard inventory slots with configurable limits on weight, size, and stack.
+ * - Special slots for equipment, tools, or unique item types.
+ * - Full CRUD operations for items (add, remove, move, use, equip, unequip).
+ * - Metadata-aware operations to differentiate items with durability, enchantments, etc.
+ * - Serialization and deserialization to/from JSON for saving/loading inventory state.
+ * - Event triggers for 'add', 'remove', 'use', and 'set' actions.
+ */
 class TinyInventory {
   /**
    * Cleans up unnecessary trailing nulls in a collection.
