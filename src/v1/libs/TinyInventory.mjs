@@ -131,6 +131,13 @@
  * @property {(forceSpace: boolean) => void} remove - Function to remove the item from its slot, optionally forcing space rules.
  */
 
+/**
+ * Result of adding items to an inventory.
+ * @typedef {Object} AddItemResult
+ * @property {number} remaining - Quantity of the item that could NOT be added due to space/stack limits.
+ * @property {number[]} placesAdded - Array of slot indexes in the inventory where the item was successfully added.
+ */
+
 class TinyInventory {
   /**
    * Cleans up unnecessary trailing nulls in a collection.
@@ -588,7 +595,7 @@ class TinyInventory {
    * @param {boolean} [options.forceSpace=false] - Forces the item to be added even if space or stack limits would normally prevent it.
    * @param {number} [options.quantity=1] - Quantity to add.
    * @param {InventoryMetadata} [options.metadata={}] - Instance-specific metadata (must match for stacking).
-   * @returns {number} Quantity that could not be added (0 if all were added).
+   * @returns {AddItemResult} Quantity that could not be added (0 if all were added).
    * @throws {Error} If the item is not registered.
    */
   addItem({ itemId, quantity = 1, metadata = {}, forceSpace = false }) {
@@ -596,6 +603,8 @@ class TinyInventory {
     if (!def) throw new Error(`Item '${itemId}' not defined in registry.`);
     let remaining = quantity;
     const maxStack = def.maxStack <= this.#maxStack ? def.maxStack : this.#maxStack;
+    /** @type {number[]} */
+    const placesAdded = [];
 
     /**
      * @param {InventoryMetadata} a
@@ -626,14 +635,16 @@ class TinyInventory {
           remaining -= canAdd;
           madeProgress = true;
 
+          const indexInt = Number(index);
+          if (placesAdded.indexOf(indexInt) < 0) placesAdded.push(indexInt);
           this.#triggerEvent('add', {
             item: this.#cloneItemData(existing),
-            index: Number(index),
+            index: indexInt,
             isCollection: true,
             specialSlot: null,
             remove: this.#removeItemCallback({
               locationType: 'normal',
-              slotIndex: Number(index),
+              slotIndex: indexInt,
               forceSpace,
               item: existing,
             }),
@@ -660,14 +671,16 @@ class TinyInventory {
           this.#items.clear();
           for (const index2 in collArray) this.#items.add(collArray[index2]);
 
+          const indexInt = Number(index);
+          if (placesAdded.indexOf(indexInt) < 0) placesAdded.push(indexInt);
           this.#triggerEvent('add', {
             item: this.#cloneItemData(item),
-            index: Number(index),
+            index: indexInt,
             isCollection: true,
             specialSlot: null,
             remove: this.#removeItemCallback({
               locationType: 'normal',
-              slotIndex: Number(index),
+              slotIndex: indexInt,
               forceSpace,
               item,
             }),
@@ -689,14 +702,17 @@ class TinyInventory {
 
       const item = { id: itemId, quantity: stackQty, metadata };
       this.#items.add(item);
+      const index = this.#items.size - 1;
+
+      if (placesAdded.indexOf(index) < 0) placesAdded.push(index);
       this.#triggerEvent('add', {
         item: this.#cloneItemData(item),
-        index: this.#items.size - 1,
+        index,
         isCollection: true,
         specialSlot: null,
         remove: this.#removeItemCallback({
           locationType: 'normal',
-          slotIndex: this.#items.size - 1,
+          slotIndex: index,
           forceSpace,
           item,
         }),
@@ -705,7 +721,7 @@ class TinyInventory {
     }
 
     // Return remaining if some quantity couldn't be added due to maxStack
-    return remaining;
+    return { remaining, placesAdded };
   }
 
   /**
@@ -1430,11 +1446,10 @@ class TinyInventory {
    * @throws {Error} If validation fails and `validate` is true.
    */
   static fromObject(obj) {
-    if (!obj || typeof obj !== 'object') 
-      throw new Error('Invalid state: expected object.');
-    if (obj.__schema !== 'TinyInventory' || typeof obj.version !== 'number') 
+    if (!obj || typeof obj !== 'object') throw new Error('Invalid state: expected object.');
+    if (obj.__schema !== 'TinyInventory' || typeof obj.version !== 'number')
       throw new Error('Invalid or missing schema header.');
-    if (obj.version !== 1) 
+    if (obj.version !== 1)
       throw new Error(`Unsupported TinyInventory state version: ${obj.version}`);
 
     // Prepare constructor options
