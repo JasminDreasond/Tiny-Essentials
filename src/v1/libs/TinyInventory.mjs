@@ -224,6 +224,130 @@ class TinyInventory {
   /////////////////////////////////////////////////////////////////
 
   /**
+   * Gets the maximum stack size allowed per item.
+   * @returns {number}
+   */
+  get maxStack() {
+    return this.#maxStack;
+  }
+
+  /**
+   * Sets the maximum stack size per item.
+   * @param {number} value - Must be a positive integer.
+   * @throws {Error} If the value is not a valid positive integer.
+   */
+  set maxStack(value) {
+    if (!Number.isInteger(value) || (Number.isFinite(value) && value <= 0)) {
+      throw new Error(`maxStack must be a positive integer. Received: ${value}`);
+    }
+    this.#maxStack = value;
+  }
+
+  /**
+   * Gets the maximum item size allowed.
+   * @returns {number|null}
+   */
+  get maxSize() {
+    return this.#maxSize;
+  }
+
+  /**
+   * Sets the maximum item size.
+   * @param {number|null} value - Must be a positive integer or null.
+   * @throws {Error} If the value is not null or a positive integer.
+   */
+  set maxSize(value) {
+    if (value !== null && (!Number.isInteger(value) || value <= 0)) {
+      throw new Error(`maxSize must be null or a positive integer. Received: ${value}`);
+    }
+    this.#maxSize = value;
+  }
+
+  /**
+   * Gets the maximum number of slots allowed.
+   * @returns {number|null}
+   */
+  get maxSlots() {
+    return this.#maxSlots;
+  }
+
+  /**
+   * Sets the maximum number of slots.
+   * @param {number|null} value - Must be a positive integer or null.
+   * @throws {Error} If the value is not null or a positive integer.
+   */
+  set maxSlots(value) {
+    if (value !== null && (!Number.isInteger(value) || value <= 0)) {
+      throw new Error(`maxSlots must be null or a positive integer. Received: ${value}`);
+    }
+    this.#maxSlots = value;
+  }
+
+  /**
+   * Gets the maximum inventory weight allowed.
+   * @returns {number|null}
+   */
+  get maxWeight() {
+    return this.#maxWeight;
+  }
+
+  /**
+   * Sets the maximum inventory weight.
+   * @param {number|null} value - Must be a positive number or null.
+   * @throws {Error} If the value is not null or a positive number.
+   */
+  set maxWeight(value) {
+    if (value !== null && (typeof value !== 'number' || value <= 0)) {
+      throw new Error(`maxWeight must be null or a positive number. Received: ${value}`);
+    }
+    this.#maxWeight = value;
+  }
+
+  /////////////////////////////////////////////////////////////////
+
+  /**
+   * Gets the registered inventory event listeners.
+   * Always returns a clone to prevent external mutation.
+   * @returns {{ add: AddItemEvent[], remove: RemoveItemEvent[], use: UseItemEvent[], set: SetItemEvent[] }}
+   */
+  get events() {
+    return {
+      add: [...this.#events.add],
+      remove: [...this.#events.remove],
+      use: [...this.#events.use],
+      set: [...this.#events.set],
+    };
+  }
+
+  /**
+   * Gets the current inventory item slots.
+   * Always returns a clone to prevent external mutation.
+   * @returns {InvSlots}
+   */
+  get items() {
+    return new Set([...this.#items].map((item) => (item ? this.#cloneItemData(item) : null)));
+  }
+
+  /**
+   * Gets the current special slots.
+   * Always returns a clone to prevent external mutation.
+   * @returns {Map<string, SpecialSlot>}
+   */
+  get specialSlots() {
+    return new Map(
+      [...this.#specialSlots.entries()].map(([slotId, slot]) => [
+        slotId,
+        {
+          type: slot.type,
+          item: slot.item ? this.#cloneItemData(slot.item) : null,
+        },
+      ]),
+    );
+  }
+
+  /////////////////////////////////////////////////////////////////
+
+  /**
    * Gets the total quantity of items in the inventory.
    * Unlike slot count, this sums up the `quantity` of each item.
    *
