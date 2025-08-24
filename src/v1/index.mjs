@@ -132,11 +132,11 @@ import TinyDayNightCycle from './libs/TinyDayNightCycle.mjs';
 import TinyAdvancedRaffle from './libs/TinyAdvancedRaffle.mjs';
 import TinyArrayPaginator from './libs/TinyArrayPaginator.mjs';
 import TinyInventory from './libs/TinyInventory.mjs';
-import TinyInventoryTrade from './libs/TinyInventoryTrade.mjs';
+import TinyInventoryTrader from './libs/TinyInventoryTrader.mjs';
 
 export {
   TinyInventory,
-  TinyInventoryTrade,
+  TinyInventoryTrader,
   TinyArrayPaginator,
   TinyAdvancedRaffle,
   TinyDayNightCycle,

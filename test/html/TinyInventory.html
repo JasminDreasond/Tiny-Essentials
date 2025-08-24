@@ -463,13 +463,17 @@
        or expose it as window.TinyInventory -->
     <script type="module" id="harness">
       import { TinyInventory } from './src/v1/libs/TinyInventory.mjs';
+      import { TinyInventoryTrader } from './src/v1/libs/TinyInventoryTrader.mjs';
       import { TinyToastNotify } from './src/v1/libs/TinyToastNotify.mjs';
 
       const tinyToast = new TinyToastNotify('bottom', 'right', 3000, 60);
       window.TinyInventory = TinyInventory;
+      window.TinyInventoryTrader = TinyInventoryTrader;
       const $ = (s) => document.querySelector(s);
       const $$ = (s) => Array.from(document.querySelectorAll(s));
       const byId = (id) => document.getElementById(id);
+
+      window.invTrader = new TinyInventoryTrader();
 
       /** @type {TinyInventory|null} */
       let inv = null;

@@ -15,7 +15,7 @@ import TinyInventory from './TinyInventory.mjs';
 /**
  * Class responsible for managing item transfers between two TinyInventory instances.
  */
-class TinyInventoryTrade {
+class TinyInventoryTrader {
   /** @type {TinyInventory|null} */
   #sender = null;
 
@@ -164,4 +164,4 @@ class TinyInventoryTrade {
   }
 }
 
-export default TinyInventoryTrade;
+export default TinyInventoryTrader;
