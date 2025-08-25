@@ -151,23 +151,6 @@
  */
 class TinyInventory {
   /**
-   * Cleans up unnecessary trailing nulls in a collection.
-   * @param {InvSlots} arr
-   * @private
-   */
-  static _cleanNulls(arr) {
-    let lastIndex = arr.length - 1;
-
-    // Find last non-null index
-    while (lastIndex >= 0 && arr[lastIndex] === null) lastIndex--;
-
-    // Slice up to last non-null + 1
-    arr.slice(0, lastIndex + 1);
-  }
-
-  /////////////////////////////////////////////////////////////////
-
-  /**
    * Registry of all item definitions available in TinyInventory.
    * Keys are item IDs, values are configuration objects created with {@link TinyInventory.defineItem}.
    * @type {Map<string, ItemDef>}
@@ -396,6 +379,20 @@ class TinyInventory {
   }
 
   /////////////////////////////////////////////////////////////////
+
+  /**
+   * Cleans up unnecessary trailing nulls in a collection.
+   * @private
+   */
+  _cleanNulls() {
+    let lastIndex = this.#items.length - 1;
+
+    // Find last non-null index
+    while (lastIndex >= 0 && this.#items[lastIndex] === null) lastIndex--;
+
+    // Slice up to last non-null + 1
+    this.#items = this.#items.slice(0, lastIndex + 1);
+  }
 
   /**
    * Creates a new TinyInventory instance.
@@ -810,7 +807,7 @@ class TinyInventory {
     this.#items[slotIndex] = item;
 
     // Cleanup unnecessary trailing nulls
-    TinyInventory._cleanNulls(this.#items);
+    this._cleanNulls();
 
     this.#triggerEvent('set', {
       index: slotIndex,
@@ -890,7 +887,7 @@ class TinyInventory {
         const indexInt = Number(index);
         if (item.quantity <= 0) this.#items[index] = null;
         if (remaining <= 0) {
-          TinyInventory._cleanNulls(this.#items);
+          this._cleanNulls();
           this.#triggerEvent('remove', {
             index: indexInt,
             item: this.#cloneItemData(item),
@@ -906,7 +903,7 @@ class TinyInventory {
         }
       }
     }
-    TinyInventory._cleanNulls(this.#items);
+    this._cleanNulls();
 
     // If not enough removed, check special slots
     this.#specialSlots.forEach((slot, key) => {
