@@ -146,8 +146,7 @@ class TinyInventoryTrader {
         if (existing) {
           if (existing.id !== transferItem.id)
             throw new Error(`Receiver slot ${receiverSlotIndex} contains a different item.`);
-          const def = TinyInventory.ItemRegistry.get(existing.id);
-          if (!def) throw new Error(`Item '${item.id}' not defined in registry.`);
+          const def = TinyInventory.getItem(existing.id);
 
           const spaceLeft = def.maxStack - existing.quantity;
           if (transferItem.quantity > spaceLeft)
@@ -178,8 +177,7 @@ class TinyInventoryTrader {
       if (existing) {
         if (existing.id !== transferItem.id)
           throw new Error(`Receiver slot ${receiverSlotIndex} contains a different item.`);
-        const def = TinyInventory.ItemRegistry.get(existing.id);
-        if (!def) throw new Error(`Item '${item.id}' not defined in registry.`);
+        const def = TinyInventory.getItem(existing.id);
 
         const spaceLeft = def.maxStack - existing.quantity;
         movedQty = Math.min(spaceLeft, transferItem.quantity);

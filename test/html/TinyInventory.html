@@ -498,7 +498,9 @@
       function renderRegistry() {
         const tbody = byId('registryTable').querySelector('tbody');
         tbody.innerHTML = '';
-        for (const [id, def] of TinyInventory.ItemRegistry.entries()) {
+        const items = TinyInventory.itemRegistry;
+        for (const id in items) {
+          const def = items[id];
           const tr = document.createElement('tr');
           const onUse = def.onUse ? 'fn' : '-';
           tr.innerHTML = `
@@ -1110,7 +1112,7 @@
       byId('st_addRandom').addEventListener('click', () => {
         if (!inv) return toast('Create an inventory first', 'warn');
         const runs = Number(byId('st_runs').value || 10);
-        const keys = [...TinyInventory.ItemRegistry.keys()];
+        const keys = [...Object.keys(TinyInventory.itemRegistry)];
         if (!keys.length) return toast('Define items first', 'warn');
         let added = 0;
         for (let i = 0; i < runs; i++) {

@@ -157,7 +157,22 @@ class TinyInventory {
    * Keys are item IDs, values are configuration objects created with {@link TinyInventory.defineItem}.
    * @type {Map<string, ItemDef>}
    */
-  static ItemRegistry = new Map();
+  static #ItemRegistry = new Map();
+
+  /**
+   * Returns a deep-cloned snapshot of all registered items.
+   * Ensures the caller cannot mutate the internal registry.
+   *
+   * @returns {Record<string, ItemDef>} A map of item IDs to their definitions.
+   */
+  static get itemRegistry() {
+    /** @type {Record<string, ItemDef>} */
+    const results = {};
+    const items = Object.fromEntries(TinyInventory.#ItemRegistry);
+    for (const itemId in items)
+      results[itemId] = { ...items[itemId], metadata: { ...items[itemId].metadata } };
+    return results;
+  }
 
   /**
    * Defines or updates an item type in the global item registry.
@@ -173,10 +188,9 @@ class TinyInventory {
    * @throws {Error} If `id` is missing or not a string.
    */
   static defineItem(config) {
-    if (!config?.id || typeof config.id !== 'string') {
+    if (!config?.id || typeof config.id !== 'string')
       throw new Error("Item must have a valid string 'id'.");
-    }
-    TinyInventory.ItemRegistry.set(config.id, {
+    TinyInventory.#ItemRegistry.set(config.id, {
       id: config.id,
       weight: config.weight || 0,
       maxStack: config.maxStack || 1,
@@ -184,6 +198,39 @@ class TinyInventory {
       type: config.type ?? null,
       onUse: typeof config.onUse === 'function' ? config.onUse : null,
     });
+  }
+
+  /**
+   * Removes an item definition from the global registry.
+   *
+   * @param {string} itemId - Unique identifier of the item to remove.
+   * @returns {boolean} True if the item was removed, false if it did not exist.
+   */
+  static removeItem(itemId) {
+    return TinyInventory.#ItemRegistry.delete(itemId);
+  }
+
+  /**
+   * Checks whether an item is registered.
+   *
+   * @param {string} itemId - The item ID to check.
+   * @returns {boolean} True if the item exists in the registry, false otherwise.
+   */
+  static hasItem(itemId) {
+    return TinyInventory.#ItemRegistry.has(itemId);
+  }
+
+  /**
+   * Retrieves an item definition from the registry.
+   *
+   * @param {string} itemId - The ID of the item to retrieve.
+   * @returns {ItemDef} The definition of the requested item.
+   * @throws {Error} If the item is not registered.
+   */
+  static getItem(itemId) {
+    const def = TinyInventory.#ItemRegistry.get(itemId);
+    if (!def) throw new Error(`Item '${itemId}' not defined in registry.`);
+    return def;
   }
 
   /////////////////////////////////////////////////////////////////
@@ -374,8 +421,7 @@ class TinyInventory {
    */
   get weight() {
     return this.getAllItems().reduce((total, item) => {
-      const def = TinyInventory.ItemRegistry.get(item.id);
-      if (!def) throw new Error(`Item '${item.id}' not defined in registry.`);
+      const def = TinyInventory.getItem(item.id);
       return total + (def?.weight || 0) * item.quantity;
     }, 0);
   }
@@ -602,8 +648,7 @@ class TinyInventory {
    * @throws {Error} If the item is not registered.
    */
   addItem({ itemId, quantity = 1, metadata = {}, forceSpace = false }) {
-    const def = TinyInventory.ItemRegistry.get(itemId);
-    if (!def) throw new Error(`Item '${itemId}' not defined in registry.`);
+    const def = TinyInventory.getItem(itemId);
     let remaining = quantity;
     const maxStack = def.maxStack <= this.#maxStack ? def.maxStack : this.#maxStack;
     /** @type {{ index: number; quantity: number }[]} */
@@ -766,7 +811,7 @@ class TinyInventory {
     if (item !== null && !isInventoryItem)
       throw new Error(`Invalid item type: must be null or a valid InventoryItem.`);
 
-    const def = item ? TinyInventory.ItemRegistry.get(item.id) : null;
+    const def = item ? TinyInventory.#ItemRegistry.get(item.id) : null;
     if (item !== null && !def)
       throw new Error(`Item '${item?.id ?? 'unknown'}' not defined in registry.`);
 
@@ -783,7 +828,7 @@ class TinyInventory {
 
     // Convert the set to an array for index-based manipulation
     const oldItem = this.#items[slotIndex] ?? null;
-    const oldItemData = oldItem ? (TinyInventory.ItemRegistry.get(oldItem.id) ?? null) : null;
+    const oldItemData = oldItem ? (TinyInventory.#ItemRegistry.get(oldItem.id) ?? null) : null;
 
     /**
      * @param {InventoryItem|null} [theItem]
@@ -1027,8 +1072,7 @@ class TinyInventory {
     }
 
     // Get item info
-    const def = TinyInventory.ItemRegistry.get(item.id);
-    if (!def) throw new Error(`Item '${item.id}' not defined in registry.`);
+    const def = TinyInventory.getItem(item.id);
 
     if (def.onUse) {
       const onUse = {
@@ -1118,7 +1162,7 @@ class TinyInventory {
     if (item !== null && !isInventoryItem)
       throw new Error(`Invalid item type: must be null or a valid InventoryItem.`);
 
-    const def = item ? TinyInventory.ItemRegistry.get(item.id) : null;
+    const def = item ? TinyInventory.#ItemRegistry.get(item.id) : null;
     if (item !== null && !def)
       throw new Error(`Item '${item?.id ?? 'unknown'}' not defined in registry.`);
 
@@ -1127,7 +1171,7 @@ class TinyInventory {
     if (!slot) throw new Error(`Special slot ${slotId} out of range for slot '${slotId}'.`);
 
     // Weight check
-    const oldItemData = slot.item ? TinyInventory.ItemRegistry.get(slot.item.id) : null;
+    const oldItemData = slot.item ? TinyInventory.#ItemRegistry.get(slot.item.id) : null;
 
     /**
      * @param {InventoryItem|null} [theItem]
@@ -1210,9 +1254,7 @@ class TinyInventory {
     if (invItem.quantity < quantity)
       throw new Error(`Not enough quantity of item '${invItem.id}' in inventory slot.`);
 
-    const def = TinyInventory.ItemRegistry.get(invItem.id);
-    if (!def) throw new Error(`Item '${invItem.id}' not defined in registry.`);
-
+    const def = TinyInventory.getItem(invItem.id);
     const current = this.#specialSlots.get(slotId);
     if (!current) throw new Error(`Slot '${slotId}' not defined in registry.`);
 
@@ -1345,8 +1387,7 @@ class TinyInventory {
    */
   getItemsByMetadata(filterFn) {
     return this.getAllItems().filter((item) => {
-      const def = TinyInventory.ItemRegistry.get(item.id);
-      if (!def) throw new Error(`Item '${item.id}' not defined in registry.`);
+      const def = TinyInventory.getItem(item.id);
       return filterFn(def.metadata, item);
     });
   }
