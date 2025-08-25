@@ -188,8 +188,24 @@ class TinyInventory {
    * @throws {Error} If `id` is missing or not a string.
    */
   static defineItem(config) {
-    if (!config?.id || typeof config.id !== 'string')
-      throw new Error("Item must have a valid string 'id'.");
+    if (!config || typeof config !== 'object')
+      throw new TypeError('Config must be a valid object.');
+    if (!config.id || typeof config.id !== 'string')
+      throw new TypeError("Item must have a valid string 'id'.");
+    if (config.weight !== undefined && (typeof config.weight !== 'number' || config.weight < 0))
+      throw new TypeError(`weight must be a number >= 0. Received: ${config.weight}`);
+    if (
+      config.maxStack !== undefined &&
+      (!Number.isInteger(config.maxStack) || config.maxStack <= 0)
+    )
+      throw new TypeError(`maxStack must be a positive integer. Received: ${config.maxStack}`);
+    if (config.metadata !== undefined && typeof config.metadata !== 'object')
+      throw new TypeError('metadata must be an object.');
+    if (config.onUse !== undefined && config.onUse !== null && typeof config.onUse !== 'function')
+      throw new TypeError('onUse must be a function or null.');
+    if (config.type !== undefined && config.type !== null && typeof config.type !== 'string')
+      throw new TypeError('type must be a string or null.');
+
     TinyInventory.#ItemRegistry.set(config.id, {
       id: config.id,
       weight: config.weight || 0,
@@ -207,6 +223,7 @@ class TinyInventory {
    * @returns {boolean} True if the item was removed, false if it did not exist.
    */
   static removeItem(itemId) {
+    if (typeof itemId !== 'string') throw new TypeError('itemId must be a string.');
     return TinyInventory.#ItemRegistry.delete(itemId);
   }
 
@@ -217,6 +234,7 @@ class TinyInventory {
    * @returns {boolean} True if the item exists in the registry, false otherwise.
    */
   static hasItem(itemId) {
+    if (typeof itemId !== 'string') throw new TypeError('itemId must be a string.');
     return TinyInventory.#ItemRegistry.has(itemId);
   }
 
@@ -228,6 +246,7 @@ class TinyInventory {
    * @throws {Error} If the item is not registered.
    */
   static getItem(itemId) {
+    if (typeof itemId !== 'string') throw new TypeError('itemId must be a string.');
     const def = TinyInventory.#ItemRegistry.get(itemId);
     if (!def) throw new Error(`Item '${itemId}' not defined in registry.`);
     return def;
@@ -284,7 +303,7 @@ class TinyInventory {
    */
   set maxStack(value) {
     if (!Number.isInteger(value) || (Number.isFinite(value) && value <= 0)) {
-      throw new Error(`maxStack must be a positive integer. Received: ${value}`);
+      throw new TypeError(`maxStack must be a positive integer. Received: ${value}`);
     }
     this.#maxStack = value;
   }
@@ -304,7 +323,7 @@ class TinyInventory {
    */
   set maxSize(value) {
     if (value !== null && (!Number.isInteger(value) || value <= 0)) {
-      throw new Error(`maxSize must be null or a positive integer. Received: ${value}`);
+      throw new TypeError(`maxSize must be null or a positive integer. Received: ${value}`);
     }
     this.#maxSize = value;
   }
@@ -324,7 +343,7 @@ class TinyInventory {
    */
   set maxSlots(value) {
     if (value !== null && (!Number.isInteger(value) || value <= 0)) {
-      throw new Error(`maxSlots must be null or a positive integer. Received: ${value}`);
+      throw new TypeError(`maxSlots must be null or a positive integer. Received: ${value}`);
     }
     this.#maxSlots = value;
   }
@@ -344,7 +363,7 @@ class TinyInventory {
    */
   set maxWeight(value) {
     if (value !== null && (typeof value !== 'number' || value <= 0)) {
-      throw new Error(`maxWeight must be null or a positive number. Received: ${value}`);
+      throw new TypeError(`maxWeight must be null or a positive number. Received: ${value}`);
     }
     this.#maxWeight = value;
   }
@@ -453,13 +472,43 @@ class TinyInventory {
    * @param {Record<string, { type: string | null; }>} [options.specialSlots] - IDs for special slots (e.g., "helmet", "weapon").
    */
   constructor(options = {}) {
+    if (typeof options !== 'object' || options === null)
+      throw new TypeError('`options` must be an object.');
+    if (
+      options.maxWeight !== undefined &&
+      options.maxWeight !== null &&
+      typeof options.maxWeight !== 'number'
+    )
+      throw new TypeError('`maxWeight` must be a number or null.');
+    if (
+      options.maxSlots !== undefined &&
+      options.maxSlots !== null &&
+      typeof options.maxSlots !== 'number'
+    )
+      throw new TypeError('`maxSlots` must be a number or null.');
+    if (
+      options.maxSize !== undefined &&
+      options.maxSize !== null &&
+      typeof options.maxSize !== 'number'
+    )
+      throw new TypeError('`maxSize` must be a number or null.');
+    if (options.maxStack !== undefined && typeof options.maxStack !== 'number')
+      throw new TypeError('`maxStack` must be a number.');
+    if (options.specialSlots !== undefined && typeof options.specialSlots !== 'object')
+      throw new TypeError('`specialSlots` must be an object if defined.');
+
     this.#maxWeight = options.maxWeight ?? null;
     this.#maxSlots = options.maxSlots ?? null;
     this.#maxSize = options.maxSize ?? null;
     this.#maxStack = options.maxStack ?? Infinity;
     if (options.specialSlots) {
       for (const name in options.specialSlots) {
-        this.#specialSlots.set(name, { type: options.specialSlots[name].type ?? null, item: null });
+        const slot = options.specialSlots[name];
+        if (typeof slot !== 'object' || slot === null)
+          throw new TypeError('Each `specialSlot` entry must be an object.');
+        if (slot.type !== undefined && slot.type !== null && typeof slot.type !== 'string')
+          throw new TypeError('`specialSlot.type` must be a string or null.');
+        this.#specialSlots.set(name, { type: slot.type ?? null, item: null });
       }
     }
   }
@@ -475,6 +524,9 @@ class TinyInventory {
    * @returns {boolean} True if there is space; false otherwise.
    */
   hasSpace({ weight = 0, sizeLength = 0, slotsLength = 0 } = {}) {
+    if (typeof weight !== 'number') throw new TypeError('`weight` must be a number.');
+    if (typeof sizeLength !== 'number') throw new TypeError('`sizeLength` must be a number.');
+    if (typeof slotsLength !== 'number') throw new TypeError('`slotsLength` must be a number.');
     if (this.areFull(sizeLength) || this.areFullSlots(slotsLength) || this.isHeavy(weight))
       return false;
     return true;
@@ -488,6 +540,7 @@ class TinyInventory {
    * @returns {boolean} - Returns `true` if the total weight (current + extra) exceeds `maxWeight`, otherwise `false`.
    */
   isHeavy(extraWeight = 0) {
+    if (typeof extraWeight !== 'number') throw new TypeError('`extraWeight` must be a number.');
     if (this.#maxWeight !== null && this.weight + extraWeight > this.#maxWeight) return true;
     return false;
   }
@@ -499,6 +552,7 @@ class TinyInventory {
    * @returns {boolean} - Returns `true` if the total number of items is greater than or equal to `maxSlots`, otherwise `false`.
    */
   areFull(extraLength = 0) {
+    if (typeof extraLength !== 'number') throw new TypeError('`extraLength` must be a number.');
     if (this.#maxSize !== null && this.size + extraLength > this.#maxSize) return true;
     return false;
   }
@@ -510,6 +564,7 @@ class TinyInventory {
    * @returns {boolean} - Returns `true` if the total number of items is greater than or equal to `maxSlots`, otherwise `false`.
    */
   isFull(extraLength = 0) {
+    if (typeof extraLength !== 'number') throw new TypeError('`extraLength` must be a number.');
     if (this.#maxSize !== null && this.size + extraLength >= this.#maxSize) return true;
     return false;
   }
@@ -521,6 +576,7 @@ class TinyInventory {
    * @returns {boolean} - Returns `true` if the total number of items is greater than or equal to `maxSlots`, otherwise `false`.
    */
   areFullSlots(extraLength = 0) {
+    if (typeof extraLength !== 'number') throw new TypeError('`extraLength` must be a number.');
     if (this.#maxSlots !== null && this.slotsSize + extraLength > this.#maxSlots) return true;
     return false;
   }
@@ -532,6 +588,7 @@ class TinyInventory {
    * @returns {boolean} - Returns `true` if the total number of items is greater than or equal to `maxSlots`, otherwise `false`.
    */
   isFullSlots(extraLength = 0) {
+    if (typeof extraLength !== 'number') throw new TypeError('`extraLength` must be a number.');
     if (this.#maxSlots !== null && this.slotsSize + extraLength >= this.#maxSlots) return true;
     return false;
   }
@@ -544,6 +601,9 @@ class TinyInventory {
    * @param {EventPayload} payload - Event data passed to listeners.
    */
   #triggerEvent(type, payload) {
+    if (typeof type !== 'string') throw new TypeError('`type` must be a string.');
+    if (typeof payload !== 'object' || payload === null)
+      throw new TypeError('`payload` must be an object.');
     if (this.#events[type]) {
       for (const cb of this.#events[type]) cb(payload);
     }
@@ -555,6 +615,8 @@ class TinyInventory {
    * @param {OnEvent} callback - The callback function to remove.
    */
   off(eventType, callback) {
+    if (typeof eventType !== 'string') throw new TypeError('`eventType` must be a string.');
+    if (typeof callback !== 'function') throw new TypeError('`callback` must be a function.');
     if (!this.#events[eventType]) return;
     const list = this.#events[eventType];
     const index = list.indexOf(callback);
@@ -566,6 +628,7 @@ class TinyInventory {
    * @param {EventsType} eventType - The event type to clear.
    */
   offAll(eventType) {
+    if (typeof eventType !== 'string') throw new TypeError('`eventType` must be a string.');
     if (!this.#events[eventType]) return;
     this.#events[eventType] = [];
   }
@@ -576,6 +639,7 @@ class TinyInventory {
    * @returns {OnEvent[]} A cloned array of callback functions.
    */
   cloneEventCallbacks(eventType) {
+    if (typeof eventType !== 'string') throw new TypeError('`eventType` must be a string.');
     if (!this.#events[eventType]) return [];
     return [...this.#events[eventType]];
   }
@@ -585,6 +649,7 @@ class TinyInventory {
    * @param {AddItemEvent} callback - Function receiving the event payload.
    */
   onAddItem(callback) {
+    if (typeof callback !== 'function') throw new TypeError('`callback` must be a function.');
     this.#events.add.push(callback);
   }
 
@@ -593,6 +658,7 @@ class TinyInventory {
    * @param {SetItemEvent} callback - Function receiving the event payload.
    */
   onSetItem(callback) {
+    if (typeof callback !== 'function') throw new TypeError('`callback` must be a function.');
     this.#events.set.push(callback);
   }
 
@@ -601,6 +667,7 @@ class TinyInventory {
    * @param {RemoveItemEvent} callback - Function receiving the event payload.
    */
   onRemoveItem(callback) {
+    if (typeof callback !== 'function') throw new TypeError('`callback` must be a function.');
     this.#events.remove.push(callback);
   }
 
@@ -609,6 +676,7 @@ class TinyInventory {
    * @param {UseItemEvent} callback - Function receiving the event payload.
    */
   onUseItem(callback) {
+    if (typeof callback !== 'function') throw new TypeError('`callback` must be a function.');
     this.#events.use.push(callback);
   }
 
@@ -648,6 +716,13 @@ class TinyInventory {
    * @throws {Error} If the item is not registered.
    */
   addItem({ itemId, quantity = 1, metadata = {}, forceSpace = false }) {
+    if (typeof itemId !== 'string') throw new TypeError('`itemId` must be a string.');
+    if (typeof quantity !== 'number' || !Number.isFinite(quantity) || quantity <= 0)
+      throw new TypeError('`quantity` must be a positive number.');
+    if (typeof metadata !== 'object' || metadata === null)
+      throw new TypeError('`metadata` must be an object.');
+    if (typeof forceSpace !== 'boolean') throw new TypeError('`forceSpace` must be a boolean.');
+
     const def = TinyInventory.getItem(itemId);
     let remaining = quantity;
     const maxStack = def.maxStack <= this.#maxStack ? def.maxStack : this.#maxStack;
@@ -781,6 +856,8 @@ class TinyInventory {
    * @throws {Error} If the slot index is out of bounds.
    */
   getItemFrom(slotIndex) {
+    if (typeof slotIndex !== 'number' || !Number.isInteger(slotIndex))
+      throw new TypeError('`slotIndex` must be an integer.');
     if (slotIndex < 0 || slotIndex >= this.#items.length)
       throw new Error(`Slot index '${slotIndex}' out of bounds .`);
     return this.#items[slotIndex] ? this.#cloneItemData(this.#items[slotIndex]) : null;
@@ -797,6 +874,9 @@ class TinyInventory {
    * @throws {Error} If the index is out of range, or item type is invalid.
    */
   setItem({ slotIndex, item, forceSpace = false }) {
+    if (typeof slotIndex !== 'number' || !Number.isInteger(slotIndex))
+      throw new TypeError('`slotIndex` must be an integer.');
+    if (typeof forceSpace !== 'boolean') throw new TypeError('`forceSpace` must be a boolean.');
     // Validate type: must be null or a proper InventoryItem object
     const isInventoryItem =
       item &&
@@ -885,6 +965,9 @@ class TinyInventory {
    * @param {boolean} [forceSpace=false] - Forces the item to be added even if space or stack limits would normally prevent it.
    */
   deleteItem(slotIndex, forceSpace = false) {
+    if (typeof slotIndex !== 'number' || !Number.isInteger(slotIndex))
+      throw new TypeError('`slotIndex` must be an integer.');
+    if (typeof forceSpace !== 'boolean') throw new TypeError('`forceSpace` must be a boolean.');
     this.setItem({ slotIndex, item: null, forceSpace });
   }
 
@@ -897,6 +980,12 @@ class TinyInventory {
    * @throws {Error} If the source slot is empty or the move is invalid.
    */
   moveItem(fromIndex, toIndex, forceSpace = false) {
+    if (typeof fromIndex !== 'number' || !Number.isInteger(fromIndex))
+      throw new TypeError('`fromIndex` must be an integer.');
+    if (typeof toIndex !== 'number' || !Number.isInteger(toIndex))
+      throw new TypeError('`toIndex` must be an integer.');
+    if (typeof forceSpace !== 'boolean') throw new TypeError('`forceSpace` must be a boolean.');
+
     const item = this.#items[fromIndex];
 
     if (!item) throw new Error(`No item found in slot ${fromIndex}.`);
@@ -917,6 +1006,11 @@ class TinyInventory {
    * @returns {boolean} True if fully removed; false if insufficient quantity.
    */
   removeItem({ itemId, metadata = null, quantity = 1 }) {
+    if (typeof itemId !== 'string') throw new TypeError('`itemId` must be a string.');
+    if (metadata !== null && typeof metadata !== 'object')
+      throw new TypeError('`metadata` must be an object or null.');
+    if (typeof quantity !== 'number' || !Number.isFinite(quantity) || quantity <= 0)
+      throw new TypeError('`quantity` must be a positive number.');
     let remaining = quantity;
 
     /**
@@ -1007,6 +1101,17 @@ class TinyInventory {
    * @returns {(forceSpace?: boolean) => void} A callback function that executes the removal.
    */
   #removeItemCallback({ locationType, specialSlot, slotIndex, item, forceSpace = false }) {
+    if (locationType !== 'normal' && locationType !== 'special')
+      throw new TypeError("`locationType` must be 'normal' or 'special'.");
+    if (typeof forceSpace !== 'boolean') throw new TypeError('`forceSpace` must be boolean.');
+    if (!item || typeof item !== 'object')
+      throw new TypeError('`item` must be an InventoryItem object.');
+
+    if (locationType === 'special' && specialSlot && typeof specialSlot !== 'string')
+      throw new TypeError("`specialSlot` must be a string when locationType is 'special'.");
+    if (locationType === 'normal' && typeof slotIndex !== 'number')
+      throw new TypeError("`slotIndex` must be a number when locationType is 'normal'.");
+
     return (fs = forceSpace) => {
       if (locationType === 'special' && specialSlot) {
         const slot = this.#specialSlots.get(specialSlot);
@@ -1042,6 +1147,12 @@ class TinyInventory {
    * @throws {Error} - If the item is not found in the specified location.
    */
   useItem({ slotIndex, specialSlot, forceSpace = false }, ...args) {
+    if (slotIndex !== undefined && (typeof slotIndex !== 'number' || !Number.isInteger(slotIndex)))
+      throw new TypeError('`slotIndex` must be an integer if provided.');
+    if (specialSlot !== undefined && typeof specialSlot !== 'string')
+      throw new TypeError('`specialSlot` must be a string if provided.');
+    if (typeof forceSpace !== 'boolean') throw new TypeError('`forceSpace` must be boolean.');
+
     /** @type {InventoryItem|null} */
     let item = null;
     /** @type {'normal'|'special'} */
@@ -1107,6 +1218,7 @@ class TinyInventory {
    * @returns {boolean} True if the slot exists, otherwise false.
    */
   hasSpecialSlot(slotId) {
+    if (typeof slotId !== 'string') throw new TypeError('`slotId` must be a string.');
     return this.#specialSlots.has(slotId);
   }
 
@@ -1117,6 +1229,7 @@ class TinyInventory {
    * @throws {Error} If the special slot does not exist.
    */
   getSpecialItem(slotId) {
+    if (typeof slotId !== 'string') throw new TypeError('`slotId` must be a string.');
     if (!this.#specialSlots.has(slotId))
       throw new Error(`Special slot '${slotId}' does not exist.`);
     const slot = this.#specialSlots.get(slotId);
@@ -1130,6 +1243,7 @@ class TinyInventory {
    * @throws {Error} If the special slot does not exist.
    */
   getSpecialSlotType(slotId) {
+    if (typeof slotId !== 'string') throw new TypeError('`slotId` must be a string.');
     if (!this.#specialSlots.has(slotId))
       throw new Error(`Special slot '${slotId}' does not exist.`);
     const slot = this.#specialSlots.get(slotId);
@@ -1146,6 +1260,8 @@ class TinyInventory {
    * @throws {Error} If the slot does not exist, or item is invalid.
    */
   setSpecialSlot({ slotId, item, forceSpace = false }) {
+    if (typeof slotId !== 'string') throw new TypeError('`slotId` must be a string.');
+    if (typeof forceSpace !== 'boolean') throw new TypeError('`forceSpace` must be boolean.');
     if (!this.#specialSlots.has(slotId)) throw new Error(`Special slot '${slotId}' not found.`);
 
     // Validate type: must be null or a proper InventoryItem object
@@ -1221,6 +1337,8 @@ class TinyInventory {
    * @param {boolean} [forceSpace=false] - Forces the item to be added even if space or stack limits would normally prevent it.
    */
   deleteSpecialItem(slotId, forceSpace = false) {
+    if (typeof slotId !== 'string') throw new TypeError('`slotId` must be a string.');
+    if (typeof forceSpace !== 'boolean') throw new TypeError('`forceSpace` must be boolean.');
     this.setSpecialSlot({ slotId, item: null, forceSpace });
   }
 
@@ -1243,6 +1361,13 @@ class TinyInventory {
    *                 or if the inventory lacks the required quantity.
    */
   equipItem({ slotId, slotIndex, quantity = 1, forceSpace = false }) {
+    if (typeof slotId !== 'string') throw new TypeError('`slotId` must be a string.');
+    if (typeof slotIndex !== 'number' || !Number.isInteger(slotIndex))
+      throw new TypeError('`slotIndex` must be an integer.');
+    if (typeof quantity !== 'number' || !Number.isFinite(quantity) || quantity <= 0)
+      throw new TypeError('`quantity` must be a positive number.');
+    if (typeof forceSpace !== 'boolean') throw new TypeError('`forceSpace` must be boolean.');
+
     if (quantity <= 0 || !Number.isFinite(quantity))
       throw new Error(`Invalid quantity '${quantity}'.`);
 
@@ -1314,6 +1439,14 @@ class TinyInventory {
    * @throws {Error} If the slot does not exist or invalid quantity.
    */
   unequipItem({ slotId, quantity = null, forceSpace = false }) {
+    if (typeof slotId !== 'string') throw new TypeError('`slotId` must be a string.');
+    if (
+      quantity !== null &&
+      (typeof quantity !== 'number' || !Number.isFinite(quantity) || quantity <= 0)
+    )
+      throw new TypeError('`quantity` must be a positive number or null.');
+    if (typeof forceSpace !== 'boolean') throw new TypeError('`forceSpace` must be boolean.');
+
     if (!this.#specialSlots.has(slotId))
       throw new Error(`Special slot '${slotId}' does not exist.`);
 
@@ -1352,6 +1485,13 @@ class TinyInventory {
    * @returns {InventoryItem} A new inventory item object with identical data.
    */
   #cloneItemData(item) {
+    if (!item || typeof item !== 'object')
+      throw new TypeError('`item` must be an InventoryItem object.');
+    if (typeof item.id !== 'string') throw new TypeError('`item.id` must be a string.');
+    if (typeof item.quantity !== 'number' || !Number.isFinite(item.quantity))
+      throw new TypeError('`item.quantity` must be a finite number.');
+    if (!item.metadata || typeof item.metadata !== 'object')
+      throw new TypeError('`item.metadata` must be an object.');
     return { id: item.id, quantity: item.quantity, metadata: { ...item.metadata } };
   }
 
@@ -1386,6 +1526,7 @@ class TinyInventory {
    * @returns {InventoryItem[]} Array of matching items.
    */
   getItemsByMetadata(filterFn) {
+    if (typeof filterFn !== 'function') throw new TypeError('`filterFn` must be a function.');
     return this.getAllItems().filter((item) => {
       const def = TinyInventory.getItem(item.id);
       return filterFn(def.metadata, item);
@@ -1398,6 +1539,7 @@ class TinyInventory {
    * @returns {InventoryItem|undefined} The first matching item, or undefined if none match.
    */
   findItem(predicate) {
+    if (typeof predicate !== 'function') throw new TypeError('`predicate` must be a function.');
     return this.getAllItems().find(predicate);
   }
 
@@ -1407,6 +1549,7 @@ class TinyInventory {
    * @returns {InventoryItem[]} Array of matching items.
    */
   findItems(predicate) {
+    if (typeof predicate !== 'function') throw new TypeError('`predicate` must be a function.');
     return this.getAllItems().filter(predicate);
   }
 
@@ -1416,6 +1559,7 @@ class TinyInventory {
    * @returns {number} Total quantity of that item.
    */
   getItemCount(itemId) {
+    if (typeof itemId !== 'string') throw new TypeError('`itemId` must be a string.');
     return this.getAllItems()
       .filter((it) => it.id === itemId)
       .reduce((sum, it) => sum + it.quantity, 0);
@@ -1428,6 +1572,9 @@ class TinyInventory {
    * @returns {boolean} True if the inventory has the quantity or more.
    */
   hasItem(itemId, quantity = 1) {
+    if (typeof itemId !== 'string') throw new TypeError('`itemId` must be a string.');
+    if (typeof quantity !== 'number' || !Number.isFinite(quantity) || quantity < 0)
+      throw new TypeError('`quantity` must be a non-negative number.');
     return this.getItemCount(itemId) >= quantity;
   }
 
@@ -1438,6 +1585,8 @@ class TinyInventory {
    * @returns {boolean} True if the slot contains an item, otherwise false.
    */
   existsItemAt(slotIndex) {
+    if (typeof slotIndex !== 'number' || !Number.isInteger(slotIndex))
+      throw new TypeError('`slotIndex` must be an integer.');
     return this.#items[slotIndex] ? true : false;
   }
 
@@ -1492,6 +1641,8 @@ class TinyInventory {
    * @returns {string} JSON string.
    */
   toJSON(space = 0) {
+    if (typeof space !== 'number' || !Number.isFinite(space) || space < 0)
+      throw new TypeError('`space` must be a non-negative number.');
     return JSON.stringify(this.toObject(), null, space);
   }
 
@@ -1506,11 +1657,11 @@ class TinyInventory {
    * @throws {Error} If validation fails and `validate` is true.
    */
   static fromObject(obj) {
-    if (!obj || typeof obj !== 'object') throw new Error('Invalid state: expected object.');
+    if (!obj || typeof obj !== 'object') throw new TypeError('Invalid state: expected object.');
     if (obj.__schema !== 'TinyInventory' || typeof obj.version !== 'number')
-      throw new Error('Invalid or missing schema header.');
+      throw new TypeError('Invalid or missing schema header.');
     if (obj.version !== 1)
-      throw new Error(`Unsupported TinyInventory state version: ${obj.version}`);
+      throw new TypeError(`Unsupported TinyInventory state version: ${obj.version}`);
 
     // Prepare constructor options
     /** @type {Record<string, {type: string|null}>} */
@@ -1573,6 +1724,7 @@ class TinyInventory {
    * @returns {TinyInventory} A new TinyInventory instance.
    */
   static fromJSON(json) {
+    if (typeof json !== 'string') throw new TypeError('`json` must be a string.');
     const obj = JSON.parse(json);
     return TinyInventory.fromObject(obj);
   }
