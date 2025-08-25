@@ -12,6 +12,11 @@
   z-index: 1000;
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.3);
 
+  /* Animation when appearing */
+  animation: tinyCookieConsentSlideUp var(--tiny-cookie-animation, 0.5s) ease forwards;
+  transform: translateY(100%);
+  opacity: 0;
+
   > div {
     display: flex;
     padding-top: 15px;
@@ -35,6 +40,18 @@
       border: none;
       cursor: pointer;
       border-radius: 4px;
+      transition:
+        transform 0.2s ease,
+        background 0.3s ease;
+
+      &:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.1);
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
     }
 
     button.accept {
@@ -51,6 +68,11 @@
       background: #2196f3;
       color: white;
     }
+  }
+
+  /* Exit animation */
+  &.closing {
+    animation: tinyCookieConsentSlideDown var(--tiny-cookie-animation, 0.4s) ease forwards !important;
   }
 
   /* Responsive behavior for small screens */
@@ -95,12 +117,17 @@
   align-items: center;
   justify-content: center;
   z-index: 2000;
+  opacity: 0;
+  animation: tinyCookieConsentFadeIn var(--tiny-cookie-animation, 0.4s) ease forwards;
 
   .modal-content {
     background: white;
     padding: 20px;
     border-radius: 8px;
     width: 300px;
+    transform: scale(0.9);
+    opacity: 0;
+    animation: tinyCookieConsentScaleIn var(--tiny-cookie-animation, 0.4s) ease forwards;
   }
 
   h2 {
@@ -121,5 +148,78 @@
     padding: 10px;
     cursor: pointer;
     border-radius: 4px;
+    transition:
+      background 0.3s ease,
+      transform 0.2s ease;
+
+    &:hover {
+      filter: brightness(1.1);
+      transform: translateY(-2px);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+
+  /* Exit animation */
+  &.closing {
+    animation: tinyCookieConsentFadeOut var(--tiny-cookie-animation, 0.4s) ease forwards !important;
+  }
+
+  &.closing .modal-content {
+    animation: tinyCookieConsentScaleOut var(--tiny-cookie-animation, 0.4s) ease forwards !important;
+  }
+}
+
+/* Keyframes */
+@keyframes tinyCookieConsentSlideUp {
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes tinyCookieConsentSlideDown {
+  from {
+    transform: translateY(0%);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes tinyCookieConsentFadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes tinyCookieConsentFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes tinyCookieConsentScaleIn {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes tinyCookieConsentScaleOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9);
   }
 }

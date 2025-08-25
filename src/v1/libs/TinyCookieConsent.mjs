@@ -14,6 +14,7 @@
  * @property {Category[]} categories - List of cookie categories
  * @property {string} storageKey - Key used to store preferences
  * @property {(preferences: Object) => void} onSave - Callback when preferences are saved
+ * @property {number} [animationDuration=400] - Animation duration in ms
  */
 
 /**
@@ -37,6 +38,7 @@ class TinyCookieConsent {
     categories: [],
     storageKey: 'cookie-consent-preferences',
     onSave: (prefs) => console.log('Preferences saved:', prefs),
+    animationDuration: 400,
   };
 
   /**
@@ -54,9 +56,18 @@ class TinyCookieConsent {
     return saved ? JSON.parse(saved) : null;
   }
 
-  /** 
-   * Saves preferences to localStorage 
-   * 
+  /**
+   * Smoothly removes an element with fade-out/slide-out animation
+   * @param {HTMLElement} el
+   */
+  removeWithAnimation(el) {
+    el.classList.add('closing');
+    setTimeout(() => el.remove(), this.config.animationDuration);
+  }
+
+  /**
+   * Saves preferences to localStorage
+   *
    * @param {Record<string, boolean>} prefs
    */
   savePreferences(prefs) {
@@ -82,7 +93,7 @@ class TinyCookieConsent {
       const prefs = {};
       this.config.categories.forEach((cat) => (prefs[cat.label] = true));
       this.savePreferences(prefs);
-      bar.remove();
+      this.removeWithAnimation(bar);
     };
 
     bar.querySelector('.reject').onclick = () => {
@@ -90,7 +101,7 @@ class TinyCookieConsent {
       const prefs = {};
       this.config.categories.forEach((cat) => (prefs[cat.label] = cat.required));
       this.savePreferences(prefs);
-      bar.remove();
+      this.removeWithAnimation(bar);
     };
 
     bar.querySelector('.settings').onclick = () => {
@@ -132,13 +143,13 @@ class TinyCookieConsent {
         if (input instanceof HTMLInputElement) prefs[input.name] = input.checked;
       });
       this.savePreferences(prefs);
-      modal.remove();
-      bar.remove();
+      this.removeWithAnimation(modal);
+      if (bar) this.removeWithAnimation(bar);
     };
   }
 
-  /** 
-   * Checks if a category is allowed 
+  /**
+   * Checks if a category is allowed
    * @param {string} category
    * @returns {boolean}
    */
