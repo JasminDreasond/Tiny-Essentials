@@ -1,6 +1,22 @@
-# 📦 Core Types & Properties
+# 📦 TinyInventory
 
-## 🧩 ItemDef
+**TinyInventory** is a lightweight yet powerful inventory management system designed for games, simulations, and applications that require structured item handling. It provides:
+
+* **Stack management** (items merge up to configurable stack limits).
+* **Slot management** (fixed, dynamic, and special equipment slots).
+* **Weight and size constraints** for advanced gameplay mechanics.
+* **Serialization & cloning** (save, load, and duplicate inventories safely).
+* **Flexible item registry support** to integrate with custom game logic.
+
+With a clean API and robust safeguards, TinyInventory ensures that every item transaction — whether adding, removing, moving, or trading — follows consistent rules and prevents invalid states.
+
+It is designed to work standalone or as a foundation for higher-level systems, such as crafting, trading, or player equipment managers.
+
+---
+
+## 📦 Core Types & Properties
+
+### 🧩 ItemDef
 
 Represents a registered **item definition** in the global registry.
 
@@ -15,7 +31,7 @@ Represents a registered **item definition** in the global registry.
 
 ---
 
-## 🎒 InventoryItem
+### 🎒 InventoryItem
 
 Represents a **stored item instance** inside the inventory.
 
@@ -27,7 +43,7 @@ Represents a **stored item instance** inside the inventory.
 
 ---
 
-## 📑 InvSlots
+### 📑 InvSlots
 
 An array of item stacks in the inventory.
 
@@ -37,7 +53,7 @@ An array of item stacks in the inventory.
 
 ---
 
-## 🗂️ InventoryMetadata
+### 🗂️ InventoryMetadata
 
 Metadata object for **arbitrary key-value pairs**.
 
@@ -47,7 +63,7 @@ Record<string | number | symbol, any>
 
 ---
 
-## 🛡️ SpecialSlot
+### 🛡️ SpecialSlot
 
 Represents a **special slot** (e.g., equipment).
 
@@ -58,7 +74,7 @@ Represents a **special slot** (e.g., equipment).
 
 ---
 
-## 🔔 Event System
+### 🔔 Event System
 
 * `OnEvent` → `(payload: EventPayload) => void`
 * **AddItemEvent** → triggered when an item is added
@@ -68,7 +84,7 @@ Represents a **special slot** (e.g., equipment).
 
 ---
 
-## 🏷️ OnUseEvent
+### 🏷️ OnUseEvent
 
 Special callback executed when using an item.
 
@@ -78,21 +94,21 @@ Special callback executed when using an item.
 
 ---
 
-## 🎯 EventsType
+### 🎯 EventsType
 
 Supported event strings:
 `"add" | "remove" | "use" | "set"`
 
 ---
 
-## 🔍 Callbacks
+### 🔍 Callbacks
 
 * **GetItemsByMetadataCallback** → Filters items by metadata.
 * **FindItemCallback** → Works like `Array.prototype.find()` to locate items.
 
 ---
 
-## 📄 SerializedInventory
+### 📄 SerializedInventory
 
 Full JSON structure for saving/loading inventories.
 
@@ -109,7 +125,7 @@ Full JSON structure for saving/loading inventories.
 
 ---
 
-## 🗃️ ItemListData
+### 🗃️ ItemListData
 
 Tuple representing an inventory entry:
 
@@ -119,7 +135,7 @@ Tuple representing an inventory entry:
 
 ---
 
-## 📬 EventPayload
+### 📬 EventPayload
 
 Payload object dispatched when an inventory action occurs.
 
@@ -133,7 +149,7 @@ Payload object dispatched when an inventory action occurs.
 
 ---
 
-## ➕ AddItemResult
+### ➕ AddItemResult
 
 Result object returned after adding an item.
 
@@ -144,7 +160,7 @@ Result object returned after adding an item.
 
 ---
 
-# 🏗️ TinyInventory Class
+## 🏗️ TinyInventory Class
 
 A **flexible inventory management system** providing:
 
@@ -157,14 +173,14 @@ A **flexible inventory management system** providing:
 
 ---
 
-## 🏷️ Static: `ItemRegistry`
+### 🏷️ Static: `ItemRegistry`
 
 A global map of item definitions (`id → ItemDef`).
 Used for validating and retrieving item properties.
 
 ---
 
-## 🛠️ Static: `defineItem(config)`
+### 🛠️ Static: `defineItem(config)`
 
 Registers or updates an item in the global registry.
 
@@ -183,7 +199,7 @@ TinyInventory.defineItem({
 
 ---
 
-## ⚙️ Constructor
+### ⚙️ Constructor
 
 Creates a new inventory instance with customizable constraints:
 
@@ -199,7 +215,7 @@ new TinyInventory({
 
 ---
 
-## 📊 Properties (Getters & Setters)
+### 📊 Properties (Getters & Setters)
 
 * `maxStack` → Maximum stack size per slot.
 * `maxSize` → Maximum total quantity of items.
@@ -211,7 +227,7 @@ new TinyInventory({
 
 ---
 
-## 📏 Calculated Properties
+### 📏 Calculated Properties
 
 * `size` → Total quantity of items.
 * `slotsSize` → Number of occupied slots.
@@ -219,9 +235,9 @@ new TinyInventory({
 
 ---
 
-# ⚖️ Space & Capacity Checks
+## ⚖️ Space & Capacity Checks
 
-## 🔍 `hasSpace(settings?)`
+### 🔍 `hasSpace(settings?)`
 
 Checks if there is **available space** based on slot, size, and weight limits.
 
@@ -243,7 +259,7 @@ hasSpace({
 
 ---
 
-## 🏋️ `isHeavy(extraWeight = 0)`
+### 🏋️ `isHeavy(extraWeight = 0)`
 
 Checks if the **total weight** exceeds the max allowed.
 
@@ -252,7 +268,7 @@ Checks if the **total weight** exceeds the max allowed.
 
 ---
 
-## 📦 `areFull(extraLength = 0)`
+### 📦 `areFull(extraLength = 0)`
 
 Checks if the **item count** exceeds `maxSize`.
 
@@ -260,7 +276,7 @@ Checks if the **item count** exceeds `maxSize`.
 
 ---
 
-## 📦 `isFull(extraLength = 0)`
+### 📦 `isFull(extraLength = 0)`
 
 Checks if the **item count** has **reached** `maxSize`.
 
@@ -268,7 +284,7 @@ Checks if the **item count** has **reached** `maxSize`.
 
 ---
 
-## 🎯 `areFullSlots(extraLength = 0)`
+### 🎯 `areFullSlots(extraLength = 0)`
 
 Checks if the **slot count** exceeds `maxSlots`.
 
@@ -276,7 +292,7 @@ Checks if the **slot count** exceeds `maxSlots`.
 
 ---
 
-## 🎯 `isFullSlots(extraLength = 0)`
+### 🎯 `isFullSlots(extraLength = 0)`
 
 Checks if the **slot count** has **reached** `maxSlots`.
 
@@ -284,9 +300,9 @@ Checks if the **slot count** has **reached** `maxSlots`.
 
 ---
 
-# 🔔 Event System
+## 🔔 Event System
 
-## ⚡ `#triggerEvent(type, payload)`
+### ⚡ `#triggerEvent(type, payload)`
 
 Internal method to dispatch inventory events.
 
@@ -295,25 +311,25 @@ Internal method to dispatch inventory events.
 
 ---
 
-## ❌ `off(eventType, callback)`
+### ❌ `off(eventType, callback)`
 
 Unregisters a specific event listener.
 
 ---
 
-## 🧹 `offAll(eventType)`
+### 🧹 `offAll(eventType)`
 
 Removes **all callbacks** for a given event type.
 
 ---
 
-## 🪞 `cloneEventCallbacks(eventType)`
+### 🪞 `cloneEventCallbacks(eventType)`
 
 Returns a **shallow copy** of all listeners for an event type.
 
 ---
 
-## 🎉 Event Registration Helpers
+### 🎉 Event Registration Helpers
 
 * `onAddItem(callback)` → Listen to item additions.
 * `onSetItem(callback)` → Listen to item sets/replacements.
@@ -322,9 +338,9 @@ Returns a **shallow copy** of all listeners for an event type.
 
 ---
 
-# 🧹 Slot Management
+## 🧹 Slot Management
 
-## 🧽 `compactInventory()`
+### 🧽 `compactInventory()`
 
 Removes unnecessary `null` values, **compacting slots**.
 
@@ -333,9 +349,9 @@ Removes unnecessary `null` values, **compacting slots**.
 
 ---
 
-# ➕ Item Management
+## ➕ Item Management
 
-## 📥 `addItem(options)`
+### 📥 `addItem(options)`
 
 Adds an item to the inventory, respecting:
 
@@ -352,7 +368,7 @@ addItem({
 }): AddItemResult
 ```
 
-### Behavior:
+#### Behavior:
 
 1. 🔄 **Fills existing stacks** first.
 2. 📤 **Uses empty slots** if possible.
@@ -363,7 +379,7 @@ addItem({
 
 ---
 
-## 📤 `getItemFrom(slotIndex)`
+### 📤 `getItemFrom(slotIndex)`
 
 Retrieves item from a slot.
 
@@ -372,7 +388,7 @@ Retrieves item from a slot.
 
 ---
 
-## ✏️ `setItem(options)`
+### ✏️ `setItem(options)`
 
 Directly sets or clears an item at a specific slot.
 
@@ -383,13 +399,13 @@ Directly sets or clears an item at a specific slot.
 
 ---
 
-## ❌ `deleteItem(slotIndex, forceSpace?)`
+### ❌ `deleteItem(slotIndex, forceSpace?)`
 
 Shortcut for clearing a slot (`setItem({ item: null })`).
 
 ---
 
-## 🔄 `moveItem(fromIndex, toIndex, forceSpace?)`
+### 🔄 `moveItem(fromIndex, toIndex, forceSpace?)`
 
 Moves an item from one slot to another.
 
@@ -398,7 +414,7 @@ Moves an item from one slot to another.
 
 ---
 
-## 🗑️ `removeItem(options)`
+### 🗑️ `removeItem(options)`
 
 Removes a quantity of a given item (normal slots + special slots).
 
@@ -417,9 +433,9 @@ removeItem({
 
 ---
 
-# 🎮 Item Usage & Special Slots
+## 🎮 Item Usage & Special Slots
 
-## 🧩 `#removeItemCallback(config)`
+### 🧩 `#removeItemCallback(config)`
 
 Creates a **removal callback** for normal or special slots.
 
@@ -439,7 +455,7 @@ Creates a **removal callback** for normal or special slots.
 
 ---
 
-## 🎯 `useItem({ slotIndex, specialSlot, forceSpace }, ...args)`
+### 🎯 `useItem({ slotIndex, specialSlot, forceSpace }, ...args)`
 
 Uses an item from either a **normal slot** or a **special slot**.
 
@@ -453,15 +469,15 @@ Uses an item from either a **normal slot** or a **special slot**.
 
 ---
 
-# 🛡️ Special Slot Management
+## 🛡️ Special Slot Management
 
-## 🔍 `hasSpecialSlot(slotId)`
+### 🔍 `hasSpecialSlot(slotId)`
 
 Checks if a special slot exists.
 
 ---
 
-## 📦 `getSpecialItem(slotId)`
+### 📦 `getSpecialItem(slotId)`
 
 Gets the item from a special slot.
 
@@ -470,7 +486,7 @@ Gets the item from a special slot.
 
 ---
 
-## 🏷️ `getSpecialSlotType(slotId)`
+### 🏷️ `getSpecialSlotType(slotId)`
 
 Gets the type/category of a special slot.
 
@@ -478,7 +494,7 @@ Gets the type/category of a special slot.
 
 ---
 
-## ✏️ `setSpecialSlot({ slotId, item, forceSpace })`
+### ✏️ `setSpecialSlot({ slotId, item, forceSpace })`
 
 Sets or clears an item in a special slot.
 
@@ -488,13 +504,13 @@ Sets or clears an item in a special slot.
 
 ---
 
-## ❌ `deleteSpecialItem(slotId, forceSpace?)`
+### ❌ `deleteSpecialItem(slotId, forceSpace?)`
 
 Clears a special slot (sets item to `null`).
 
 ---
 
-## ⚔️ `equipItem({ slotId, slotIndex, quantity, forceSpace })`
+### ⚔️ `equipItem({ slotId, slotIndex, quantity, forceSpace })`
 
 Equips an item from the inventory into a special slot.
 
@@ -508,7 +524,7 @@ Equips an item from the inventory into a special slot.
 
 ---
 
-## 🛡️ `unequipItem({ slotId, quantity, forceSpace })`
+### 🛡️ `unequipItem({ slotId, quantity, forceSpace })`
 
 Unequips an item from a special slot back to the inventory.
 
@@ -518,15 +534,15 @@ Unequips an item from a special slot back to the inventory.
 
 ---
 
-# 🛠️ Utility Methods
+## 🛠️ Utility Methods
 
-## 🧬 `#cloneItemData(item)`
+### 🧬 `#cloneItemData(item)`
 
 Creates a **deep clone** of an item (copies metadata).
 
 ---
 
-## 📋 `getItemList()`
+### 📋 `getItemList()`
 
 Returns an array of all items with their slot indexes:
 
@@ -536,14 +552,14 @@ Returns an array of all items with their slot indexes:
 
 ---
 
-## 📦 `getAllItems()`
+### 📦 `getAllItems()`
 
 Returns all items in the inventory,
 including **special slots**, excluding `null`s.
 
 ---
 
-## 🔍 `getItemsByMetadata(filterFn)`
+### 🔍 `getItemsByMetadata(filterFn)`
 
 Finds items by metadata.
 
@@ -551,39 +567,39 @@ Finds items by metadata.
 
 ---
 
-## 🔍 `findItem(predicate)`
+### 🔍 `findItem(predicate)`
 
 Finds the **first item** matching the predicate.
 
 ---
 
-## 🔍 `findItems(predicate)`
+### 🔍 `findItems(predicate)`
 
 Finds **all items** matching the predicate.
 
 ---
 
-## 🔢 `getItemCount(itemId)`
+### 🔢 `getItemCount(itemId)`
 
 Counts the **total quantity** of a given item across the whole inventory.
 
 ---
 
-## ✅ `hasItem(itemId, quantity = 1)`
+### ✅ `hasItem(itemId, quantity = 1)`
 
 Checks if the inventory has at least `quantity` of a given item.
 
 ---
 
-## 📍 `existsItemAt(slotIndex)`
+### 📍 `existsItemAt(slotIndex)`
 
 Checks if there is an item at a given **normal slot index**.
 
 ---
 
-# 📝 Serialization & Cloning
+## 📝 Serialization & Cloning
 
-## 🧬 `clone()`
+### 🧬 `clone()`
 
 Creates a **deep copy** of the entire inventory.
 
@@ -598,7 +614,7 @@ Creates a **deep copy** of the entire inventory.
 
 ---
 
-## 📦 `toObject()`
+### 📦 `toObject()`
 
 Creates a **plain JSON-safe object** representing the current inventory state.
 
@@ -613,7 +629,7 @@ Creates a **plain JSON-safe object** representing the current inventory state.
 
 ---
 
-## 📜 `toJSON(space = 0)`
+### 📜 `toJSON(space = 0)`
 
 Serializes the inventory into a **JSON string**.
 
@@ -625,9 +641,9 @@ Serializes the inventory into a **JSON string**.
 
 ---
 
-# 📥 Deserialization
+## 📥 Deserialization
 
-## 🛠️ `static fromObject(obj)`
+### 🛠️ `static fromObject(obj)`
 
 Rebuilds a `TinyInventory` instance from a plain object produced by `toObject()`.
 
@@ -645,7 +661,7 @@ Rebuilds a `TinyInventory` instance from a plain object produced by `toObject()`
 
 ---
 
-## 🔄 `static fromJSON(json)`
+### 🔄 `static fromJSON(json)`
 
 Rebuilds a `TinyInventory` from a JSON string produced by `toJSON()`.
 
