@@ -133,8 +133,10 @@ import TinyAdvancedRaffle from './libs/TinyAdvancedRaffle.mjs';
 import TinyArrayPaginator from './libs/TinyArrayPaginator.mjs';
 import TinyInventory from './libs/TinyInventory.mjs';
 import TinyInventoryTrader from './libs/TinyInventoryTrader.mjs';
+import TinyCookieConsent from './libs/TinyCookieConsent.mjs';
 
 export {
+  TinyCookieConsent,
   TinyInventory,
   TinyInventoryTrader,
   TinyArrayPaginator,
