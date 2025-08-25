@@ -880,11 +880,11 @@ class TinyInventory {
    * Removes a given quantity of an item from the inventory, including special slots.
    * @param {Object} settings - Removal configuration.
    * @param {string} settings.itemId - ID of the item to remove.
-   * @param {InventoryMetadata} [settings.metadata={}] - Metadata to match when removing (e.g., durability, enchantments).
+   * @param {InventoryMetadata|null} [settings.metadata={}] - Metadata to match when removing (e.g., durability, enchantments).
    * @param {number} [settings.quantity=1] - Quantity to remove.
    * @returns {boolean} True if fully removed; false if insufficient quantity.
    */
-  removeItem({ itemId, metadata = {}, quantity = 1 }) {
+  removeItem({ itemId, metadata = null, quantity = 1 }) {
     let remaining = quantity;
 
     /**
@@ -896,23 +896,33 @@ class TinyInventory {
     // Remove from inventory first
     const collArray = Array.from(this.#items);
 
-    for (const index in collArray) {
+    for (let index = 0; index < collArray.length; index++) {
       const item = collArray[index];
-      if (item && item.id === itemId && metadataEquals(item.metadata, metadata)) {
+      if (
+        item &&
+        item.id === itemId &&
+        (metadata === null || metadataEquals(item.metadata, metadata))
+      ) {
         const removeQty = Math.min(item.quantity, remaining);
         item.quantity -= removeQty;
         remaining -= removeQty;
-        if (item.quantity <= 0) this.#items.delete(item);
+
+        const indexInt = Number(index);
+        if (item.quantity <= 0) {
+          collArray[index] = null;
+          this.#items.clear();
+          for (const slot of collArray) this.#items.add(slot);
+        }
         if (remaining <= 0) {
           TinyInventory._cleanNulls(this.#items);
           this.#triggerEvent('remove', {
-            index: Number(index),
+            index: indexInt,
             item: this.#cloneItemData(item),
             isCollection: true,
             specialSlot: null,
             remove: this.#removeItemCallback({
               locationType: 'normal',
-              slotIndex: Number(index),
+              slotIndex: indexInt,
               item,
             }),
           });
@@ -928,7 +938,7 @@ class TinyInventory {
         remaining > 0 &&
         slot.item &&
         slot.item.id === itemId &&
-        metadataEquals(slot.item.metadata, metadata)
+        (metadata === null || metadataEquals(slot.item.metadata, metadata))
       ) {
         const removeQty = Math.min(slot.item.quantity, remaining);
         slot.item.quantity -= removeQty;
@@ -1202,14 +1212,13 @@ class TinyInventory {
    * @param {Object} configs - Configuration object for equipping the item.
    * @param {string} configs.slotId - ID of the special slot where the item will be equipped.
    * @param {number} configs.slotIndex - Index of the inventory slot containing the item to equip.
-   * @param {InventoryMetadata} [configs.metadata={}] - Metadata to match when removing (e.g., durability, enchantments).
    * @param {number} [configs.quantity=1] - Quantity of the item to equip.
    * @param {boolean} [configs.forceSpace=false] - Forces the item to be added even if space or stack limits would normally prevent it.
    * @returns {number} Amount of the item that could NOT be equipped (leftover remains in inventory).
    * @throws {Error} If the special slot does not exist, if the item type mismatches the slot,
    *                 or if the inventory lacks the required quantity.
    */
-  equipItem({ slotId, slotIndex, metadata, quantity = 1, forceSpace = false }) {
+  equipItem({ slotId, slotIndex, quantity = 1, forceSpace = false }) {
     if (quantity <= 0 || !Number.isFinite(quantity))
       throw new Error(`Invalid quantity '${quantity}'.`);
 
@@ -1241,7 +1250,7 @@ class TinyInventory {
       const toEquip = Math.min(quantity, availableSpace);
 
       // Remove from inventory slot
-      this.removeItem({ itemId: invItem.id, quantity: toEquip, metadata });
+      this.removeItem({ itemId: invItem.id, quantity: toEquip, metadata: null });
 
       // Merge into special slot
       current.item.quantity += toEquip;
@@ -1258,7 +1267,7 @@ class TinyInventory {
     // Equip new item into slot
     const toEquip = Math.min(quantity, maxStack);
 
-    this.removeItem({ itemId: invItem.id, quantity: toEquip, metadata });
+    this.removeItem({ itemId: invItem.id, quantity: toEquip, metadata: null });
     current.item = {
       id: invItem.id,
       quantity: toEquip,

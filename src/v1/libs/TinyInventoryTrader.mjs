@@ -137,8 +137,8 @@ class TinyInventoryTrader {
     if (removedQty > 0) {
       if (specialSlot) {
         this.#sender.unequipItem({ slotId: specialSlot, quantity: removedQty, forceSpace });
-      } else {
-        this.#sender.removeItem({ itemId: item.id, quantity: removedQty });
+      } else if (typeof slotIndex === 'number') {
+        this.#sender.setItem({ slotIndex, item: null, forceSpace });
       }
     }
 
