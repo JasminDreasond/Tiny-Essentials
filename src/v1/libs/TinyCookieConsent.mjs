@@ -44,11 +44,27 @@ class TinyCookieConsent {
     animationDuration: 400,
   };
 
+  /** @type {Record<string, boolean>} */
+  get preferences() {
+    const saved = localStorage.getItem(this.#config.storageKey);
+    return saved ? JSON.parse(saved) : {};
+  }
+
+  /** @type {Config} */
+  get config() {
+    return { ...this.#config, categories: [...this.#config.categories] };
+  }
+
+  /** @param {Config} value */
+  set config(value) {
+    this.#config = Object.assign(this.#config, value);
+  }
+
   /**
    * @param {Config} config
    */
   constructor(config) {
-    this.#config = Object.assign(this.#config, config);
+    this.config = config;
     const prefs = this.loadPreferences();
     this.#preferences = prefs ?? {};
     if (!prefs) this.showConsentBar();
