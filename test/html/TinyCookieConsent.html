@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Cookie Consent Test</title>
+    <link rel="stylesheet" href="./src/v1/scss/TinyCookieConsent.scss" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: #f2f2f2;
+      }
+
+      h1 {
+        margin-bottom: 20px;
+      }
+
+      .content {
+        max-width: 600px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="content">
+      <h1>Cookie Consent Test Page</h1>
+      <p>Reload the page to check if your cookie preferences are being remembered.</p>
+      <p>Try accepting, rejecting, or customizing cookie categories to see the behavior.</p>
+    </div>
+
+    <script type="module">
+      import { TinyCookieConsent } from './src/v1/libs/TinyCookieConsent.mjs';
+
+      const consent = new TinyCookieConsent({
+        message: 'This site uses cookies to personalize content and analyze traffic.',
+        categories: [
+          { label: 'Necessary', required: true, default: true },
+          { label: 'Analytics', required: false, default: true },
+          { label: 'Ads', required: false, default: false },
+          { label: 'Preferences', required: false, default: false },
+        ],
+        onSave: (prefs) => {
+          console.log('Saved preferences:', prefs);
+          document.body.insertAdjacentHTML(
+            'beforeend',
+            `
+          <div style="position:fixed;top:10px;right:10px;background:#fff;padding:10px;border:1px solid #ccc;z-index:3000">
+            <strong>Preferences Saved</strong><br>
+            ${Object.entries(prefs)
+              .map(([k, v]) => `${k}: ${v}`)
+              .join('<br>')}
+          </div>
+        `,
+          );
+          setTimeout(() => {
+            document
+              .querySelectorAll("body > div[style*='Preferences Saved']")
+              .forEach((el) => el.remove());
+          }, 3000);
+        },
+      });
+    </script>
+  </body>
+</html>

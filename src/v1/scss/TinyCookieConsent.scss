@@ -1,0 +1,125 @@
+/* Consent Bar */
+.cookie-consent-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #222;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  z-index: 1000;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.3);
+
+  > div {
+    display: flex;
+    padding-top: 15px;
+    padding-bottom: 15px;
+
+    &:first-child {
+      margin-left: 15px;
+      flex-grow: 1;
+    }
+
+    &:last-child {
+      margin-right: 15px;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    button {
+      padding: 8px 14px;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    button.accept {
+      background: #4caf50;
+      color: white;
+    }
+
+    button.reject {
+      background: #f44336;
+      color: white;
+    }
+
+    button.settings {
+      background: #2196f3;
+      color: white;
+    }
+  }
+
+  /* Responsive behavior for small screens */
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+
+    > div {
+      padding-top: 0px;
+      padding-bottom: 0px;
+      margin: 0;
+      justify-content: center;
+      flex-wrap: wrap;
+
+      &:first-child {
+        margin: 10px 0;
+      }
+
+      &:last-child {
+        margin: 10px 0;
+      }
+
+      button {
+        flex: 1;
+        min-width: 100px;
+        margin: 5px;
+      }
+    }
+  }
+}
+
+/* Modal */
+.cookie-consent-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+
+  .modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+  }
+
+  h2 {
+    margin-top: 0;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  button.save {
+    margin-top: 15px;
+    width: 100%;
+    background: #4caf50;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+}
