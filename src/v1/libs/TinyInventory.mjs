@@ -148,6 +148,8 @@
  * - Metadata-aware operations to differentiate items with durability, enchantments, etc.
  * - Serialization and deserialization to/from JSON for saving/loading inventory state.
  * - Event triggers for 'add', 'remove', 'use', and 'set' actions.
+ *
+ * @beta
  */
 class TinyInventory {
   /**

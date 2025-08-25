@@ -5,7 +5,8 @@ import TinyInventory from './TinyInventory.mjs';
 
 /**
  * @typedef {Object} TransferItemCfg - Transfer configuration.
- * @property {number} [slotIndex] - Sender slot index (normal inventory).
+ * @property {number} [slotIndex] - Sender slot index.
+ * @property {number} [receiverSlotIndex] - Receiver slot index (optional).
  * @property {string} [specialSlot] - Sender special slot ID.
  * @property {number} [quantity=1] - Quantity to transfer.
  * @property {boolean} [forceSpace=false] - Whether to force addition even if space is limited.
@@ -97,10 +98,10 @@ class TinyInventoryTrader {
    * Transfers an item from sender to receiver.
    *
    * @param {TransferItemCfg} options - Transfer configuration.
-   * @returns {AddItemResult} Remaining quantity that could NOT be transferred.
+   * @returns {Partial<AddItemResult>} Remaining quantity that could NOT be transferred.
    * @throws {Error} If sender or receiver is not connected, or item does not exist in sender.
    */
-  transferItem({ slotIndex, specialSlot, quantity = 1, forceSpace = false }) {
+  transferItem({ slotIndex, specialSlot, quantity = 1, receiverSlotIndex, forceSpace = false }) {
     if (!this.#sender || !this.#receiver)
       throw new Error('Sender and receiver inventories must be connected.');
 
@@ -125,12 +126,49 @@ class TinyInventoryTrader {
       metadata: item.metadata,
     };
 
-    const result = this.#receiver.addItem({
-      itemId: transferItem.id,
-      quantity: transferItem.quantity,
-      metadata: transferItem.metadata,
-      forceSpace,
-    });
+    let result;
+
+    // If receiverSlotIndex is informed → use setItem on receiver
+    if (typeof receiverSlotIndex === 'number') {
+      const existing = this.#receiver.getItemFrom(receiverSlotIndex);
+      let movedQty = transferItem.quantity;
+
+      // If there is already item in this slot
+      if (existing) {
+        if (existing.id !== transferItem.id) 
+          throw new Error(`Receiver slot ${receiverSlotIndex} contains a different item.`);
+        const def = TinyInventory.ItemRegistry.get(existing.id);
+        if (!def) throw new Error(`Item '${item.id}' not defined in registry.`);
+    
+        const spaceLeft = def.maxStack - existing.quantity;
+        movedQty = Math.min(spaceLeft, transferItem.quantity);
+
+        if (movedQty > 0) {
+          this.#receiver.setItem({
+            slotIndex: receiverSlotIndex,
+            item: { ...existing, quantity: existing.quantity + movedQty },
+            forceSpace,
+          });
+        }
+      } else {
+        // Empty Slot → just seal the whole item
+        this.#receiver.setItem({
+          slotIndex: receiverSlotIndex,
+          item: transferItem,
+          forceSpace,
+        });
+      }
+
+      // Now we calculate what's left
+      result = { remaining: transferItem.quantity - movedQty };
+    } else {
+      result = this.#receiver.addItem({
+        itemId: transferItem.id,
+        quantity: transferItem.quantity,
+        metadata: transferItem.metadata,
+        forceSpace,
+      });
+    }
 
     // Remove successfully transferred quantity from sender
     const removedQty = transferItem.quantity - result.remaining;
@@ -153,7 +191,7 @@ class TinyInventoryTrader {
   /**
    * Transfers multiple items at once.
    * @param {TransferItemCfg[]} items - Array of transfer configs (see transferItem options).
-   * @returns {AddItemResult[]} Array of remaining quantities for each item.
+   * @returns {Partial<AddItemResult>[]} Array of remaining quantities for each item.
    */
   transferMultiple(items) {
     return items.map((cfg) => this.transferItem(cfg));
