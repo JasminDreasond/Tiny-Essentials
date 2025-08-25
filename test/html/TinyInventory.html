@@ -417,18 +417,6 @@
           </div>
 
           <div class="divider"></div>
-          <div class="grid grid-3" style="margin-bottom: 7px">
-            <input id="ac_slotId" placeholder="slotId" />
-            <input id="ac_itemEquip" placeholder="slotIndex to equip" />
-            <button class="btn" id="ac_equip">Equip</button>
-          </div>
-          <div class="grid grid-2">
-            <input id="ac_slotUnequip" placeholder="slotId" />
-            <button class="btn" id="ac_unequip">Unequip</button>
-            <span></span>
-          </div>
-
-          <div class="divider"></div>
           <div class="grid grid-2">
             <input id="ac_findPredicate" class="mono" placeholder="item => item.id === 'apple'" />
             <button class="btn" id="ac_find">find() / findItems()</button>
@@ -588,6 +576,7 @@
               <input data-slot="${slotId}" class="mono small" placeholder="slotIndex to equip" style="width:160px">
               <button class="btn" data-eq="${slotId}">Equip</button>
               <button class="btn" data-uneq="${slotId}">Unequip</button>
+              <button class="btn" data-equse="${slotId}">Use</button>
             </div>
           </td>
         `;
@@ -637,12 +626,27 @@
             refreshKPI();
           });
         });
+        container.querySelectorAll('[data-equse]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const slotId = btn.getAttribute('data-equse');
+            if (!slotId) return toast('slotIndex required', 'warn');
+            try {
+              inv.useItem({ specialSlot: slotId });
+              logEvent('use-click', { id: slotId });
+              renderInv();
+            } catch (e) {
+              console.error(e);
+              toast(e.message, 'bad');
+            }
+            refreshKPI();
+          });
+        });
       }
 
       function renderItemsTable(set) {
         const table = document.createElement('table');
         table.className = 'table mono small';
-        table.innerHTML = `<thead><tr><th>id</th><th>qty</th><th>metadata</th><th>actions</th></tr></thead><tbody></tbody>`;
+        table.innerHTML = `<thead><tr><th>index</th><th>id</th><th>qty</th><th>metadata</th><th>actions</th></tr></thead><tbody></tbody>`;
         const tb = table.querySelector('tbody');
         const setArray = Array.from(set);
         for (const index in setArray) {
@@ -652,6 +656,7 @@
           const tr = document.createElement('tr');
           const data = `data-id="${it.id}" data-index="${index}" data-metadata="${medadataString}"`;
           tr.innerHTML = `
+          <td>${index}</td>
           <td>${it.id}</td>
           <td>${it.quantity}</td>
           <td class="small">${medadataString}</td>
@@ -897,35 +902,6 @@
         const id = byId('ac_itemId').value.trim();
         const qty = Number(byId('ac_qty').value || 1);
         toast(`hasItem(${id}, ${qty}) => ${inv.hasItem(id, qty)}`);
-        refreshKPI();
-      });
-
-      byId('ac_equip').addEventListener('click', () => {
-        if (!inv) return toast('Create an inventory first', 'warn');
-        const slotId = byId('ac_slotId').value.trim();
-        const slotIndex = byId('ac_itemEquip').value.trim();
-        try {
-          inv.equipItem({ slotId, slotIndex });
-          renderInv();
-          toast(`Equipped '${itemId}' in '${slotId}'`, 'ok');
-        } catch (e) {
-          console.error(e);
-          toast(e.message, 'bad');
-        }
-        refreshKPI();
-      });
-
-      byId('ac_unequip').addEventListener('click', () => {
-        if (!inv) return toast('Create an inventory first', 'warn');
-        const slotId = byId('ac_slotUnequip').value.trim();
-        try {
-          const ok = inv.unequipItem({ slotId });
-          toast(ok ? 'Unequipped' : 'Slot empty', ok ? 'ok' : 'warn');
-          renderInv();
-        } catch (e) {
-          console.error(e);
-          toast(e.message, 'bad');
-        }
         refreshKPI();
       });
 

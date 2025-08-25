@@ -1102,8 +1102,7 @@ class TinyInventory {
    * @throws {Error} If the slot does not exist, or item is invalid.
    */
   setSpecialSlot({ slotId, item, forceSpace = false }) {
-    if (!this.#specialSlots || !(slotId in this.#specialSlots))
-      throw new Error(`Special slot '${slotId}' not found.`);
+    if (!this.#specialSlots.has(slotId)) throw new Error(`Special slot '${slotId}' not found.`);
 
     // Validate type: must be null or a proper InventoryItem object
     const isInventoryItem =
