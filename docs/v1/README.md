@@ -52,6 +52,8 @@ This folder contains the core scripts we have worked on so far. Each file is a m
 - 🎯 **[TinyAdvancedRaffle](./libs/TinyAdvancedRaffle.md)** — An advanced, seedable raffle system with weighted items, pity systems, exclusions, group management, modifiers, conditional rules, normalization modes, and JSON import/export.
 - 📄 **[TinyArrayPaginator](./libs/TinyArrayPaginator.md)** — A secure and flexible array pagination wrapper that returns paginated results along with metadata, supports filtering via predicates or object-based matching, and prevents direct modification of the source data. 
 - 🍪 **[TinyCookieConsent](./libs/TinyCookieConsent.md)** — A flexible and customizable cookie consent manager that displays a consent bar, supports multiple categories, saves preferences in localStorage, allows custom renderers, and provides smooth animations for showing and hiding elements. 
+- 📦 **[TinyInventory](./libs/TinyInventory.md)** — A robust inventory management system with stack handling, slot management, special equipment slots, serialization, cloning, and item registry support.
+- 🤝 **[TinyInventoryTrader](./libs/TinyInventoryTrader.md)** — A trading helper for safely transferring items between two inventories with support for strict mode, slot targeting, and batch operations.
 
 ### 3. **`fileManager/`**
 * 📁 **[Main](./fileManager/main.md)** — A Node.js file/directory utility module with support for JSON, backups, renaming, size analysis, and more.

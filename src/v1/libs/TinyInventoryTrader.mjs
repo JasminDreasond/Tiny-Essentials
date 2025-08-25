@@ -10,7 +10,7 @@ import TinyInventory from './TinyInventory.mjs';
  * @property {string} [specialSlot] - Sender special slot ID.
  * @property {number} [quantity=1] - Quantity to transfer.
  * @property {boolean} [forceSpace=false] - Whether to force addition even if space is limited.
-   @property {boolean} [options.strict=false] - If true, transfer will throw if not all items can fit.
+   @property {boolean} [strict=false] - If true, transfer will throw if not all items can fit.
  */
 
 /**
@@ -85,7 +85,7 @@ class TinyInventoryTrader {
   }
 
   /**
-   * Inverts the sender and receiver inventories.
+   * Inverts the sender and receiver roles.
    * Useful when performing bidirectional transfers.
    */
   invert() {
