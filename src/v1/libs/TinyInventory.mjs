@@ -22,7 +22,7 @@
 /**
  * A collection of item stacks stored in the inventory.
  *
- * @typedef {Set<InventoryItem|null>} InvSlots
+ * @typedef {(InventoryItem|null)[]} InvSlots
  */
 
 /**
@@ -112,7 +112,7 @@
  * @property {number|null} maxSlots - Maximum allowed slots, or null if unlimited.
  * @property {number|null} maxSize - Maximum allowed size for items, or null if unlimited.
  * @property {number} maxStack - Maximum stack size allowed per item.
- * @property {(InventoryItem|null)[] | null} items - Flat inventory items.
+ * @property {(InventoryItem|null)[]} items - Flat inventory items.
  * @property {Record<string, SpecialSlot>} specialSlots - Special equipment or reserved slots keyed by ID.
  */
 
@@ -152,21 +152,17 @@
 class TinyInventory {
   /**
    * Cleans up unnecessary trailing nulls in a collection.
-   * @param {InvSlots} collection
+   * @param {InvSlots} arr
    * @private
    */
-  static _cleanNulls(collection) {
-    const arr = Array.from(collection);
+  static _cleanNulls(arr) {
     let lastIndex = arr.length - 1;
 
     // Find last non-null index
     while (lastIndex >= 0 && arr[lastIndex] === null) lastIndex--;
 
     // Slice up to last non-null + 1
-    const cleaned = arr.slice(0, lastIndex + 1);
-
-    collection.clear();
-    for (const slot of cleaned) collection.add(slot);
+    arr.slice(0, lastIndex + 1);
   }
 
   /////////////////////////////////////////////////////////////////
@@ -225,7 +221,7 @@ class TinyInventory {
   };
 
   /** @type {InvSlots} */
-  #items;
+  #items = [];
 
   /** @type {number} */
   #maxStack;
@@ -343,7 +339,7 @@ class TinyInventory {
    * @returns {InvSlots}
    */
   get items() {
-    return new Set([...this.#items].map((item) => (item ? this.#cloneItemData(item) : null)));
+    return [...this.#items].map((item) => (item ? this.#cloneItemData(item) : null));
   }
 
   /**
@@ -416,7 +412,6 @@ class TinyInventory {
     this.#maxSlots = options.maxSlots ?? null;
     this.#maxSize = options.maxSize ?? null;
     this.#maxStack = options.maxStack ?? Infinity;
-    this.#items = new Set();
     if (options.specialSlots) {
       for (const name in options.specialSlots) {
         this.#specialSlots.set(name, { type: options.specialSlots[name].type ?? null, item: null });
@@ -579,7 +574,7 @@ class TinyInventory {
    * Preserves the relative order of items and does not modify metadata.
    */
   compactInventory() {
-    const filtered = Array.from(this.#items).filter((i, index) => {
+    this.#items = this.#items.filter((i, index) => {
       const result = i !== null;
       if (!result)
         this.#triggerEvent('remove', {
@@ -591,8 +586,6 @@ class TinyInventory {
         });
       return result;
     });
-    this.#items.clear();
-    filtered.forEach((i) => this.#items.add(i));
   }
 
   /////////////////////////////////////////////////////////////////
@@ -623,15 +616,13 @@ class TinyInventory {
      */
     const metadataEquals = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
-    const collArray = Array.from(this.#items);
-
     // Step 1: Fill existing stacks first
     let madeProgress = true;
     while (remaining > 0 && madeProgress) {
       madeProgress = false;
 
-      for (const index in collArray) {
-        const existing = collArray[index];
+      for (const index in this.#items) {
+        const existing = this.#items[index];
         if (
           existing &&
           existing.id === itemId &&
@@ -667,8 +658,8 @@ class TinyInventory {
 
     // Step 2: Place remaining into null slots first
     if (remaining > 0) {
-      for (const index in collArray) {
-        if (collArray[index] === null) {
+      for (const index in this.#items) {
+        if (this.#items[index] === null) {
           const stackQty = Math.min(maxStack, remaining);
           if (
             !forceSpace &&
@@ -677,10 +668,8 @@ class TinyInventory {
             continue;
 
           const item = { id: itemId, quantity: stackQty, metadata };
-          collArray[index] = item;
+          this.#items[index] = item;
           remaining -= stackQty;
-          this.#items.clear();
-          for (const index2 in collArray) this.#items.add(collArray[index2]);
 
           const indexInt = Number(index);
           if (placesAdded.indexOf(indexInt) < 0) placesAdded.push(indexInt);
@@ -712,8 +701,8 @@ class TinyInventory {
         break;
 
       const item = { id: itemId, quantity: stackQty, metadata };
-      this.#items.add(item);
-      const index = this.#items.size - 1;
+      this.#items.push(item);
+      const index = this.#items.length - 1;
 
       if (placesAdded.indexOf(index) < 0) placesAdded.push(index);
       this.#triggerEvent('add', {
@@ -742,10 +731,9 @@ class TinyInventory {
    * @throws {Error} If the slot index is out of bounds.
    */
   getItemFrom(slotIndex) {
-    const slots = Array.from(this.#items);
-    if (slotIndex < 0 || slotIndex >= slots.length)
+    if (slotIndex < 0 || slotIndex >= this.#items.length)
       throw new Error(`Slot index '${slotIndex}' out of bounds .`);
-    return slots[slotIndex] ? this.#cloneItemData(slots[slotIndex]) : null;
+    return this.#items[slotIndex] ? this.#cloneItemData(this.#items[slotIndex]) : null;
   }
 
   /**
@@ -789,8 +777,7 @@ class TinyInventory {
       throw new Error(`Slot index ${slotIndex} out of range.`);
 
     // Convert the set to an array for index-based manipulation
-    const slotsArray = Array.from(this.#items);
-    const oldItem = slotsArray[slotIndex] ?? null;
+    const oldItem = this.#items[slotIndex] ?? null;
     const oldItemData = oldItem ? (TinyInventory.ItemRegistry.get(oldItem.id) ?? null) : null;
 
     /**
@@ -817,14 +804,10 @@ class TinyInventory {
       throw new Error('Inventory is full or overweight.');
 
     // Fill empty slots with nulls only up to the desired index
-    while (slotsArray.length <= slotIndex) slotsArray.push(null);
+    while (this.#items.length <= slotIndex) this.#items.push(null);
 
     // Set the slot
-    slotsArray[slotIndex] = item;
-
-    // Rebuild the collection from the updated array
-    this.#items.clear();
-    for (const slot of slotsArray) this.#items.add(slot);
+    this.#items[slotIndex] = item;
 
     // Cleanup unnecessary trailing nulls
     TinyInventory._cleanNulls(this.#items);
@@ -864,8 +847,7 @@ class TinyInventory {
    * @throws {Error} If the source slot is empty or the move is invalid.
    */
   moveItem(fromIndex, toIndex, forceSpace = false) {
-    const slotsArray = Array.from(this.#items);
-    const item = slotsArray[fromIndex];
+    const item = this.#items[fromIndex];
 
     if (!item) throw new Error(`No item found in slot ${fromIndex}.`);
 
@@ -894,10 +876,8 @@ class TinyInventory {
     const metadataEquals = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
     // Remove from inventory first
-    const collArray = Array.from(this.#items);
-
-    for (let index = 0; index < collArray.length; index++) {
-      const item = collArray[index];
+    for (let index = 0; index < this.#items.length; index++) {
+      const item = this.#items[index];
       if (
         item &&
         item.id === itemId &&
@@ -908,11 +888,7 @@ class TinyInventory {
         remaining -= removeQty;
 
         const indexInt = Number(index);
-        if (item.quantity <= 0) {
-          collArray[index] = null;
-          this.#items.clear();
-          for (const slot of collArray) this.#items.add(slot);
-        }
+        if (item.quantity <= 0) this.#items[index] = null;
         if (remaining <= 0) {
           TinyInventory._cleanNulls(this.#items);
           this.#triggerEvent('remove', {
@@ -1032,7 +1008,7 @@ class TinyInventory {
       locationType = 'special';
     } else {
       collection = this.#items;
-      item = Array.from(collection)[slotIndex ?? -1] ?? null;
+      item = collection[slotIndex ?? -1] ?? null;
       locationType = 'normal';
     }
 
@@ -1339,7 +1315,7 @@ class TinyInventory {
    */
   getItemList() {
     // @ts-ignore
-    return [...Array.from(this.#items)]
+    return [...this.#items]
       .map((item, index) => [item ? this.#cloneItemData(item) : null, index])
       .filter((item) => item[0] !== null);
   }
@@ -1350,9 +1326,7 @@ class TinyInventory {
    * @returns {InventoryItem[]} Array of item objects.
    */
   getAllItems() {
-    const data = [...Array.from(this.#items)]
-      .filter((item) => item !== null)
-      .map(this.#cloneItemData);
+    const data = [...this.#items].filter((item) => item !== null).map(this.#cloneItemData);
     this.#specialSlots.forEach((value) => {
       const item = value.item;
       if (item) data.push(item);
@@ -1438,10 +1412,7 @@ class TinyInventory {
       maxSize: this.#maxSize,
       maxStack: this.#maxStack,
 
-      items: this.#items
-        ? Array.from(this.#items).map((it) => (it ? this.#cloneItemData(it) : null))
-        : null,
-
+      items: this.#items.map((it) => (it ? this.#cloneItemData(it) : null)),
       specialSlots: special,
     };
   }
