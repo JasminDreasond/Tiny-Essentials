@@ -9,7 +9,6 @@ import TinyInventory from './TinyInventory.mjs';
  * @property {string} [specialSlot] - Sender special slot ID.
  * @property {number} [quantity=1] - Quantity to transfer.
  * @property {boolean} [forceSpace=false] - Whether to force addition even if space is limited.
- * @property {InventoryMetadata} [metadata={}] - Metadata to match items.
  */
 
 /**
@@ -101,26 +100,18 @@ class TinyInventoryTrader {
    * @returns {AddItemResult} Remaining quantity that could NOT be transferred.
    * @throws {Error} If sender or receiver is not connected, or item does not exist in sender.
    */
-  transferItem({ slotIndex, specialSlot, quantity = 1, forceSpace = false, metadata = {} }) {
+  transferItem({ slotIndex, specialSlot, quantity = 1, forceSpace = false }) {
     if (!this.#sender || !this.#receiver)
       throw new Error('Sender and receiver inventories must be connected.');
-
-    /**
-     * @param {InventoryMetadata} a
-     * @param {InventoryMetadata} b
-     */
-    const metadataEquals = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
     // Get the item from sender
     let item;
     if (specialSlot) {
       item = this.#sender.getSpecialItem(specialSlot);
-      if (!item || !metadataEquals(item.metadata, metadata))
-        throw new Error(`No item found in sender special slot '${specialSlot}'.`);
+      if (!item) throw new Error(`No item found in sender special slot '${specialSlot}'.`);
     } else if (typeof slotIndex === 'number') {
       item = this.#sender.getItemFrom(slotIndex);
-      if (!item || !metadataEquals(item.metadata, metadata))
-        throw new Error(`No item found in sender slot ${slotIndex}.`);
+      if (!item) throw new Error(`No item found in sender slot ${slotIndex}.`);
     } else throw new Error('Must provide either slotIndex or specialSlot.');
 
     // Match quantity
@@ -147,7 +138,7 @@ class TinyInventoryTrader {
       if (specialSlot) {
         this.#sender.unequipItem({ slotId: specialSlot, quantity: removedQty, forceSpace });
       } else {
-        this.#sender.removeItem({ itemId: item.id, quantity: removedQty, metadata });
+        this.#sender.removeItem({ itemId: item.id, quantity: removedQty });
       }
     }
 
