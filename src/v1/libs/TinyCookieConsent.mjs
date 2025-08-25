@@ -61,6 +61,7 @@ class TinyCookieConsent {
 
   /** @param {Config} value */
   set config(value) {
+    this.validateConfig(value);
     this.#config = Object.assign(this.#config, value);
   }
 
@@ -68,10 +69,73 @@ class TinyCookieConsent {
    * @param {Config} config
    */
   constructor(config) {
+    if (!config || typeof config !== 'object') throw new TypeError('Config must be an object.');
     this.config = config;
     const prefs = this.loadPreferences();
     this.#preferences = prefs ?? {};
     if (!prefs) this.showConsentBar();
+  }
+
+  /**
+   * Validates config object against jsDoc typedefs
+   * @param {Partial<Config>} config
+   */
+  validateConfig(config) {
+    if (typeof config.message !== 'undefined' && typeof config.message !== 'string')
+      throw new TypeError('Config.message must be a string.');
+
+    ['acceptText', 'rejectText', 'settingsText', 'storageKey'].forEach((key) => {
+      // @ts-ignore
+      if (typeof config[key] !== 'undefined' && typeof config[key] !== 'string') {
+        throw new TypeError(`Config.${key} must be a string.`);
+      }
+    });
+
+    if (typeof config.categories !== 'undefined') {
+      if (!Array.isArray(config.categories)) {
+        throw new TypeError('Config.categories must be an array of Category objects.');
+      }
+      config.categories.forEach((cat, i) => this.validateCategory(cat, i));
+    }
+
+    if (typeof config.onSave !== 'undefined' && typeof config.onSave !== 'function')
+      throw new TypeError('Config.onSave must be a function.');
+
+    if (typeof config.animationDuration !== 'undefined') {
+      if (typeof config.animationDuration !== 'number' || config.animationDuration < 0) {
+        throw new TypeError('Config.animationDuration must be a positive number.');
+      }
+    }
+
+    if (
+      typeof config.renderBar !== 'undefined' &&
+      config.renderBar !== null &&
+      typeof config.renderBar !== 'function'
+    )
+      throw new TypeError('Config.renderBar must be a function or null.');
+
+    if (
+      typeof config.renderModal !== 'undefined' &&
+      config.renderModal !== null &&
+      typeof config.renderModal !== 'function'
+    )
+      throw new TypeError('Config.renderModal must be a function or null.');
+  }
+
+  /**
+   * Validates a single category object
+   * @param {Category} cat
+   * @param {number} index
+   */
+  validateCategory(cat, index) {
+    if (!cat || typeof cat !== 'object')
+      throw new TypeError(`Category at index ${index} must be an object.`);
+    if (typeof cat.label !== 'string')
+      throw new TypeError(`Category.label at index ${index} must be a string.`);
+    if (typeof cat.required !== 'boolean')
+      throw new TypeError(`Category.required at index ${index} must be a boolean.`);
+    if (typeof cat.default !== 'boolean')
+      throw new TypeError(`Category.default at index ${index} must be a boolean.`);
   }
 
   /**
@@ -88,6 +152,8 @@ class TinyCookieConsent {
    * @param {HTMLElement} el
    */
   removeWithAnimation(el) {
+    if (!(el instanceof HTMLElement))
+      throw new TypeError('removeWithAnimation expects an HTMLElement.');
     el.classList.add('closing');
     setTimeout(() => el.remove(), this.#config.animationDuration);
   }
@@ -98,6 +164,7 @@ class TinyCookieConsent {
    * @param {Record<string, boolean>} prefs
    */
   savePreferences(prefs) {
+    if (!prefs || typeof prefs !== 'object') throw new TypeError('Preferences must be an object.');
     localStorage.setItem(this.#config.storageKey, JSON.stringify(prefs));
     this.#config.onSave(prefs);
   }
@@ -199,6 +266,8 @@ class TinyCookieConsent {
    * @returns {boolean}
    */
   isAllowed(category) {
+    if (typeof category !== 'string')
+      throw new TypeError('isAllowed expects a string as category.');
     if (!this.#preferences) return false;
     return !!this.#preferences[category];
   }
