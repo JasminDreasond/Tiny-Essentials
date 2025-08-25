@@ -135,7 +135,7 @@
  * Result of adding items to an inventory.
  * @typedef {Object} AddItemResult
  * @property {number} remaining - Quantity of the item that could NOT be added due to space/stack limits.
- * @property {number[]} placesAdded - Array of slot indexes in the inventory where the item was successfully added.
+ * @property {{ index: number; quantity: number }[]} placesAdded - Array of slot indexes in the inventory where the item was successfully added.
  */
 
 /**
@@ -604,7 +604,7 @@ class TinyInventory {
     if (!def) throw new Error(`Item '${itemId}' not defined in registry.`);
     let remaining = quantity;
     const maxStack = def.maxStack <= this.#maxStack ? def.maxStack : this.#maxStack;
-    /** @type {number[]} */
+    /** @type {{ index: number; quantity: number }[]} */
     const placesAdded = [];
 
     /**
@@ -635,7 +635,9 @@ class TinyInventory {
           madeProgress = true;
 
           const indexInt = Number(index);
-          if (placesAdded.indexOf(indexInt) < 0) placesAdded.push(indexInt);
+          const placeId = placesAdded.findIndex((data) => data.index === indexInt);
+          if (placeId < 0) placesAdded.push({ index: indexInt, quantity: canAdd });
+          else placesAdded[placeId].quantity += canAdd;
           this.#triggerEvent('add', {
             item: this.#cloneItemData(existing),
             index: indexInt,
@@ -669,7 +671,9 @@ class TinyInventory {
           remaining -= stackQty;
 
           const indexInt = Number(index);
-          if (placesAdded.indexOf(indexInt) < 0) placesAdded.push(indexInt);
+          const placeId = placesAdded.findIndex((data) => data.index === indexInt);
+          if (placeId < 0) placesAdded.push({ index: indexInt, quantity: stackQty });
+          else placesAdded[placeId].quantity += stackQty;
           this.#triggerEvent('add', {
             item: this.#cloneItemData(item),
             index: indexInt,
@@ -701,7 +705,9 @@ class TinyInventory {
       this.#items.push(item);
       const index = this.#items.length - 1;
 
-      if (placesAdded.indexOf(index) < 0) placesAdded.push(index);
+      const placeId = placesAdded.findIndex((data) => data.index === index);
+      if (placeId < 0) placesAdded.push({ index: index, quantity: stackQty });
+      else placesAdded[placeId].quantity += stackQty;
       this.#triggerEvent('add', {
         item: this.#cloneItemData(item),
         index,
