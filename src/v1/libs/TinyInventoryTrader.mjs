@@ -10,6 +10,7 @@ import TinyInventory from './TinyInventory.mjs';
  * @property {string} [specialSlot] - Sender special slot ID.
  * @property {number} [quantity=1] - Quantity to transfer.
  * @property {boolean} [forceSpace=false] - Whether to force addition even if space is limited.
+   @property {boolean} [options.strict=false] - If true, transfer will throw if not all items can fit.
  */
 
 /**
@@ -99,9 +100,17 @@ class TinyInventoryTrader {
    *
    * @param {TransferItemCfg} options - Transfer configuration.
    * @returns {Partial<AddItemResult>} Remaining quantity that could NOT be transferred.
-   * @throws {Error} If sender or receiver is not connected, or item does not exist in sender.
+   * @throws {Error} If sender or receiver is not connected, item does not exist in sender,
+   * or if strict mode is enabled and receiver has no space for full transfer.
    */
-  transferItem({ slotIndex, specialSlot, quantity = 1, receiverSlotIndex, forceSpace = false }) {
+  transferItem({
+    slotIndex,
+    specialSlot,
+    quantity = 1,
+    receiverSlotIndex,
+    forceSpace = false,
+    strict = false,
+  }) {
     if (!this.#sender || !this.#receiver)
       throw new Error('Sender and receiver inventories must be connected.');
 
@@ -128,18 +137,50 @@ class TinyInventoryTrader {
 
     let result;
 
+    // ---------- STRICT MODE PRE-CHECK ----------
+    if (strict) {
+      if (typeof receiverSlotIndex === 'number') {
+        const existing = this.#receiver.existsItemAt(receiverSlotIndex)
+          ? this.#receiver.getItemFrom(receiverSlotIndex)
+          : null;
+        if (existing) {
+          if (existing.id !== transferItem.id)
+            throw new Error(`Receiver slot ${receiverSlotIndex} contains a different item.`);
+          const def = TinyInventory.ItemRegistry.get(existing.id);
+          if (!def) throw new Error(`Item '${item.id}' not defined in registry.`);
+
+          const spaceLeft = def.maxStack - existing.quantity;
+          if (transferItem.quantity > spaceLeft)
+            throw new Error(`Strict mode: not enough space in receiver slot ${receiverSlotIndex}.`);
+        }
+      } else {
+        // Simulate addItem result
+        const simulated = this.#receiver.clone().addItem({
+          itemId: transferItem.id,
+          quantity: transferItem.quantity,
+          metadata: transferItem.metadata,
+          forceSpace,
+        });
+        if (simulated.remaining > 0)
+          throw new Error(`Strict mode: not enough space in receiver inventory.`);
+      }
+    }
+    // ---------- END STRICT CHECK ----------
+
     // If receiverSlotIndex is informed → use setItem on receiver
     if (typeof receiverSlotIndex === 'number') {
-      const existing = this.#receiver.getItemFrom(receiverSlotIndex);
+      const existing = this.#receiver.existsItemAt(receiverSlotIndex)
+        ? this.#receiver.getItemFrom(receiverSlotIndex)
+        : null;
       let movedQty = transferItem.quantity;
 
       // If there is already item in this slot
       if (existing) {
-        if (existing.id !== transferItem.id) 
+        if (existing.id !== transferItem.id)
           throw new Error(`Receiver slot ${receiverSlotIndex} contains a different item.`);
         const def = TinyInventory.ItemRegistry.get(existing.id);
         if (!def) throw new Error(`Item '${item.id}' not defined in registry.`);
-    
+
         const spaceLeft = def.maxStack - existing.quantity;
         movedQty = Math.min(spaceLeft, transferItem.quantity);
 

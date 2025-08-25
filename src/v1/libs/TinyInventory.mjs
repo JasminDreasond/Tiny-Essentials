@@ -1391,7 +1391,31 @@ class TinyInventory {
     return this.getItemCount(itemId) >= quantity;
   }
 
+  /**
+   * Checks if there is an item stored at the given slot index.
+   *
+   * @param {number} slotIndex - The inventory slot to check.
+   * @returns {boolean} True if the slot contains an item, otherwise false.
+   */
+  existsItemAt(slotIndex) {
+    return this.#items[slotIndex] ? true : false;
+  }
+
   /////////////////////////////////////////////////////////////////
+
+  /**
+   * Creates a deep copy of this inventory.
+   *
+   * The cloned inventory will contain the same items, slots, and metadata,
+   * but will be a fully independent instance. Any changes to the clone will
+   * not affect the original inventory and vice versa.
+   *
+   * @returns {TinyInventory} A new TinyInventory instance identical to this one.
+   */
+  clone() {
+    const obj = this.toObject();
+    return TinyInventory.fromObject(obj);
+  }
 
   /**
    * Creates a plain JSON-safe object representing the current inventory state.
