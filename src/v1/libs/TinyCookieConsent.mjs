@@ -29,8 +29,11 @@
  * - Fully customizable via configuration.
  */
 class TinyCookieConsent {
+  /** @type {Record<string, boolean>} */
+  #preferences;
+
   /** @type {Config} */
-  config = {
+  #config = {
     message: 'We use cookies to improve your experience.',
     acceptText: 'Accept All',
     rejectText: 'Reject All',
@@ -45,14 +48,18 @@ class TinyCookieConsent {
    * @param {Config} config
    */
   constructor(config) {
-    this.config = Object.assign(this.config, config);
-    this.preferences = this.loadPreferences();
-    if (!this.preferences) this.showConsentBar();
+    this.#config = Object.assign(this.#config, config);
+    const prefs = this.loadPreferences();
+    this.#preferences = prefs ?? {};
+    if (!prefs) this.showConsentBar();
   }
 
-  /** Loads saved preferences from localStorage */
+  /**
+   * Loads saved preferences from localStorage
+   * @returns {Record<string, boolean>|null}
+   */
   loadPreferences() {
-    const saved = localStorage.getItem(this.config.storageKey);
+    const saved = localStorage.getItem(this.#config.storageKey);
     return saved ? JSON.parse(saved) : null;
   }
 
@@ -62,7 +69,7 @@ class TinyCookieConsent {
    */
   removeWithAnimation(el) {
     el.classList.add('closing');
-    setTimeout(() => el.remove(), this.config.animationDuration);
+    setTimeout(() => el.remove(), this.#config.animationDuration);
   }
 
   /**
@@ -71,8 +78,8 @@ class TinyCookieConsent {
    * @param {Record<string, boolean>} prefs
    */
   savePreferences(prefs) {
-    localStorage.setItem(this.config.storageKey, JSON.stringify(prefs));
-    this.config.onSave(prefs);
+    localStorage.setItem(this.#config.storageKey, JSON.stringify(prefs));
+    this.#config.onSave(prefs);
   }
 
   /** Shows the initial consent bar */
@@ -80,36 +87,49 @@ class TinyCookieConsent {
     const bar = document.createElement('div');
     bar.className = 'cookie-consent-bar';
     bar.innerHTML = `
-      <div><p>${this.config.message}</p></div>
-      <div><button class="accept">${this.config.acceptText}</button></div>
-      <div><button class="reject">${this.config.rejectText}</button></div>
-      <div><button class="settings">${this.config.settingsText}</button></div>
+      <div><p>${this.#config.message}</p></div>
+      <div><button class="accept">${this.#config.acceptText}</button></div>
+      <div><button class="reject">${this.#config.rejectText}</button></div>
+      <div><button class="settings">${this.#config.settingsText}</button></div>
     `;
 
     document.body.appendChild(bar);
 
-    bar.querySelector('.accept').onclick = () => {
+    const accept = bar.querySelector('.accept');
+    if (!(accept instanceof HTMLElement)) throw new Error('');
+
+    accept.onclick = () => {
       /** @type {Record<string, boolean>} */
       const prefs = {};
-      this.config.categories.forEach((cat) => (prefs[cat.label] = true));
+      this.#config.categories.forEach((cat) => (prefs[cat.label] = true));
       this.savePreferences(prefs);
       this.removeWithAnimation(bar);
     };
 
-    bar.querySelector('.reject').onclick = () => {
+    const reject = bar.querySelector('.reject');
+    if (!(reject instanceof HTMLElement)) throw new Error('');
+
+    reject.onclick = () => {
       /** @type {Record<string, boolean>} */
       const prefs = {};
-      this.config.categories.forEach((cat) => (prefs[cat.label] = cat.required));
+      this.#config.categories.forEach((cat) => (prefs[cat.label] = cat.required));
       this.savePreferences(prefs);
       this.removeWithAnimation(bar);
     };
 
-    bar.querySelector('.settings').onclick = () => {
+    const settings = bar.querySelector('.settings');
+    if (!(settings instanceof HTMLElement)) throw new Error('');
+
+    settings.onclick = () => {
       this.showSettingsModal(bar);
     };
   }
 
-  /** Shows settings modal for fine-grained control */
+  /**
+   * Shows settings modal for fine-grained control
+   *
+   * @param {HTMLElement} bar
+   */
   showSettingsModal(bar) {
     const modal = document.createElement('div');
     modal.className = 'cookie-consent-modal';
@@ -117,7 +137,7 @@ class TinyCookieConsent {
       <div class="modal-content">
         <h2>Cookie Settings</h2>
         <form class="settings-form">
-          ${this.config.categories
+          ${this.#config.categories
             .map(
               (cat) => `
             <label>
@@ -136,7 +156,10 @@ class TinyCookieConsent {
 
     document.body.appendChild(modal);
 
-    modal.querySelector('.save').onclick = () => {
+    const save = modal.querySelector('.save');
+    if (!(save instanceof HTMLElement)) throw new Error('');
+
+    save.onclick = () => {
       /** @type {Record<string, boolean>} */
       const prefs = {};
       modal.querySelectorAll('input[type=checkbox]').forEach((input) => {
@@ -154,8 +177,8 @@ class TinyCookieConsent {
    * @returns {boolean}
    */
   isAllowed(category) {
-    if (!this.preferences) return false;
-    return !!this.preferences[category];
+    if (!this.#preferences) return false;
+    return !!this.#preferences[category];
   }
 }
 
