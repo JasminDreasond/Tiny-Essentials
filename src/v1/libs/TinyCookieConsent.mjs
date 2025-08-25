@@ -15,6 +15,8 @@
  * @property {string} storageKey - Key used to store preferences
  * @property {(preferences: Object) => void} onSave - Callback when preferences are saved
  * @property {number} [animationDuration=400] - Animation duration in ms
+ * @property {((config: Config) => string)|null} [renderBar] - Optional custom HTML renderer for consent bar
+ * @property {((config: Config) => string)|null} [renderModal] - Optional custom HTML renderer for modal
  */
 
 /**
@@ -42,6 +44,8 @@ class TinyCookieConsent {
     storageKey: 'cookie-consent-preferences',
     onSave: (prefs) => console.log('Preferences saved:', prefs),
     animationDuration: 400,
+    renderBar: null,
+    renderModal: null,
   };
 
   /** @type {Record<string, boolean>} */
@@ -102,7 +106,9 @@ class TinyCookieConsent {
   showConsentBar() {
     const bar = document.createElement('div');
     bar.className = 'cookie-consent-bar';
-    bar.innerHTML = `
+    bar.innerHTML = this.#config.renderBar
+      ? this.#config.renderBar(this.#config)
+      : `
       <div><p>${this.#config.message}</p></div>
       <div><button class="accept">${this.#config.acceptText}</button></div>
       <div><button class="reject">${this.#config.rejectText}</button></div>
@@ -112,33 +118,31 @@ class TinyCookieConsent {
     document.body.appendChild(bar);
 
     const accept = bar.querySelector('.accept');
-    if (!(accept instanceof HTMLElement)) throw new Error('');
-
-    accept.onclick = () => {
-      /** @type {Record<string, boolean>} */
-      const prefs = {};
-      this.#config.categories.forEach((cat) => (prefs[cat.label] = true));
-      this.savePreferences(prefs);
-      this.removeWithAnimation(bar);
-    };
+    if (accept instanceof HTMLElement) {
+      accept.onclick = () => {
+        /** @type {Record<string, boolean>} */
+        const prefs = {};
+        this.#config.categories.forEach((cat) => (prefs[cat.label] = true));
+        this.savePreferences(prefs);
+        this.removeWithAnimation(bar);
+      };
+    }
 
     const reject = bar.querySelector('.reject');
-    if (!(reject instanceof HTMLElement)) throw new Error('');
-
-    reject.onclick = () => {
-      /** @type {Record<string, boolean>} */
-      const prefs = {};
-      this.#config.categories.forEach((cat) => (prefs[cat.label] = cat.required));
-      this.savePreferences(prefs);
-      this.removeWithAnimation(bar);
-    };
+    if (reject instanceof HTMLElement) {
+      reject.onclick = () => {
+        /** @type {Record<string, boolean>} */
+        const prefs = {};
+        this.#config.categories.forEach((cat) => (prefs[cat.label] = cat.required));
+        this.savePreferences(prefs);
+        this.removeWithAnimation(bar);
+      };
+    }
 
     const settings = bar.querySelector('.settings');
-    if (!(settings instanceof HTMLElement)) throw new Error('');
-
-    settings.onclick = () => {
-      this.showSettingsModal(bar);
-    };
+    if (settings instanceof HTMLElement) {
+      settings.onclick = () => this.showSettingsModal(bar);
+    }
   }
 
   /**
@@ -149,7 +153,9 @@ class TinyCookieConsent {
   showSettingsModal(bar) {
     const modal = document.createElement('div');
     modal.className = 'cookie-consent-modal';
-    modal.innerHTML = `
+    modal.innerHTML = this.#config.renderModal
+      ? this.#config.renderModal(this.#config)
+      : `
       <div class="modal-content">
         <h2>Cookie Settings</h2>
         <form class="settings-form">
@@ -173,18 +179,18 @@ class TinyCookieConsent {
     document.body.appendChild(modal);
 
     const save = modal.querySelector('.save');
-    if (!(save instanceof HTMLElement)) throw new Error('');
-
-    save.onclick = () => {
-      /** @type {Record<string, boolean>} */
-      const prefs = {};
-      modal.querySelectorAll('input[type=checkbox]').forEach((input) => {
-        if (input instanceof HTMLInputElement) prefs[input.name] = input.checked;
-      });
-      this.savePreferences(prefs);
-      this.removeWithAnimation(modal);
-      if (bar) this.removeWithAnimation(bar);
-    };
+    if (save instanceof HTMLElement) {
+      save.onclick = () => {
+        /** @type {Record<string, boolean>} */
+        const prefs = {};
+        modal.querySelectorAll('input[type=checkbox]').forEach((input) => {
+          if (input instanceof HTMLInputElement) prefs[input.name] = input.checked;
+        });
+        this.savePreferences(prefs);
+        this.removeWithAnimation(modal);
+        if (bar) this.removeWithAnimation(bar);
+      };
+    }
   }
 
   /**
