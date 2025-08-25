@@ -173,14 +173,73 @@ A **flexible inventory management system** providing:
 
 ---
 
-### 🏷️ Static: `ItemRegistry`
+### 🏷️ Static: `#ItemRegistry`
 
-A global map of item definitions (`id → ItemDef`).
-Used for validating and retrieving item properties.
+TinyInventory comes with a **global item registry** that defines all possible item types before they are used in any inventory.
+This ensures consistency in rules such as stack limits, metadata defaults, weight, and usage behavior (`id → ItemDef`).
+
+#### 🔍 `TinyInventory.itemRegistry` (getter)
+
+Returns a deep-cloned snapshot of the registered item definitions.
+
+* ✅ Prevents accidental mutations of the internal registry.
+* 📑 Each entry includes `id`, `weight`, `maxStack`, `metadata`, `type`, and `onUse`.
+
+**Returns:**
+
+```ts
+Record<string, ItemDef>
+```
 
 ---
 
-### 🛠️ Static: `defineItem(config)`
+#### ❌ `TinyInventory.removeItem(itemId)`
+
+Removes an item type from the registry.
+
+**Parameters:**
+
+* `itemId` *(string)* → The unique identifier.
+
+**Returns:**
+
+* `true` if the item existed and was removed.
+* `false` if the item was not found.
+
+---
+
+#### ✅ `TinyInventory.hasItem(itemId)`
+
+Checks if an item type exists in the registry.
+
+**Parameters:**
+
+* `itemId` *(string)* → The unique identifier.
+
+**Returns:**
+
+* `true` if the item exists.
+* `false` otherwise.
+
+---
+
+#### 📥 `TinyInventory.getItem(itemId)`
+
+Retrieves the definition of a registered item.
+
+**Parameters:**
+
+* `itemId` *(string)* → The unique identifier.
+
+**Returns:**
+
+* `ItemDef` → The item definition.
+
+⚠️ Throws `Error` if the item is not defined.
+
+---
+
+#### 🛠️ Static: `defineItem(config)`
 
 Registers or updates an item in the global registry.
 
