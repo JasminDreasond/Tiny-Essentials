@@ -64,7 +64,6 @@ import { join as pathJoin } from 'node:path';
 /**
  * @typedef {Object} ResolveOptions
  * @property {LocaleCode} [locale] - force resolve using a specific locale first
- * @property {boolean} [skipFallback] - if true, do not fallback to default
  */
 
 /**
@@ -504,7 +503,7 @@ class TinyI18 {
     const prev = this.#currentLocale;
     if (locale === null) {
       // Unload previous selected; keep only default
-      if (prev && prev !== this.#defaultLocale) this.#unloadLocale(prev);
+      if (this.#mode === 'file' && prev && prev !== this.#defaultLocale) this.#unloadLocale(prev);
 
       this.#currentLocale = null;
       return;
@@ -512,7 +511,7 @@ class TinyI18 {
 
     if (locale === this.#defaultLocale) {
       // If switching to default, unload previous selected
-      if (prev && prev !== this.#defaultLocale) this.#unloadLocale(prev);
+      if (this.#mode === 'file' && prev && prev !== this.#defaultLocale) this.#unloadLocale(prev);
       this.#currentLocale = this.#defaultLocale;
       return;
     }
@@ -528,7 +527,8 @@ class TinyI18 {
     }
 
     // Unload previous selected if different and not default
-    if (prev && prev !== this.#defaultLocale && prev !== locale) this.#unloadLocale(prev);
+    if (this.#mode === 'file' && prev && prev !== this.#defaultLocale && prev !== locale)
+      this.#unloadLocale(prev);
 
     this.#currentLocale = locale;
   }
@@ -559,7 +559,7 @@ class TinyI18 {
     if (typeof key !== 'string' || !key)
       throw new TypeError('get: "key" must be a non-empty string');
 
-    const { locale: forceLocale, skipFallback = false } = options || {};
+    const { locale: forceLocale } = options || {};
 
     const order = this.#resolveOrder(forceLocale);
     let resolved = this.#resolveExact(order, key);
@@ -605,9 +605,11 @@ class TinyI18 {
    * Selected locale becomes null.
    */
   resetToDefaultOnly() {
-    for (const loc of Array.from(this.#stringTables.keys())) {
-      if (loc !== this.#defaultLocale) {
-        this.#unloadLocale(loc);
+    if (this.#mode === 'file') {
+      for (const loc of Array.from(this.#stringTables.keys())) {
+        if (loc !== this.#defaultLocale) {
+          this.#unloadLocale(loc);
+        }
       }
     }
     this.#currentLocale = null;
