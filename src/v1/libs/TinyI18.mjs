@@ -85,16 +85,6 @@ import { join as pathJoin } from 'path';
  */
 
 /**
- * Represents overall statistics for the TinyI18 instance.
- *
- * @typedef {Object} Stats
- * @property {ModeTypes} mode - Current storage mode being used ("local" = in-memory, "file" = filesystem).
- * @property {string} defaultLocale - The locale code configured as default.
- * @property {string|null} currentLocale - The locale code currently active, or null if none selected.
- * @property {StatLocale[]} locales - Detailed stats for all tracked locales.
- */
-
-/**
  * Read-only view of registered helpers, exposed to function-based entries.
  *
  * Provides safe access to:
@@ -190,6 +180,26 @@ class TinyI18 {
    */
   get basePath() {
     return this.#basePath;
+  }
+
+  /**
+   * Returns basic stats for debugging/memory insights.
+   * @returns {StatLocale[]}
+   */
+  get stats() {
+    const locales = [];
+    for (const loc of this.#stringTables.keys()) {
+      const strings = Object.keys(this.#stringTables.get(loc) ?? {}).length;
+      const patterns = this.#patternTables.get(loc)?.length ?? 0;
+      locales.push({
+        locale: loc,
+        strings,
+        patterns,
+        isDefault: loc === this.#defaultLocale,
+        isCurrent: loc === this.#currentLocale,
+      });
+    }
+    return locales;
   }
 
   // -------------------- Internal: resolution & materialization --------------------
@@ -656,31 +666,6 @@ class TinyI18 {
     }
 
     return this.#materialize(resolved, params);
-  }
-
-  /**
-   * Returns basic stats for debugging/memory insights.
-   * @returns {Stats}
-   */
-  stats() {
-    const locales = [];
-    for (const loc of this.#stringTables.keys()) {
-      const strings = Object.keys(this.#stringTables.get(loc) ?? {}).length;
-      const patterns = this.#patternTables.get(loc)?.length ?? 0;
-      locales.push({
-        locale: loc,
-        strings,
-        patterns,
-        isDefault: loc === this.#defaultLocale,
-        isCurrent: loc === this.#currentLocale,
-      });
-    }
-    return {
-      mode: this.#mode,
-      defaultLocale: this.#defaultLocale,
-      currentLocale: this.#currentLocale,
-      locales,
-    };
   }
 
   /**

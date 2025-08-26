@@ -209,7 +209,7 @@
 
       // --- Stats button ---
       document.getElementById('btn-stats').addEventListener('click', () => {
-        resStats.textContent = JSON.stringify(i18.stats(), null, 2);
+        resStats.textContent = JSON.stringify(i18.stats, null, 2);
       });
 
       // Initial render
