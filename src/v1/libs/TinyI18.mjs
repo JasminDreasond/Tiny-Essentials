@@ -2,6 +2,13 @@ import { readFile } from 'fs/promises';
 import { join as pathJoin } from 'path';
 
 /**
+ * Supported operating modes for TinyI18.
+ * - `"local"` → All translations are managed entirely in memory (browser + Node.js).
+ * - `"file"` → Translations are loaded from JSON files on disk (Node.js only).
+ * @typedef {"local" | "file"} ModeTypes
+ */
+
+/**
  * Dictionary of translation keys mapped to values.
  *
  * @typedef {Record<string, any>} Dict
@@ -54,7 +61,7 @@ import { join as pathJoin } from 'path';
 
 /**
  * @typedef {Object} TinyI18Options
- * @property {"local"|"file"} mode
+ * @property {ModeTypes} mode
  * @property {LocaleCode} defaultLocale
  * @property {string} [basePath] - Required in file mode. Directory with <locale>.json
  * @property {Dict} [localResources] - Optional initial map { locale: dict } for local mode
@@ -81,7 +88,7 @@ import { join as pathJoin } from 'path';
  * Represents overall statistics for the TinyI18 instance.
  *
  * @typedef {Object} Stats
- * @property {"local"|"file"} mode - Current storage mode being used ("local" = in-memory, "file" = filesystem).
+ * @property {ModeTypes} mode - Current storage mode being used ("local" = in-memory, "file" = filesystem).
  * @property {string} defaultLocale - The locale code configured as default.
  * @property {string|null} currentLocale - The locale code currently active, or null if none selected.
  * @property {StatLocale[]} locales - Detailed stats for all tracked locales.
@@ -114,7 +121,7 @@ import { join as pathJoin } from 'path';
  * - Safe: no dynamic code eval from files; functions in file mode are referenced by name ("$fn").
  */
 class TinyI18 {
-  /** @type {"local"|"file"} */
+  /** @type {ModeTypes} */
   #mode;
   /** @type {LocaleCode} */
   #defaultLocale;
@@ -145,10 +152,42 @@ class TinyI18 {
   }
 
   /**
-   * @returns {LocaleCode}
+   * The default locale code chosen at construction time.
+   * This locale is always kept in memory as a fallback.
+   * @type {LocaleCode}
    */
   get defaultLocale() {
     return this.#defaultLocale;
+  }
+
+  /**
+   * The current operating mode of this instance.
+   * Determines whether translations are managed in memory ("local")
+   * or loaded from JSON files ("file").
+   * @type {ModeTypes}
+   */
+  get mode() {
+    return this.#mode;
+  }
+
+  /**
+   * Whether strict mode is enabled.
+   * - `true` → Missing keys, invalid regex, or helper errors throw exceptions.
+   * - `false` → Failures are ignored silently, returning fallback values.
+   * @type {boolean}
+   */
+  get strict() {
+    return this.#strict;
+  }
+
+  /**
+   * Base directory path used in `"file"` mode to locate locale JSON files.
+   * - In `"local"` mode this will always be `null`.
+   * - In `"file"` mode this is the root folder passed to the constructor.
+   * @type {string|null}
+   */
+  get basePath() {
+    return this.#basePath;
   }
 
   // -------------------- Internal: resolution & materialization --------------------

@@ -134,9 +134,12 @@
 
       // --- Setup TinyI18 in local mode for demo ---
       const i18 = new TinyI18({
+        strict: true,
         mode: 'local',
         defaultLocale: 'en',
       });
+
+      window.i18 = i18;
 
       i18.registerHelper('richList', ({ items = [] }) => {
         return items.map((x, i) => `#${i + 1}: ${x}`).join(', ');
