@@ -152,7 +152,11 @@
         },
         interpolation: '{name} has {count} items',
         regexTest: {
-          match: { $pattern: /^user\.\d+$/, value: 'Matched a user ID key' },
+          match: {
+            $pattern: /^user\.\d+$/,
+            value: 'Matched a user ID key',
+            elseValue: 'Non-matched a user ID key',
+          },
         },
         ui: {
           list: (params) => {
@@ -193,7 +197,7 @@
         resTitle.textContent = i18.t('app.title');
         resItems.textContent = i18.t('app.items', { count: 5 });
         resFallback.textContent = i18.t('app.items', { count: 3 });
-        resRegex.textContent = i18.t('user.123');
+        resRegex.textContent = i18.p('user.123');
         resFn.textContent = i18.t('ui.list', { items: ['Apple', 'Banana', 'Cherry'] });
         resInterpolation.textContent = i18.t('interpolation', { name: 'Alice', count: 7 });
       }

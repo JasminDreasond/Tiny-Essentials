@@ -51,12 +51,14 @@ import { join as pathJoin } from 'path';
  * @typedef {Object} PatternEntry
  * @property {RegExp} $pattern - Compiled regular expression used for matching.
  * @property {any} value - Translation value or resolver function associated with the pattern.
+ * @property {any} elseValue - Translation value or resolver function associated with the pattern.
  */
 
 /**
  * @typedef {Object} FileModeEntryJSON
  * @property {string} [$pattern] - regex as string e.g. "^user\\.(\\d+)$"
  * @property {string|Object} value - string or { $fn: string, args?: any }
+ * @property {string|Object} elseValue - string or { $fn: string, args?: any }
  */
 
 /**
@@ -65,7 +67,7 @@ import { join as pathJoin } from 'path';
  * @property {LocaleCode} defaultLocale
  * @property {string} [basePath] - Required in file mode. Directory with <locale>.json
  * @property {Dict} [localResources] - Optional initial map { locale: dict } for local mode
- * @property {boolean} [strict] - If true, throws on missing keys; else returns key
+ * @property {boolean} [strict=false] - If true, throws on missing keys; else returns key
  */
 
 /**
@@ -243,9 +245,8 @@ class TinyI18 {
     for (const loc of order) {
       const patterns = this.#patternTables.get(loc) || [];
       for (const entry of patterns) {
-        if (entry.$pattern.test(key)) {
-          return entry.value;
-        }
+        if (entry.$pattern.test(key)) return entry.value;
+        else return entry.elseValue ?? undefined;
       }
     }
     return undefined;
@@ -357,7 +358,7 @@ class TinyI18 {
           node.$pattern instanceof RegExp &&
           Object.prototype.hasOwnProperty.call(node, 'value')
         ) {
-          patterns.push({ $pattern: node.$pattern, value: node.value });
+          patterns.push({ $pattern: node.$pattern, value: node.value, elseValue: node.elseValue });
           return;
         }
         for (const [k, v] of Object.entries(node)) {
@@ -431,7 +432,11 @@ class TinyI18 {
         Object.prototype.hasOwnProperty.call(node, 'value')
       ) {
         const regex = this.#safeRegExp(node.$pattern);
-        patterns.push({ $pattern: regex, value: this.#coerceFileValue(node.value) });
+        patterns.push({
+          $pattern: regex,
+          value: this.#coerceFileValue(node.value),
+          elseValue: this.#coerceFileValue(node.elseValue),
+        });
         return;
       }
 
@@ -656,16 +661,38 @@ class TinyI18 {
 
     const order = this.#resolveOrder(forceLocale);
     let resolved = this.#resolveExact(order, key);
-
-    if (resolved === undefined) resolved = this.#resolveByPattern(order, key);
     if (resolved === undefined) {
-      if (this.#strict) {
-        throw new Error(`TinyI18: missing translation for key "${key}"`);
-      }
+      if (this.#strict) throw new Error(`TinyI18: missing translation for key "${key}"`);
       return key; // graceful fallback to key
     }
 
     return this.#materialize(resolved, params);
+  }
+
+  /**
+   * @param {string} key
+   * @param {ResolveOptions} [options]
+   * @returns {any}
+   */
+  p(key, options) {
+    return this.resolveByPattern(key, options);
+  }
+
+  /**
+   * Alias of p()
+   * @param {string} key
+   * @param {ResolveOptions} [options]
+   * @returns {any}
+   */
+  resolveByPattern(key, options) {
+    const { locale: forceLocale } = options || {};
+    const order = this.#resolveOrder(forceLocale);
+    let resolved = this.#resolveByPattern(order, key);
+    if (resolved === undefined) {
+      if (this.#strict) throw new Error(`TinyI18: missing translation for key "${key}"`);
+      return key; // graceful fallback to key
+    }
+    return resolved;
   }
 
   /**
