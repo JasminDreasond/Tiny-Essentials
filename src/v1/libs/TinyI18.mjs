@@ -133,6 +133,9 @@ class TinyI18 {
   /** @type {Map<string, Function>} */
   #helpers = new Map();
 
+  /** @type {Map<string, RegExp>} */
+  #regexCache = new Map();
+
   /**
    * Gets the currently selected locale, or null if only default is active.
    * @returns {LocaleCode|null}
@@ -198,15 +201,16 @@ class TinyI18 {
   }
 
   /**
-   * @param {string|((params: Dict, helpers: HelpersReadonly<any, any>) => any)|{ $fn: string; args: any; }} value
+   * Value can be:
+   * - string
+   * - function (params, helpers) => any
+   * - { $fn: string, args?: any }   // file mode placeholder resolved via helpers
+   *
+   * @param {string | ((params: Dict, helpers: HelpersReadonly<any, any>) => string) | { $fn: string; args?: any }} value
    * @param {Dict} [params]
    * @returns {string}
    */
   #materialize(value, params) {
-    // Value can be:
-    // - string
-    // - function (params, helpers) => any
-    // - { $fn: string, args?: any }   // file mode placeholder resolved via helpers
     if (typeof value === 'string') return this.#interpolate(value, params);
     if (typeof value === 'function') return value(params ?? {}, this.#helpersReadonly());
 
@@ -277,9 +281,9 @@ class TinyI18 {
       throw new TypeError('#ingestLocale: "raw" must be an object');
 
     /** @type {Dict} */
-    const flat = { ...this.#stringTables.get(locale) ?? {} };
+    const flat = { ...(this.#stringTables.get(locale) ?? {}) };
     /** @type {PatternEntry[]} */
-    const patterns = [ ...this.#patternTables.get(locale) ?? [] ];
+    const patterns = [...(this.#patternTables.get(locale) ?? [])];
 
     /**
      * @param {string} prefix
@@ -353,13 +357,13 @@ class TinyI18 {
       return;
     }
 
-    /** 
+    /**
      * Convert JSON to internal form: flatten + compile patterns + keep $fn placeholders
      * @type {Dict}
      */
-    const flat = { ...this.#stringTables.get(locale) ?? {} };
+    const flat = { ...(this.#stringTables.get(locale) ?? {}) };
     /** @type {PatternEntry[]} */
-    const patterns = [ ...this.#patternTables.get(locale) ?? [] ];
+    const patterns = [...(this.#patternTables.get(locale) ?? [])];
 
     /**
      * @param {string} prefix
@@ -405,11 +409,18 @@ class TinyI18 {
     this.#patternTables.set(locale, patterns);
   }
 
-  /** @param {string} src */
+  /**
+   * @param {string} src
+   * @returns {RegExp}
+   */
   #safeRegExp(src) {
+    const tinyReg = this.#regexCache.get(src);
+    if (tinyReg) return tinyReg;
     // Basic safety wrapper; no flags support in JSON to keep it simple and deterministic.
     try {
-      return new RegExp(src);
+      const re = new RegExp(src);
+      this.#regexCache.set(src, re);
+      return re;
     } catch {
       if (this.#strict) throw new Error(`TinyI18: invalid regex "${src}" in file`);
       return /^$/; // never matches
