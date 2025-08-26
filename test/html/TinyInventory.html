@@ -601,8 +601,8 @@
           btn.addEventListener('click', () => {
             const slotId = btn.getAttribute('data-eq');
             const input = container.querySelector(`input[data-slot="${slotId}"]`);
-            const slotIndex = input.value.trim();
-            if (!slotIndex) return toast('slotIndex required', 'warn');
+            const slotIndex = parseFloat(input.value.trim());
+            if (Number.isNaN(slotIndex)) return toast('slotIndex required', 'warn');
             try {
               inv.equipItem({ slotId, slotIndex });
               logEvent('equip', { slotId, slotIndex });
