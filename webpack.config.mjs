@@ -92,5 +92,6 @@ addModule(1, './src/v1/build/TinyArrayPaginator.mjs', 'TinyArrayPaginator', true
 addModule(1, './src/v1/build/TinyInventory.mjs', 'TinyInventory', true);
 addModule(1, './src/v1/build/TinyInventoryTrader.mjs', 'TinyInventoryTrader', true);
 addModule(1, './src/v1/build/TinyCookieConsent.mjs', 'TinyCookieConsent', true);
+addModule(1, './src/v1/build/TinyI18.mjs', 'TinyI18', true);
 
 export default modules;

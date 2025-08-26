@@ -134,8 +134,10 @@ import TinyArrayPaginator from './libs/TinyArrayPaginator.mjs';
 import TinyInventory from './libs/TinyInventory.mjs';
 import TinyInventoryTrader from './libs/TinyInventoryTrader.mjs';
 import TinyCookieConsent from './libs/TinyCookieConsent.mjs';
+import TinyI18 from './libs/TinyI18.mjs';
 
 export {
+  TinyI18,
   TinyCookieConsent,
   TinyInventory,
   TinyInventoryTrader,

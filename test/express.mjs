@@ -97,22 +97,74 @@ const readFileUrl =
       }
     });
 
+/** @type {Record<string, string>} */
+const nodePolyfills = {
+  fs: `
+    function readFile() { console.warn("fs.readFile is not available in browser"); }
+    function writeFile() { console.warn("fs.writeFile is not available in browser"); }
+    const promises = {
+      readFile: async () => { console.warn("fs.promises.readFile is not available in browser"); return ""; },
+      writeFile: async () => { console.warn("fs.promises.writeFile is not available in browser"); }
+    };
+  `,
+  'fs/promises': `
+    async function readFile() { console.warn("fs.promises.readFile is not available in browser"); return ""; }
+    async function writeFile() { console.warn("fs.promises.writeFile is not available in browser"); }
+  `,
+  path: `
+    function join(...args) { return args.join("/"); }
+    function resolve(...args) { return args.join("/"); }
+  `,
+  os: `
+    function platform() { return "browser"; }
+    function homedir() { return "/"; }
+  `,
+};
+
+nodePolyfills['node:fs'] = nodePolyfills.fs;
+nodePolyfills['node:fs/promises'] = nodePolyfills['fs/promises'];
+nodePolyfills['node:path'] = nodePolyfills.path;
+nodePolyfills['node:os'] = nodePolyfills.os;
+
 /** @type {ReadFileUrl} */
 const jsLoader = async (filePath, fileName, req, res) => {
   try {
     let code = await fs.promises.readFile(filePath, 'utf-8');
 
-    // Remove imports indesejados
-    for (const modName in importsToRemove) {
-      const args = importsToRemove[modName];
-      const importRegex = new RegExp(
-        `import\\s*\\{\\s*${args.join('\\s*,\\s*')}\\s*\\}\\s*from\\s*['"]${modName}['"];?`,
-        'g',
+    // Detecta imports de módulos Node e substitui por mocks
+    for (const modName of Object.keys(nodePolyfills)) {
+      // import default
+      code = code.replace(
+        new RegExp(`import\\s+([a-zA-Z0-9_$]+)\\s+from\\s*['"]${modName}['"];?`, 'g'),
+        (_match, defName) =>
+          `const ${defName} = (function(){ ${nodePolyfills[modName]} return exports; })();`,
       );
-      code = code.replace(importRegex, '');
+
+      // import * as alias
+      code = code.replace(
+        new RegExp(`import\\s+\\*\\s+as\\s+([a-zA-Z0-9_$]+)\\s+from\\s*['"]${modName}['"];?`, 'g'),
+        (_match, alias) =>
+          `const ${alias} = (function(){ let exports={}; ${nodePolyfills[modName]} return exports; })();`,
+      );
+
+      // import { x, y as z }
+      code = code.replace(
+        new RegExp(`import\\s*\\{([^}]+)\\}\\s*from\\s*['"]${modName}['"];?`, 'g'),
+        (_match, members) => {
+          return members
+            .split(',')
+            .map((m) => m.trim())
+            .map((m) => {
+              const [orig, alias] = m.split(/\s+as\s+/).map((s) => s.trim());
+              const name = alias || orig;
+              return `const ${name} = (function(){ let exports={}; ${nodePolyfills[modName]} return exports.${orig}; })();`;
+            })
+            .join('\n');
+        },
+      );
     }
 
-    // Conversão de 'export default something;' para 'export { something };'
+    // Normalização de export default
     code = code.replace(/export\s+default\s+([a-zA-Z0-9_$]+)\s*;?/g, 'export { $1 };');
 
     // Conversão de 'import something from "module";' para 'import { something } from "module";'
