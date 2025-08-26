@@ -1,5 +1,5 @@
-import { readFile } from 'node:fs/promises';
-import { join as pathJoin } from 'node:path';
+import { readFile } from 'fs/promises';
+import { join as pathJoin } from 'path';
 
 /**
  * Dictionary of translation keys mapped to values.

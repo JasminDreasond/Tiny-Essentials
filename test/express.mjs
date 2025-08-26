@@ -121,11 +121,6 @@ const nodePolyfills = {
   `,
 };
 
-nodePolyfills['node:fs'] = nodePolyfills.fs;
-nodePolyfills['node:fs/promises'] = nodePolyfills['fs/promises'];
-nodePolyfills['node:path'] = nodePolyfills.path;
-nodePolyfills['node:os'] = nodePolyfills.os;
-
 /** @type {ReadFileUrl} */
 const jsLoader = async (filePath, fileName, req, res) => {
   try {
