@@ -2,10 +2,31 @@ import { readFile } from 'node:fs/promises';
 import { join as pathJoin } from 'node:path';
 
 /**
+ * Dictionary of translation keys mapped to values.
+ *
  * @typedef {Record<string, any>} Dict
  */
 
 /**
+ * Represents a translation entry as it appears in JSON files.
+ *
+ * @typedef {{
+ *   $pattern: string,
+ *   $fn: string,
+ *   [key: string]: string
+ * }} FileValue
+ *
+ * `$pattern` - Regex string (will be compiled into RegExp).
+ *
+ * `$fn` - Helper function name associated with this entry.
+
+ * `[key]` - Additional key-value pairs for interpolation or extra metadata.
+ */
+
+/**
+ * Represents a valid locale code string.
+ * Example: "en", "pt-BR", "fr".
+ *
  * @typedef {string} LocaleCode
  */
 
@@ -18,9 +39,11 @@ import { join as pathJoin } from 'node:path';
  */
 
 /**
+ * Represents a single regex-based translation entry.
+ *
  * @typedef {Object} PatternEntry
- * @property {RegExp} $pattern
- * @property {any} value
+ * @property {RegExp} $pattern - Compiled regular expression used for matching.
+ * @property {any} value - Translation value or resolver function associated with the pattern.
  */
 
 /**
@@ -45,26 +68,39 @@ import { join as pathJoin } from 'node:path';
  */
 
 /**
+ * Represents statistics for a specific locale.
+ *
  * @typedef {Object} StatLocale
- * @property {string} locale
- * @property {number} strings
- * @property {number} patterns
- * @property {boolean} isDefault
- * @property {boolean} isCurrent
+ * @property {string} locale - The locale code (e.g., "en", "pt-BR").
+ * @property {number} strings - Total number of static string entries in this locale.
+ * @property {number} patterns - Total number of regex-based pattern entries in this locale.
+ * @property {boolean} isDefault - Whether this locale is the default fallback.
+ * @property {boolean} isCurrent - Whether this locale is currently loaded/active.
  */
 
 /**
+ * Represents overall statistics for the TinyI18 instance.
+ *
  * @typedef {Object} Stats
- * @property {string} mode
- * @property {string} defaultLocale
- * @property {string|null} currentLocale
- * @property {StatLocale[]} locales
+ * @property {"local"|"file"} mode - Current storage mode being used ("local" = in-memory, "file" = filesystem).
+ * @property {string} defaultLocale - The locale code configured as default.
+ * @property {string|null} currentLocale - The locale code currently active, or null if none selected.
+ * @property {StatLocale[]} locales - Detailed stats for all tracked locales.
  */
 
 /**
+ * Read-only view of registered helpers, exposed to function-based entries.
+ *
+ * Provides safe access to:
+ * - check if a helper exists by name
+ * - call a helper by name, passing arguments
+ *
+ * @template {any} T
+ * @template {any} R
  * @typedef {Object} HelpersReadonly
- * @property {(name: string) => boolean} has
- * @property {(name: string, arg: any, extras: Record<string, any>) => any} call
+ * @property {(name: string) => boolean} has - Check if a helper with given name is registered.
+ * @property {(name: string, arg: T, extras?: Record<string, any>) => R} call -
+ * Invoke a helper by name with an argument and optional extras.
  */
 
 /**
@@ -163,7 +199,7 @@ class TinyI18 {
   }
 
   /**
-   * @param {string|((params: Dict, helpers: HelpersReadonly) => any)|{ $fn: string; args: any; }} value
+   * @param {string|((params: Dict, helpers: HelpersReadonly<any, any>) => any)|{ $fn: string; args: any; }} value
    * @param {Dict} [params]
    * @returns {string}
    */
@@ -217,7 +253,7 @@ class TinyI18 {
     return cur;
   }
 
-  /** @returns {HelpersReadonly} */
+  /** @returns {HelpersReadonly<any, any>} */
   #helpersReadonly() {
     // Provide a minimal read-only facade for helpers to call other helpers safely if needed.
     return {
@@ -298,14 +334,6 @@ class TinyI18 {
   }
 
   // -------------------- File mode loading --------------------
-
-  /**
-   * @typedef {{
-   *   $pattern: string,
-   *   $fn: string,
-   *   [key: string]: string
-   * }} FileValue
-   */
 
   /**
    * @param {string} locale
