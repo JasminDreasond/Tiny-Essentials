@@ -127,14 +127,16 @@ class TinyI18 {
   #defaultLocale;
   /** @type {LocaleCode|null} */
   #currentLocale = null;
-  /** @type {Map<LocaleCode, Dict>} */
-  #stringTables = new Map(); // plain key => string | { $fn } | Function
-  /** @type {Map<LocaleCode, PatternEntry[]>} */
-  #patternTables = new Map(); // array of { $pattern: RegExp, value }
   /** @type {boolean} */
   #strict;
   /** @type {string|null} */
   #basePath = null;
+
+  /** @type {Map<LocaleCode, Dict>} */
+  #stringTables = new Map(); // plain key => string | { $fn } | Function
+
+  /** @type {Map<LocaleCode, PatternEntry[]>} */
+  #patternTables = new Map(); // array of { $pattern: RegExp, value }
 
   // Helpers registry for function-based entries in both modes.
   /** @type {Map<string, Function>} */
@@ -523,6 +525,19 @@ class TinyI18 {
   }
 
   /**
+   * Clears the internal regex cache.
+   *
+   * The regex cache stores compiled {@link RegExp} objects to avoid
+   * recompiling frequently used patterns. This wrapper ensures cache
+   * management is always controlled via the API instead of direct access.
+   *
+   * @returns {void}
+   */
+  clearRegexCache() {
+    this.#regexCache.clear();
+  }
+
+  /**
    * Registers a helper function available to function-based entries and $fn references.
    * @param {string} name
    * @param {Function} fn
@@ -532,6 +547,20 @@ class TinyI18 {
       throw new TypeError('registerHelper: "name" must be non-empty string');
     if (typeof fn !== 'function') throw new TypeError('registerHelper: "fn" must be a function');
     this.#helpers.set(name, fn);
+  }
+
+  /**
+   * Unregisters a previously registered helper function.
+   *
+   * If the helper does not exist, this method silently does nothing.
+   *
+   * @param {string} name - The name of the helper to remove.
+   * @returns {boolean} `true` if the helper was removed, `false` if it was not found.
+   */
+  unregisterHelper(name) {
+    if (typeof name !== 'string' || !name)
+      throw new TypeError('unregisterHelper: "name" must be non-empty string');
+    return this.#helpers.delete(name);
   }
 
   /**
