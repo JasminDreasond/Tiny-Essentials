@@ -408,6 +408,54 @@ Removes unnecessary `null` values, **compacting slots**.
 
 ---
 
+## 🧹 Inventory Clearing
+
+### 🧽 `clear()`
+
+Clears **all items** and **event listeners** from the inventory.
+
+* Resets normal and special slots.
+* Clears all registered event listeners (`add`, `remove`, `use`, `set`).
+* Preserves max limits and slot definitions.
+
+---
+
+### 🧹 `clearAllEvents()`
+
+Removes **all registered event listeners** from the inventory.
+
+* Event types affected: `"add"`, `"remove"`, `"use"`, `"set"`.
+* Does not affect any items in inventory.
+
+---
+
+### 🗃️ `clearAllItems()`
+
+Removes **all items** from the inventory, including normal and special slots.
+
+* Calls `clearItems()` and `clearSpecialItems()` internally.
+* Does not remove slots or event listeners.
+
+---
+
+### 📦 `clearItems()`
+
+Clears all items in **normal inventory slots**.
+
+* Resets the `#items` array to empty.
+* Does not affect special slots or event listeners.
+
+---
+
+### 🎯 `clearSpecialItems()`
+
+Clears all items in **special slots**, without removing the slots themselves.
+
+* Each slot remains defined, but its `item` property is set to `null`.
+* Does not affect normal slots or event listeners.
+
+---
+
 ## ➕ Item Management
 
 ### 📥 `addItem(options)`

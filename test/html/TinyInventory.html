@@ -255,7 +255,7 @@
           <div class="grid grid-3">
             <input id="st_runs" type="number" value="10" />
             <button class="btn" id="st_addRandom">Add random items</button>
-            <button class="btn bad" id="st_clearInv">Clear inventory</button>
+            <button class="btn bad" id="st_resetInv">Reset inventory</button>
           </div>
         </div>
 
@@ -334,6 +334,7 @@
           <header><h2>Inventory Management</h2></header>
           <div class="row">
             <button class="btn" id="inv_compact">Compact Inventory</button>
+            <button class="btn" id="clear_compact">Clear Inventory</button>
           </div>
         </div>
 
@@ -947,6 +948,21 @@
         }
       });
 
+      byId('clear_compact').addEventListener('click', () => {
+        if (!inv) {
+          toast('Create an inventory first.', 'warn');
+          return;
+        }
+        try {
+          inv.clearAllItems();
+          toast('Inventory cleared!', 'ok');
+          renderInv();
+          refreshKPI();
+        } catch (e) {
+          toast('Error compacting inventory: ' + e.message, 'bad');
+        }
+      });
+
       // ---------- Inventory Status ----------
       byId('inv_hasSpace').addEventListener('click', () => {
         if (!inv) {
@@ -1132,7 +1148,7 @@
         refreshKPI();
       });
 
-      byId('st_clearInv').addEventListener('click', () => {
+      byId('st_resetInv').addEventListener('click', () => {
         if (!inv) return toast('Create an inventory first', 'warn');
         // Recreate inventory with same options, empty items
         const opts = {
@@ -1147,7 +1163,7 @@
         inv.onRemoveItem((e) => logEvent('onRemove', e));
         inv.onUseItem((e) => logEvent('onUse', e));
         renderInv();
-        toast('Inventory cleared', 'warn');
+        toast('Inventory reset executed', 'warn');
         refreshKPI();
       });
 

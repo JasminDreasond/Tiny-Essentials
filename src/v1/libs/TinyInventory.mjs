@@ -1593,6 +1593,59 @@ class TinyInventory {
   /////////////////////////////////////////////////////////////////
 
   /**
+   * Clears all items and event listeners from the inventory.
+   * Resets the inventory state but preserves max limits and slot definitions.
+   *
+   * @returns {void}
+   */
+  clear() {
+    this.clearAllItems();
+    this.clearAllEvents();
+  }
+
+  /**
+   * Removes all registered event listeners from the inventory.
+   *
+   * @returns {void}
+   */
+  clearAllEvents() {
+    this.#events = { add: [], remove: [], use: [], set: [] };
+  }
+
+  /**
+   * Clears all items in normal and special slots and triggers remove events.
+   *
+   * @returns {void}
+   */
+  clearAllItems() {
+    this.clearItems();
+    this.clearSpecialItems();
+  }
+
+  /**
+   * Clears all items in the normal inventory slots and triggers remove events.
+   *
+   * @returns {void}
+   */
+  clearItems() {
+    for (let i = this.#items.length - 1; i >= 0; i--) {
+      if (this.#items[i]) this.deleteItem(i, true);
+    }
+  }
+
+  /**
+   * Clears all items in special slots and triggers remove events.
+   *
+   * @returns {void}
+   */
+  clearSpecialItems() {
+    for (const slotId of this.#specialSlots.keys()) {
+      const slot = this.#specialSlots.get(slotId);
+      if (slot?.item) this.deleteSpecialItem(slotId, true);
+    }
+  }
+
+  /**
    * Creates a deep copy of this inventory.
    *
    * The cloned inventory will contain the same items, slots, and metadata,
