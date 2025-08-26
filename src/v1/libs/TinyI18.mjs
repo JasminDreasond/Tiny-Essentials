@@ -276,9 +276,10 @@ class TinyI18 {
     if (!raw || typeof raw !== 'object')
       throw new TypeError('#ingestLocale: "raw" must be an object');
 
-    const flat = Object.create(null);
+    /** @type {Dict} */
+    const flat = { ...this.#stringTables.get(locale) ?? {} };
     /** @type {PatternEntry[]} */
-    const patterns = [];
+    const patterns = [ ...this.#patternTables.get(locale) ?? [] ];
 
     /**
      * @param {string} prefix
@@ -318,7 +319,7 @@ class TinyI18 {
 
     // Ensure default exists
     if (!this.#stringTables.has(this.#defaultLocale)) {
-      this.#stringTables.set(this.#defaultLocale, Object.create(null));
+      this.#stringTables.set(this.#defaultLocale, {});
       this.#patternTables.set(this.#defaultLocale, []);
     }
   }
@@ -347,15 +348,18 @@ class TinyI18 {
       if (!(err instanceof Error)) return;
       if (this.#strict) throw new Error(`TinyI18: failed to load or parse ${file}: ${err.message}`);
       // register empty to avoid repeated I/O
-      this.#stringTables.set(locale, Object.create(null));
+      this.#stringTables.set(locale, {});
       this.#patternTables.set(locale, []);
       return;
     }
 
-    // Convert JSON to internal form: flatten + compile patterns + keep $fn placeholders
-    const flat = Object.create(null);
+    /** 
+     * Convert JSON to internal form: flatten + compile patterns + keep $fn placeholders
+     * @type {Dict}
+     */
+    const flat = { ...this.#stringTables.get(locale) ?? {} };
     /** @type {PatternEntry[]} */
-    const patterns = [];
+    const patterns = [ ...this.#patternTables.get(locale) ?? [] ];
 
     /**
      * @param {string} prefix
@@ -461,7 +465,7 @@ class TinyI18 {
 
     // Ensure default locale is present (empty if not provided yet).
     if (!this.#stringTables.has(this.#defaultLocale)) {
-      this.#stringTables.set(this.#defaultLocale, Object.create(null));
+      this.#stringTables.set(this.#defaultLocale, {});
       this.#patternTables.set(this.#defaultLocale, []);
     }
 
@@ -519,9 +523,9 @@ class TinyI18 {
     // Load or ensure presence
     if (!this.#stringTables.has(locale)) {
       if (this.#mode === 'file') await this.#loadLocaleFromFile(locale);
-      else {
+      else if (!this.#stringTables.has(locale)) {
         // local mode: if not previously provided, create empty containers
-        this.#stringTables.set(locale, Object.create(null));
+        this.#stringTables.set(locale, {});
         this.#patternTables.set(locale, []);
       }
     }
