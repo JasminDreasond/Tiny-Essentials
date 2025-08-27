@@ -57,8 +57,7 @@ class TinySimpleDice {
    * @throws {TypeError} If value is not a boolean
    */
   set allowZero(value) {
-    if (typeof value !== 'boolean')
-      throw new TypeError('allowZero must be a boolean.');
+    if (typeof value !== 'boolean') throw new TypeError('allowZero must be a boolean.');
     this.#allowZero = value;
   }
 
