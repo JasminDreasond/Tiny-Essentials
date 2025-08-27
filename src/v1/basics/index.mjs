@@ -1,7 +1,13 @@
 import arraySortPositions from '../../legacy/libs/arraySortPositions.mjs';
 import asyncReplace from '../../legacy/libs/replaceAsync.mjs';
 import { shuffleArray } from './array.mjs';
-import { breakdownDuration, formatCustomTimer, formatDayTimer, formatTimer, getTimeDuration } from './clock.mjs';
+import {
+  breakdownDuration,
+  formatCustomTimer,
+  formatDayTimer,
+  formatTimer,
+  getTimeDuration,
+} from './clock.mjs';
 import {
   readJsonBlob,
   saveJsonFile,

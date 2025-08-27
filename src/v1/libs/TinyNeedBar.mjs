@@ -195,17 +195,13 @@ class TinyNeedBar {
   }
 
   /**
-   * Executes one tick of decay, applying all active factors.
+   * Applies a total decay value to the bar and updates both current and infinite values.
+   * This is a private helper used by the public tick methods.
    *
-   * @returns {TickResult}
+   * @param {number} removedTotal - The total amount to remove from the bar during this tick.
+   * @returns {TickResult} An object containing detailed information about the tick.
    */
-  tick() {
-    let removedTotal = 0;
-
-    for (let [_, factor] of this.#factors.entries()) {
-      removedTotal += factor.amount * factor.multiplier;
-    }
-
+  #tick(removedTotal) {
     const prevValue = this.#infiniteValue;
     this.#infiniteValue -= removedTotal;
     this.#currentValue = Math.max(0, this.#currentValue - removedTotal);
@@ -220,6 +216,47 @@ class TinyNeedBar {
       remainingValue: this.#currentValue,
       infiniteRemaining: this.#infiniteValue,
     };
+  }
+
+  /**
+   * Executes one tick of decay, applying all active factors.
+   *
+   * @returns {TickResult}
+   */
+  tick() {
+    let removedTotal = 0;
+    for (let [_, factor] of this.#factors.entries()) {
+      removedTotal += factor.amount * factor.multiplier;
+    }
+    return this.#tick(removedTotal);
+  }
+
+  /**
+   * Executes one tick of decay using a temporary factor.
+   *
+   * @param {BarFactor} tempFactor - Temporary factor to apply only in this tick.
+   * @returns {TickResult}
+   */
+  tickWithTempFactor(tempFactor) {
+    if (!tempFactor) throw new Error('You must provide a factor to apply.');
+    let removedTotal = 0;
+    for (let [_, factor] of this.#factors.entries()) {
+      removedTotal += factor.amount * factor.multiplier;
+    }
+    if (tempFactor) removedTotal += tempFactor.amount * (tempFactor.multiplier ?? 1);
+    return this.#tick(removedTotal);
+  }
+
+  /**
+   * Executes one tick using only the specified factor.
+   *
+   * @param {BarFactor} factor - The single factor to apply.
+   * @returns {TickResult}
+   */
+  tickSingleFactor(factor) {
+    if (!factor) throw new Error('You must provide a factor to apply.');
+    const removedTotal = factor.amount * (factor.multiplier ?? 1);
+    return this.#tick(removedTotal);
   }
 
   /**

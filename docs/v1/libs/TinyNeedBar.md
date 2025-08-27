@@ -150,6 +150,21 @@ Execute one tick of decay using all active factors.
 const result = bar.tick();
 console.log(result.remainingValue);
 ```
+---
+
+#### `tickWithTempFactor(tempFactor): TickResult` ⏱️
+
+Executes one tick using a **temporary factor** applied only for this tick, in addition to the regular factors.
+
+**Use case:** Useful for testing temporary boosts or penalties without modifying the permanent factors.
+
+---
+
+#### `tickSingleFactor(factor): TickResult` ⏱️
+
+Executes one tick using **only the specified factor**, ignoring all other factors.
+
+**Use case:** Perfect for controlled testing of a single effect or for one-off calculations.
 
 ---
 
