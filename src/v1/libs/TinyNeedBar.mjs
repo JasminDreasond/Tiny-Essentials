@@ -1,22 +1,47 @@
+/**
+ * @typedef {Object} TickResult
+ * @property {number} prevValue - Infinite value before applying decay.
+ * @property {number} removedTotal - Total amount removed this tick.
+ * @property {number} removedPercent - Percentage of max removed this tick.
+ * @property {number} currentPercent - Current percentage relative to max.
+ * @property {number} remainingValue - Current clamped value (≥ 0).
+ * @property {number} infiniteRemaining - Current infinite value (can be negative).
+ */
+
+/**
+ * A utility class to simulate a "need bar" system.
+ *
+ * The bar decreases over time according to defined factors (each with an amount and multiplier).
+ * - The **main factor** controls the base decay per tick.
+ * - Additional factors can be added dynamically.
+ *
+ * The system tracks two values:
+ * - `currentValue` → cannot go below zero.
+ * - `infiniteValue` → can decrease infinitely into negative numbers.
+ */
 class TinyNeedBar {
   /**
+   * Stores all factors that influence decay.
+   * Each entry contains an amount and a multiplier.
    * @type {Map<string, {amount: number, multiplier: number}>}
    */
   #factors = new Map();
 
-  /** @type {number} */
+  /** Maximum value of the bar. @type {number} */
   #maxValue;
 
-  /** @type {number} */
+  /** Current clamped value of the bar (never below 0). @type {number} */
   #currentValue;
 
-  /** @type {number} */
+  /** Current "infinite" value of the bar (can go negative). @type {number} */
   #infiniteValue;
 
   /**
-   * @param {number} maxValue
-   * @param {number} baseDecay
-   * @param {number} baseDecayMulti
+   * Creates a new need bar instance.
+   *
+   * @param {number} [maxValue=100] - Maximum value of the bar.
+   * @param {number} [baseDecay=1] - Base amount reduced each tick.
+   * @param {number} [baseDecayMulti=1] - Multiplier applied to the base decay.
    */
   constructor(maxValue = 100, baseDecay = 1, baseDecayMulti = 1) {
     this.#maxValue = maxValue;
@@ -27,31 +52,29 @@ class TinyNeedBar {
   }
 
   /**
-   * @param {string} key
-   * @param {number} amount
-   * @param {number} multiplier
+   * Defines or updates a decay factor.
+   *
+   * @param {string} key - Unique identifier for the factor.
+   * @param {number} amount - Amount reduced per tick.
+   * @param {number} [multiplier=1] - Multiplier applied to the amount.
    */
   setFactor(key, amount, multiplier = 1) {
     this.#factors.set(key, { amount, multiplier });
   }
 
   /**
-   * @param {string} key
+   * Removes a decay factor by its key.
+   *
+   * @param {string} key - The factor key to remove.
    */
   removeFactor(key) {
     this.#factors.delete(key);
   }
 
   /**
-   * Executes one tick of decay
-   * @returns {{
-   *   prevValue: number,
-   *   removedTotal: number,
-   *   removedPercent: number,
-   *   currentPercent: number,
-   *   remainingValue: number,
-   *   infiniteRemaining: number
-   * }}
+   * Executes one tick of decay, applying all active factors.
+   *
+   * @returns {TickResult}
    */
   tick() {
     let removedTotal = 0;
