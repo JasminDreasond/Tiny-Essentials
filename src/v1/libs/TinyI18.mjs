@@ -309,10 +309,15 @@ class TinyI18 {
   }
 
   /**
-   * @param {string} [forceLocale]
-   * @returns {string[]}
+   * Determines the resolution order of locales.
+   *
+   * @param {string} [forceLocale] - Optional locale to prioritize first.
+   * @returns {string[]} Ordered list of locale codes to try.
    */
   #resolveOrder(forceLocale) {
+    if (forceLocale !== undefined && typeof forceLocale !== 'string')
+      throw new TypeError('#resolveOrder: "forceLocale" must be a string if provided');
+
     /** @type {LocaleCode[]} */
     const order = [];
     if (forceLocale && typeof forceLocale === 'string' && this.#stringTables.has(forceLocale))
@@ -325,11 +330,17 @@ class TinyI18 {
   }
 
   /**
-   * @param {string[]} order
-   * @param {string} key
-   * @returns {any}
+   * Resolves a key exactly from a set of locales.
+   *
+   * @param {string[]} order - Array of locale codes in resolution order.
+   * @param {string} key - Key to look up.
+   * @returns {any} The value for the key if found, otherwise undefined.
    */
   #resolveExact(order, key) {
+    if (!Array.isArray(order))
+      throw new TypeError('#resolveExact: "order" must be an array of strings');
+    if (typeof key !== 'string' || !key)
+      throw new TypeError('#resolveExact: "key" must be a non-empty string');
     for (const loc of order) {
       const table = /** @type {Dict} */ (this.#stringTables.get(loc));
       if (table && Object.prototype.hasOwnProperty.call(table, key)) {
@@ -340,11 +351,17 @@ class TinyI18 {
   }
 
   /**
-   * @param {string[]} order
-   * @param {string} key
-   * @returns {any}
+   * Resolves a key by matching it against regex patterns in the locale tables.
+   *
+   * @param {string[]} order - Array of locale codes in resolution order.
+   * @param {string} key - Key to match against patterns.
+   * @returns {any} The value associated with the matching pattern, or undefined.
    */
   #resolveByPattern(order, key) {
+    if (!Array.isArray(order))
+      throw new TypeError('#resolveByPattern: "order" must be an array of strings');
+    if (typeof key !== 'string' || !key)
+      throw new TypeError('#resolveByPattern: "key" must be a non-empty string');
     for (const loc of order) {
       const patterns = this.#patternTables.get(loc) || [];
       for (const entry of patterns) {
@@ -366,6 +383,11 @@ class TinyI18 {
    * @returns {string}
    */
   #materialize(value, params) {
+    if (value === null || value === undefined) {
+      if (this.#strict) throw new TypeError('#materialize: "value" cannot be null or undefined');
+      return '';
+    }
+
     if (typeof value === 'string') return this.#interpolate(value, params);
     if (typeof value === 'function') return value(params ?? {}, this.#helpersReadonly());
 
@@ -384,11 +406,18 @@ class TinyI18 {
   }
 
   /**
-   * @param {string} template
-   * @param {Dict} [params]
-   * @returns {string}
+   * Interpolates values into a template string using {named} placeholders.
+   *
+   * @param {string} template - Template string containing placeholders.
+   * @param {Dict} [params] - Object containing values to interpolate.
+   * @returns {string} The interpolated string.
    */
   #interpolate(template, params) {
+    if (typeof template !== 'string')
+      throw new TypeError('#interpolate: "template" must be a string');
+    if (params !== undefined && (params === null || typeof params !== 'object'))
+      throw new TypeError('#interpolate: "params" must be an object if provided');
+
     if (!params || typeof params !== 'object') return template;
     // Simple {name} interpolation, no ICU. Escapes are not added; caller controls HTML safety.
     return template.replace(/\{([a-zA-Z0-9_.$-]+)\}/g, (_, name) => {
@@ -398,11 +427,17 @@ class TinyI18 {
   }
 
   /**
-   * @param {Dict} obj
-   * @param {string} path
-   * @returns {Dict|undefined}
+   * Safely retrieves a nested property from an object using dot notation.
+   *
+   * @param {Dict} obj - Object to retrieve from.
+   * @param {string} path - Dot-separated path string (e.g., "a.b.c").
+   * @returns {Dict|undefined} Value at the given path, or undefined if any part is missing.
    */
   #dotGet(obj, path) {
+    if (!obj || typeof obj !== 'object') throw new TypeError('#dotGet: "obj" must be an object');
+    if (typeof path !== 'string' || !path)
+      throw new TypeError('#dotGet: "path" must be a non-empty string');
+
     const parts = path.split('.');
     let cur = obj;
     for (const p of parts) {
@@ -412,7 +447,11 @@ class TinyI18 {
     return cur;
   }
 
-  /** @returns {HelpersReadonly<any, any>} */
+  /**
+   * Provides a read-only facade for calling registered helpers safely.
+   *
+   * @returns {HelpersReadonly<any, any>} Read-only helper access.
+   */
   #helpersReadonly() {
     // Provide a minimal read-only facade for helpers to call other helpers safely if needed.
     return {
@@ -428,10 +467,17 @@ class TinyI18 {
   // -------------------- Internal: ingesting locale data --------------------
 
   /**
-   * @param {string} locale
-   * @param {Dict} raw
+   * Ingests and flattens locale data into the internal string and pattern tables.
+   *
+   * @param {string} locale - Locale code to ingest.
+   * @param {Dict} raw - Raw locale data object.
    */
   #ingestLocale(locale, raw) {
+    if (typeof locale !== 'string' || !locale)
+      throw new TypeError('#ingestLocale: "locale" must be a non-empty string');
+    if (!raw || typeof raw !== 'object')
+      throw new TypeError('#ingestLocale: "raw" must be an object');
+
     if (typeof locale !== 'string' || !locale) throw new TypeError('#ingestLocale: invalid locale');
     if (!raw || typeof raw !== 'object')
       throw new TypeError('#ingestLocale: "raw" must be an object');
@@ -485,9 +531,13 @@ class TinyI18 {
   }
 
   /**
-   * @param {string} locale
+   * Unloads a previously loaded locale, except the default locale.
+   *
+   * @param {string} locale - Locale code to unload.
    */
   #unloadLocale(locale) {
+    if (typeof locale !== 'string' || !locale)
+      throw new TypeError('#unloadLocale: "locale" must be a non-empty string');
     if (locale === this.#defaultLocale) return; // never unload default
     this.#stringTables.delete(locale);
     this.#patternTables.delete(locale);
@@ -506,6 +556,8 @@ class TinyI18 {
    * @returns {Promise<void>}
    */
   async #loadLocaleFromFile(locale) {
+    if (typeof locale !== 'string' || !locale)
+      throw new TypeError('#loadLocaleFromFile: "locale" must be a non-empty string');
     const file = pathJoin(this.#basePath ?? '', `${locale}.json`);
     let json;
     try {
@@ -584,6 +636,8 @@ class TinyI18 {
    * @returns {RegExp}
    */
   #safeRegExp(src) {
+    if (typeof src !== 'string' || !src)
+      throw new TypeError('#safeRegExp: "src" must be a non-empty string');
     const tinyReg = this.#regexCache.get(src);
     if (tinyReg) return tinyReg;
     // Basic safety wrapper; no flags support in JSON to keep it simple and deterministic.
@@ -621,7 +675,15 @@ class TinyI18 {
   // -------------------- External: constructor stuff --------------------
 
   /**
-   * @param {TinyI18Options} options
+   * Creates a new TinyI18 instance for managing localized strings and patterns.
+   *
+   * Supports two modes:
+   * - "local": loads translations directly from provided objects.
+   * - "file": loads translations from JSON files on demand.
+   *
+   * Ensures the default locale is always initialized. In "file" mode, `basePath` is required.
+   *
+   * @param {TinyI18Options} options - Configuration options for the instance.
    */
   constructor(options) {
     if (!options || typeof options !== 'object') {
