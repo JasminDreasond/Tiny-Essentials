@@ -4,6 +4,7 @@ import testLevelUp from './libs/TinyLevelUp.mjs';
 import executeTinyPromiseQueue from './libs/TinyPromiseQueue.mjs';
 import testRateLimit from './libs/TinyRateLimiter.mjs';
 import executeObjType from './libs/objType.mjs';
+import testI18 from './libs/TinyI18.mjs';
 
 const actions = {
   fileManager: testFolderManager,
@@ -12,6 +13,7 @@ const actions = {
   colorStringify: testColorSafeStringify,
   rateLimit: testRateLimit,
   levelUp: testLevelUp,
+  i18: testI18,
 };
 
 (async () => {

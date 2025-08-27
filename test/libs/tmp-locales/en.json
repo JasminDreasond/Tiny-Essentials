@@ -1,0 +1,4 @@
+{
+  "app": { "title": "Inventory", "items": "{count} items" },
+  "greeting": "Hello, {name}!"
+}

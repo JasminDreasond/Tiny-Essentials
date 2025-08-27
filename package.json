@@ -14,6 +14,7 @@
     "test:mjs:ratelimit": "node test/index.mjs rateLimit",
     "test:mjs:levelup": "node test/index.mjs levelUp",
     "test:mjs:filemanager": "node test/index.mjs fileManager",
+    "test:mjs:i18": "node test/index.mjs i18",
     "fix:prettier": "npm run fix:prettier:src && npm run fix:prettier:test && npm run fix:prettier:rollup.config && npm run fix:prettier:webpack.config",
     "fix:prettier:src": "prettier --write ./src/*",
     "fix:prettier:test": "prettier --write ./test/*",

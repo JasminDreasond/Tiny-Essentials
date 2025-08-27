@@ -1,0 +1,6 @@
+{
+  "app": { "title": "Inventario", "items": "{count} elementos" },
+  "greeting": "¡Hola, {name}!",
+  "yay": "pudin",
+  "mio": "yaaaay! :3"
+}

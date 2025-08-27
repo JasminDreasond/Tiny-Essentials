@@ -1,4 +1,5 @@
-import { readFile } from 'fs/promises';
+import { readFile, writeFile } from 'fs/promises';
+import { existsSync } from 'fs';
 import { join as pathJoin } from 'path';
 
 /**
@@ -125,6 +126,46 @@ import { join as pathJoin } from 'path';
  * - Safe: no dynamic code eval from files; functions in file mode are referenced by name ("$fn").
  */
 class TinyI18 {
+  /**
+   * Merges multiple JSON locale files into a single file for TinyI18 usage.
+   * @param {Object} options
+   * @param {string[]} options.files - List of JSON file paths to merge.
+   * @param {string} options.output - Path where the merged JSON file will be written.
+   * @param {number} [options.spaces=0] - Number of spaces to use for indentation in the output file (0 for compact JSON).
+   * @throws {TypeError} If arguments are invalid.
+   * @throws {Error} If file reading or writing fails.
+   */
+  static async mergeLocaleFiles({ files, output, spaces = 0 }) {
+    if (typeof spaces !== 'number' || Number.isNaN(spaces) || spaces < 0)
+      throw new TypeError('mergeLocaleFiles: "spaces" must be a non-negative number');
+    if (!Array.isArray(files) || files.length === 0)
+      throw new TypeError('mergeLocaleFiles: "files" must be a non-empty array of file paths');
+    if (typeof output !== 'string' || !output)
+      throw new TypeError('mergeLocaleFiles: "output" must be a non-empty string path');
+
+    const merged = {};
+
+    for (const filePath of files) {
+      if (typeof filePath !== 'string' || !filePath)
+        throw new TypeError('mergeLocaleFiles: each file path must be a non-empty string');
+      if (!existsSync(filePath))
+        throw new Error(`mergeLocaleFiles: file "${filePath}" does not exist`);
+
+      const raw = await readFile(filePath, 'utf-8');
+      let json;
+      try {
+        json = JSON.parse(raw);
+      } catch (err) {
+        throw new Error(`mergeLocaleFiles: file "${filePath}" is not valid JSON`);
+      }
+
+      // Deep merge (locale-based)
+      Object.assign(merged, json);
+    }
+
+    await writeFile(output, JSON.stringify(merged, null, spaces), 'utf-8');
+  }
+
   /** @type {ModeTypes} */
   #mode;
   /** @type {LocaleCode} */
@@ -327,7 +368,7 @@ class TinyI18 {
    * @returns {any} The value for the key if found, otherwise undefined.
    */
   #resolveExact(order, key) {
-    if (!Array.isArray(order))
+    if (!Array.isArray(order) || !order.every((value) => typeof value === 'string'))
       throw new TypeError('#resolveExact: "order" must be an array of strings');
     if (typeof key !== 'string' || !key)
       throw new TypeError('#resolveExact: "key" must be a non-empty string');
@@ -348,7 +389,7 @@ class TinyI18 {
    * @returns {any} The value associated with the matching pattern, or undefined.
    */
   #resolveByPattern(order, key) {
-    if (!Array.isArray(order))
+    if (!Array.isArray(order) || !order.every((value) => typeof value === 'string'))
       throw new TypeError('#resolveByPattern: "order" must be an array of strings');
     if (typeof key !== 'string' || !key)
       throw new TypeError('#resolveByPattern: "key" must be a non-empty string');
@@ -548,7 +589,9 @@ class TinyI18 {
   async #loadLocaleFromFile(locale) {
     if (typeof locale !== 'string' || !locale)
       throw new TypeError('#loadLocaleFromFile: "locale" must be a non-empty string');
-    const file = pathJoin(this.#basePath ?? '', `${locale}.json`);
+    if (typeof this.#basePath !== 'string' || !this.#basePath)
+      throw new TypeError('#loadLocaleFromFile: "this.#basePath" must be a non-empty string');
+    const file = pathJoin(this.#basePath, `${locale}.json`);
     let json;
     try {
       const raw = await readFile(file, 'utf8');
@@ -770,23 +813,8 @@ class TinyI18 {
       throw new TypeError('setLocale: "locale" must be string or null');
 
     const prev = this.#currentLocale;
-    if (locale === null) {
-      // Unload previous selected; keep only default
-      if (this.#mode === 'file' && prev && prev !== this.#defaultLocale) this.#unloadLocale(prev);
-
-      this.#currentLocale = null;
-      return;
-    }
-
-    if (locale === this.#defaultLocale) {
-      // If switching to default, unload previous selected
-      if (this.#mode === 'file' && prev && prev !== this.#defaultLocale) this.#unloadLocale(prev);
-      this.#currentLocale = this.#defaultLocale;
-      return;
-    }
-
     // Load or ensure presence
-    if (!this.#stringTables.has(locale)) {
+    if (locale !== null) {
       if (this.#mode === 'file') await this.#loadLocaleFromFile(locale);
       else if (!this.#stringTables.has(locale)) {
         // local mode: if not previously provided, create empty containers
@@ -863,7 +891,6 @@ class TinyI18 {
   resolveByPattern(key, options) {
     if (typeof key !== 'string' || !key)
       throw new TypeError('get: "key" must be a non-empty string');
-
     const { locale: forceLocale } = options || {};
     const order = this.#resolveOrder(forceLocale);
     let resolved = this.#resolveByPattern(order, key);

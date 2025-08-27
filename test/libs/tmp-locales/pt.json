@@ -1,0 +1,5 @@
+{
+  "app": { "title": "Inventário", "items": "{count} itens" },
+  "greeting": "Olá, {name}!",
+  "yay": "pudding"
+}
