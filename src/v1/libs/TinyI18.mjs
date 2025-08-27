@@ -216,7 +216,97 @@ class TinyI18 {
     return locales;
   }
 
+  /**
+   * Deep-cloned view of string tables (Map → Object).
+   * Preserves strings, $fn objects, and functions.
+   * @returns {Record<string, Dict>}
+   */
+  get stringTables() {
+    /** @type {Record<string, Dict>} */
+    const obj = {};
+    for (const [locale, dict] of this.#stringTables.entries()) {
+      obj[locale] = this.#deepClone(dict);
+    }
+    return obj;
+  }
+
+  /**
+   * Deep-cloned view of pattern tables (Map → Object).
+   * Recreates RegExp objects to avoid mutation.
+   * @returns {Record<string, PatternEntry[]>}
+   */
+  get patternTables() {
+    /** @type {Record<string, PatternEntry[]} */
+    const obj = {};
+    for (const [locale, arr] of this.#patternTables.entries()) {
+      obj[locale] = arr.map((e) => ({
+        $pattern: new RegExp(e.$pattern.source, e.$pattern.flags),
+        value: this.#deepClone(e.value),
+        elseValue: this.#deepClone(e.elseValue),
+      }));
+    }
+    return obj;
+  }
+
+  /**
+   * Deep-cloned view of helpers (Map → Object).
+   * Functions are referenced (cannot deep clone functions).
+   * @returns {Record<string, HelperCallback>}
+   */
+  get helpers() {
+    /** @type {Record<string, HelperCallback>} */
+    const obj = {};
+    for (const [name, fn] of this.#helpers.entries()) {
+      obj[name] = fn;
+    }
+    return obj;
+  }
+
+  /**
+   * Deep-cloned view of regex cache (Map → Object).
+   * Recreates RegExp objects to avoid mutation.
+   * @returns {Record<string, RegExp>}
+   */
+  get regexCache() {
+    /** @type {Record<string, RegExp>} */
+    const obj = {};
+    for (const [key, re] of this.#regexCache.entries()) {
+      obj[key] = new RegExp(re.source, re.flags);
+    }
+    return obj;
+  }
+
   // -------------------- Internal: resolution & materialization --------------------
+
+  /**
+   * Utility for deep cloning values inside Maps.
+   * - Strings are returned as-is
+   * - Objects/arrays are recursively cloned
+   * - Functions are returned as-is
+   * - RegExp are cloned
+   * @param {any} value
+   * @returns {any}
+   */
+  #deepClone(value) {
+    if (
+      value == null ||
+      typeof value === 'string' ||
+      typeof value === 'function' ||
+      typeof value === 'number'
+    )
+      return value;
+    if (value instanceof RegExp) return new RegExp(value.source, value.flags);
+    if (Array.isArray(value)) return value.map((v) => this.#deepClone(v));
+    if (typeof value === 'object') {
+      /** @type {Record<string, any>} */
+      const clone = {};
+      for (const [k, v] of Object.entries(value)) {
+        clone[k] = this.#deepClone(v);
+      }
+      return clone;
+    }
+    return value;
+  }
 
   /**
    * @param {string} [forceLocale]
