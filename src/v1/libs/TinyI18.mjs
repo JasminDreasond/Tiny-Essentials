@@ -861,6 +861,9 @@ class TinyI18 {
    * @returns {any}
    */
   resolveByPattern(key, options) {
+    if (typeof key !== 'string' || !key)
+      throw new TypeError('get: "key" must be a non-empty string');
+
     const { locale: forceLocale } = options || {};
     const order = this.#resolveOrder(forceLocale);
     let resolved = this.#resolveByPattern(order, key);
