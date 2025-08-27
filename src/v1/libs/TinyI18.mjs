@@ -143,7 +143,7 @@ class TinyI18 {
   #patternTables = new Map(); // array of { $pattern: RegExp, value }
 
   // Helpers registry for function-based entries in both modes.
-  /** @type {Map<string, HelperCallback} */
+  /** @type {Map<string, HelperCallback>} */
   #helpers = new Map();
 
   /** @type {Map<string, RegExp>} */
