@@ -145,7 +145,9 @@
 
     <script type="module">
       import { TinyI18 } from './src/v1/libs/TinyI18.mjs';
+      import * as clock from './src/v1/basics/clock.mjs';
       window.TinyI18 = TinyI18;
+      Object.assign(window, clock);
 
       // --- Setup TinyI18 in local mode for demo ---
       const i18 = new TinyI18({

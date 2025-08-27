@@ -69,10 +69,7 @@ async function testI18() {
   });
   // point to merged.json which contains all locales
   await i18Merged.setLocale('temp/merged');
-  console.log(
-    `${FgGreen}Merged EN greeting:${Reset}`,
-    i18Merged.t('greeting', { name: 'Alice' }),
-  );
+  console.log(`${FgGreen}Merged EN greeting:${Reset}`, i18Merged.t('greeting', { name: 'Alice' }));
 
   section('✅ All Tests Completed');
 }

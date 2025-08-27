@@ -152,7 +152,7 @@ export function formatCustomTimer(totalSeconds, level = 'seconds', format = '{ti
     years: include.years ? parts.years + (parts.months || 0) / 12 + (parts.days || 0) / 365 : NaN,
   };
 
-  parts.total = +(totalMap[level] || 0).toFixed(2).replace(/\.00$/, '');
+  parts.total = +totalSeconds.toFixed(2).replace(/\.00$/, '');
 
   /**
    * Pads a number to ensure it is at least two digits long, using leading zeros if necessary.
@@ -207,4 +207,134 @@ export function formatTimer(seconds) {
  */
 export function formatDayTimer(seconds) {
   return formatCustomTimer(seconds, 'days', '{days}d {hours}:{minutes}:{seconds}');
+}
+
+/**
+ * Breaks down a duration in milliseconds into its time components.
+ *
+ * @param {number} totalMs - The total duration in milliseconds.
+ * @param {'milliseconds'|'seconds'|'minutes'|'hours'|'days'|'months'|'years'} [level='milliseconds'] - The highest level to calculate and display.
+ * @returns {{
+ *   years: number|NaN,
+ *   months: number|NaN,
+ *   days: number|NaN,
+ *   hours: number|NaN,
+ *   minutes: number|NaN,
+ *   seconds: number|NaN,
+ *   milliseconds: number|NaN,
+ *   total: number|NaN
+ * }}
+ */
+export function breakdownDuration(totalMs, level = 'milliseconds') {
+  totalMs = Math.max(0, Math.floor(totalMs));
+
+  const levels = ['milliseconds', 'seconds', 'minutes', 'hours', 'days', 'months', 'years'];
+  const index = levels.indexOf(level);
+
+  const include = {
+    years: index >= 6,
+    months: index >= 5,
+    days: index >= 4,
+    hours: index >= 3,
+    minutes: index >= 2,
+    seconds: index >= 1,
+    milliseconds: index >= 0,
+  };
+
+  const parts = {
+    years: include.years ? 0 : NaN,
+    months: include.months ? 0 : NaN,
+    days: include.days ? 0 : NaN,
+    hours: include.hours ? 0 : NaN,
+    minutes: include.minutes ? 0 : NaN,
+    seconds: include.seconds ? 0 : NaN,
+    milliseconds: include.milliseconds ? 0 : NaN,
+    total: NaN,
+  };
+
+  let remaining = totalMs;
+
+  if (include.years || include.months || include.days) {
+    const baseDate = new Date(1980, 0, 1);
+    const targetDate = new Date(baseDate.getTime() + remaining);
+    const workingDate = new Date(baseDate);
+
+    // Years
+    if (include.years) {
+      while (
+        new Date(
+          workingDate.getFullYear() + 1,
+          workingDate.getMonth(),
+          workingDate.getDate(),
+        ).getTime() <= targetDate.getTime()
+      ) {
+        workingDate.setFullYear(workingDate.getFullYear() + 1);
+        parts.years++;
+      }
+    }
+
+    // Months
+    if (include.months) {
+      while (
+        new Date(
+          workingDate.getFullYear(),
+          workingDate.getMonth() + 1,
+          workingDate.getDate(),
+        ).getTime() <= targetDate.getTime()
+      ) {
+        workingDate.setMonth(workingDate.getMonth() + 1);
+        parts.months++;
+      }
+    }
+
+    // Days
+    if (include.days) {
+      while (
+        new Date(
+          workingDate.getFullYear(),
+          workingDate.getMonth(),
+          workingDate.getDate() + 1,
+        ).getTime() <= targetDate.getTime()
+      ) {
+        workingDate.setDate(workingDate.getDate() + 1);
+        parts.days++;
+      }
+    }
+
+    remaining = targetDate.getTime() - workingDate.getTime();
+  }
+
+  if (include.hours) {
+    parts.hours = Math.floor(remaining / 3600000);
+    remaining %= 3600000;
+  }
+
+  if (include.minutes) {
+    parts.minutes = Math.floor(remaining / 60000);
+    remaining %= 60000;
+  }
+
+  if (include.seconds) {
+    parts.seconds = Math.floor(remaining / 1000);
+    remaining %= 1000;
+  }
+
+  if (include.milliseconds) {
+    parts.milliseconds = remaining;
+  }
+
+  // Totals
+  const totalMap = {
+    milliseconds: include.milliseconds ? totalMs : NaN,
+    seconds: include.seconds ? totalMs / 1000 : NaN,
+    minutes: include.minutes ? totalMs / 60000 : NaN,
+    hours: include.hours ? totalMs / 3600000 : NaN,
+    days: include.days ? totalMs / 86400000 : NaN,
+    months: include.months ? parts.years * 12 + parts.months + (parts.days || 0) / 30 : NaN,
+    years: include.years ? parts.years + (parts.months || 0) / 12 + (parts.days || 0) / 365 : NaN,
+  };
+
+  parts.total = +totalMs;
+
+  return parts;
 }
