@@ -208,6 +208,7 @@ class TinyI18 {
 
   /**
    * @param {string} [forceLocale]
+   * @returns {string[]}
    */
   #resolveOrder(forceLocale) {
     /** @type {LocaleCode[]} */
@@ -297,6 +298,7 @@ class TinyI18 {
   /**
    * @param {Dict} obj
    * @param {string} path
+   * @returns {Dict|undefined}
    */
   #dotGet(obj, path) {
     const parts = path.split('.');
@@ -485,6 +487,7 @@ class TinyI18 {
 
   /**
    * @param {string | FileValue} v
+   * @returns {string | { $fn: string, args: string }}
    */
   #coerceFileValue(v) {
     // Strings pass through; objects with $fn kept as-is; everything else ignored gracefully
@@ -545,8 +548,6 @@ class TinyI18 {
    * The regex cache stores compiled {@link RegExp} objects to avoid
    * recompiling frequently used patterns. This wrapper ensures cache
    * management is always controlled via the API instead of direct access.
-   *
-   * @returns {void}
    */
   clearRegexCache() {
     this.#regexCache.clear();
