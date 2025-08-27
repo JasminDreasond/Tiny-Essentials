@@ -159,7 +159,11 @@
       i18.registerHelper('richList', ({ items = [] }) =>
         items.map((x, i) => `#${i + 1}: ${x}`).join(', '),
       );
-      i18.registerHelper('uppercase', ({ text }) => String(text).toUpperCase());
+      i18.registerHelper('uppercase', (data) => {
+        const { text } = data;
+        console.log(`Uppercase Debug:`, data);
+        return String(text).toUpperCase();
+      });
 
       // Load local locales
       i18.loadLocaleLocal('en', {
@@ -172,8 +176,8 @@
           list: (params) => `List:\n- ${params.items?.join('\n- ')}`,
           menu: { settings: { title: 'Settings Panel' } },
         },
-        fnHelper: { $fn: 'richList' },
-        uppercaseExample: { $fn: 'uppercase' },
+        fnHelper: { $fn: 'richList', args: { value: 'This func is a fhHelper.' } },
+        uppercaseExample: { $fn: 'uppercase', args: { value: 'This func is a uppercaseExample.' } },
       });
 
       i18.loadLocaleLocal('pt', {
