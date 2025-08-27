@@ -9,6 +9,17 @@
  */
 
 /**
+ * Represents a decay factor applied to the need bar.
+ *
+ * - `amount`: base value reduced per tick.
+ * - `multiplier`: multiplier applied to the amount.
+ *
+ * @typedef {Object} BarFactor
+ * @property {number} amount - Base reduction value per tick.
+ * @property {number} multiplier - Multiplier applied to the amount.
+ */
+
+/**
  * A utility class to simulate a "need bar" system.
  *
  * The bar decreases over time according to defined factors (each with an amount and multiplier).
@@ -23,7 +34,7 @@ class TinyNeedBar {
   /**
    * Stores all factors that influence decay.
    * Each entry contains an amount and a multiplier.
-   * @type {Map<string, {amount: number, multiplier: number}>}
+   * @type {Map<string, BarFactor>}
    */
   #factors = new Map();
 
@@ -35,6 +46,82 @@ class TinyNeedBar {
 
   /** Current "infinite" value of the bar (can go negative). @type {number} */
   #infiniteValue;
+
+  /**
+   * Returns a snapshot of all currently active factors.
+   * Each factor is returned as a plain object to prevent direct mutation of the internal map.
+   *
+   * @returns {Record<string, BarFactor>} A record of all factors indexed by their key.
+   */
+  get factors() {
+    /** @type {Record<string, BarFactor>} */
+    const factors = {};
+    for (let [name, factor] of this.#factors.entries()) {
+      factors[name] = { ...factor };
+    }
+    return factors;
+  }
+
+  /**
+   * Returns the current percentage of the bar relative to the maximum value.
+   *
+   * @returns {number} Percentage from `0` to `100`.
+   */
+  get currentPercent() {
+    return (this.#currentValue / this.#maxValue) * 100;
+  }
+
+  /**
+   * Updates the maximum possible value of the bar.
+   * Ensures `currentValue` never exceeds the new maximum.
+   *
+   * @param {number} value - New maximum value.
+   */
+  set maxValue(value) {
+    this.#maxValue = value;
+    this.#currentValue = Math.min(this.#currentValue, value);
+  }
+
+  /**
+   * Returns the maximum possible value of the bar.
+   *
+   * @returns {number} The maximum value.
+   */
+  get maxValue() {
+    return this.#maxValue;
+  }
+
+  /**
+   * Returns the current clamped value of the bar.
+   * This value will never be below `0`.
+   *
+   * @returns {number} Current value (≥ 0).
+   */
+  get currentValue() {
+    return this.#currentValue;
+  }
+
+  /**
+   * Updates the infinite value of the bar.
+   * Automatically recalculates the `currentValue` (never below 0).
+   *
+   * @param {number} value - New infinite value.
+   */
+  set infiniteValue(value) {
+    this.#infiniteValue = value;
+    this.#currentValue = Math.max(0, value);
+    this.#currentValue = Math.min(this.#currentValue, this.#maxValue);
+  }
+
+  /**
+   * Returns the current infinite value of the bar.
+   * Unlike `currentValue`, this one can go below zero.
+   *
+   * @returns {number} Current infinite value.
+   */
+  get infiniteValue() {
+    return this.#infiniteValue;
+  }
 
   /**
    * Creates a new need bar instance.
@@ -49,6 +136,29 @@ class TinyNeedBar {
 
     this.#currentValue = maxValue;
     this.#infiniteValue = maxValue;
+  }
+
+  /**
+   * Retrieves a specific factor by its key.
+   *
+   * @param {string} key - The unique key of the factor.
+   * @returns {BarFactor} The requested factor object.
+   * @throws {Error} If the factor does not exist.
+   */
+  getFactor(key) {
+    const result = this.#factors.get(key);
+    if (!result) throw new Error(`Factor with key "${key}" not found.`);
+    return { ...result };
+  }
+
+  /**
+   * Checks if a specific factor exists by key.
+   *
+   * @param {string} key - The factor key to check.
+   * @returns {boolean} `true` if the factor exists, otherwise `false`.
+   */
+  hasFactor(key) {
+    return this.#factors.has(key);
   }
 
   /**
@@ -88,13 +198,12 @@ class TinyNeedBar {
     this.#currentValue = Math.max(0, this.#currentValue - removedTotal);
 
     const removedPercent = (removedTotal / this.#maxValue) * 100;
-    const currentPercent = (this.#currentValue / this.#maxValue) * 100;
 
     return {
       prevValue,
       removedTotal,
       removedPercent,
-      currentPercent,
+      currentPercent: this.currentPercent,
       remainingValue: this.#currentValue,
       infiniteRemaining: this.#infiniteValue,
     };
