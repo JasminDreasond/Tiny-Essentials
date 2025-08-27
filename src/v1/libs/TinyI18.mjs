@@ -202,17 +202,7 @@ class TinyI18 {
    */
   get stats() {
     const locales = [];
-    for (const loc of this.#stringTables.keys()) {
-      const strings = Object.keys(this.#stringTables.get(loc) ?? {}).length;
-      const patterns = this.#patternTables.get(loc)?.length ?? 0;
-      locales.push({
-        locale: loc,
-        strings,
-        patterns,
-        isDefault: loc === this.#defaultLocale,
-        isCurrent: loc === this.#currentLocale,
-      });
-    }
+    for (const loc of this.#stringTables.keys()) locales.push(this.getStatsForLocale(loc));
     return locales;
   }
 
@@ -894,6 +884,30 @@ class TinyI18 {
       }
     }
     this.#currentLocale = null;
+  }
+
+  /**
+   * Returns stats for a specific locale.
+   * @param {LocaleCode} locale
+   * @returns {StatLocale}
+   * @throws {Error} If the locale is not registered.
+   */
+  getStatsForLocale(locale) {
+    if (typeof locale !== 'string' || !locale)
+      throw new TypeError('getStatsForLocale: "locale" must be a non-empty string');
+    if (!this.#stringTables.has(locale))
+      throw new Error(`getStatsForLocale: locale "${locale}" is not registered`);
+
+    const strings = Object.keys(this.#stringTables.get(locale) ?? {}).length;
+    const patterns = this.#patternTables.get(locale)?.length ?? 0;
+
+    return {
+      locale,
+      strings,
+      patterns,
+      isDefault: locale === this.#defaultLocale,
+      isCurrent: locale === this.#currentLocale,
+    };
   }
 }
 

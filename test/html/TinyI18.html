@@ -181,15 +181,45 @@
       });
 
       i18.loadLocaleLocal('pt', {
-        app: { title: 'Inventário' },
+        app: { title: 'Inventário', items: '{count} itens' },
         interpolation: '{name} possui {count} itens',
-        ui: { menu: { settings: { title: 'Painel de Configurações' } } },
+        regexTest: {
+          match: {
+            $pattern: /^user\.\d+$/,
+            value: 'ID de usuário correspondido',
+            elseValue: 'Não correspondido',
+          },
+        },
+        ui: {
+          list: (params) => `Lista:\n- ${params.items?.join('\n- ')}`,
+          menu: { settings: { title: 'Painel de Configurações' } },
+        },
+        fnHelper: { $fn: 'richList', args: { value: 'Esta função é um fhHelper.' } },
+        uppercaseExample: {
+          $fn: 'uppercase',
+          args: { value: 'Esta função é um uppercaseExample.' },
+        },
       });
 
       i18.loadLocaleLocal('es', {
         app: { title: 'Inventario', items: '{count} elementos' },
         interpolation: '{name} tiene {count} elementos',
-        ui: { menu: { settings: { title: 'Panel de Configuración' } } },
+        regexTest: {
+          match: {
+            $pattern: /^user\.\d+$/,
+            value: 'ID de usuario coincidente',
+            elseValue: 'No coincidente',
+          },
+        },
+        ui: {
+          list: (params) => `Lista:\n- ${params.items?.join('\n- ')}`,
+          menu: { settings: { title: 'Panel de Configuración' } },
+        },
+        fnHelper: { $fn: 'richList', args: { value: 'Esta función es un fhHelper.' } },
+        uppercaseExample: {
+          $fn: 'uppercase',
+          args: { value: 'Esta función es un uppercaseExample.' },
+        },
       });
 
       // DOM Elements
