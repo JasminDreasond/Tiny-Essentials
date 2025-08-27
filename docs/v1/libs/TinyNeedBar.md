@@ -132,7 +132,7 @@ bar.setFactor("hunger", 2, 1.2);
 
 ---
 
-#### `removeFactor(key: string)` ❌
+#### `removeFactor(key: string) : boolean` ❌
 
 Remove a factor by key.
 

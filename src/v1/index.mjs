@@ -137,8 +137,10 @@ import TinyInventoryTrader from './libs/TinyInventoryTrader.mjs';
 import TinyCookieConsent from './libs/TinyCookieConsent.mjs';
 import TinyI18 from './libs/TinyI18.mjs';
 import TinyNeedBar from './libs/TinyNeedBar.mjs';
+import TinySimpleDice from './libs/TinySimpleDice.mjs';
 
 export {
+  TinySimpleDice,
   TinyNeedBar,
   TinyI18,
   TinyCookieConsent,

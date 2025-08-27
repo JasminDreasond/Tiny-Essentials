@@ -94,5 +94,6 @@ addModule(1, './src/v1/build/TinyInventoryTrader.mjs', 'TinyInventoryTrader', tr
 addModule(1, './src/v1/build/TinyCookieConsent.mjs', 'TinyCookieConsent', true);
 addModule(1, './src/v1/build/TinyI18.mjs', 'TinyI18', true);
 addModule(1, './src/v1/build/TinyNeedBar.mjs', 'TinyNeedBar', true);
+addModule(1, './src/v1/build/TinySimpleDice.mjs', 'TinySimpleDice', true);
 
 export default modules;
