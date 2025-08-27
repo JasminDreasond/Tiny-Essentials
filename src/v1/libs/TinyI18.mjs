@@ -236,7 +236,7 @@ class TinyI18 {
    * @returns {Record<string, PatternEntry[]>}
    */
   get patternTables() {
-    /** @type {Record<string, PatternEntry[]} */
+    /** @type {Record<string, PatternEntry[]>} */
     const obj = {};
     for (const [locale, arr] of this.#patternTables.entries()) {
       obj[locale] = arr.map((e) => ({
