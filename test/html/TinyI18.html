@@ -67,7 +67,7 @@
   </head>
   <body>
     <header>
-      <h1>TinyI18 Professional Test Suite</h1>
+      <h1>TinyI18 Test Suite</h1>
     </header>
     <main>
       <!-- Language switching -->
@@ -93,36 +93,51 @@
 
       <!-- Fallback test -->
       <section>
-        <h2>Fallback to Default</h2>
-        <p>Try a key missing in the selected locale (e.g. "app.items" in pt).</p>
+        <h2>Fallback / Missing Keys</h2>
+        <p>Try a key missing in the selected locale:</p>
         <div class="result" id="res-fallback"></div>
       </section>
 
       <!-- Regex pattern test -->
       <section>
         <h2>Regex Patterns</h2>
-        <p>Testing a dynamic key (e.g. "user.123").</p>
+        <p>Dynamic key testing:</p>
         <div class="result" id="res-regex"></div>
       </section>
 
-      <!-- Function entry test -->
+      <!-- Function / $fn helper test -->
       <section>
-        <h2>Function Entries</h2>
-        <p>Rendering a list via function or $fn helper.</p>
+        <h2>Function & Helper Entries</h2>
+        <p>Rendering lists with function and $fn helpers:</p>
         <div class="result" id="res-fn"></div>
+        <div class="result" id="res-fn-helper"></div>
       </section>
 
       <!-- Interpolation test -->
       <section>
         <h2>Interpolation</h2>
-        <p>Key with placeholders {name} and {count}.</p>
+        <p>Key with placeholders {name} and {count}:</p>
         <div class="result" id="res-interpolation"></div>
+      </section>
+
+      <!-- Nested key test -->
+      <section>
+        <h2>Nested Keys</h2>
+        <p>Access deep nested keys (e.g., ui.menu.settings.title):</p>
+        <div class="result" id="res-nested"></div>
+      </section>
+
+      <!-- Error handling test -->
+      <section>
+        <h2>Error Handling</h2>
+        <p>Testing unknown key / invalid helper:</p>
+        <div class="result" id="res-error"></div>
       </section>
 
       <!-- Memory & stats -->
       <section>
         <h2>Memory / Stats</h2>
-        <p>Inspect loaded locales and counts.</p>
+        <p>Inspect loaded locales and counts:</p>
         <button id="btn-stats">Show Stats</button>
         <div class="result" id="res-stats"></div>
       </section>
@@ -138,60 +153,55 @@
         mode: 'local',
         defaultLocale: 'en',
       });
-
       window.i18 = i18;
 
-      i18.registerHelper('richList', ({ items = [] }) => {
-        return items.map((x, i) => `#${i + 1}: ${x}`).join(', ');
-      });
+      // Register helpers
+      i18.registerHelper('richList', ({ items = [] }) =>
+        items.map((x, i) => `#${i + 1}: ${x}`).join(', '),
+      );
+      i18.registerHelper('uppercase', ({ text }) => String(text).toUpperCase());
 
+      // Load local locales
       i18.loadLocaleLocal('en', {
-        app: {
-          title: 'Inventory',
-          items: '{count} items',
-        },
+        app: { title: 'Inventory', items: '{count} items' },
         interpolation: '{name} has {count} items',
         regexTest: {
-          match: {
-            $pattern: /^user\.\d+$/,
-            value: 'Matched a user ID key',
-            elseValue: 'Non-matched a user ID key',
-          },
+          match: { $pattern: /^user\.\d+$/, value: 'Matched user ID', elseValue: 'Non-matched' },
         },
         ui: {
-          list: (params) => {
-            const items = params?.items ?? [];
-            return `List:\n- ${items.join('\n- ')}`;
-          },
+          list: (params) => `List:\n- ${params.items?.join('\n- ')}`,
+          menu: { settings: { title: 'Settings Panel' } },
         },
+        fnHelper: { $fn: 'richList' },
+        uppercaseExample: { $fn: 'uppercase' },
       });
 
       i18.loadLocaleLocal('pt', {
-        app: {
-          title: 'Inventário',
-        },
+        app: { title: 'Inventário' },
         interpolation: '{name} possui {count} itens',
+        ui: { menu: { settings: { title: 'Painel de Configurações' } } },
       });
 
       i18.loadLocaleLocal('es', {
-        app: {
-          title: 'Inventario',
-          items: '{count} elementos',
-        },
+        app: { title: 'Inventario', items: '{count} elementos' },
         interpolation: '{name} tiene {count} elementos',
+        ui: { menu: { settings: { title: 'Panel de Configuración' } } },
       });
 
-      // --- DOM elements ---
+      // DOM Elements
       const elLang = document.getElementById('current-lang');
       const resTitle = document.getElementById('res-title');
       const resItems = document.getElementById('res-items');
       const resFallback = document.getElementById('res-fallback');
       const resRegex = document.getElementById('res-regex');
       const resFn = document.getElementById('res-fn');
+      const resFnHelper = document.getElementById('res-fn-helper');
       const resInterpolation = document.getElementById('res-interpolation');
+      const resNested = document.getElementById('res-nested');
+      const resError = document.getElementById('res-error');
       const resStats = document.getElementById('res-stats');
 
-      // --- Render function ---
+      // Render function
       function renderAll() {
         elLang.textContent = i18.currentLocale || '(default only)';
         resTitle.textContent = i18.t('app.title');
@@ -199,19 +209,26 @@
         resFallback.textContent = i18.t('app.items', { count: 3 });
         resRegex.textContent = i18.p('user.123');
         resFn.textContent = i18.t('ui.list', { items: ['Apple', 'Banana', 'Cherry'] });
+        resFnHelper.textContent = i18.t('fnHelper');
         resInterpolation.textContent = i18.t('interpolation', { name: 'Alice', count: 7 });
+        resNested.textContent = i18.t('ui.menu.settings.title');
+
+        try {
+          resError.textContent = i18.t('nonexistent.key');
+        } catch (e) {
+          resError.textContent = e.message;
+        }
       }
 
-      // --- Language buttons ---
+      // Language buttons
       document.querySelectorAll('.lang-buttons button').forEach((btn) => {
         btn.addEventListener('click', async () => {
-          const lang = btn.dataset.lang || null;
-          await i18.setLocale(lang);
+          await i18.setLocale(btn.dataset.lang || null);
           renderAll();
         });
       });
 
-      // --- Stats button ---
+      // Stats button
       document.getElementById('btn-stats').addEventListener('click', () => {
         resStats.textContent = JSON.stringify(i18.stats, null, 2);
       });
