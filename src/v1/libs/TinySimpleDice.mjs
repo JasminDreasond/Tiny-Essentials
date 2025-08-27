@@ -19,6 +19,49 @@ class TinySimpleDice {
     return Math.floor(Math.random() * (isArray ? arr.length : arr.size));
   }
 
+  /** @type {number} */
+  #maxValue;
+  /** @type {boolean} */
+  #allowZero;
+
+  /**
+   * Maximum value the dice can roll.
+   * @type {number}
+   */
+  get maxValue() {
+    return this.#maxValue;
+  }
+
+  /**
+   * Set the maximum value the dice can roll.
+   * @param {number} value - New maximum value (must be a non-negative integer)
+   * @throws {TypeError} If value is not a non-negative integer
+   */
+  set maxValue(value) {
+    if (!Number.isInteger(value) || value < 0)
+      throw new TypeError('maxValue must be an integer greater than -1.');
+    this.#maxValue = value;
+  }
+
+  /**
+   * Whether 0 is allowed as a result.
+   * @type {boolean}
+   */
+  get allowZero() {
+    return this.#allowZero;
+  }
+
+  /**
+   * Set whether 0 is allowed as a result.
+   * @param {boolean} value - true to allow 0, false to disallow
+   * @throws {TypeError} If value is not a boolean
+   */
+  set allowZero(value) {
+    if (typeof value !== 'boolean')
+      throw new TypeError('allowZero must be a boolean.');
+    this.#allowZero = value;
+  }
+
   /**
    * Creates a new TinySimpleDice instance.
    * @param {Object} options - Configuration options for the dice.
@@ -30,8 +73,8 @@ class TinySimpleDice {
     if (typeof allowZero !== 'boolean') throw new TypeError('allowZero must be an boolean.');
     if (!Number.isInteger(maxValue) || maxValue < 0)
       throw new TypeError('maxValue must be an integer greater than -1.');
-    this.maxValue = maxValue;
-    this.allowZero = allowZero;
+    this.#maxValue = maxValue;
+    this.#allowZero = allowZero;
   }
 
   /**
@@ -39,8 +82,8 @@ class TinySimpleDice {
    * @returns {number} - Random number according to the dice configuration.
    */
   roll() {
-    const min = this.allowZero ? 0 : 1;
-    return Math.floor(Math.random() * (this.maxValue - min + 1)) + min;
+    const min = this.#allowZero ? 0 : 1;
+    return Math.floor(Math.random() * (this.#maxValue - min + 1)) + min;
   }
 }
 
