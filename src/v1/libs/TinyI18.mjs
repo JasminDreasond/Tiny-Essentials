@@ -67,7 +67,7 @@ import { join as pathJoin } from 'path';
  * @property {LocaleCode} defaultLocale
  * @property {string} [basePath] - Required in file mode. Directory with <locale>.json
  * @property {Dict} [localResources] - Optional initial map { locale: dict } for local mode
- * @property {boolean} [strict=false] - If true, throws on missing keys; else returns key
+ * @property {boolean} [strict=true] - If true, throws on missing keys; else returns key
  */
 
 /**
@@ -689,7 +689,7 @@ class TinyI18 {
     if (!options || typeof options !== 'object') {
       throw new TypeError('TinyI18: options must be an object');
     }
-    const { mode, defaultLocale, basePath, localResources, strict = false } = options;
+    const { mode, defaultLocale, basePath, localResources, strict = true } = options;
 
     if (mode !== 'local' && mode !== 'file')
       throw new TypeError('TinyI18: "mode" must be "local" or "file"');
