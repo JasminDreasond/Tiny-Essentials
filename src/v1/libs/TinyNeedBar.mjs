@@ -260,7 +260,7 @@ class TinyNeedBar {
   }
 
   /**
-   * Clear the factors map, clearing all internal data.
+   * Clear the factors map, clearing all factor data.
    */
   clearFactors() {
     this.#factors.clear();

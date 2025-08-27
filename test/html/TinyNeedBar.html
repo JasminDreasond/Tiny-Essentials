@@ -251,6 +251,7 @@
       document.getElementById('tickOnce').onclick = () => {
         if (!bar) return;
         const result = bar.tick();
+        console.log(result);
         log(`Tick: -${result.removedTotal} (→ ${result.remainingValue})`);
         renderBar();
       };
