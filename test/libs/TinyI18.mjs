@@ -21,6 +21,7 @@ async function testI18() {
   // Create sample locale JSON files
   const enFile = path.join(tmpDir, 'en.json');
   const ptFile = path.join(tmpDir, 'pt.json');
+  const esFile = path.join(tmpDir, 'es.json');
 
   // --- Test TinyI18 with file mode ---
   const i18 = new TinyI18({
@@ -41,7 +42,7 @@ async function testI18() {
   const mergedFile = path.join(resultDir, 'merged.json');
 
   await TinyI18.mergeLocaleFiles({
-    files: [enFile, ptFile],
+    files: [enFile, ptFile, esFile],
     output: mergedFile,
     spaces: 2,
   });
@@ -56,7 +57,7 @@ async function testI18() {
   });
 
   await i18Merged.setLocale('temp/merged');
-  console.log('Merged PT title:', i18Merged.t('app.title'));
+  console.log('Merged ES title:', i18Merged.t('greeting', { name: 'Alice' }));
 }
 
 export default testI18;
