@@ -3,6 +3,7 @@ import TinyLevelUp from '../legacy/libs/userLevel.mjs';
 import arraySortPositions from '../legacy/libs/arraySortPositions.mjs';
 import { shuffleArray } from './basics/array.mjs';
 import {
+  breakdownDuration,
   formatCustomTimer,
   formatDayTimer,
   formatTimer,
@@ -170,6 +171,7 @@ export {
   ColorSafeStringify,
   TinyPromiseQueue,
   TinyLevelUp,
+  breakdownDuration,
   calculateMarketcap,
   compareMarketcap,
   getPercentage,
