@@ -91,6 +91,8 @@ class TinyNeedBar {
    * @param {number} value - New maximum value.
    */
   set maxValue(value) {
+    if (typeof value !== 'number' || Number.isNaN(value) || value <= 0)
+      throw new TypeError('maxValue must be a positive number.');
     this.#maxValue = value;
     this.#currentValue = Math.min(this.#currentValue, value);
   }
@@ -121,6 +123,8 @@ class TinyNeedBar {
    * @param {number} value - New infinite value.
    */
   set infiniteValue(value) {
+    if (typeof value !== 'number' || Number.isNaN(value))
+      throw new TypeError('infiniteValue must be a number.');
     this.#infiniteValue = value;
     this.#currentValue = Math.max(0, value);
     this.#currentValue = Math.min(this.#currentValue, this.#maxValue);
@@ -144,6 +148,9 @@ class TinyNeedBar {
    * @param {number} [baseDecayMulti=1] - Multiplier applied to the base decay.
    */
   constructor(maxValue = 100, baseDecay = 1, baseDecayMulti = 1) {
+    if (typeof maxValue !== 'number' || Number.isNaN(maxValue) || maxValue <= 0)
+      throw new TypeError('maxValue must be a positive number.');
+
     this.#maxValue = maxValue;
     this.setFactor('main', baseDecay, baseDecayMulti);
 
@@ -159,6 +166,7 @@ class TinyNeedBar {
    * @throws {Error} If the factor does not exist.
    */
   getFactor(key) {
+    if (typeof key !== 'string' || !key) throw new TypeError('Key must be a non-empty string.');
     const result = this.#factors.get(key);
     if (!result) throw new Error(`Factor with key "${key}" not found.`);
     return { ...result };
@@ -171,6 +179,7 @@ class TinyNeedBar {
    * @returns {boolean} `true` if the factor exists, otherwise `false`.
    */
   hasFactor(key) {
+    if (typeof key !== 'string' || !key) throw new TypeError('Key must be a non-empty string.');
     return this.#factors.has(key);
   }
 
@@ -182,6 +191,11 @@ class TinyNeedBar {
    * @param {number} [multiplier=1] - Multiplier applied to the amount.
    */
   setFactor(key, amount, multiplier = 1) {
+    if (typeof key !== 'string' || !key) throw new TypeError('Key must be a non-empty string.');
+    if (typeof amount !== 'number' || Number.isNaN(amount))
+      throw new TypeError('Amount must be a valid number.');
+    if (typeof multiplier !== 'number' || Number.isNaN(multiplier))
+      throw new TypeError('Multiplier must be a valid number.');
     this.#factors.set(key, { amount, multiplier });
   }
 
@@ -189,9 +203,11 @@ class TinyNeedBar {
    * Removes a decay factor by its key.
    *
    * @param {string} key - The factor key to remove.
+   * @returns {boolean}
    */
   removeFactor(key) {
-    this.#factors.delete(key);
+    if (typeof key !== 'string' || !key) throw new TypeError('Key must be a non-empty string.');
+    return this.#factors.delete(key);
   }
 
   /**
@@ -238,7 +254,16 @@ class TinyNeedBar {
    * @returns {TickResult}
    */
   tickWithTempFactor(tempFactor) {
-    if (!tempFactor) throw new Error('You must provide a factor to apply.');
+    if (typeof tempFactor !== 'object' || tempFactor === null)
+      throw new TypeError('You must provide a valid factor object.');
+    if (typeof tempFactor.amount !== 'number' || Number.isNaN(tempFactor.amount))
+      throw new TypeError('Temp factor "amount" must be a valid number.');
+    if (
+      'multiplier' in tempFactor &&
+      (typeof tempFactor.multiplier !== 'number' || Number.isNaN(tempFactor.multiplier))
+    )
+      throw new TypeError('Temp factor "multiplier" must be a valid number if provided.');
+
     let removedTotal = 0;
     for (let [_, factor] of this.#factors.entries()) {
       removedTotal += factor.amount * factor.multiplier;
@@ -254,6 +279,16 @@ class TinyNeedBar {
    * @returns {TickResult}
    */
   tickSingleFactor(factor) {
+    if (typeof factor !== 'object' || factor === null)
+      throw new TypeError('You must provide a valid factor object.');
+    if (typeof factor.amount !== 'number' || Number.isNaN(factor.amount))
+      throw new TypeError('Temp factor "amount" must be a valid number.');
+    if (
+      'multiplier' in factor &&
+      (typeof factor.multiplier !== 'number' || Number.isNaN(factor.multiplier))
+    )
+      throw new TypeError('Temp factor "multiplier" must be a valid number if provided.');
+
     if (!factor) throw new Error('You must provide a factor to apply.');
     const removedTotal = factor.amount * (factor.multiplier ?? 1);
     return this.#tick(removedTotal);
