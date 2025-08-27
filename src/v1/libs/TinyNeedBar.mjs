@@ -20,6 +20,19 @@
  */
 
 /**
+ * Represents the serialized state of a TinyNeedBar instance.
+ *
+ * This object is typically produced by {@link TinyNeedBar#toJSON} and
+ * can be used to recreate an instance via {@link TinyNeedBar.fromJSON}.
+ *
+ * @typedef {Object} SerializedData
+ * @property {number} maxValue - Maximum value of the bar at the moment of serialization.
+ * @property {number} currentValue - Current clamped value (never below 0).
+ * @property {number} infiniteValue - Infinite value (can go negative).
+ * @property {Record<string, BarFactor>} factors - Active decay factors indexed by their keys.
+ */
+
+/**
  * A utility class to simulate a "need bar" system.
  *
  * The bar decreases over time according to defined factors (each with an amount and multiplier).
@@ -207,6 +220,50 @@ class TinyNeedBar {
       remainingValue: this.#currentValue,
       infiniteRemaining: this.#infiniteValue,
     };
+  }
+
+  /**
+   * Serializes the current state of the need bar.
+   * @returns {SerializedData}
+   */
+  toJSON() {
+    return {
+      maxValue: this.#maxValue,
+      currentValue: this.#currentValue,
+      infiniteValue: this.#infiniteValue,
+      factors: this.factors,
+    };
+  }
+
+  /**
+   * Restores a need bar from a serialized object.
+   * @param {SerializedData} data
+   * @returns {TinyNeedBar}
+   */
+  static fromJSON(data) {
+    const bar = new TinyNeedBar(data.maxValue, 0, 0);
+    bar.infiniteValue = data.infiniteValue;
+    bar.#factors.clear();
+    for (const [key, factor] of Object.entries(data.factors)) {
+      bar.setFactor(key, factor.amount, factor.multiplier);
+    }
+
+    return bar;
+  }
+
+  /**
+   * Creates a deep clone of this need bar.
+   * @returns {TinyNeedBar}
+   */
+  clone() {
+    return TinyNeedBar.fromJSON(this.toJSON());
+  }
+
+  /**
+   * Clear the factors map, clearing all internal data.
+   */
+  clearFactors() {
+    this.#factors.clear();
   }
 }
 
