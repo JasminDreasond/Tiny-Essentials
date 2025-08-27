@@ -394,7 +394,14 @@ class TinyI18 {
   // -------------------- File mode loading --------------------
 
   /**
-   * @param {string} locale
+   * Loads and flattens a locale JSON file into internal maps (file mode only).
+   *
+   * - Keys are dot-flattened.
+   * - `$pattern` entries are compiled to RegExp and stored in the pattern table.
+   * - `$fn` references are preserved for later resolution via helpers.
+   *
+   * @param {LocaleCode} locale - Locale identifier (e.g. "en", "pt-BR").
+   * @returns {Promise<void>}
    */
   async #loadLocaleFromFile(locale) {
     const file = pathJoin(this.#basePath ?? '', `${locale}.json`);
@@ -468,7 +475,10 @@ class TinyI18 {
   }
 
   /**
-   * @param {string} src
+   * Returns a cached RegExp for the given source, compiling if needed.
+   * In strict mode, throws on invalid regex; otherwise returns a never-matching regex.
+   *
+   * @param {string} src - Regex source pattern (no flags allowed).
    * @returns {RegExp}
    */
   #safeRegExp(src) {
@@ -486,8 +496,14 @@ class TinyI18 {
   }
 
   /**
-   * @param {string | FileValue} v
-   * @returns {string | { $fn: string, args: string }}
+   * Normalizes a file-based JSON value into an internal representation.
+   *
+   * Supported:
+   * - string → returned as-is
+   * - { $fn: string, args?: any } → preserved for helper resolution
+   *
+   * @param {string|FileValue} v
+   * @returns {string|{ $fn: string, args?: any }}
    */
   #coerceFileValue(v) {
     // Strings pass through; objects with $fn kept as-is; everything else ignored gracefully
@@ -633,15 +649,16 @@ class TinyI18 {
   }
 
   /**
-   * Resolves a translation. Supports:
-   * - String entries with {named} interpolation.
-   * - Function entries (local mode or registered via "$fn" in file mode).
-   * - Regex pattern entries when exact key is missing.
+   * Resolves a translation by exact key.
    *
-   * @param {string} key
-   * @param {Dict} [params]
-   * @param {ResolveOptions} [options]
-   * @returns {any} - string, HTMLElement, DocumentFragment, or anything your function returns
+   * Resolution order:
+   * 1. Current locale (if set)
+   * 2. Default locale (fallback)
+   *
+   * @param {string} key - Translation key (dot.notation).
+   * @param {Dict} [params] - Parameters for string interpolation or helper functions.
+   * @param {ResolveOptions} [options] - Override resolution options (e.g., force locale).
+   * @returns {any} - Usually string, but may be HTMLElement, DocumentFragment, or any return type from a helper.
    */
   t(key, params = undefined, options = undefined) {
     return this.get(key, params, options);
@@ -671,9 +688,13 @@ class TinyI18 {
   }
 
   /**
-   * @param {string} key
-   * @param {ResolveOptions} [options]
-   * @returns {any}
+   * Resolves a translation by regex pattern match.
+   *
+   * If multiple patterns exist, returns the first matching entry.
+   *
+   * @param {string} key - Input string to test against regex patterns.
+   * @param {ResolveOptions} [options] - Override resolution options (e.g., force locale).
+   * @returns {any} - Translation value (string or custom return type).
    */
   p(key, options) {
     return this.resolveByPattern(key, options);
