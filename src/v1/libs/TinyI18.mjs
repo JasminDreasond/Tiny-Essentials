@@ -96,9 +96,21 @@ import { join as pathJoin } from 'path';
  * @template {any} T
  * @template {any} R
  * @typedef {Object} HelpersReadonly
- * @property {(name: string) => boolean} has - Check if a helper with given name is registered.
- * @property {(name: string, arg: T, extras?: Record<string, any>) => R} call -
+ * @property {(name: string) => boolean} [has] - Check if a helper with given name is registered.
+ * @property {(name: string, arg: T, extras?: HelpersReadonly<T, R>) => R} [call] -
  * Invoke a helper by name with an argument and optional extras.
+ */
+
+/**
+ * A helper callback function used in translations.
+ *
+ * - Receives user-supplied parameters and a read-only facade for calling other helpers.
+ * - Must return a string (e.g. processed, interpolated, or formatted output).
+ *
+ * @callback HelperCallback
+ * @param {Dict} params - Key-value parameters passed from the translation entry.
+ * @param {HelpersReadonly<any, any>} helpers - Read-only access to other registered helpers.
+ * @returns {string} Processed string result.
  */
 
 /**
@@ -131,7 +143,7 @@ class TinyI18 {
   #patternTables = new Map(); // array of { $pattern: RegExp, value }
 
   // Helpers registry for function-based entries in both modes.
-  /** @type {Map<string, Function>} */
+  /** @type {Map<string, HelperCallback} */
   #helpers = new Map();
 
   /** @type {Map<string, RegExp>} */
@@ -259,7 +271,7 @@ class TinyI18 {
    * - function (params, helpers) => any
    * - { $fn: string, args?: any }   // file mode placeholder resolved via helpers
    *
-   * @param {string | ((params: Dict, helpers: HelpersReadonly<any, any>) => string) | { $fn: string; args?: any }} value
+   * @param {string | HelperCallback | { $fn: string; args?: any }} value
    * @param {Dict} [params]
    * @returns {string}
    */
@@ -572,7 +584,7 @@ class TinyI18 {
   /**
    * Registers a helper function available to function-based entries and $fn references.
    * @param {string} name
-   * @param {Function} fn
+   * @param {HelperCallback} fn
    */
   registerHelper(name, fn) {
     if (typeof name !== 'string' || !name)
