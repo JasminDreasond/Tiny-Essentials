@@ -203,7 +203,8 @@ class TinyNeedBar {
    * Removes a decay factor by its key.
    *
    * @param {string} key - The factor key to remove.
-   * @returns {boolean}
+   * @returns {boolean} Returns `true` if the factor existed and was successfully removed,
+   *                    or `false` if the factor did not exist.
    */
   removeFactor(key) {
     if (typeof key !== 'string' || !key) throw new TypeError('Key must be a non-empty string.');
