@@ -2807,8 +2807,8 @@ class TinyHtml {
   /**
    * Select the text content of an input or textarea element.
    *
-   * @param {TinyHtmlElement} el - The element or a selector string.
-   * @returns {TinyHtmlElement}
+   * @param {TinyHtml|HTMLInputElement|HTMLTextAreaElement} el - The element or a selector string.
+   * @returns {TinyHtml|HTMLInputElement|HTMLTextAreaElement}
    */
   static select(el) {
     const elem = TinyHtml._preHtmlElem(el, 'select');
@@ -2819,7 +2819,7 @@ class TinyHtml {
 
   /**
    * Select the text content of an input or textarea element.
-   * @returns {TinyHtmlElement}
+   * @returns {TinyHtml|HTMLInputElement|HTMLTextAreaElement}
    */
   select() {
     return TinyHtml.select(this);
