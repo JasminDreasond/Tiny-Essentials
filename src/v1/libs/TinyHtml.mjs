@@ -4759,7 +4759,7 @@ class TinyHtml {
   /**
    * Triggers all handlers associated with a specific event on the given element.
    *
-   * @param {string|string} events - Name of the event to trigger.
+   * @param {string|string[]} events - Name of the event to trigger.
    * @param {Event|CustomEvent|CustomEventInit} [payload] - Optional event object or data to pass.
    * @returns {TinyEventTarget|TinyEventTarget[]}
    */
