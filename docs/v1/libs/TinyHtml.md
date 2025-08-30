@@ -587,6 +587,17 @@ Checks whether the element exists at the given index.
 
 ---
 
+### `forEach(callback)`
+
+Iterates over all elements in the current instance, executing the provided callback on each one.
+
+* **Parameters**:
+
+  * `callback`: `(element: TinyHtml, index: number, items: TinyHtml[]) => void`
+    Function invoked for each element. Receives the current `TinyHtml`, its index, and the full list.
+
+---
+
 ### `get(index)`
 Returns the raw DOM element associated with this instance.
 
