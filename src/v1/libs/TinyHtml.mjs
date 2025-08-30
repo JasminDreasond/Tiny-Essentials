@@ -4531,7 +4531,7 @@ class TinyHtml {
       (!Array.isArray(events) || !events.every((event) => typeof event === 'string'))
     )
       throw new TypeError('The events must be a string or array of strings.');
-    for (const event of Array.isArray(events) ? events : [events]) {
+    for (const event of Array.isArray(events) ? Array.from(new Set(events)) : [events]) {
       if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
       TinyHtml._preEventTargetElems(el, 'on').forEach((elem) => {
         elem.addEventListener(event, handler, options);
@@ -4573,7 +4573,7 @@ class TinyHtml {
       (!Array.isArray(events) || !events.every((event) => typeof event === 'string'))
     )
       throw new TypeError('The events must be a string or array of strings.');
-    for (const event of Array.isArray(events) ? events : [events]) {
+    for (const event of Array.isArray(events) ? Array.from(new Set(events)) : [events]) {
       if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
       TinyHtml._preEventTargetElems(el, 'once').forEach((elem) => {
         /** @type {EventListenerOrEventListenerObject} */
@@ -4620,7 +4620,7 @@ class TinyHtml {
       (!Array.isArray(events) || !events.every((event) => typeof event === 'string'))
     )
       throw new TypeError('The events must be a string or array of strings.');
-    for (const event of Array.isArray(events) ? events : [events]) {
+    for (const event of Array.isArray(events) ? Array.from(new Set(events)) : [events]) {
       if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
       TinyHtml._preEventTargetElems(el, 'off').forEach((elem) => {
         elem.removeEventListener(event, handler, options);
@@ -4660,7 +4660,7 @@ class TinyHtml {
       (!Array.isArray(events) || !events.every((event) => typeof event === 'string'))
     )
       throw new TypeError('The events must be a string or array of strings.');
-    for (const event of Array.isArray(events) ? events : [events]) {
+    for (const event of Array.isArray(events) ? Array.from(new Set(events)) : [events]) {
       if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
       TinyHtml._preEventTargetElems(el, 'offAll').forEach((elem) => {
         const events = __eventRegistry.get(elem);
@@ -4738,7 +4738,7 @@ class TinyHtml {
       (!Array.isArray(events) || !events.every((event) => typeof event === 'string'))
     )
       throw new TypeError('The events must be a string or array of strings.');
-    for (const event of Array.isArray(events) ? events : [events]) {
+    for (const event of Array.isArray(events) ? Array.from(new Set(events)) : [events]) {
       if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
       TinyHtml._preEventTargetElems(el, 'trigger').forEach((elem) => {
         const evt =
