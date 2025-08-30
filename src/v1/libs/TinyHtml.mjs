@@ -2805,6 +2805,27 @@ class TinyHtml {
   }
 
   /**
+   * Select the text content of an input or textarea element.
+   *
+   * @param {TinyHtmlElement} el - The element or a selector string.
+   * @returns {TinyHtmlElement}
+   */
+  static select(el) {
+    const elem = TinyHtml._preHtmlElem(el, 'select');
+    if (elem instanceof HTMLInputElement || elem instanceof HTMLTextAreaElement) elem.select();
+    else throw new Error('Element must be an <input> or <textarea> to use select().');
+    return el;
+  }
+
+  /**
+   * Select the text content of an input or textarea element.
+   * @returns {TinyHtmlElement}
+   */
+  select() {
+    return TinyHtml.select(this);
+  }
+
+  /**
    * Interprets a value as a boolean `true` if it matches a common truthy representation.
    *
    * This method checks if the input is any of the common forms used to represent `true`,

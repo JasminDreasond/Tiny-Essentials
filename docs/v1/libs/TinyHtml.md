@@ -2249,6 +2249,20 @@ tinyElem.blur();
 
 ---
 
+### 🖊️ `TinyHtml.select(el)` / `el.select()`
+
+Selects all the text inside the given element.
+
+```js
+TinyHtml.select(element);
+// or
+tinyElem.select();
+```
+
+⚠️ Throws an error if the target element is not an `<input>` or `<textarea>`.
+
+---
+
 ## 🌐 Window Scroll & Viewport Helpers
 
 These methods let you control and query scroll positions and viewport size with simple, readable functions.
