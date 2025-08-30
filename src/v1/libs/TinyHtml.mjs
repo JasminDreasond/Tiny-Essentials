@@ -632,6 +632,17 @@ class TinyHtml {
   //////////////////////////////////////////////////////////////////
 
   /**
+   * Iterates over all elements, executing the provided callback on each.
+   * @param {(element: TinyHtml, index: number, items: TinyHtml[]) => void} callback - Function invoked for each element.
+   * @returns {TinyHtml} The current instance for chaining.
+   */
+  forEach(callback) {
+    const elems = this.getAll().map((el, index) => this.extract(index));
+    for (const index in elems) callback(elems[index], Number(index), elems);
+    return this;
+  }
+
+  /**
    * Returns the current target held by this instance.
    *
    * @param {number} index - The index of the element to retrieve.
@@ -1329,8 +1340,30 @@ class TinyHtml {
 
   //////////////////////////////////////////////////////////////////
 
-  /** @type {ElementDataStore} */
-  _data = {};
+  /**
+   * Internal data storage for element information.
+   * @type {ElementDataStore}
+   */
+  #data = {};
+
+  /**
+   * Returns a shallow copy of the internal data.
+   * @type {ElementDataStore}
+   */
+  get _data() {
+    return { ...this.#data };
+  }
+
+  /**
+   * Replaces the internal data with a new object.
+   * @param {ElementDataStore} value - Must be a non-null object.
+   * @throws {Error} If the value is not a valid object.
+   */
+  set _data(value) {
+    if (typeof value !== 'object' || value === null || Array.isArray(value))
+      throw new Error('value must be a non-null object.');
+    this.#data = value;
+  }
 
   /**
    * Internal data selectors for accessing public or private data stores.
@@ -1351,7 +1384,7 @@ class TinyHtml {
     private: (where, el) => {
       if (!(el instanceof TinyHtml))
         throw new Error(`Element must be a TinyHtml instance to execute ${where}().`);
-      return el._data;
+      return el.#data;
     },
   };
 
