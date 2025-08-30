@@ -4499,141 +4499,169 @@ class TinyHtml {
    * Registers an event listener on the specified element.
    *
    * @param {TinyEventTarget|TinyEventTarget[]} el - The target to listen on.
-   * @param {string} event - The event type (e.g. 'click', 'keydown').
+   * @param {string|string[]} events - The event type (e.g. 'click', 'keydown').
    * @param {EventListenerOrEventListenerObject|null} handler - The callback function to run on event.
    * @param {EventRegistryOptions} [options] - Optional event listener options.
    * @returns {TinyEventTarget|TinyEventTarget[]}
    */
-  static on(el, event, handler, options) {
-    if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
-    TinyHtml._preEventTargetElems(el, 'on').forEach((elem) => {
-      elem.addEventListener(event, handler, options);
+  static on(el, events, handler, options) {
+    if (
+      typeof events !== 'string' &&
+      (!Array.isArray(events) || !events.every((event) => typeof event === 'string'))
+    )
+      throw new TypeError('The events must be a string or array of strings.');
+    for (const event of Array.isArray(events) ? events : [events]) {
+      if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
+      TinyHtml._preEventTargetElems(el, 'on').forEach((elem) => {
+        elem.addEventListener(event, handler, options);
 
-      if (!__eventRegistry.has(elem)) __eventRegistry.set(elem, {});
-      const events = __eventRegistry.get(elem);
-      if (!events) return;
-      if (!Array.isArray(events[event])) events[event] = [];
-      events[event].push({ handler, options });
-    });
+        if (!__eventRegistry.has(elem)) __eventRegistry.set(elem, {});
+        const events = __eventRegistry.get(elem);
+        if (!events) return;
+        if (!Array.isArray(events[event])) events[event] = [];
+        events[event].push({ handler, options });
+      });
+    }
     return el;
   }
 
   /**
    * Registers an event listener on the specified element.
    *
-   * @param {string} event - The event type (e.g. 'click', 'keydown').
+   * @param {string|string[]} events - The event type (e.g. 'click', 'keydown').
    * @param {EventListenerOrEventListenerObject|null} handler - The callback function to run on event.
    * @param {EventRegistryOptions} [options] - Optional event listener options.
    * @returns {TinyEventTarget|TinyEventTarget[]}
    */
-  on(event, handler, options) {
-    return TinyHtml.on(this, event, handler, options);
+  on(events, handler, options) {
+    return TinyHtml.on(this, events, handler, options);
   }
 
   /**
    * Registers an event listener that runs only once, then is removed.
    *
    * @param {TinyEventTarget|TinyEventTarget[]} el - The target to listen on.
-   * @param {string} event - The event type (e.g. 'click', 'keydown').
+   * @param {string|string[]} events - The event type (e.g. 'click', 'keydown').
    * @param {EventListenerOrEventListenerObject} handler - The callback function to run on event.
    * @param {EventRegistryOptions} [options={}] - Optional event listener options.
    * @returns {TinyEventTarget|TinyEventTarget[]}
    */
-  static once(el, event, handler, options = {}) {
-    if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
-    TinyHtml._preEventTargetElems(el, 'once').forEach((elem) => {
-      /** @type {EventListenerOrEventListenerObject} */
-      const wrapped = (e) => {
-        TinyHtml.off(elem, event, wrapped);
-        if (typeof handler === 'function') handler(e);
-      };
+  static once(el, events, handler, options = {}) {
+    if (
+      typeof events !== 'string' &&
+      (!Array.isArray(events) || !events.every((event) => typeof event === 'string'))
+    )
+      throw new TypeError('The events must be a string or array of strings.');
+    for (const event of Array.isArray(events) ? events : [events]) {
+      if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
+      TinyHtml._preEventTargetElems(el, 'once').forEach((elem) => {
+        /** @type {EventListenerOrEventListenerObject} */
+        const wrapped = (e) => {
+          TinyHtml.off(elem, event, wrapped);
+          if (typeof handler === 'function') handler(e);
+        };
 
-      TinyHtml.on(
-        elem,
-        event,
-        wrapped,
-        typeof options === 'boolean' ? options : { ...options, once: true },
-      );
-    });
+        TinyHtml.on(
+          elem,
+          event,
+          wrapped,
+          typeof options === 'boolean' ? options : { ...options, once: true },
+        );
+      });
+    }
     return el;
   }
 
   /**
    * Registers an event listener that runs only once, then is removed.
    *
-   * @param {string} event - The event type (e.g. 'click', 'keydown').
+   * @param {string|string[]} events - The event type (e.g. 'click', 'keydown').
    * @param {EventListenerOrEventListenerObject} handler - The callback function to run on event.
    * @param {EventRegistryOptions} [options={}] - Optional event listener options.
    * @returns {TinyEventTarget|TinyEventTarget[]}
    */
-  once(event, handler, options = {}) {
-    return TinyHtml.once(this, event, handler, options);
+  once(events, handler, options = {}) {
+    return TinyHtml.once(this, events, handler, options);
   }
 
   /**
    * Removes a specific event listener from an element.
    *
    * @param {TinyEventTarget|TinyEventTarget[]} el - The target element.
-   * @param {string} event - The event type.
+   * @param {string|string[]} events - The event type.
    * @param {EventListenerOrEventListenerObject|null} handler - The function originally bound to the event.
    * @param {boolean|EventListenerOptions} [options] - Optional listener options.
    * @returns {TinyEventTarget|TinyEventTarget[]}
    */
-  static off(el, event, handler, options) {
-    if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
-    TinyHtml._preEventTargetElems(el, 'off').forEach((elem) => {
-      elem.removeEventListener(event, handler, options);
+  static off(el, events, handler, options) {
+    if (
+      typeof events !== 'string' &&
+      (!Array.isArray(events) || !events.every((event) => typeof event === 'string'))
+    )
+      throw new TypeError('The events must be a string or array of strings.');
+    for (const event of Array.isArray(events) ? events : [events]) {
+      if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
+      TinyHtml._preEventTargetElems(el, 'off').forEach((elem) => {
+        elem.removeEventListener(event, handler, options);
 
-      const events = __eventRegistry.get(elem);
-      if (events && events[event]) {
-        events[event] = events[event].filter((entry) => entry.handler !== handler);
-        if (events[event].length === 0) delete events[event];
-      }
-    });
-    return el;
-  }
-
-  /**
-   * Removes a specific event listener from an element.
-   *
-   * @param {string} event - The event type.
-   * @param {EventListenerOrEventListenerObject|null} handler - The function originally bound to the event.
-   * @param {boolean|EventListenerOptions} [options] - Optional listener options.
-   * @returns {TinyEventTarget|TinyEventTarget[]}
-   */
-  off(event, handler, options) {
-    return TinyHtml.off(this, event, handler, options);
-  }
-
-  /**
-   * Removes all event listeners of a specific type from the element.
-   *
-   * @param {TinyEventTarget|TinyEventTarget[]} el - The target element.
-   * @param {string} event - The event type to remove (e.g. 'click').
-   * @returns {TinyEventTarget|TinyEventTarget[]}
-   */
-  static offAll(el, event) {
-    if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
-    TinyHtml._preEventTargetElems(el, 'offAll').forEach((elem) => {
-      const events = __eventRegistry.get(elem);
-      if (events && events[event]) {
-        for (const entry of events[event]) {
-          elem.removeEventListener(event, entry.handler, entry.options);
+        const events = __eventRegistry.get(elem);
+        if (events && events[event]) {
+          events[event] = events[event].filter((entry) => entry.handler !== handler);
+          if (events[event].length === 0) delete events[event];
         }
-        delete events[event];
-      }
-    });
+      });
+    }
+    return el;
+  }
+
+  /**
+   * Removes a specific event listener from an element.
+   *
+   * @param {string|string[]} events - The event type.
+   * @param {EventListenerOrEventListenerObject|null} handler - The function originally bound to the event.
+   * @param {boolean|EventListenerOptions} [options] - Optional listener options.
+   * @returns {TinyEventTarget|TinyEventTarget[]}
+   */
+  off(events, handler, options) {
+    return TinyHtml.off(this, events, handler, options);
+  }
+
+  /**
+   * Removes all event listeners of a specific type from the element.
+   *
+   * @param {TinyEventTarget|TinyEventTarget[]} el - The target element.
+   * @param {string|string[]} events - The event type to remove (e.g. 'click').
+   * @returns {TinyEventTarget|TinyEventTarget[]}
+   */
+  static offAll(el, events) {
+    if (
+      typeof events !== 'string' &&
+      (!Array.isArray(events) || !events.every((event) => typeof event === 'string'))
+    )
+      throw new TypeError('The events must be a string or array of strings.');
+    for (const event of Array.isArray(events) ? events : [events]) {
+      if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
+      TinyHtml._preEventTargetElems(el, 'offAll').forEach((elem) => {
+        const events = __eventRegistry.get(elem);
+        if (events && events[event]) {
+          for (const entry of events[event]) {
+            elem.removeEventListener(event, entry.handler, entry.options);
+          }
+          delete events[event];
+        }
+      });
+    }
     return el;
   }
 
   /**
    * Removes all event listeners of a specific type from the element.
    *
-   * @param {string} event - The event type to remove (e.g. 'click').
+   * @param {string|string[]} events - The event type to remove (e.g. 'click').
    * @returns {TinyEventTarget|TinyEventTarget[]}
    */
-  offAll(event) {
-    return TinyHtml.offAll(this, event);
+  offAll(events) {
+    return TinyHtml.offAll(this, events);
   }
 
   /**
@@ -4679,36 +4707,43 @@ class TinyHtml {
    * Triggers all handlers associated with a specific event on the given element.
    *
    * @param {TinyEventTarget|TinyEventTarget[]} el - Target element where the event should be triggered.
-   * @param {string} event - Name of the event to trigger.
+   * @param {string|string[]} events - Name of the event to trigger.
    * @param {Event|CustomEvent|CustomEventInit} [payload] - Optional event object or data to pass.
    * @returns {TinyEventTarget|TinyEventTarget[]}
    */
-  static trigger(el, event, payload = {}) {
-    if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
-    TinyHtml._preEventTargetElems(el, 'trigger').forEach((elem) => {
-      const evt =
-        payload instanceof Event || payload instanceof CustomEvent
-          ? payload
-          : new CustomEvent(event, {
-              bubbles: true,
-              cancelable: true,
-              detail: payload,
-            });
+  static trigger(el, events, payload = {}) {
+    if (
+      typeof events !== 'string' &&
+      (!Array.isArray(events) || !events.every((event) => typeof event === 'string'))
+    )
+      throw new TypeError('The events must be a string or array of strings.');
+    for (const event of Array.isArray(events) ? events : [events]) {
+      if (typeof event !== 'string') throw new TypeError('The event name must be a string.');
+      TinyHtml._preEventTargetElems(el, 'trigger').forEach((elem) => {
+        const evt =
+          payload instanceof Event || payload instanceof CustomEvent
+            ? payload
+            : new CustomEvent(event, {
+                bubbles: true,
+                cancelable: true,
+                detail: payload,
+              });
 
-      elem.dispatchEvent(evt);
-    });
+        elem.dispatchEvent(evt);
+      });
+    }
     return el;
   }
 
   /**
    * Triggers all handlers associated with a specific event on the given element.
    *
-   * @param {string} event - Name of the event to trigger.
+   * @param {string|string} events - Name of the event to trigger.
    * @param {Event|CustomEvent|CustomEventInit} [payload] - Optional event object or data to pass.
    * @returns {TinyEventTarget|TinyEventTarget[]}
    */
-  trigger(event, payload = {}) {
-    return TinyHtml.trigger(this, event, payload);
+  trigger(events, payload = {}) {
+    return TinyHtml.trigger(this, events, payload);
   }
 
   ///////////////////////////////////////////////////////////////
