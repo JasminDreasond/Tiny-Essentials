@@ -1409,6 +1409,51 @@ element.setNumber(99);
 
 ---
 
+### 📝 `.toBoolean()` / `TinyHtml.toBoolean(el)`
+
+Gets the **boolean** content of the element.
+Returns `true` if the text is `"true"`, `false` if `"false"`, and `null` if empty or invalid.
+
+```js
+element.toBoolean(); // → true | false | null
+```
+
+---
+
+### ✍️ `.setBoolean(value)` / `TinyHtml.setBoolean(el, value)`
+
+Sets the **boolean** content of one or more elements.
+Throws if `value` is not a boolean.
+
+```js
+element.setBoolean(true);  // sets content to "true"
+element.setBoolean(false); // sets content to "false"
+```
+
+---
+
+### 📝 `.toString()` / `TinyHtml.toString(el)`
+
+Gets the **string** content of the element (returns `null` if none).
+
+```js
+element.toString(); // → "Hello world"
+```
+
+---
+
+### ✍️ `.setString(value)` / `TinyHtml.setString(el, value)`
+
+Sets the **string** content of one or more elements.
+Throws if `value` is not a string.
+
+```js
+element.setString("New text content");
+```
+
+---
+
+
 ### 📝 `.text()` / `TinyHtml.text(el)`
 
 Gets the text content of the element (returns `null` if none).
