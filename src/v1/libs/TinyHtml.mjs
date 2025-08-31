@@ -4111,18 +4111,17 @@ class TinyHtml {
   /**
    * Set text content of elements.
    * @param {TinyElement|TinyElement[]} el
-   * @param {string} value
+   * @param {*} value
    * @returns {TinyElement|TinyElement[]}
    */
   static setText(el, value) {
-    if (typeof value !== 'string') throw new Error('Value is not a valid string.');
     TinyHtml._preElems(el, 'setText').forEach((el) => (el.textContent = value));
     return el;
   }
 
   /**
    * Set text content of the element.
-   * @param {string} value
+   * @param {*} value
    * @returns {TinyElement|TinyElement[]}
    */
   setText(value) {
