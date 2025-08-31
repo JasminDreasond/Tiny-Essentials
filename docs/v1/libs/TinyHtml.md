@@ -1328,6 +1328,89 @@ element.id(); // → "my-element-id"
 
 ---
 
+### 📝 `.toBigInt()` / `TinyHtml.toBigInt(el)`
+
+Gets the **BigInt** content of the element (returns `null` if invalid or empty).
+
+```js
+element.toBigInt(); // → 123n
+```
+
+---
+
+### ✍️ `.setBigInt(value)` / `TinyHtml.setBigInt(el, value)`
+
+Sets the **BigInt** content of one or more elements. Throws if `value` is not a BigInt.
+
+```js
+element.setBigInt(456n);
+```
+
+---
+
+### 📝 `.toDate()` / `TinyHtml.toDate(el)`
+
+Gets the **Date** content of the element (returns `null` if invalid).
+
+```js
+element.toDate(); // → 2025-08-31T00:00:00.000Z
+```
+
+---
+
+### ✍️ `.setDate(value)` / `TinyHtml.setDate(el, value)`
+
+Sets the **Date** content of one or more elements. Throws if `value` is not a valid `Date`.
+
+```js
+element.setDate(new Date("2025-08-31T00:00:00Z"));
+```
+
+---
+
+### 📝 `.toJson()` / `TinyHtml.toJson(el)`
+
+Gets the **JSON** content of the element (returns `null` if invalid or empty).
+
+```js
+element.toJson(); // → { a: 1, b: 2 }
+```
+
+---
+
+### ✍️ `.setJson(value, space)` / `TinyHtml.setJson(el, value, space)`
+
+Sets the **JSON** content of one or more elements.
+`space` is optional and can be a number or string for indentation.
+
+```js
+element.setJson({ a: 1, b: 2 });          // minified
+element.setJson({ a: 1, b: 2 }, 2);       // 2-space indentation
+element.setJson({ a: 1, b: 2 }, "\t");    // tab indentation
+```
+
+---
+
+### 📝 `.toNumber()` / `TinyHtml.toNumber(el)`
+
+Gets the **number** content of the element (returns `null` if invalid or empty).
+
+```js
+element.toNumber(); // → 42
+```
+
+---
+
+### ✍️ `.setNumber(value)` / `TinyHtml.setNumber(el, value)`
+
+Sets the **number** content of one or more elements. Throws if `value` is not a number.
+
+```js
+element.setNumber(99);
+```
+
+---
+
 ### 📝 `.text()` / `TinyHtml.text(el)`
 
 Gets the text content of the element (returns `null` if none).

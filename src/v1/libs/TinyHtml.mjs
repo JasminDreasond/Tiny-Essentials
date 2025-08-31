@@ -3872,6 +3872,182 @@ class TinyHtml {
   }
 
   /**
+   * Returns the BigInt content of the element.
+   * @param {TinyElement} el - Target element.
+   * @returns {bigint|null} The BigInt content or null if none.
+   */
+  static toBigInt(el) {
+    const elem = TinyHtml._preElem(el, 'toBigInt');
+    const txt = elem.textContent?.trim();
+    let value = null;
+    try {
+      value = BigInt(txt ?? '');
+    } catch {
+      value = null;
+    }
+    return value;
+  }
+
+  /**
+   * Returns the BigInt content of the element.
+   * @returns {bigint|null}
+   */
+  toBigInt() {
+    return TinyHtml.toBigInt(this);
+  }
+
+  /**
+   * Set BigInt content of elements.
+   * @param {TinyElement|TinyElement[]} el
+   * @param {bigint} value
+   * @returns {TinyElement|TinyElement[]}
+   */
+  static setBigInt(el, value) {
+    if (typeof value !== 'bigint') throw new Error('Value is not a valid BigInt.');
+    TinyHtml._preElems(el, 'setBigInt').forEach((el) => (el.textContent = value.toString()));
+    return el;
+  }
+
+  /**
+   * Set BigInt content of the element.
+   * @param {bigint} value
+   * @returns {TinyElement|TinyElement[]}
+   */
+  setBigInt(value) {
+    return TinyHtml.setBigInt(this, value);
+  }
+
+  /**
+   * Returns the Date content of the element.
+   * @param {TinyElement} el - Target element.
+   * @returns {Date|null} The Date content or null if invalid.
+   */
+  static toDate(el) {
+    const elem = TinyHtml._preElem(el, 'toDate');
+    const txt = elem.textContent?.trim();
+    if (!txt) return null;
+    const d = new Date(txt);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+
+  /**
+   * Returns the Date content of the element.
+   * @returns {Date|null}
+   */
+  toDate() {
+    return TinyHtml.toDate(this);
+  }
+
+  /**
+   * Set Date content of elements.
+   * @param {TinyElement|TinyElement[]} el
+   * @param {Date} value
+   * @returns {TinyElement|TinyElement[]}
+   */
+  static setDate(el, value) {
+    if (!(value instanceof Date) || Number.isNaN(value.getTime()))
+      throw new Error('Value is not a valid Date.');
+    TinyHtml._preElems(el, 'setDate').forEach((el) => (el.textContent = value.toISOString()));
+    return el;
+  }
+
+  /**
+   * Set Date content of the element.
+   * @param {Date} value
+   * @returns {TinyElement|TinyElement[]}
+   */
+  setDate(value) {
+    return TinyHtml.setDate(this, value);
+  }
+
+  /**
+   * Returns the JSON content of the element.
+   * @param {TinyElement} el - Target element.
+   * @returns {any|null} The parsed JSON content or null if invalid.
+   */
+  static toJson(el) {
+    const elem = TinyHtml._preElem(el, 'toJson');
+    const txt = elem.textContent?.trim();
+    if (!txt) return null;
+    try {
+      return JSON.parse(txt);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Returns the JSON content of the element.
+   * @returns {any|null}
+   */
+  toJson() {
+    return TinyHtml.toJson(this);
+  }
+
+  /**
+   * Set JSON content of elements.
+   * @param {TinyElement|TinyElement[]} el
+   * @param {any} value
+   * @param {number|string} [space] - Indentation level or string for formatting.
+   * @returns {TinyElement|TinyElement[]}
+   */
+  static setJson(el, value, space) {
+    TinyHtml._preElems(el, 'setJson').forEach(
+      (el) => (el.textContent = JSON.stringify(value, null, space)),
+    );
+    return el;
+  }
+
+  /**
+   * Set JSON content of the element.
+   * @param {any} value
+   * @param {number|string} [space] - Indentation level or string for formatting.
+   * @returns {TinyElement|TinyElement[]}
+   */
+  setJson(value, space) {
+    return TinyHtml.setJson(this, value, space);
+  }
+
+  /**
+   * Returns the number content of the element.
+   * @param {TinyElement} el - Target element.
+   * @returns {number|null} The text content or null if none.
+   */
+  static toNumber(el) {
+    const elem = TinyHtml._preElem(el, 'toNumber');
+    return typeof elem.textContent === 'string' ? parseFloat(elem.textContent.trim()) : null;
+  }
+
+  /**
+   * Returns the number content of the element.
+   * @returns {number|null} The text content or null if none.
+   */
+  toNumber() {
+    return TinyHtml.toNumber(this);
+  }
+
+  /**
+   * Set number content of elements.
+   * @param {TinyElement|TinyElement[]} el
+   * @param {number} value
+   * @returns {TinyElement|TinyElement[]}
+   */
+  static setNumber(el, value) {
+    if (typeof value !== 'number') throw new Error('Value is not a valid number.');
+    TinyHtml._preElems(el, 'setNumber').forEach((el) => (el.textContent = value.toString()));
+    return el;
+  }
+
+  /**
+   * Set number content of the element.
+   * @param {number} value
+   * @returns {TinyElement|TinyElement[]}
+   */
+  setNumber(value) {
+    return TinyHtml.setNumber(this, value);
+  }
+
+  /**
    * Returns the text content of the element.
    * @param {TinyElement} el - Target element.
    * @returns {string|null} The text content or null if none.
