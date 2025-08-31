@@ -18,14 +18,12 @@
 
 # 🧩 Tiny Essentials
 
-**Tiny Essentials** is a collection of small, essential scripts designed to be used across various projects. These simple utilities are crafted for speed, ease of use, and versatility. From date calculations to formatting, object manipulations, and array operations, these scripts serve as building blocks for more complex applications.
+**Tiny Essentials** is a collection of small, essential scripts designed to be used across various projects. These simple utilities are crafted for speed, ease of use, and versatility.  
 
-## ✨ Features
+## ✨ Features  
 
-- 🔀 **Array Manipulations**: Functions like `shuffleArray` to randomize elements in place.
-- ⏱️ **Time Calculations**: Easily calculate durations, format timers, and more.
-- 🧠 **Object Utilities**: Perform type checks, count object properties, and calculate percentages.
-- 🛠️ **Custom Utilities**: Includes various helper functions like `ruleOfThree` for proportion calculations and `getAge` to calculate the age based on a given birth date.
+Tiny Essentials provides a wide range of utilities — from array manipulations and time calculations to object helpers and custom tools.  
+For the **full list of features and usage examples**, please check the [documentation](./docs).  
 
 ## 📦 Installation
 

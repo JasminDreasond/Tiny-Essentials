@@ -1453,7 +1453,6 @@ element.setString("New text content");
 
 ---
 
-
 ### 📝 `.text()` / `TinyHtml.text(el)`
 
 Gets the text content of the element (returns `null` if none).
