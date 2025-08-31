@@ -4052,6 +4052,45 @@ class TinyHtml {
   }
 
   /**
+   * Returns the string content of the element.
+   * @param {TinyElement} el - Target element.
+   * @returns {string|null} The string content or null if none.
+   */
+  static toString(el) {
+    const elem = TinyHtml._preElem(el, 'toString');
+    return typeof elem.textContent === 'string' ? elem.textContent : null;
+  }
+
+  /**
+   * Returns the string content of the element.
+   * @returns {string|null} The string content or null if none.
+   */
+  toString() {
+    return TinyHtml.toString(this);
+  }
+
+  /**
+   * Set string content of elements.
+   * @param {TinyElement|TinyElement[]} el
+   * @param {string} value
+   * @returns {TinyElement|TinyElement[]}
+   */
+  static setString(el, value) {
+    if (typeof value !== 'string') throw new Error('Value is not a valid string.');
+    TinyHtml._preElems(el, 'setString').forEach((el) => (el.textContent = value));
+    return el;
+  }
+
+  /**
+   * Set string content of the element.
+   * @param {string} value
+   * @returns {TinyElement|TinyElement[]}
+   */
+  setString(value) {
+    return TinyHtml.setString(this, value);
+  }
+
+  /**
    * Returns the text content of the element.
    * @param {TinyElement} el - Target element.
    * @returns {string|null} The text content or null if none.
