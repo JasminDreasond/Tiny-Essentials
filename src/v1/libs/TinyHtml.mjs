@@ -4157,7 +4157,7 @@ class TinyHtml {
    * @returns {TinyElement|TinyElement[]}
    */
   static setText(el, value) {
-    const data = String(value);
+    const data = typeof value !== 'undefined' && value !== null ? String(value) : '';
     TinyHtml._preElems(el, 'setText').forEach((el) => (el.textContent = data));
     return el;
   }
