@@ -4052,6 +4052,48 @@ class TinyHtml {
   }
 
   /**
+   * Returns the boolean content of the element.
+   * @param {TinyElement} el - Target element.
+   * @returns {boolean|null} The boolean value or null if empty.
+   */
+  static toBoolean(el) {
+    const elem = TinyHtml._preElem(el, 'toBoolean');
+    const txt = elem.textContent?.trim();
+    if (txt === undefined || txt === null || (txt !== 'true' && txt !== 'false')) return null;
+    return /^true$/i.test(txt);
+  }
+
+  /**
+   * Returns the boolean content of the element.
+   * @returns {boolean|null}
+   */
+  toBoolean() {
+    return TinyHtml.toBoolean(this);
+  }
+
+  /**
+   * Set boolean content of elements.
+   * @param {TinyElement|TinyElement[]} el
+   * @param {boolean} value
+   * @returns {TinyElement|TinyElement[]}
+   */
+  static setBoolean(el, value) {
+    if (typeof value !== 'boolean') throw new Error('Value is not a valid boolean.');
+    const data = value.toString();
+    TinyHtml._preElems(el, 'setBoolean').forEach((el) => (el.textContent = data));
+    return el;
+  }
+
+  /**
+   * Set boolean content of the element.
+   * @param {boolean} value
+   * @returns {TinyElement|TinyElement[]}
+   */
+  setBoolean(value) {
+    return TinyHtml.setBoolean(this, value);
+  }
+
+  /**
    * Returns the string content of the element.
    * @param {TinyElement} el - Target element.
    * @returns {string|null} The string content or null if none.
@@ -4115,7 +4157,8 @@ class TinyHtml {
    * @returns {TinyElement|TinyElement[]}
    */
   static setText(el, value) {
-    TinyHtml._preElems(el, 'setText').forEach((el) => (el.textContent = value));
+    const data = String(value);
+    TinyHtml._preElems(el, 'setText').forEach((el) => (el.textContent = data));
     return el;
   }
 
