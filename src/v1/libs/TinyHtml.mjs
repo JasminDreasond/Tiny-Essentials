@@ -3904,7 +3904,8 @@ class TinyHtml {
    */
   static setBigInt(el, value) {
     if (typeof value !== 'bigint') throw new Error('Value is not a valid BigInt.');
-    TinyHtml._preElems(el, 'setBigInt').forEach((el) => (el.textContent = value.toString()));
+    const data = value.toString();
+    TinyHtml._preElems(el, 'setBigInt').forEach((el) => (el.textContent = data));
     return el;
   }
 
@@ -3947,7 +3948,8 @@ class TinyHtml {
   static setDate(el, value) {
     if (!(value instanceof Date) || Number.isNaN(value.getTime()))
       throw new Error('Value is not a valid Date.');
-    TinyHtml._preElems(el, 'setDate').forEach((el) => (el.textContent = value.toISOString()));
+    const data = value.toISOString();
+    TinyHtml._preElems(el, 'setDate').forEach((el) => (el.textContent = data));
     return el;
   }
 
@@ -3987,25 +3989,26 @@ class TinyHtml {
   /**
    * Set JSON content of elements.
    * @param {TinyElement|TinyElement[]} el
-   * @param {any} value
+   * @param {any} value - A JavaScript value, usually an object or array, to be converted.
+   * @param {(this: any, key: string, value: any) => any} [replacer] - A function that transforms the results.
    * @param {number|string} [space] - Indentation level or string for formatting.
    * @returns {TinyElement|TinyElement[]}
    */
-  static setJson(el, value, space) {
-    TinyHtml._preElems(el, 'setJson').forEach(
-      (el) => (el.textContent = JSON.stringify(value, null, space)),
-    );
+  static setJson(el, value, replacer, space) {
+    const data = JSON.stringify(value, replacer, space);
+    TinyHtml._preElems(el, 'setJson').forEach((el) => (el.textContent = data));
     return el;
   }
 
   /**
    * Set JSON content of the element.
-   * @param {any} value
+   * @param {any} value - A JavaScript value, usually an object or array, to be converted.
+   * @param {(this: any, key: string, value: any) => any} [replacer] - A function that transforms the results.
    * @param {number|string} [space] - Indentation level or string for formatting.
    * @returns {TinyElement|TinyElement[]}
    */
-  setJson(value, space) {
-    return TinyHtml.setJson(this, value, space);
+  setJson(value, replacer, space) {
+    return TinyHtml.setJson(this, value, replacer, space);
   }
 
   /**
@@ -4034,7 +4037,8 @@ class TinyHtml {
    */
   static setNumber(el, value) {
     if (typeof value !== 'number') throw new Error('Value is not a valid number.');
-    TinyHtml._preElems(el, 'setNumber').forEach((el) => (el.textContent = value.toString()));
+    const data = value.toString();
+    TinyHtml._preElems(el, 'setNumber').forEach((el) => (el.textContent = data));
     return el;
   }
 

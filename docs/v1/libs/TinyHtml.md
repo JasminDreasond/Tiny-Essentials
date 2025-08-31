@@ -1378,15 +1378,13 @@ element.toJson(); // → { a: 1, b: 2 }
 
 ---
 
-### ✍️ `.setJson(value, space)` / `TinyHtml.setJson(el, value, space)`
+### ✍️ `.setJson(value, replacer, space)` / `TinyHtml.setJson(el, value, replacer, space)`
 
 Sets the **JSON** content of one or more elements.
-`space` is optional and can be a number or string for indentation.
 
 ```js
 element.setJson({ a: 1, b: 2 });          // minified
-element.setJson({ a: 1, b: 2 }, 2);       // 2-space indentation
-element.setJson({ a: 1, b: 2 }, "\t");    // tab indentation
+element.setJson({ a: 1, b: 2 }, null, 2);       // 2-space indentation
 ```
 
 ---
