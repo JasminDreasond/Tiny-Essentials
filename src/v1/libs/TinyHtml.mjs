@@ -3239,6 +3239,22 @@ class TinyHtml {
   //////////////////////////////////////////////////
 
   /**
+   * Predefined animation speed options, inspired by jQuery.fx.speeds.
+   * Each entry can be either a number (duration in ms) or a KeyframeAnimationOptions object.
+   *
+   * Usage example:
+   *   TinyHtml.animate(el, keyframes, TinyHtml.#fxSpeeds.fast);
+   *   TinyHtml.slideDown(el, TinyHtml.#fxSpeeds.slow);
+   *
+   * @type {Record<string, number | KeyframeAnimationOptions>}
+   */
+  static #styleFxSpeeds = {
+    slow: { duration: 600, easing: 'ease' },
+    fast: { duration: 200, easing: 'ease-out' },
+    _default: { duration: 400, easing: 'linear' },
+  };
+
+  /**
    * CSS expansion shorthand used by genStyleFx to include margin/padding values.
    * @typedef {['Top', 'Right', 'Bottom', 'Left']}
    */
@@ -3402,7 +3418,7 @@ class TinyHtml {
    * @param {number | KeyframeAnimationOptions} [ops] - Timing options.
    * @returns {T}
    */
-  static applyStyleFx(el, props, ops) {
+  static applyStyleFx(el, props, ops = TinyHtml.#styleFxSpeeds._default) {
     const first = TinyHtml._preHtmlElem(el, 'applyStyleFx');
 
     /**
@@ -3470,7 +3486,11 @@ class TinyHtml {
    * @returns {T}
    */
   static slideDown(el, ops) {
-    return TinyHtml.applyStyleFx(el, this.#styleEffects['slideDown'], ops);
+    return TinyHtml.applyStyleFx(
+      el,
+      this.#styleEffects['slideDown'],
+      ops ?? TinyHtml.#styleFxSpeeds.slow,
+    );
   }
 
   /**
