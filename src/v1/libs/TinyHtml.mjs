@@ -195,6 +195,14 @@ const __elementDataMap = new WeakMap();
 const __elementAnimateData = new WeakMap();
 
 /**
+ * Stores the currently active animation for each element,
+ * allowing cancellation or replacement of ongoing animations.
+ *
+ * @type {WeakMap<HTMLElement, Animation>}
+ */
+const __elementCurrentAnimation = new WeakMap();
+
+/**
  * Mapping of animation shortcuts to their effect definitions.
  * Similar to jQuery's predefined effects (slideDown, fadeIn, etc.).
  *
@@ -3239,6 +3247,35 @@ class TinyHtml {
   //////////////////////////////////////////////////
 
   /**
+   * Global configuration flag controlling whether old style-based animations
+   * are cancelled before a new one starts. Defaults to true.
+   *
+   * @type {boolean}
+   */
+  static #cancelOldStyleFx = true;
+
+  /**
+   * Returns the current global setting for cancelling old style-based animations.
+   *
+   * @returns {boolean} True if old animations are cancelled by default, false otherwise.
+   */
+  static get cancelOldStyleFx() {
+    return TinyHtml.#cancelOldStyleFx;
+  }
+
+  /**
+   * Updates the global setting that determines whether old style-based animations
+   * are cancelled before new ones start.
+   *
+   * @param {boolean} value - True to cancel old animations by default, false to keep them running.
+   * @throws {TypeError} If the value is not a boolean.
+   */
+  static set cancelOldStyleFx(value) {
+    if (typeof value !== 'boolean') throw new TypeError('Expected a boolean value.');
+    TinyHtml.#cancelOldStyleFx = value;
+  }
+
+  /**
    * Predefined animation speed options, inspired by jQuery.fx.speeds.
    * Each entry can be either a number (duration in ms) or a KeyframeAnimationOptions object.
    *
@@ -3456,26 +3493,77 @@ class TinyHtml {
   /**
    * Applies an animation to one or multiple TinyElement instances.
    *
-   * @template {TinyElement|TinyElement[]} T
+   * If `cancelOldAnim` is true, any currently running animation on the same element
+   * will be cancelled before the new one starts (similar to jQuery's behavior).
+   *
+   * @template {TinyHtmlElement|TinyHtmlElement[]} T
    * @param {T} el - A single TinyElement or an array of TinyElements to animate.
-   * @param {Keyframe[] | PropertyIndexedKeyframes | null} keyframes - The keyframes used to define the animation.
+   * @param {Keyframe[] | PropertyIndexedKeyframes | null} keyframes - Keyframes that define the animation.
    * @param {number | KeyframeAnimationOptions} [ops] - Timing or configuration options for the animation.
+   * @param {boolean} [cancelOldAnim=TinyHtml.cancelOldStyleFx] - Whether to cancel previous animations on the same element.
    * @returns {T}
    */
-  static animate(el, keyframes, ops) {
-    TinyHtml._preElems(el, 'animate').forEach((elem) => elem.animate(keyframes, ops));
+  static animate(el, keyframes, ops, cancelOldAnim = TinyHtml.#cancelOldStyleFx) {
+    TinyHtml._preHtmlElems(el, 'animate').forEach((elem) => {
+      if (cancelOldAnim) {
+        const prevAnim = __elementCurrentAnimation.get(elem);
+        if (prevAnim) prevAnim.cancel();
+      }
+
+      const anim = elem.animate(keyframes, ops);
+      __elementCurrentAnimation.set(elem, anim);
+      anim.addEventListener('finish', () => {
+        if (__elementCurrentAnimation.get(elem) === anim) __elementCurrentAnimation.delete(elem);
+      });
+    });
+
     return el;
   }
 
   /**
    * Applies an animation to one or multiple TinyElement instances.
    *
-   * @param {Keyframe[] | PropertyIndexedKeyframes | null} keyframes - The keyframes used to define the animation.
+   * If `cancelOldAnim` is true, any currently running animation on the same element
+   * will be cancelled before the new one starts (similar to jQuery's behavior).
+   *
+   * @param {Keyframe[] | PropertyIndexedKeyframes | null} keyframes - Keyframes that define the animation.
    * @param {number | KeyframeAnimationOptions} [ops] - Timing or configuration options for the animation.
+   * @param {boolean} [cancelOldAnim=TinyHtml.cancelOldStyleFx] - Whether to cancel previous animations on the same element.
    * @returns {this}
    */
-  animate(keyframes, ops) {
-    return TinyHtml.animate(this, keyframes, ops);
+  animate(keyframes, ops, cancelOldAnim) {
+    return TinyHtml.animate(this, keyframes, ops, cancelOldAnim);
+  }
+
+  /**
+   * Stops the current animation(s) on one or multiple TinyElement instances.
+   *
+   * If an animation is running on the element(s), it will be cancelled immediately.
+   *
+   * @param {TinyHtmlElement|TinyHtmlElement[]} el - A single TinyElement or an array of TinyElements.
+   * @returns {boolean[]} The same element(s) provided as input, for chaining.
+   */
+  static stop(el) {
+    /** @type {boolean[]} */
+    const results = [];
+    TinyHtml._preHtmlElems(el, 'stop').forEach((elem) => {
+      const anim = __elementCurrentAnimation.get(elem);
+      if (anim) {
+        anim.cancel();
+        __elementCurrentAnimation.delete(elem);
+        results.push(true);
+      } else results.push(false);
+    });
+    return results;
+  }
+
+  /**
+   * Stops the current animation(s) on this TinyElement instance.
+   *
+   * @returns {boolean[]}
+   */
+  stop() {
+    return TinyHtml.stop(this);
   }
 
   /**
