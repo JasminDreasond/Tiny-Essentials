@@ -1730,6 +1730,7 @@ Attributes
 ```js
 element.attr("href");                  // Get
 element.setAttr("title", "Cool!");     // Set
+element.setAttr({ "title": "Cool!" }); // Set
 element.removeAttr("data-test");       // Remove
 element.hasAttr("id");                 // Check
 ```

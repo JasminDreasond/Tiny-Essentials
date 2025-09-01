@@ -5180,28 +5180,46 @@ class TinyHtml {
   }
 
   /**
-   * Set an attribute on an element.
+   * Set one or multiple attributes on an element.
    * @template {TinyElement|TinyElement[]} T
-   * @param {T} el
-   * @param {string} name
-   * @param {string|null} [value=null]
+   * @param {T} el - Target element(s).
+   * @param {string|Record<string, string|null>} name - Attribute name or an object of attributes.
+   * @param {string|null} [value=null] - Attribute value (ignored if "name" is an object).
    * @returns {T}
    */
   static setAttr(el, name, value = null) {
+    const elems = TinyHtml._preElems(el, 'setAttr');
+
+    // Multiple attributes at once
+    if (typeof name === 'object' && name !== null) {
+      Object.entries(name).forEach(([attr, val]) => {
+        if (val !== null && typeof val !== 'string')
+          throw new TypeError(`The value for "${attr}" must be a string or null.`);
+        elems.forEach((elem) => {
+          if (val === null) elem.removeAttribute(TinyHtml.getAttrName(attr));
+          else elem.setAttribute(TinyHtml.getAttrName(attr), val);
+        });
+      });
+      return el;
+    }
+
+    // Single attribute
     if (typeof name !== 'string') throw new TypeError('The "name" must be a string.');
     if (value !== null && typeof value !== 'string')
       throw new TypeError('The "value" must be a string.');
-    TinyHtml._preElems(el, 'setAttr').forEach((elem) => {
+
+    elems.forEach((elem) => {
       if (value === null) elem.removeAttribute(TinyHtml.getAttrName(name));
       else elem.setAttribute(TinyHtml.getAttrName(name), value);
     });
+
     return el;
   }
 
   /**
-   * Set an attribute on an element.
-   * @param {string} name
-   * @param {string|null} [value=null]
+   * Set one or multiple attributes on an element.
+   * @param {string|Record<string, string|null>} name - Attribute name or an object of attributes.
+   * @param {string|null} [value=null] - Attribute value (ignored if "name" is an object).
    * @returns {this}
    */
   setAttr(name, value) {
