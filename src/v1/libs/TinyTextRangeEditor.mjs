@@ -52,7 +52,7 @@ class TinyTextRangeEditor {
 
   /**
    * Ensures the element has focus.
-   * @returns {TinyTextRangeEditor}
+   * @returns {this}
    */
   ensureFocus() {
     if (document.activeElement !== this.#el) this.#el.focus();
@@ -61,7 +61,7 @@ class TinyTextRangeEditor {
 
   /**
    * Focus the element.
-   * @returns {TinyTextRangeEditor}
+   * @returns {this}
    */
   focus() {
     this.#el.focus();
@@ -81,7 +81,7 @@ class TinyTextRangeEditor {
    * @param {number} start - Start index.
    * @param {number} end - End index.
    * @param {boolean} [preserveScroll=true] - Whether to preserve scroll position.
-   * @returns {TinyTextRangeEditor}
+   * @returns {this}
    */
   setSelectionRange(start, end, preserveScroll = true) {
     if (typeof start !== 'number' || typeof end !== 'number')
@@ -106,7 +106,7 @@ class TinyTextRangeEditor {
   /**
    * Sets the full value of the element.
    * @param {string} value - The new value to assign.
-   * @returns {TinyTextRangeEditor}
+   * @returns {this}
    */
   setValue(value) {
     if (typeof value !== 'string') throw new TypeError('Value must be a string.');
@@ -128,7 +128,7 @@ class TinyTextRangeEditor {
    * @param {boolean} [settings.autoSpacing=false]
    * @param {boolean} [settings.autoSpaceLeft=false]
    * @param {boolean} [settings.autoSpaceRight=false]
-   * @returns {TinyTextRangeEditor}
+   * @returns {this}
    */
   insertText(
     text,
@@ -171,7 +171,7 @@ class TinyTextRangeEditor {
 
   /**
    * Deletes the currently selected text.
-   * @returns {TinyTextRangeEditor}
+   * @returns {this}
    */
   deleteSelection() {
     this.insertText('');
@@ -181,7 +181,7 @@ class TinyTextRangeEditor {
   /**
    * Replaces the selection using a transformation function.
    * @param {(selected: string) => string} transformer - Function that modifies the selected text.
-   * @returns {TinyTextRangeEditor}
+   * @returns {this}
    */
   transformSelection(transformer) {
     if (typeof transformer !== 'function') throw new TypeError('transformer must be a function.');
@@ -197,7 +197,7 @@ class TinyTextRangeEditor {
    * Surrounds current selection with prefix and suffix.
    * @param {string} prefix - Text to insert before.
    * @param {string} suffix - Text to insert after.
-   * @returns {TinyTextRangeEditor}
+   * @returns {this}
    */
   surroundSelection(prefix, suffix) {
     if (typeof prefix !== 'string' || typeof suffix !== 'string')
@@ -210,7 +210,7 @@ class TinyTextRangeEditor {
   /**
    * Moves the caret by a given offset.
    * @param {number} offset - Characters to move.
-   * @returns {TinyTextRangeEditor}
+   * @returns {this}
    */
   moveCaret(offset) {
     if (typeof offset !== 'number') throw new TypeError('offset must be a number.');
@@ -222,7 +222,7 @@ class TinyTextRangeEditor {
 
   /**
    * Selects all content in the field.
-   * @returns {TinyTextRangeEditor}
+   * @returns {this}
    */
   selectAll() {
     this.setSelectionRange(0, this.#el.value.length);
@@ -233,7 +233,7 @@ class TinyTextRangeEditor {
    * Expands the current selection by character amounts.
    * @param {number} before - Characters to expand to the left.
    * @param {number} after - Characters to expand to the right.
-   * @returns {TinyTextRangeEditor}
+   * @returns {this}
    */
   expandSelection(before, after) {
     if (typeof before !== 'number' || typeof after !== 'number')
@@ -249,7 +249,7 @@ class TinyTextRangeEditor {
    * Replaces all regex matches in the content.
    * @param {RegExp} regex - Regex to match.
    * @param {(match: string) => string} replacer - Replacement function.
-   * @returns {TinyTextRangeEditor}
+   * @returns {this}
    */
   replaceAll(regex, replacer) {
     if (!(regex instanceof RegExp)) throw new TypeError('regex must be a RegExp.');
@@ -264,7 +264,7 @@ class TinyTextRangeEditor {
    *
    * @param {RegExp} regex - Regular expression to match inside selection.
    * @param {(match: string) => string} replacer - Function to replace each match.
-   * @returns {TinyTextRangeEditor}
+   * @returns {this}
    */
   replaceInSelection(regex, replacer) {
     if (!(regex instanceof RegExp)) throw new TypeError('regex must be a RegExp.');
@@ -287,7 +287,7 @@ class TinyTextRangeEditor {
    * Toggles a code around the current selection.
    * If it's already wrapped, unwraps it.
    * @param {string} codeName - The code to toggle.
-   * @returns {TinyTextRangeEditor}
+   * @returns {this}
    */
   toggleCode(codeName) {
     if (typeof codeName !== 'string') throw new TypeError('codeName must be a string.');
@@ -365,7 +365,7 @@ class TinyTextRangeEditor {
    *   - If an object: key-value pairs (e.g., `{ color: "red" }` → `color="red"`).
    *   - If an array: boolean attributes (e.g., `["disabled", "readonly"]`).
    *
-   * @returns {TinyTextRangeEditor}
+   * @returns {this}
    */
   wrapWithTag(tagName, attributes = {}) {
     if (typeof tagName !== 'string') throw new TypeError('tagName must be a string.');
@@ -383,7 +383,7 @@ class TinyTextRangeEditor {
    * @param {string} tagName - The tag to insert.
    * @param {string} [content=''] - Optional content between tags.
    * @param {Record<string,string> | string[]} [attributes={}] - Optional attributes or list of empty attributes.
-   * @returns {TinyTextRangeEditor}
+   * @returns {this}
    */
   insertTag(tagName, content = '', attributes = {}) {
     if (typeof tagName !== 'string') throw new TypeError('tagName must be a string.');
@@ -403,7 +403,7 @@ class TinyTextRangeEditor {
    * Inserts a self-closing tag.
    * @param {string} tagName - The tag name.
    * @param {Record<string,string> | string[]} [attributes={}] - Optional attributes or list of empty attributes.
-   * @returns {TinyTextRangeEditor}
+   * @returns {this}
    */
   insertSelfClosingTag(tagName, attributes = {}) {
     if (typeof tagName !== 'string') throw new TypeError('tagName must be a string.');
@@ -422,7 +422,7 @@ class TinyTextRangeEditor {
    * Supports tags with attributes. If already wrapped, it unwraps.
    * @param {string} tagName - The tag to toggle.
    * @param {Record<string,string> | string[]} [attributes={}] - Optional attributes to apply when wrapping.
-   * @returns {TinyTextRangeEditor}
+   * @returns {this}
    */
   toggleTag(tagName, attributes = {}) {
     if (typeof tagName !== 'string') throw new TypeError('tagName must be a string.');

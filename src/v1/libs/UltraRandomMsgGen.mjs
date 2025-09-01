@@ -587,7 +587,7 @@ class UltraRandomMsgGen {
   /**
    * Merges new configuration values into the current instance.
    * @param {Object} newConfig - Object with one or more configuration overrides.
-   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   * @returns {this} - The instance for chaining.
    */
   configure(newConfig = {}) {
     Object.assign(this.config, newConfig);
@@ -597,7 +597,7 @@ class UltraRandomMsgGen {
   /**
    * Replaces the entire list of grammar templates.
    * @param {...string[]} templates - One or more arrays or strings containing sentence templates.
-   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   * @returns {this} - The instance for chaining.
    */
   setGrammarTemplates(...templates) {
     this.config.grammar.templates = templates.flat();
@@ -607,7 +607,7 @@ class UltraRandomMsgGen {
   /**
    * Adds new grammar templates to the existing list.
    * @param {...string[]} templates - One or more arrays or strings containing sentence templates.
-   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   * @returns {this} - The instance for chaining.
    */
   addGrammarTemplates(...templates) {
     this.config.grammar.templates.push(...templates.flat());
@@ -617,7 +617,7 @@ class UltraRandomMsgGen {
   /**
    * Replaces the list of noun words used in grammar templates.
    * @param {...string[]} nouns - One or more arrays or strings of nouns.
-   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   * @returns {this} - The instance for chaining.
    */
   setGrammarNouns(...nouns) {
     this.config.grammar.nouns = nouns.flat();
@@ -627,7 +627,7 @@ class UltraRandomMsgGen {
   /**
    * Adds noun words to the existing list used in grammar templates.
    * @param {...string[]} nouns - One or more arrays or strings of nouns.
-   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   * @returns {this} - The instance for chaining.
    */
   addGrammarNouns(...nouns) {
     this.config.grammar.nouns.push(...nouns.flat());
@@ -637,7 +637,7 @@ class UltraRandomMsgGen {
   /**
    * Replaces the list of verb words used in grammar templates.
    * @param {...string[]} verbs - One or more arrays or strings of verbs.
-   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   * @returns {this} - The instance for chaining.
    */
   setGrammarVerbs(...verbs) {
     this.config.grammar.verbs = verbs.flat();
@@ -647,7 +647,7 @@ class UltraRandomMsgGen {
   /**
    * Adds verb words to the existing list used in grammar templates.
    * @param {...string[]} verbs - One or more arrays or strings of verbs.
-   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   * @returns {this} - The instance for chaining.
    */
   addGrammarVerbs(...verbs) {
     this.config.grammar.verbs.push(...verbs.flat());
@@ -657,7 +657,7 @@ class UltraRandomMsgGen {
   /**
    * Replaces the list of adjective words used in grammar templates.
    * @param {...string[]} adjectives - One or more arrays or strings of adjectives.
-   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   * @returns {this} - The instance for chaining.
    */
   setGrammarAdjectives(...adjectives) {
     this.config.grammar.adjectives = adjectives.flat();
@@ -667,7 +667,7 @@ class UltraRandomMsgGen {
   /**
    * Adds adjective words to the existing list used in grammar templates.
    * @param {...string[]} adjectives - One or more arrays or strings of adjectives.
-   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   * @returns {this} - The instance for chaining.
    */
   addGrammarAdjectives(...adjectives) {
     this.config.grammar.adjectives.push(...adjectives.flat());
@@ -677,7 +677,7 @@ class UltraRandomMsgGen {
   /**
    * Removes specific grammar templates from the current list.
    * @param {...string[]} templates - One or more arrays or strings of templates to remove.
-   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   * @returns {this} - The instance for chaining.
    */
   removeGrammarTemplates(...templates) {
     const removeSet = new Set(templates.flat());
@@ -688,7 +688,7 @@ class UltraRandomMsgGen {
   /**
    * Removes specific noun words from the grammar noun list.
    * @param {...string[]} nouns - One or more arrays or strings of nouns to remove.
-   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   * @returns {this} - The instance for chaining.
    */
   removeGrammarNouns(...nouns) {
     const removeSet = new Set(nouns.flat());
@@ -699,7 +699,7 @@ class UltraRandomMsgGen {
   /**
    * Removes specific verb words from the grammar verb list.
    * @param {...string[]} verbs - One or more arrays or strings of verbs to remove.
-   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   * @returns {this} - The instance for chaining.
    */
   removeGrammarVerbs(...verbs) {
     const removeSet = new Set(verbs.flat());
@@ -710,7 +710,7 @@ class UltraRandomMsgGen {
   /**
    * Removes specific adjective words from the grammar adjective list.
    * @param {...string[]} adjectives - One or more arrays or strings of adjectives to remove.
-   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   * @returns {this} - The instance for chaining.
    */
   removeGrammarAdjectives(...adjectives) {
     const removeSet = new Set(adjectives.flat());
@@ -723,7 +723,7 @@ class UltraRandomMsgGen {
   /**
    * Replaces the entire word set used in readable/mixed modes.
    * @param {...string[]} words - One or more arrays or strings of words.
-   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   * @returns {this} - The instance for chaining.
    */
   setWords(...words) {
     this.config.wordSet = words.flat();
@@ -733,7 +733,7 @@ class UltraRandomMsgGen {
   /**
    * Adds new words to the word set used in readable/mixed modes.
    * @param {...string[]} words - One or more arrays or strings of words.
-   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   * @returns {this} - The instance for chaining.
    */
   addWords(...words) {
     this.config.wordSet.push(...words.flat());
@@ -743,7 +743,7 @@ class UltraRandomMsgGen {
   /**
    * Removes specific words from the word set.
    * @param {...string[]} words - Words to be removed.
-   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   * @returns {this} - The instance for chaining.
    */
   removeWords(...words) {
     const removeSet = new Set(words.flat());
@@ -754,7 +754,7 @@ class UltraRandomMsgGen {
   /**
    * Replaces the emoji set used in generated output.
    * @param {...string[]} emojis - One or more arrays or strings of emojis.
-   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   * @returns {this} - The instance for chaining.
    */
   setEmojis(...emojis) {
     this.config.emojiSet = emojis.flat();
@@ -764,7 +764,7 @@ class UltraRandomMsgGen {
   /**
    * Adds new emojis to the emoji set.
    * @param {...string[]} emojis - One or more arrays or strings of emojis.
-   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   * @returns {this} - The instance for chaining.
    */
   addEmojis(...emojis) {
     this.config.emojiSet.push(...emojis.flat());
@@ -774,7 +774,7 @@ class UltraRandomMsgGen {
   /**
    * Removes specific emojis from the emoji set.
    * @param {...string[]} emojis - Emojis to be removed.
-   * @returns {UltraRandomMsgGen} - The instance for chaining.
+   * @returns {this} - The instance for chaining.
    */
   removeEmojis(...emojis) {
     const removeSet = new Set(emojis.flat());
