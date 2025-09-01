@@ -3247,6 +3247,40 @@ class TinyHtml {
   //////////////////////////////////////////////////
 
   /**
+   * Retrieves stored animation data for a given element and key.
+   * If no data exists yet, initializes storage for that element.
+   *
+   * @param {HTMLElement} el - The element whose data should be retrieved.
+   * @param {string} where - The key to read (e.g., "origHeight").
+   * @returns {string|number|undefined} - The stored value, or undefined.
+   */
+  static getAnimateData(el, where) {
+    let dataset = __elementAnimateData.get(el);
+    if (!dataset) {
+      dataset = {};
+      __elementAnimateData.set(el, dataset);
+    }
+    return dataset[where];
+  }
+
+  /**
+   * Stores animation data for a given element and key.
+   * Used to cache original size/values for animations.
+   *
+   * @param {HTMLElement} el - The element whose data should be set.
+   * @param {string} where - The key to store under (e.g., "origHeight").
+   * @param {string|number} value - The value to store.
+   */
+  static setAnimateData(el, where, value) {
+    let dataset = __elementAnimateData.get(el);
+    if (!dataset) {
+      dataset = {};
+      __elementAnimateData.set(el, dataset);
+    }
+    dataset[where] = value;
+  }
+
+  /**
    * Global configuration flag controlling whether old style-based animations
    * are cancelled before a new one starts. Defaults to true.
    *
@@ -3309,40 +3343,6 @@ class TinyHtml {
     fadeOut: { opacity: 'hide' },
     fadeToggle: { opacity: 'toggle' },
   };
-
-  /**
-   * Retrieves stored animation data for a given element and key.
-   * If no data exists yet, initializes storage for that element.
-   *
-   * @param {HTMLElement} el - The element whose data should be retrieved.
-   * @param {string} where - The key to read (e.g., "origHeight").
-   * @returns {string|number|undefined} - The stored value, or undefined.
-   */
-  static getAnimateData(el, where) {
-    let dataset = __elementAnimateData.get(el);
-    if (!dataset) {
-      dataset = {};
-      __elementAnimateData.set(el, dataset);
-    }
-    return dataset[where];
-  }
-
-  /**
-   * Stores animation data for a given element and key.
-   * Used to cache original size/values for animations.
-   *
-   * @param {HTMLElement} el - The element whose data should be set.
-   * @param {string} where - The key to store under (e.g., "origHeight").
-   * @param {string|number} value - The value to store.
-   */
-  static setAnimateData(el, where, value) {
-    let dataset = __elementAnimateData.get(el);
-    if (!dataset) {
-      dataset = {};
-      __elementAnimateData.set(el, dataset);
-    }
-    dataset[where] = value;
-  }
 
   /**
    * Effect property handlers for show, hide, and toggle.
