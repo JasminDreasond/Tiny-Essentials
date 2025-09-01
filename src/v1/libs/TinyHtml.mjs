@@ -15,6 +15,13 @@ const {
  */
 
 /**
+ * Callback function used for hover events.
+ * @callback HoverEventCallback
+ * @param {MouseEvent} ev - The mouse event triggered on enter or leave.
+ * @returns {void} Returns nothing.
+ */
+
+/**
  * Callback invoked on each animation frame with the current scroll position,
  * normalized animation time (`0` to `1`), and a completion flag.
  *
@@ -4825,6 +4832,42 @@ class TinyHtml {
    */
   hasExactEventListener(event, handler) {
     return TinyHtml.hasExactEventListener(this, event, handler);
+  }
+
+  /**
+   * Hover event shortcut.
+   *
+   * Adds `mouseenter` and `mouseleave` event listeners to the target.
+   *
+   * @template {TinyEventTarget|TinyEventTarget[]} T
+   * @param {T} el - The target element(s) to attach the hover handlers.
+   * @param {HoverEventCallback} fnOver - Callback executed when the mouse enters the target.
+   * @param {HoverEventCallback|null} [fnOut] - Optional callback executed when the mouse leaves
+   * the target. If not provided, `fnOver` will be used for both events.
+   * @param {EventRegistryOptions} [options] - Optional event listener options.
+   * @returns {T}
+   */
+  static hover(el, fnOver, fnOut, options) {
+    // @ts-ignore
+    TinyHtml.on(el, 'mouseenter', fnOver, options);
+    // @ts-ignore
+    TinyHtml.on(el, 'mouseleave', fnOut || fnOver, options);
+    return el;
+  }
+
+  /**
+   * Hover event shortcut.
+   *
+   * Adds `mouseenter` and `mouseleave` event listeners to the target.
+   *
+   * @param {HoverEventCallback} fnOver - Callback executed when the mouse enters the target.
+   * @param {HoverEventCallback|null} [fnOut] - Optional callback executed when the mouse leaves
+   * the target. If not provided, `fnOver` will be used for both events.
+   * @param {EventRegistryOptions} [options] - Optional event listener options.
+   * @returns {this}
+   */
+  hover(fnOver, fnOut, options) {
+    return TinyHtml.hover(this, fnOver, fnOut, options);
   }
 
   /**

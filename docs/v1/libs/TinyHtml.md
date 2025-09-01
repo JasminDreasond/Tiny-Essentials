@@ -1669,6 +1669,34 @@ TinyHtml.hasExactEventListener(el, "click", onClick);
 
 ---
 
+### 🐭 `hover()`
+
+Hover Event Shortcut
+
+```js
+element.hover(
+  (e) => console.log("Mouse entered!"),
+  (e) => console.log("Mouse left!")
+);
+```
+
+* `hover(fnOver, fnOut)`: Attaches a pair of event listeners for `mouseenter` and `mouseleave`.
+
+  * `fnOver`: Runs when the mouse enters the element.
+  * `fnOut`: Runs when the mouse leaves. If omitted, `fnOver` is used for both.
+  * `options`: Optional event listener options.
+
+You can also use the static version:
+
+```js
+TinyHtml.hover([el1, el2], 
+  () => console.log("Hovered in!"), 
+  () => console.log("Hovered out!")
+);
+```
+
+---
+
 ### 📥 `on()` / `once()`
 
 Registering Events
