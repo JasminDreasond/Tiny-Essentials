@@ -214,7 +214,13 @@
         const results = {};
         for (const [id, inst] of Object.entries(instances)) {
           try {
-            results[id] = inst.val();
+            const type = inst.attr('type');
+            results[id] =
+              type === 'number' || type === 'range'
+                ? inst.valNb()
+                : type === 'date'
+                  ? inst.valDate()
+                  : inst.val();
             console.log(`${id}:`, results[id]);
           } catch (err) {
             results[id] = `[Error] ${(err && err.message) || err}`;
