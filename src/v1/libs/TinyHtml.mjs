@@ -5294,81 +5294,92 @@ class TinyHtml {
   }
 
   /**
-   * Set a property on an element.
+   * Set one or multiple properties on an element.
    * @template {TinyElement|TinyElement[]} T
-   * @param {T} el
-   * @param {string} name
+   * @param {T} el - Target element(s).
+   * @param {...string} names - Property name(s).
    * @returns {T}
    */
-  static addProp(el, name) {
-    if (typeof name !== 'string') throw new TypeError('The "name" must be a string.');
+  static addProp(el, ...names) {
     TinyHtml._preElems(el, 'addProp').forEach((elem) => {
-      // @ts-ignore
-      elem[TinyHtml.getPropName(name)] = true;
+      names.forEach((name) => {
+        if (typeof name !== 'string') throw new TypeError('Each "name" must be a string.');
+        // @ts-ignore
+        elem[TinyHtml.getPropName(name)] = true;
+      });
     });
     return el;
   }
 
   /**
    * Set a property on an element.
-   * @param {string} name
+   * @param {...string} names - Property name(s).
    * @returns {this}
    */
-  addProp(name) {
-    return TinyHtml.addProp(this, name);
+  addProp(...names) {
+    return TinyHtml.addProp(this, ...names);
   }
 
   /**
-   * Remove a property from an element.
+   * Remove one or multiple properties from an element.
    * @template {TinyElement|TinyElement[]} T
-   * @param {T} el
-   * @param {string} name
+   * @param {T} el - Target element(s).
+   * @param {...string} names - Property name(s).
    * @returns {T}
    */
-  static removeProp(el, name) {
-    if (typeof name !== 'string') throw new TypeError('The "name" must be a string.');
+  static removeProp(el, ...names) {
     TinyHtml._preElems(el, 'removeProp').forEach((elem) => {
-      // @ts-ignore
-      elem[TinyHtml.getPropName(name)] = false;
+      names.forEach((name) => {
+        if (typeof name !== 'string') throw new TypeError('Each "name" must be a string.');
+        // @ts-ignore
+        elem[TinyHtml.getPropName(name)] = false;
+      });
     });
     return el;
   }
 
   /**
    * Remove a property from an element.
-   * @param {string} name
+   * @param {...string} names - Property name(s).
    * @returns {this}
    */
-  removeProp(name) {
-    return TinyHtml.removeProp(this, name);
+  removeProp(...names) {
+    return TinyHtml.removeProp(this, ...names);
   }
 
   /**
-   * Toggle a boolean property.
+   * Toggle one or multiple boolean properties.
    * @template {TinyElement|TinyElement[]} T
-   * @param {T} el
-   * @param {string} name
-   * @param {boolean} [force]
+   * @param {T} el - Target element(s).
+   * @param {string|string[]} name - Property name or a list of property names.
+   * @param {boolean} [force] - Force true/false instead of toggling.
    * @returns {T}
    */
   static toggleProp(el, name, force) {
-    if (typeof name !== 'string') throw new TypeError('The "name" must be a string.');
+    const elems = TinyHtml._preElems(el, 'toggleProp');
     if (typeof force !== 'undefined' && typeof force !== 'boolean')
       throw new TypeError('The "force" must be a boolean.');
-    TinyHtml._preElems(el, 'toggleProp').forEach((elem) => {
-      // @ts-ignore
-      const shouldEnable = force === undefined ? !elem[TinyHtml.getPropName(name)] : force;
-      // @ts-ignore
-      if (shouldEnable) TinyHtml.addProp(elem, name);
-      else TinyHtml.removeProp(elem, name);
+
+    // Normalize list of properties
+    const props = Array.isArray(name) ? name : [name];
+
+    props.forEach((prop) => {
+      if (typeof prop !== 'string') throw new TypeError('Each property name must be a string.');
+      elems.forEach((elem) => {
+        // @ts-ignore
+        const shouldEnable = force === undefined ? !elem[TinyHtml.getPropName(prop)] : force;
+        if (shouldEnable) TinyHtml.addProp(elem, prop);
+        else TinyHtml.removeProp(elem, prop);
+      });
     });
+
     return el;
   }
 
   /**
-   * Toggle a boolean property.
-   * @param {string} name
-   * @param {boolean} [force]
+   * Toggle one or multiple boolean properties.
+   * @param {string|string[]} name - Property name or a list of property names.
+   * @param {boolean} [force] - Force true/false instead of toggling.
    * @returns {this}
    */
   toggleProp(name, force) {

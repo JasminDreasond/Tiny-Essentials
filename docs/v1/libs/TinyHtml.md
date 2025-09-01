@@ -1745,11 +1745,11 @@ Safe and type-checked — throws if misuse is detected.
 Properties
 
 ```js
-element.hasProp("disabled");         // true/false
-element.addProp("checked");          // set true
-element.removeProp("checked");       // set false
-element.toggleProp("disabled");      // flip
-element.toggleProp("readonly", true); // force enable
+element.hasProp("disabled");            // true/false
+element.addProp("checked");             // set true
+element.removeProp("checked");          // set false
+element.toggleProp("disabled");         // flip
+element.toggleProp(["readonly"], true); // force enable
 ```
 
 These methods interact with real DOM properties (not just attributes).
