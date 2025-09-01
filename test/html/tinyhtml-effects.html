@@ -45,8 +45,16 @@
       <button id="hoverBtn">Hover Test (logs in console)</button>
     </div>
 
-    <div class="test-box" id="box"></div>
-    <div class="test-box" id="jbox"></div>
+    <div style="display: flex">
+      <div>
+        <div>TinyHtml:</div>
+        <div class="test-box" id="box"></div>
+      </div>
+      <div>
+        <div>jQuery:</div>
+        <div class="test-box" id="jbox"></div>
+      </div>
+    </div>
 
     <script type="module">
       import { TinyHtml } from './src/v1/libs/TinyHtml.mjs';
