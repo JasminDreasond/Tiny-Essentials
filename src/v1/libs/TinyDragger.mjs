@@ -61,7 +61,7 @@ class TinyDragger {
   /** @typedef {(event: TouchEvent) => void} TouchDragEvent */
 
   /**
-   * @param {HTMLElement|TinyHtml} targetElement - The element to make draggable.
+   * @param {HTMLElement|TinyHtml<any>} targetElement - The element to make draggable.
    * @param {Object} [options={}] - Configuration options.
    * @param {HTMLElement} [options.jail] - Optional container to restrict dragging within.
    * @param {boolean} [options.mirrorElem=true] - Use a visual clone instead of dragging the original element.
