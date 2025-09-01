@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>TinyEffects Test Page</title>
+    <script src="/__jquery.js"></script>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 20px;
+      }
+
+      button {
+        margin: 5px;
+        padding: 8px 12px;
+      }
+
+      .test-box {
+        width: 200px;
+        height: 100px;
+        background: lightblue;
+        margin: 10px 0;
+        display: block;
+        opacity: 1;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Testing TinyEffects</h1>
+
+    <div>
+      <button id="slideDownBtn">Slide Down</button>
+      <button id="slideUpBtn">Slide Up</button>
+      <button id="slideToggleBtn">Slide Toggle</button>
+    </div>
+
+    <div>
+      <button id="fadeInBtn">Fade In</button>
+      <button id="fadeOutBtn">Fade Out</button>
+      <button id="fadeToggleBtn">Fade Toggle</button>
+    </div>
+
+    <div>
+      <button id="hoverBtn">Hover Test (logs in console)</button>
+    </div>
+
+    <div class="test-box" id="box"></div>
+    <div class="test-box" id="jbox"></div>
+
+    <script type="module">
+      import { TinyHtml } from './src/v1/libs/TinyHtml.mjs';
+
+      const box = TinyHtml.getById('box');
+      const jBox = $('#jbox');
+
+      // Slide controls
+      TinyHtml.getById('slideDownBtn').on('click', () => {
+        box.slideDown({ duration: 500, fill: 'forwards' });
+        jBox.slideDown();
+      });
+      TinyHtml.getById('slideUpBtn').on('click', () => {
+        box.slideUp({ duration: 500, fill: 'forwards' });
+        jBox.slideUp();
+      });
+      TinyHtml.getById('slideToggleBtn').on('click', () => {
+        box.slideToggle({ duration: 500, fill: 'forwards' });
+        jBox.slideToggle();
+      });
+
+      // Fade controls
+      TinyHtml.getById('fadeInBtn').on('click', () => {
+        box.fadeIn({ duration: 500, fill: 'forwards' });
+        jBox.fadeIn();
+      });
+      TinyHtml.getById('fadeOutBtn').on('click', () => {
+        box.fadeOut({ duration: 500, fill: 'forwards' });
+        jBox.fadeOut();
+      });
+      TinyHtml.getById('fadeToggleBtn').on('click', () => {
+        box.fadeToggle({ duration: 500, fill: 'forwards' });
+        jBox.fadeToggle();
+      });
+
+      // Hover test
+      const hoverBtn = TinyHtml.getById('hoverBtn');
+      hoverBtn.hover(
+        () => console.log('Hovered in!'),
+        () => console.log('Hovered out!'),
+      );
+    </script>
+  </body>
+</html>

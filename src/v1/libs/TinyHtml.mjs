@@ -181,6 +181,8 @@ const __eventRegistry = new WeakMap();
  */
 const __elementDataMap = new WeakMap();
 
+const __elementAnimateData = new WeakMap();
+
 /**
  * Stores directional collision locks separately.
  * Each direction has its own WeakMap to allow independent locking.
@@ -3219,6 +3221,187 @@ class TinyHtml {
   //////////////////////////////////////////////////
 
   /**
+   * @typedef {['Top', 'Right', 'Bottom', 'Left']}
+   */
+  static #cssExpand = ['Top', 'Right', 'Bottom', 'Left'];
+
+  /**
+   * @typedef {Record<string, string|(string|number)[]>} CssEffects
+   */
+
+  /**
+   * Generate shortcuts
+   * @type {Record<string, CssEffects>}
+   */
+  static #cssEffects = {
+    slideDown: TinyHtml.genFx('show'),
+    slideUp: TinyHtml.genFx('hide'),
+    slideToggle: TinyHtml.genFx('toggle'),
+    fadeIn: { opacity: 'show' },
+    fadeOut: { opacity: 'hide' },
+    fadeToggle: { opacity: 'toggle' },
+  };
+
+  /**
+   * @param {HTMLElement} el
+   * @param {string} where
+   * @returns {string|number|undefined}
+   */
+  static getAnimateData(el, where) {
+    let dataset = __elementAnimateData.get(el);
+    if (!dataset) {
+      dataset = {};
+      __elementAnimateData.set(el, dataset);
+    }
+    return dataset[where];
+  }
+
+  /**
+   * @param {HTMLElement} el
+   * @param {string} where
+   * @param {string|number} value
+   */
+  static setAnimateData(el, where, value) {
+    let dataset = __elementAnimateData.get(el);
+    if (!dataset) {
+      dataset = {};
+      __elementAnimateData.set(el, dataset);
+    }
+    dataset[where] = value;
+  }
+
+  /** @type {Record<string, ((el: HTMLElement, keyframes: Record<string, (string|number)[]>, prop: string, style: CSSStyleDeclaration) => void)>} */
+  static #cssEffectsProps = {
+    show: (el, keyframes, prop, style) => {
+      if (prop === 'height' || prop === 'width') {
+        const targetSize = TinyHtml.getAnimateData(el, `orig${prop}`) || el.scrollHeight + 'px';
+        TinyHtml.setAnimateData(el, `orig${prop}`, targetSize);
+
+        const current = style[prop]; // pega valor atual
+        keyframes[prop] = [current, targetSize];
+      } else if (prop === 'opacity') {
+        const current = style.opacity;
+        keyframes[prop] = [current, 1];
+      } else {
+        // @ts-ignore
+        const current = style[prop];
+        // @ts-ignore
+        keyframes[prop] = [current, style[prop] || 1];
+      }
+    },
+    hide: (el, keyframes, prop, style) => {
+      if (prop === 'height' || prop === 'width') {
+        const targetSize = TinyHtml.getAnimateData(el, `orig${prop}`) || style[prop];
+        TinyHtml.setAnimateData(el, `orig${prop}`, targetSize);
+
+        const current = style[prop]; // pega valor atual
+        keyframes[prop] = [current, 0];
+      } else if (prop === 'opacity') {
+        const current = style.opacity;
+        keyframes[prop] = [current, 0];
+      } else {
+        // @ts-ignore
+        const current = style[prop];
+        keyframes[prop] = [current, 0];
+      }
+    },
+    toggle: (el, keyframes, prop, style) => {
+      if (prop === 'height' || prop === 'width') {
+        const targetSize = TinyHtml.getAnimateData(el, `orig${prop}`) || el.scrollHeight + 'px';
+        TinyHtml.setAnimateData(el, `orig${prop}`, targetSize);
+
+        const isHidden = el.offsetHeight === 0 || style.display === 'none';
+        const current = style[prop];
+
+        keyframes[prop] = isHidden ? [current, targetSize] : [current, 0];
+      } else if (prop === 'opacity') {
+        const isHidden = style.opacity === '0' || style.display === 'none';
+        const current = style.opacity;
+
+        keyframes[prop] = isHidden ? [current, 1] : [current, 0];
+      } else {
+        // @ts-ignore
+        const current = style[prop];
+        // @ts-ignore
+        const isHidden = style[prop] === '0';
+        // @ts-ignore
+        keyframes[prop] = isHidden ? [current, style[prop]] : [current, 0];
+      }
+    },
+  };
+
+  /**
+   * Generate parameters to create a standard animation.
+   * @param {string} type
+   * @param {boolean} [includeWidth]
+   * @returns {Record<string, string>}
+   */
+  static genFx(type, includeWidth) {
+    /** @type {string} */
+    let which;
+    /** @type {number} */
+    let i = 0;
+    /** @type {Record<string, string>} */
+    const attrs = { height: type };
+
+    const includeWidthNb = includeWidth ? 1 : 0;
+    for (; i < 4; i += 2 - includeWidthNb) {
+      which = TinyHtml.#cssExpand[i];
+      attrs['margin' + which] = type;
+      attrs['padding' + which] = type;
+    }
+
+    if (includeWidth) {
+      attrs.opacity = type;
+      attrs.width = type;
+    }
+
+    return attrs;
+  }
+
+  /**
+   * @template {TinyHtmlElement|TinyHtmlElement[]} T
+   * @param {T} el - A single TinyHtmlElement or an array of TinyHtmlElements to animate.
+   * @param {CssEffects} props
+   * @param {number | KeyframeAnimationOptions} [ops] - Timing or configuration options for the animation.
+   * @returns {T}
+   */
+  static applyStyleFx(el, props, ops) {
+    const first = TinyHtml._preHtmlElem(el, 'applyStyleFx');
+
+    /**
+     * Generate keyframes based on props
+     * @type {Record<string, (string|number)[]>}
+     */
+    const keyframes = {};
+    for (const [prop, action] of Object.entries(props)) {
+      if (typeof action === 'string' && this.#cssEffectsProps[action]) {
+        const style = getComputedStyle(first);
+        this.#cssEffectsProps[action](first, keyframes, prop, style);
+      } else if (typeof action === 'object') {
+        keyframes[prop] = action;
+      }
+    }
+
+    /**
+     *  Build Web Animations keyframe objects
+     * @type {Keyframe[]}
+     */
+    const kf = [];
+    const numFrames = keyframes[Object.keys(keyframes)[0]].length; // assume que todos têm o mesmo tamanho
+    for (let i = 0; i < numFrames; i++) {
+      /** @type {Keyframe} */
+      const frame = {};
+      for (const prop in keyframes) {
+        frame[prop] = keyframes[prop][i];
+      }
+      kf.push(frame);
+    }
+
+    return TinyHtml.animate(el, kf, ops);
+  }
+
+  /**
    * Applies an animation to one or multiple TinyElement instances.
    *
    * @template {TinyElement|TinyElement[]} T
@@ -3242,6 +3425,133 @@ class TinyHtml {
   animate(keyframes, ops) {
     return TinyHtml.animate(this, keyframes, ops);
   }
+
+  /**
+   * Show animation (slideDown).
+   * @template {TinyHtmlElement|TinyHtmlElement[]} T
+   * @param {T} el
+   * @param {number | KeyframeAnimationOptions} [ops]
+   * @returns {T}
+   */
+  static slideDown(el, ops) {
+    return TinyHtml.applyStyleFx(el, this.#cssEffects['slideDown'], ops);
+  }
+
+  /**
+   * Show animation (slideDown).
+   * @param {number | KeyframeAnimationOptions} [ops]
+   * @returns {this}
+   */
+  slideDown(ops) {
+    return TinyHtml.slideDown(this, ops);
+  }
+
+  /**
+   * Hide animation (slideUp).
+   * @template {TinyHtmlElement|TinyHtmlElement[]} T
+   * @param {T} el
+   * @param {number | KeyframeAnimationOptions} [ops]
+   * @returns {T}
+   */
+  static slideUp(el, ops) {
+    return TinyHtml.applyStyleFx(el, this.#cssEffects['slideUp'], ops);
+  }
+
+  /**
+   * Hide animation (slideUp).
+   * @param {number | KeyframeAnimationOptions} [ops]
+   * @returns {this}
+   */
+  slideUp(ops) {
+    return TinyHtml.slideUp(this, ops);
+  }
+
+  /**
+   * Toggle slide animation.
+   * @template {TinyHtmlElement|TinyHtmlElement[]} T
+   * @param {T} el
+   * @param {number | KeyframeAnimationOptions} [ops]
+   * @returns {T}
+   */
+  static slideToggle(el, ops) {
+    const first = TinyHtml._preHtmlElem(el, 'slideToggle');
+    const style = getComputedStyle(first);
+    const isHidden = style.display === 'none' || first.offsetHeight === 0;
+    return isHidden ? TinyHtml.slideDown(el, ops) : TinyHtml.slideUp(el, ops);
+  }
+
+  /**
+   * Toggle slide animation.
+   * @param {number | KeyframeAnimationOptions} [ops]
+   * @returns {this}
+   */
+  slideToggle(ops) {
+    return TinyHtml.slideToggle(this, ops);
+  }
+
+  /**
+   * Fade in animation.
+   * @template {TinyHtmlElement|TinyHtmlElement[]} T
+   * @param {T} el
+   * @param {number | KeyframeAnimationOptions} [ops]
+   * @returns {T}
+   */
+  static fadeIn(el, ops) {
+    return TinyHtml.applyStyleFx(el, this.#cssEffects['fadeIn'], ops);
+  }
+
+  /**
+   * Fade in animation.
+   * @param {number | KeyframeAnimationOptions} [ops]
+   * @returns {this}
+   */
+  fadeIn(ops) {
+    return TinyHtml.fadeIn(this, ops);
+  }
+
+  /**
+   * Fade out animation.
+   * @template {TinyHtmlElement|TinyHtmlElement[]} T
+   * @param {T} el
+   * @param {number | KeyframeAnimationOptions} [ops]
+   * @returns {T}
+   */
+  static fadeOut(el, ops) {
+    return TinyHtml.applyStyleFx(el, this.#cssEffects['fadeOut'], ops);
+  }
+
+  /**
+   * Fade out animation.
+   * @param {number | KeyframeAnimationOptions} [ops]
+   * @returns {this}
+   */
+  fadeOut(ops) {
+    return TinyHtml.fadeOut(this, ops);
+  }
+
+  /**
+   * Fade toggle animation.
+   * @template {TinyHtmlElement|TinyHtmlElement[]} T
+   * @param {T} el
+   * @param {number | KeyframeAnimationOptions} [ops]
+   * @returns {T}
+   */
+  static fadeToggle(el, ops) {
+    const first = TinyHtml._preHtmlElem(el, 'fadeToggle');
+    const isHidden = getComputedStyle(first).opacity === '0' || first.offsetParent === null;
+    return isHidden ? TinyHtml.fadeIn(el, ops) : TinyHtml.fadeOut(el, ops);
+  }
+
+  /**
+   * Fade toggle animation.
+   * @param {number | KeyframeAnimationOptions} [ops]
+   * @returns {this}
+   */
+  fadeToggle(ops) {
+    return TinyHtml.fadeToggle(this, ops);
+  }
+
+  ///////////////////////////////////////////////////////////////
 
   /**
    * Gets the offset of the element relative to the document.
