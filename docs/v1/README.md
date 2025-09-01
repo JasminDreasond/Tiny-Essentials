@@ -69,6 +69,13 @@ To get started, navigate to the appropriate directory and explore the files list
 
 ---
 
+## 📖 More Regex Goodies
+
+Looking for practical regex examples and migration helpers?
+👉 Check out the **[`Regex-Helpers.md`](Regex-Helpers.md)** file for a full collection of ready-to-use regex transformations!
+
+---
+
 ## 📑 Contributing
 
 Feel free to suggest changes, improvements, or additional features. You can fork the repository and submit a pull request!
