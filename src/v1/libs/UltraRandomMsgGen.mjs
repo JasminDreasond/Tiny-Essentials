@@ -375,17 +375,89 @@ const defaultTemplates = [
  */
 class UltraRandomMsgGen {
   /** @type {string[]} */
-  static defaultWords = defaultWords;
+  static #defaultWords = defaultWords;
   /** @type {string[]} */
-  static defaultEmojis = defaultEmojis;
+  static #defaultEmojis = defaultEmojis;
   /** @type {string[]} */
-  static defaultNouns = defaultNouns;
+  static #defaultNouns = defaultNouns;
   /** @type {string[]} */
-  static defaultVerbs = defaultVerbs;
+  static #defaultVerbs = defaultVerbs;
   /** @type {string[]} */
-  static defaultAdjectives = defaultAdjectives;
+  static #defaultAdjectives = defaultAdjectives;
   /** @type {string[]} */
-  static defaultTemplates = defaultTemplates;
+  static #defaultTemplates = defaultTemplates;
+
+  /**
+   * Utility to validate arrays before setting.
+   * @param {any} value
+   * @param {string} field
+   */
+  static #validateArray(value, field) {
+    if (!Array.isArray(value)) throw new TypeError(`${field} must be an array of strings`);
+    if (!value.every((v) => typeof v === 'string'))
+      throw new TypeError(`${field} must contain only strings`);
+    if (value.length === 0) throw new Error(`${field} cannot be empty`);
+  }
+
+  /** @returns {string[]} */
+  static get defaultWords() {
+    return [...this.#defaultWords];
+  }
+  /** @param {string[]} value */
+  static set defaultWords(value) {
+    this.#validateArray(value, 'defaultWords');
+    this.#defaultWords = [...value];
+  }
+
+  /** @returns {string[]} */
+  static get defaultEmojis() {
+    return [...this.#defaultEmojis];
+  }
+  /** @param {string[]} value */
+  static set defaultEmojis(value) {
+    this.#validateArray(value, 'defaultEmojis');
+    this.#defaultEmojis = [...value];
+  }
+
+  /** @returns {string[]} */
+  static get defaultNouns() {
+    return [...this.#defaultNouns];
+  }
+  /** @param {string[]} value */
+  static set defaultNouns(value) {
+    this.#validateArray(value, 'defaultNouns');
+    this.#defaultNouns = [...value];
+  }
+
+  /** @returns {string[]} */
+  static get defaultVerbs() {
+    return [...this.#defaultVerbs];
+  }
+  /** @param {string[]} value */
+  static set defaultVerbs(value) {
+    this.#validateArray(value, 'defaultVerbs');
+    this.#defaultVerbs = [...value];
+  }
+
+  /** @returns {string[]} */
+  static get defaultAdjectives() {
+    return [...this.#defaultAdjectives];
+  }
+  /** @param {string[]} value */
+  static set defaultAdjectives(value) {
+    this.#validateArray(value, 'defaultAdjectives');
+    this.#defaultAdjectives = [...value];
+  }
+
+  /** @returns {string[]} */
+  static get defaultTemplates() {
+    return [...this.#defaultTemplates];
+  }
+  /** @param {string[]} value */
+  static set defaultTemplates(value) {
+    this.#validateArray(value, 'defaultTemplates');
+    this.#defaultTemplates = [...value];
+  }
 
   /** @type {MsgGenConfig} */
   config = {
@@ -574,13 +646,13 @@ class UltraRandomMsgGen {
       }
     }
 
-    this.config.emojiSet = [...defaultEmojis];
-    this.config.wordSet = [...defaultWords];
+    this.config.emojiSet = [...UltraRandomMsgGen.#defaultEmojis];
+    this.config.wordSet = [...UltraRandomMsgGen.#defaultWords];
 
-    this.config.grammar.templates = [...defaultTemplates];
-    this.config.grammar.nouns = [...defaultNouns];
-    this.config.grammar.verbs = [...defaultVerbs];
-    this.config.grammar.adjectives = [...defaultAdjectives];
+    this.config.grammar.templates = [...UltraRandomMsgGen.#defaultTemplates];
+    this.config.grammar.nouns = [...UltraRandomMsgGen.#defaultNouns];
+    this.config.grammar.verbs = [...UltraRandomMsgGen.#defaultVerbs];
+    this.config.grammar.adjectives = [...UltraRandomMsgGen.#defaultAdjectives];
     Object.assign(this.config, config);
   }
 
