@@ -105,6 +105,15 @@ class TinyElementObserver {
   }
 
   /**
+   * Get the number of registered detectors.
+   *
+   * @returns {number} Total count of detectors.
+   */
+  get size() {
+    return this.#detectors.length;
+  }
+
+  /**
    * Create a new TinyElementObserver instance.
    *
    * @param {Array<[string, ElementDetectorsFn]>} [initValues] - Initial list of detectors,
