@@ -3374,6 +3374,12 @@ class TinyHtml {
    * @param {string|number} value - The value to store.
    */
   static setAnimateData(el, where, value) {
+    if (!(el instanceof HTMLElement))
+      throw new TypeError('setAnimateData: el must be an HTMLElement.');
+    if (typeof where !== 'string') throw new TypeError('setAnimateData: where must be a string.');
+    if (!(typeof value === 'string' || typeof value === 'number'))
+      throw new TypeError('setAnimateData: value must be a string or number.');
+
     let dataset = __elementAnimateData.get(el);
     if (!dataset) {
       dataset = {};
@@ -3470,6 +3476,7 @@ class TinyHtml {
    * @returns {number | KeyframeAnimationOptions | undefined} A cloned value of the speed entry, or undefined if not found.
    */
   static getStyleFxSpeed(name) {
+    if (typeof name !== 'string') throw new TypeError('The "name" parameter must be a string.');
     const spd = TinyHtml.#styleFxSpeeds[name];
     return typeof spd === 'object' ? { ...spd } : spd;
   }
@@ -3482,6 +3489,7 @@ class TinyHtml {
    * @throws {TypeError} If value is not a number or KeyframeAnimationOptions object.
    */
   static setStyleFxSpeed(name, value) {
+    if (typeof name !== 'string') throw new TypeError('The "name" parameter must be a string.');
     if (!(typeof value === 'number' || typeof value === 'object'))
       throw new TypeError('styleFxSpeed must be a number or KeyframeAnimationOptions');
     TinyHtml.#styleFxSpeeds[name] = typeof value === 'object' ? { ...value } : value;
@@ -3494,6 +3502,7 @@ class TinyHtml {
    * @returns {boolean} True if the property was deleted, false otherwise.
    */
   static deleteStyleFxSpeed(name) {
+    if (typeof name !== 'string') throw new TypeError('The "name" parameter must be a string.');
     return delete TinyHtml.#styleFxSpeeds[name];
   }
 
@@ -3504,6 +3513,7 @@ class TinyHtml {
    * @returns {boolean} True if the speed entry exists, false otherwise.
    */
   static hasStyleFxSpeed(name) {
+    if (typeof name !== 'string') throw new TypeError('The "name" parameter must be a string.');
     return Object.prototype.hasOwnProperty.call(TinyHtml.#styleFxSpeeds, name);
   }
 
@@ -3563,6 +3573,7 @@ class TinyHtml {
    * @returns {StyleEffects|undefined}
    */
   static getStyleEffect(name) {
+    if (typeof name !== 'string') throw new TypeError('The "name" parameter must be a string.');
     const eff = TinyHtml.#styleEffects[name];
     return eff ? JSON.parse(JSON.stringify(eff)) : undefined;
   }
@@ -3573,6 +3584,7 @@ class TinyHtml {
    * @param {StyleEffects} value
    */
   static setStyleEffect(name, value) {
+    if (typeof name !== 'string') throw new TypeError('The "name" parameter must be a string.');
     if (typeof value !== 'object' || value === null || Array.isArray(value)) {
       throw new TypeError('styleEffect must be an object');
     }
@@ -3599,6 +3611,7 @@ class TinyHtml {
    * @returns {boolean} True if deleted.
    */
   static deleteStyleEffect(name) {
+    if (typeof name !== 'string') throw new TypeError('The "name" parameter must be a string.');
     return delete TinyHtml.#styleEffects[name];
   }
 
@@ -3608,6 +3621,7 @@ class TinyHtml {
    * @returns {boolean}
    */
   static hasStyleEffect(name) {
+    if (typeof name !== 'string') throw new TypeError('The "name" parameter must be a string.');
     return Object.prototype.hasOwnProperty.call(TinyHtml.#styleEffects, name);
   }
 
@@ -3661,6 +3675,7 @@ class TinyHtml {
    * @returns {StyleEffectsRdFn | undefined} The function if found, otherwise undefined.
    */
   static getStyleEffectRd(name) {
+    if (typeof name !== 'string') throw new TypeError('The "name" parameter must be a string.');
     return TinyHtml.#styleEffectsRd[name] || undefined;
   }
 
@@ -3672,6 +3687,7 @@ class TinyHtml {
    * @throws {TypeError} If fn is not a function.
    */
   static setStyleEffectRd(name, fn) {
+    if (typeof name !== 'string') throw new TypeError('The "name" parameter must be a string.');
     if (typeof fn !== 'function')
       throw new TypeError(`styleEffectsRd["${name}"] must be a function.`);
     TinyHtml.#styleEffectsRd[name] = fn;
@@ -3684,6 +3700,7 @@ class TinyHtml {
    * @returns {boolean} True if deleted, false otherwise.
    */
   static deleteStyleEffectRd(name) {
+    if (typeof name !== 'string') throw new TypeError('The "name" parameter must be a string.');
     return delete TinyHtml.#styleEffectsRd[name];
   }
 
@@ -3694,6 +3711,7 @@ class TinyHtml {
    * @returns {boolean} True if registered, false otherwise.
    */
   static hasStyleEffectRd(name) {
+    if (typeof name !== 'string') throw new TypeError('The "name" parameter must be a string.');
     return Object.prototype.hasOwnProperty.call(TinyHtml.#styleEffectsRd, name);
   }
 
@@ -3789,6 +3807,7 @@ class TinyHtml {
    * @returns {StyleEffectsFn | undefined} The handler function, or undefined if not found.
    */
   static getStyleEffectProp(name) {
+    if (typeof name !== 'string') throw new TypeError('The "name" parameter must be a string.');
     return TinyHtml.#styleEffectsProps[name] || undefined;
   }
 
@@ -3800,6 +3819,7 @@ class TinyHtml {
    * @throws {TypeError} If fn is not a function.
    */
   static setStyleEffectProp(name, fn) {
+    if (typeof name !== 'string') throw new TypeError('The "name" parameter must be a string.');
     if (typeof fn !== 'function')
       throw new TypeError(`styleEffectsProps["${name}"] must be a function`);
     TinyHtml.#styleEffectsProps[name] = fn;
@@ -3812,6 +3832,7 @@ class TinyHtml {
    * @returns {boolean} True if deleted, false otherwise.
    */
   static deleteStyleEffectProp(name) {
+    if (typeof name !== 'string') throw new TypeError('The "name" parameter must be a string.');
     return delete TinyHtml.#styleEffectsProps[name];
   }
 
@@ -3822,6 +3843,7 @@ class TinyHtml {
    * @returns {boolean} True if the handler exists, false otherwise.
    */
   static hasStyleEffectProp(name) {
+    if (typeof name !== 'string') throw new TypeError('The "name" parameter must be a string.');
     return Object.prototype.hasOwnProperty.call(TinyHtml.#styleEffectsProps, name);
   }
 
@@ -3831,10 +3853,14 @@ class TinyHtml {
    * Generates effect parameters to create standard animations.
    *
    * @param {string} type - The effect type.
-   * @param {boolean} [includeWidth] - Whether width (and opacity) should be included.
+   * @param {boolean} [includeWidth=false] - Whether width (and opacity) should be included.
    * @returns {Record<string, string>} - A mapping of CSS properties to effect type.
    */
-  static genStyleFx(type, includeWidth) {
+  static genStyleFx(type, includeWidth = false) {
+    if (typeof type !== 'string') throw new TypeError('genStyleFx: type must be a string.');
+    if (typeof includeWidth !== 'boolean')
+      throw new TypeError('genStyleFx: includeWidth must be a boolean.');
+
     /** @type {string} */
     let which;
     /** @type {number} */
@@ -3856,6 +3882,7 @@ class TinyHtml {
 
     return attrs;
   }
+
   /**
    * Applies style-based effects (slide, fade) to one or more elements.
    * Converts abstract effect definitions (e.g., `{ height: "show" }`)
@@ -3868,6 +3895,21 @@ class TinyHtml {
    * @returns {StyleFxResult}
    */
   static applyStyleFx(el, id, props, ops) {
+    if (typeof id !== 'string') throw new TypeError('applyStyleFx: id must be a string.');
+    if (typeof props !== 'object' || props === null)
+      throw new TypeError('applyStyleFx: props must be a non-null object.');
+    if (
+      ops !== undefined &&
+      !(
+        typeof ops === 'number' ||
+        typeof ops === 'string' ||
+        (typeof ops === 'object' && ops !== null)
+      )
+    )
+      throw new TypeError(
+        'applyStyleFx: ops must be a number, string, KeyframeAnimationOptions, or undefined.',
+      );
+
     /** @type {StyleFxResult} */
     const results = new Map();
     TinyHtml._preHtmlElems(el, 'applyStyleFx').forEach((first) => {
@@ -3882,6 +3924,10 @@ class TinyHtml {
           this.#styleEffectsProps[action](first, keyframes, prop, style);
         } else if (typeof action === 'object') {
           keyframes[prop] = action;
+        } else {
+          throw new TypeError(
+            `applyStyleFx: invalid action for prop "${prop}". Must be string or array.`,
+          );
         }
       }
 

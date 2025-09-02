@@ -62,6 +62,10 @@
       const box = TinyHtml.getById('box');
       const jBox = $('#jbox');
 
+      window.TinyHtml = TinyHtml;
+      window.box = box;
+      window.jBox = jBox;
+
       // Slide controls
       TinyHtml.getById('slideDownBtn').on('click', () => {
         console.log(box.slideDown());
