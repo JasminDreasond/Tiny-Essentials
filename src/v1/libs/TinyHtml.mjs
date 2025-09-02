@@ -42,6 +42,29 @@ const {
  */
 
 /**
+ * Function signature for style effects repeat detectors.
+ *
+ * @typedef {(effects: AnimationSfxData) => boolean} StyleEffectsRdFn
+ */
+
+/**
+ * Function signature for style effect property handlers.
+ *
+ * @typedef {(
+ *   el: HTMLElement,
+ *   keyframes: AnimationSfxData,
+ *   prop: string,
+ *   style: CSSStyleDeclaration
+ * ) => void} StyleEffectsFn
+ */
+
+/**
+ * A collection of style effect property handlers.
+ *
+ * @typedef {Record<string, StyleEffectsFn>} StyleEffectsProps
+ */
+
+/**
  * Callback invoked on each animation frame with the current scroll position,
  * normalized animation time (`0` to `1`), and a completion flag.
  *
@@ -3440,11 +3463,11 @@ class TinyHtml {
     for (const [k, v] of Object.entries(speeds)) TinyHtml.setStyleFxSpeed(k, v);
   }
 
-  // TODO: Finish JsDoc
-
   /**
-   * @param {string} name
-   * @returns {number | KeyframeAnimationOptions |undefined}
+   * Get a predefined animation speed by name.
+   *
+   * @param {string} name - The name of the speed entry.
+   * @returns {number | KeyframeAnimationOptions | undefined} A cloned value of the speed entry, or undefined if not found.
    */
   static getStyleFxSpeed(name) {
     const spd = TinyHtml.#styleFxSpeeds[name];
@@ -3452,8 +3475,11 @@ class TinyHtml {
   }
 
   /**
-   * @param {string} name
-   * @param {number | KeyframeAnimationOptions} value
+   * Set or overwrite a predefined animation speed.
+   *
+   * @param {string} name - The name of the speed entry.
+   * @param {number | KeyframeAnimationOptions} value - The value to store.
+   * @throws {TypeError} If value is not a number or KeyframeAnimationOptions object.
    */
   static setStyleFxSpeed(name, value) {
     if (!(typeof value === 'number' || typeof value === 'object'))
@@ -3462,16 +3488,20 @@ class TinyHtml {
   }
 
   /**
-   * @param {string} name
-   * @returns {boolean}
+   * Delete a predefined animation speed by name.
+   *
+   * @param {string} name - The name of the speed entry to delete.
+   * @returns {boolean} True if the property was deleted, false otherwise.
    */
   static deleteStyleFxSpeed(name) {
     return delete TinyHtml.#styleFxSpeeds[name];
   }
 
   /**
-   * @param {string} name
-   * @returns {boolean}
+   * Check if a predefined animation speed exists.
+   *
+   * @param {string} name - The name of the speed entry to check.
+   * @returns {boolean} True if the speed entry exists, false otherwise.
    */
   static hasStyleFxSpeed(name) {
     return Object.prototype.hasOwnProperty.call(TinyHtml.#styleFxSpeeds, name);
@@ -3583,12 +3613,6 @@ class TinyHtml {
 
   // TITLE: Animate DOM (styleEffectsRd)
 
-  // TODO: Finish jsDoc
-
-  /**
-   * @typedef {(effects: AnimationSfxData) => boolean} StyleEffectsRdFn
-   */
-
   /**
    * Style Effect Repeat Detector
    * @type {Record<string, StyleEffectsRdFn>}
@@ -3630,19 +3654,22 @@ class TinyHtml {
     for (const [k, v] of Object.entries(detectors)) TinyHtml.setStyleEffectRd(k, v);
   }
 
-  // TODO: Finish JsDoc
-
   /**
-   * @param {string} name
-   * @returns {StyleEffectsRdFn|undefined}
+   * Get a registered repeat detector function by name.
+   *
+   * @param {string} name - The detector name.
+   * @returns {StyleEffectsRdFn | undefined} The function if found, otherwise undefined.
    */
   static getStyleEffectRd(name) {
     return TinyHtml.#styleEffectsRd[name] || undefined;
   }
 
   /**
-   * @param {string} name
-   * @param {StyleEffectsRdFn} fn
+   * Register or overwrite a repeat detector function.
+   *
+   * @param {string} name - The detector name.
+   * @param {StyleEffectsRdFn} fn - The detector function.
+   * @throws {TypeError} If fn is not a function.
    */
   static setStyleEffectRd(name, fn) {
     if (typeof fn !== 'function')
@@ -3651,33 +3678,24 @@ class TinyHtml {
   }
 
   /**
-   * @param {string} name
-   * @returns {boolean}
+   * Delete a repeat detector function by name.
+   *
+   * @param {string} name - The detector name to delete.
+   * @returns {boolean} True if deleted, false otherwise.
    */
   static deleteStyleEffectRd(name) {
     return delete TinyHtml.#styleEffectsRd[name];
   }
 
   /**
-   * @param {string} name
-   * @returns {boolean}
+   * Check if a repeat detector function is registered.
+   *
+   * @param {string} name - The detector name to check.
+   * @returns {boolean} True if registered, false otherwise.
    */
   static hasStyleEffectRd(name) {
     return Object.prototype.hasOwnProperty.call(TinyHtml.#styleEffectsRd, name);
   }
-
-  /**
-   * @typedef {(
-   *   el: HTMLElement,
-   *   keyframes: AnimationSfxData,
-   *   prop: string,
-   *   style: CSSStyleDeclaration
-   * ) => void} StyleEffectsFn
-   */
-
-  /**
-   * @typedef {Record<string, StyleEffectsFn>} StyleEffectsProps
-   */
 
   // TITLE: Animate DOM (styleEffectsPromps)
 
@@ -3764,19 +3782,22 @@ class TinyHtml {
     for (const [k, fn] of Object.entries(value)) TinyHtml.setStyleEffectProp(k, fn);
   }
 
-  // TODO: Finish JsDoc
-
   /**
-   * @param {string} name
-   * @returns {StyleEffectsFn|undefined}
+   * Get a style effect property handler by name.
+   *
+   * @param {string} name - The property handler name.
+   * @returns {StyleEffectsFn | undefined} The handler function, or undefined if not found.
    */
   static getStyleEffectProp(name) {
     return TinyHtml.#styleEffectsProps[name] || undefined;
   }
 
   /**
-   * @param {string} name
-   * @param {StyleEffectsFn} fn
+   * Register or overwrite a style effect property handler.
+   *
+   * @param {string} name - The property handler name.
+   * @param {StyleEffectsFn} fn - The handler function.
+   * @throws {TypeError} If fn is not a function.
    */
   static setStyleEffectProp(name, fn) {
     if (typeof fn !== 'function')
@@ -3785,16 +3806,20 @@ class TinyHtml {
   }
 
   /**
-   * @param {string} name
-   * @returns {boolean}
+   * Delete a style effect property handler by name.
+   *
+   * @param {string} name - The property handler name to delete.
+   * @returns {boolean} True if deleted, false otherwise.
    */
   static deleteStyleEffectProp(name) {
     return delete TinyHtml.#styleEffectsProps[name];
   }
 
   /**
-   * @param {string} name
-   * @returns {boolean}
+   * Check if a style effect property handler exists.
+   *
+   * @param {string} name - The property handler name to check.
+   * @returns {boolean} True if the handler exists, false otherwise.
    */
   static hasStyleEffectProp(name) {
     return Object.prototype.hasOwnProperty.call(TinyHtml.#styleEffectsProps, name);
