@@ -27,7 +27,17 @@ const {
  * Each HTMLElement is associated with an array of its currently running
  * `Animation` objects (from the Web Animations API).
  *
- * @typedef {Map<HTMLElement, Animation>} StyleFxResult
+ * @typedef {Map<HTMLElement, Animation|null>} StyleFxResult
+ */
+
+/**
+ * Represents a collection of animation keyframe data mapped by CSS property.
+ *
+ * - The **key** is the CSS property name (e.g. `"height"`, `"opacity"`).
+ * - The **value** is an array of values representing the start and end
+ *   states of the property during the animation.
+ *
+ * @typedef {Record<string, (string|number)[]>} AnimationSfxData
  */
 
 /**
@@ -3352,12 +3362,27 @@ class TinyHtml {
   };
 
   /**
+   * Style Effect Repeat Detector
+   * @type {Record<string, (effects: AnimationSfxData) => boolean>}
+   */
+  static #styleEffectsRd = {
+    slideDown: (effects) =>
+      effects.height[0] === effects.height[1] &&
+      (!effects.width || effects.width[0] === effects.width[1]),
+    slideUp: (effects) =>
+      effects.height[0] === effects.height[1] &&
+      (!effects.width || effects.width[0] === effects.width[1]),
+    fadeIn: (effects) => Number(effects.opacity[0]) === Number(effects.opacity[1]),
+    fadeOut: (effects) => Number(effects.opacity[0]) === Number(effects.opacity[1]),
+  };
+
+  /**
    * Effect property handlers for show, hide, and toggle.
    * Each function builds keyframes depending on the property being animated.
    *
    * @type {Record<string, (
    *   el: HTMLElement,
-   *   keyframes: Record<string, (string|number)[]>,
+   *   keyframes: AnimationSfxData,
    *   prop: string,
    *   style: CSSStyleDeclaration
    * ) => void>}
@@ -3447,17 +3472,18 @@ class TinyHtml {
    * into concrete Web Animations API keyframes.
    *
    * @param {TinyHtmlElement|TinyHtmlElement[]} el - A single element or an array of elements.
+   * @param {string} id - The style effect id.
    * @param {StyleEffects} props - The style effect definition.
    * @param {number | KeyframeAnimationOptions | string} [ops] - Timing options.
    * @returns {StyleFxResult}
    */
-  static applyStyleFx(el, props, ops) {
+  static applyStyleFx(el, id, props, ops) {
     /** @type {StyleFxResult} */
     const results = new Map();
     TinyHtml._preHtmlElems(el, 'applyStyleFx').forEach((first) => {
       /**
        * Generate keyframes based on props
-       * @type {Record<string, (string|number)[]>}
+       * @type {AnimationSfxData}
        */
       const keyframes = {};
       for (const [prop, action] of Object.entries(props)) {
@@ -3467,6 +3493,15 @@ class TinyHtml {
         } else if (typeof action === 'object') {
           keyframes[prop] = action;
         }
+      }
+
+      const isRepeat =
+        typeof TinyHtml.#styleEffectsRd[id] === 'function'
+          ? TinyHtml.#styleEffectsRd[id](keyframes)
+          : false;
+      if (isRepeat) {
+        results.set(first, null);
+        return;
       }
 
       /**
@@ -3494,12 +3529,13 @@ class TinyHtml {
    * Converts abstract effect definitions (e.g., `{ height: "show" }`)
    * into concrete Web Animations API keyframes.
    *
+   * @param {string} id - The style effect id.
    * @param {StyleEffects} props - The style effect definition.
    * @param {number | KeyframeAnimationOptions} [ops] - Timing options.
    * @returns {StyleFxResult}
    */
-  applyStyleFx(props, ops) {
-    return TinyHtml.applyStyleFx(this, props, ops);
+  applyStyleFx(id, props, ops) {
+    return TinyHtml.applyStyleFx(this, id, props, ops);
   }
 
   /**
@@ -3606,6 +3642,7 @@ class TinyHtml {
   static slideDown(el, ops) {
     return TinyHtml.applyStyleFx(
       el,
+      'slideDown',
       this.#styleEffects['slideDown'],
       ops ?? { duration: 500, easing: 'ease-out' },
     );
@@ -3629,6 +3666,7 @@ class TinyHtml {
   static slideUp(el, ops) {
     return TinyHtml.applyStyleFx(
       el,
+      'slideUp',
       this.#styleEffects['slideUp'],
       ops ?? { duration: 500, easing: 'ease-out' },
     );
@@ -3672,7 +3710,7 @@ class TinyHtml {
    * @returns {StyleFxResult}
    */
   static fadeIn(el, ops) {
-    return TinyHtml.applyStyleFx(el, this.#styleEffects['fadeIn'], ops);
+    return TinyHtml.applyStyleFx(el, 'fadeIn', this.#styleEffects['fadeIn'], ops);
   }
 
   /**
@@ -3691,7 +3729,7 @@ class TinyHtml {
    * @returns {StyleFxResult}
    */
   static fadeOut(el, ops) {
-    return TinyHtml.applyStyleFx(el, this.#styleEffects['fadeOut'], ops);
+    return TinyHtml.applyStyleFx(el, 'fadeOut', this.#styleEffects['fadeOut'], ops);
   }
 
   /**
