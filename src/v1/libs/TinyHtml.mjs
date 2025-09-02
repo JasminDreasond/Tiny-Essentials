@@ -1,6 +1,7 @@
+import { diffArrayList } from '../basics/array.mjs';
+import { diffStrings } from '../basics/text.mjs';
 import * as TinyCollision from '../basics/collision.mjs';
 import TinyElementObserver from './TinyElementObserver.mjs';
-import { parseStyle } from './TinyHtml/TinyHtmlUtils.mjs';
 
 // TITLE: Introduction
 const {
@@ -341,7 +342,17 @@ class TinyHtml {
    * @param {string} styleText
    * @returns {Record<string,string>}
    */
-  static parseStyle = parseStyle;
+  static parseStyle(styleText) {
+    /** @type {Record<string,string>}} */
+    const styles = {};
+    styleText.split(';').forEach((rule) => {
+      const [prop, value] = rule.split(':').map((s) => s && s.trim());
+      if (prop && value) {
+        styles[prop] = value;
+      }
+    });
+    return styles;
+  }
 
   /////////////////////////////////////////////////////////////////////
 
@@ -369,7 +380,67 @@ class TinyHtml {
   }
 
   /** @type {TinyElementObserver} */
-  static #tinyObserver = new TinyElementObserver();
+  static #tinyObserver = new TinyElementObserver([
+    // Style Detector
+    [
+      'tinyStyleEvent',
+      (mutation) => {
+        if (
+          mutation.type !== 'attributes' ||
+          mutation.attributeName !== 'style' ||
+          !(mutation.target instanceof HTMLElement)
+        )
+          return;
+        const oldVal = mutation.oldValue || '';
+        const newVal = mutation.target.getAttribute('style') || '';
+
+        const oldStyles = TinyHtml.parseStyle(oldVal);
+        const newStyles = TinyHtml.parseStyle(newVal);
+
+        const changes = diffStrings(oldStyles, newStyles);
+
+        if (
+          Object.keys(changes.added).length ||
+          Object.keys(changes.removed).length ||
+          Object.keys(changes.modified).length
+        ) {
+          mutation.target.dispatchEvent(
+            new CustomEvent('tinyhtml.stylechanged', {
+              detail: changes,
+            }),
+          );
+        }
+      },
+    ],
+
+    // Class Detector
+    [
+      'tinyClassEvent',
+      (mutation) => {
+        if (
+          mutation.type !== 'attributes' ||
+          mutation.attributeName !== 'class' ||
+          !(mutation.target instanceof HTMLElement)
+        )
+          return;
+        const oldVal = mutation.oldValue || '';
+        const newVal = mutation.target.className || '';
+
+        const oldClasses = oldVal.split(/\s+/).filter(Boolean);
+        const newClasses = newVal.split(/\s+/).filter(Boolean);
+
+        const changes = diffArrayList(oldClasses, newClasses);
+
+        if (changes.added.length || changes.removed.length) {
+          mutation.target.dispatchEvent(
+            new CustomEvent('tinyhtml.classchanged', {
+              detail: changes,
+            }),
+          );
+        }
+      },
+    ],
+  ]);
 
   /** @returns {TinyElementObserver} */
   static get tinyObserver() {

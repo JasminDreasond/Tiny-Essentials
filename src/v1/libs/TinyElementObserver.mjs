@@ -1,7 +1,3 @@
-import { diffArrayList } from '../basics/array.mjs';
-import { diffStrings } from '../basics/text.mjs';
-import { parseStyle } from './TinyHtml/TinyHtmlUtils.mjs';
-
 /**
  * Callback type used for element mutation detectors.
  *
@@ -12,6 +8,13 @@ import { parseStyle } from './TinyHtml/TinyHtmlUtils.mjs';
  * @returns {void}
  */
 
+/**
+ * TinyElementObserver
+ *
+ * A utility class for tracking DOM element mutations.
+ * It leverages the native MutationObserver API, providing a higher-level abstraction
+ * with a system of configurable detectors that can dispatch custom events or run custom logic.
+ */
 class TinyElementObserver {
   /**
    * Configuration settings for the MutationObserver instance.
@@ -50,6 +53,14 @@ class TinyElementObserver {
   #observer = null;
 
   /**
+   * Get the current MutationObserver instance.
+   * @returns {MutationObserver|null}
+   */
+  get observer() {
+    return this.#observer;
+  }
+
+  /**
    * List of detectors executed on observed mutations.
    * Each detector is a tuple:
    * - name: string identifier
@@ -57,67 +68,7 @@ class TinyElementObserver {
    *
    * @type {Array<[string, ElementDetectorsFn]>}
    */
-  #detectors = [
-    // Style Detector
-    [
-      'tinyStyleEvent',
-      (mutation) => {
-        if (
-          mutation.type !== 'attributes' ||
-          mutation.attributeName !== 'style' ||
-          !(mutation.target instanceof HTMLElement)
-        )
-          return;
-        const oldVal = mutation.oldValue || '';
-        const newVal = mutation.target.getAttribute('style') || '';
-
-        const oldStyles = parseStyle(oldVal);
-        const newStyles = parseStyle(newVal);
-
-        const changes = diffStrings(oldStyles, newStyles);
-
-        if (
-          Object.keys(changes.added).length ||
-          Object.keys(changes.removed).length ||
-          Object.keys(changes.modified).length
-        ) {
-          mutation.target.dispatchEvent(
-            new CustomEvent('tinyhtml.stylechanged', {
-              detail: changes,
-            }),
-          );
-        }
-      },
-    ],
-
-    // Class Detector
-    [
-      'tinyClassEvent',
-      (mutation) => {
-        if (
-          mutation.type !== 'attributes' ||
-          mutation.attributeName !== 'class' ||
-          !(mutation.target instanceof HTMLElement)
-        )
-          return;
-        const oldVal = mutation.oldValue || '';
-        const newVal = mutation.target.className || '';
-
-        const oldClasses = oldVal.split(/\s+/).filter(Boolean);
-        const newClasses = newVal.split(/\s+/).filter(Boolean);
-
-        const changes = diffArrayList(oldClasses, newClasses);
-
-        if (changes.added.length || changes.removed.length) {
-          mutation.target.dispatchEvent(
-            new CustomEvent('tinyhtml.classchanged', {
-              detail: changes,
-            }),
-          );
-        }
-      },
-    ],
-  ];
+  #detectors = [];
 
   /**
    * Get the element detectors.
@@ -151,6 +102,24 @@ class TinyElementObserver {
    */
   get isUsing() {
     return !!this.#observer;
+  }
+
+  /**
+   * Create a new TinyElementObserver instance.
+   *
+   * @param {Array<[string, ElementDetectorsFn]>} [initValues] - Initial list of detectors,
+   */
+  constructor(initValues) {
+    if (initValues) this.detectors = initValues;
+  }
+
+  /**
+   * Remove all registered detectors.
+   * After calling this, no mutation events will be processed
+   * until new detectors are added again.
+   */
+  clear() {
+    this.#detectors = [];
   }
 
   /**
@@ -207,9 +176,8 @@ class TinyElementObserver {
    */
   insertAt(index, name, handler, position = 'after') {
     this.#validateDetector(name, handler);
-    if (typeof index !== 'number' || index < 0 || index >= this.#detectors.length) {
+    if (typeof index !== 'number' || index < 0 || index >= this.#detectors.length)
       throw new RangeError('Invalid index for insertDetectorAt.');
-    }
     const insertIndex = position === 'before' ? index : index + 1;
     this.#detectors.splice(insertIndex, 0, [name, handler]);
   }
@@ -219,9 +187,8 @@ class TinyElementObserver {
    * @param {number} index
    */
   removeAt(index) {
-    if (typeof index !== 'number' || index < 0 || index >= this.#detectors.length) {
+    if (typeof index !== 'number' || index < 0 || index >= this.#detectors.length)
       throw new RangeError('Invalid index for removeDetectorAt.');
-    }
     this.#detectors.splice(index, 1);
   }
 
@@ -232,9 +199,8 @@ class TinyElementObserver {
    * @param {number} after - Number of items after the index to remove
    */
   removeAround(index, before = 0, after = 0) {
-    if (typeof index !== 'number' || index < 0 || index >= this.#detectors.length) {
+    if (typeof index !== 'number' || index < 0 || index >= this.#detectors.length)
       throw new RangeError('Invalid index for removeDetectorsAround.');
-    }
     const start = Math.max(0, index - before);
     const deleteCount = before + 1 + after;
     this.#detectors.splice(start, deleteCount);
@@ -265,12 +231,20 @@ class TinyElementObserver {
    * @param {ElementDetectorsFn} handler
    */
   #validateDetector(name, handler) {
-    if (typeof name !== 'string' || !name.trim()) {
+    if (typeof name !== 'string' || !name.trim())
       throw new TypeError('Detector name must be a non-empty string.');
-    }
-    if (typeof handler !== 'function') {
+    if (typeof handler !== 'function')
       throw new TypeError(`Detector handler for "${name}" must be a function.`);
-    }
+  }
+
+  /**
+   * Completely destroy this observer instance.
+   * Stops the MutationObserver (if active) and clears all detectors,
+   * leaving the instance unusable until reconfigured.
+   */
+  destroy() {
+    this.stop();
+    this.clear();
   }
 }
 
