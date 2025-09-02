@@ -1,5 +1,6 @@
 import * as TinyCollision from '../basics/collision.mjs';
 
+// TITLE: Introduction
 const {
   areElsColliding,
   areElsPerfColliding,
@@ -292,6 +293,8 @@ const __elemCollision = {
  * ]} HtmlParsed
  */
 
+// TITLE: Class Intro
+
 /**
  * TinyHtml is a utility class that provides static and instance-level methods
  * for precise dimension and position computations on HTML elements.
@@ -307,6 +310,8 @@ class TinyHtml {
   /** @typedef {import('../basics/collision.mjs').ObjRect} ObjRect */
 
   static Utils = { ...TinyCollision };
+
+  // TITLE: Fetch Html List
 
   /**
    * Fetches an HTML file from the given URL, parses it to JSON.
@@ -354,6 +359,8 @@ class TinyHtml {
     return TinyHtml.toTinyElm(nodes);
   }
 
+  // TITLE: Fetch Template List
+
   /**
    * Converts the content of a <template> to an array of HtmlParsed.
    *
@@ -398,6 +405,8 @@ class TinyHtml {
   static templateToTinyElems(nodes) {
     return TinyHtml.toTinyElm(TinyHtml.templateToNodes(nodes));
   }
+
+  // TITLE: Fetch Json List
 
   /**
    * Parses a full HTML string into a JSON-like structure.
@@ -490,6 +499,8 @@ class TinyHtml {
     return TinyHtml.toTinyElm(TinyHtml.jsonToNodes(jsonArray));
   }
 
+  // TITLE: Element Creator
+
   /**
    * Creates a new TinyHtml element from a tag name and optional attributes.
    *
@@ -572,6 +583,9 @@ class TinyHtml {
       throw new Error('The HTML string must contain a valid HTML element.');
     return new TinyHtml(template.content.firstChild);
   }
+
+  ///////////////////////////////////////////////////
+  // TITLE: Query Script
 
   /**
    * Queries the document for the first element matching the CSS selector and wraps it in a TinyHtml instance.
@@ -691,6 +705,8 @@ class TinyHtml {
 
   //////////////////////////////////////////////////////////////////
 
+  // TITLE: Element getter
+
   /**
    * Iterates over all elements, executing the provided callback on each.
    * @param {(element: TinyHtmlAny, index: number, items: TinyHtmlAny[]) => void} callback - Function invoked for each element.
@@ -747,6 +763,10 @@ class TinyHtml {
     return [...this.#el];
   }
 
+  ////////////////////////////////////////////////
+
+  // TITLE: Element Getter (Private) (Pt1)
+
   /**
    * Returns the current Element held by this instance.
    *
@@ -788,6 +808,8 @@ class TinyHtml {
   }
 
   //////////////////////////////////////////////////////
+
+  // TITLE: Element Getter (Private) (Pt2)
 
   /**
    * Prepares and validates multiple elements against allowed types.
@@ -1121,6 +1143,10 @@ class TinyHtml {
     return TinyHtml._preElemTemplate(elems, where, [Element, Document], ['Element', 'Document']);
   }
 
+  //////////////////////////////////////////////////////
+
+  // TITLE: Converter DOM <--> TinyHtml
+
   /**
    * Normalizes and converts one or more DOM elements (or TinyHtml instances)
    * into an array of `TinyHtml` instances.
@@ -1173,6 +1199,10 @@ class TinyHtml {
     if (!Array.isArray(elems)) return checkElement([elems]);
     return checkElement(elems);
   }
+
+  //////////////////////////////////////////////////
+
+  // TITLE: DOM Getter
 
   /**
    * Filters an array of elements based on a selector, function, element, or array of elements.
@@ -1400,6 +1430,8 @@ class TinyHtml {
 
   //////////////////////////////////////////////////////////////////
 
+  // TITLE: Data Manager
+
   /**
    * Internal data storage for element information.
    * @type {ElementDataStore}
@@ -1515,6 +1547,8 @@ class TinyHtml {
   }
 
   //////////////////////////////////////////////////////
+
+  // TITLE: DOM Getter 2
 
   /**
    * Get the sibling element in a given direction.
@@ -1815,6 +1849,10 @@ class TinyHtml {
     return TinyHtml.contents(this);
   }
 
+  ////////////////////////////////////////////
+
+  // TITLE: Clone Dom
+
   /**
    * Clone each element.
    * @param {TinyNode|TinyNode[]} el
@@ -1834,6 +1872,10 @@ class TinyHtml {
   clone(deep) {
     return TinyHtml.clone(this, deep)[0];
   }
+
+  //////////////////////////////////////////////////
+
+  // TITLE: Append Content
 
   /**
    * Normalize and validate nodes before DOM insertion.
@@ -2125,6 +2167,8 @@ class TinyHtml {
 
   //////////////////////////////////////////////////////
 
+  // TITLE: Constructor Base
+
   /**
    * The target HTML element for instance-level operations.
    * @type {ConstructorElValues[]}
@@ -2192,6 +2236,8 @@ class TinyHtml {
   }
 
   /////////////////////////////////////////////////////
+
+  // TITLE: CSS Stuff
 
   /**
    * Returns the full computed CSS styles for the given element.
@@ -2325,6 +2371,8 @@ class TinyHtml {
   }
 
   //////////////////////////////////////////////////////////////////////
+
+  // TITLE: Style Stuff
 
   /**
    * Stores camelCase to kebab-case CSS property aliases.
@@ -2841,6 +2889,8 @@ class TinyHtml {
 
   //////////////////////////////////////////////////////////////////////
 
+  // TITLE: Focus/Blur
+
   /**
    * Focus the element.
    *
@@ -2883,6 +2933,10 @@ class TinyHtml {
     return TinyHtml.blur(this);
   }
 
+  /////////////////////////////////////////////////////////
+
+  // TITLE: Select
+
   /**
    * Select the text content of an input or textarea element.
    *
@@ -2904,6 +2958,8 @@ class TinyHtml {
   select() {
     return TinyHtml.select(this);
   }
+
+  // TITLE: Bool Checker
 
   /**
    * Interprets a value as a boolean `true` if it matches a common truthy representation.
@@ -2930,6 +2986,8 @@ class TinyHtml {
   }
 
   //////////////////////////////////////////////////////////////////////
+
+  // TITLE: Window Getter/Setter
 
   /**
    * Sets the vertical scroll position of the window.
@@ -3265,6 +3323,8 @@ class TinyHtml {
 
   //////////////////////////////////////////////////
 
+  // TITLE: Animate DOM (Data)
+
   /**
    * Retrieves stored animation data for a given element and key.
    * If no data exists yet, initializes storage for that element.
@@ -3299,6 +3359,8 @@ class TinyHtml {
     dataset[where] = value;
   }
 
+  // TITLE: Animate DOM (cancelOldStyleFx)
+
   /**
    * Global configuration flag controlling whether old style-based animations
    * are cancelled before a new one starts. Defaults to true.
@@ -3327,6 +3389,8 @@ class TinyHtml {
     if (typeof value !== 'boolean') throw new TypeError('Expected a boolean value.');
     TinyHtml.#cancelOldStyleFx = value;
   }
+
+  // TITLE: Animate DOM (styleFxSpeeds)
 
   /**
    * Predefined animation speed options, inspired by jQuery.fx.speeds.
@@ -3376,6 +3440,8 @@ class TinyHtml {
     for (const [k, v] of Object.entries(speeds)) TinyHtml.setStyleFxSpeed(k, v);
   }
 
+  // TODO: Finish JsDoc
+
   /**
    * @param {string} name
    * @returns {number | KeyframeAnimationOptions |undefined}
@@ -3411,11 +3477,15 @@ class TinyHtml {
     return Object.prototype.hasOwnProperty.call(TinyHtml.#styleFxSpeeds, name);
   }
 
+  // TITLE: Animate DOM (cssExpand)
+
   /**
    * CSS expansion shorthand used by genStyleFx to include margin/padding values.
    * @typedef {['Top', 'Right', 'Bottom', 'Left']}
    */
   static #cssExpand = ['Top', 'Right', 'Bottom', 'Left'];
+
+  // TITLE: Animate DOM (styleEffects)
 
   /**
    * Generate shortcuts
@@ -3511,6 +3581,10 @@ class TinyHtml {
     return Object.prototype.hasOwnProperty.call(TinyHtml.#styleEffects, name);
   }
 
+  // TITLE: Animate DOM (styleEffectsRd)
+
+  // TODO: Finish jsDoc
+
   /**
    * @typedef {(effects: AnimationSfxData) => boolean} StyleEffectsRdFn
    */
@@ -3555,6 +3629,8 @@ class TinyHtml {
     TinyHtml.#styleEffectsRd = {};
     for (const [k, v] of Object.entries(detectors)) TinyHtml.setStyleEffectRd(k, v);
   }
+
+  // TODO: Finish JsDoc
 
   /**
    * @param {string} name
@@ -3602,6 +3678,8 @@ class TinyHtml {
   /**
    * @typedef {Record<string, StyleEffectsFn>} StyleEffectsProps
    */
+
+  // TITLE: Animate DOM (styleEffectsPromps)
 
   /**
    * Effect property handlers for show, hide, and toggle.
@@ -3686,6 +3764,8 @@ class TinyHtml {
     for (const [k, fn] of Object.entries(value)) TinyHtml.setStyleEffectProp(k, fn);
   }
 
+  // TODO: Finish JsDoc
+
   /**
    * @param {string} name
    * @returns {StyleEffectsFn|undefined}
@@ -3719,6 +3799,8 @@ class TinyHtml {
   static hasStyleEffectProp(name) {
     return Object.prototype.hasOwnProperty.call(TinyHtml.#styleEffectsProps, name);
   }
+
+  // TITLE: Gen Style FX Manager
 
   /**
    * Generates effect parameters to create standard animations.
@@ -3821,6 +3903,8 @@ class TinyHtml {
     return TinyHtml.applyStyleFx(this, id, props, ops);
   }
 
+  // TITLE: Animate Stuff
+
   /**
    * Applies an animation to one or multiple TinyElement instances.
    *
@@ -3915,6 +3999,8 @@ class TinyHtml {
   stop() {
     return TinyHtml.stop(this);
   }
+
+  // TITLE: Animate FXs
 
   /**
    * Show animation (slideDown).
@@ -4047,6 +4133,8 @@ class TinyHtml {
 
   ///////////////////////////////////////////////////////////////
 
+  // TITLE: DOM Positions
+
   /**
    * Gets the offset of the element relative to the document.
    * @param {TinyElement} el - Target element.
@@ -4158,6 +4246,10 @@ class TinyHtml {
   offsetParent() {
     return TinyHtml.offsetParent(this);
   }
+
+  /////////////////////////////////////////////////
+
+  // TITLE: Scroll Stuff
 
   /**
    * Gets the vertical scroll position.
@@ -4375,6 +4467,10 @@ class TinyHtml {
     return TinyHtml.setScrollLeft(this, value);
   }
 
+  ///////////////////////////////////////////
+
+  // TITLE: Border Stuff
+
   /**
    * Returns the total border width and individual sides from `border{Side}Width` CSS properties.
    *
@@ -4497,6 +4593,8 @@ class TinyHtml {
   }
 
   /////////////////////////////////////////////
+
+  // TITLE: Class Stuff
 
   /**
    * Adds one or more CSS class names to the element.
@@ -4686,6 +4784,8 @@ class TinyHtml {
 
   /////////////////////////////////////////
 
+  // TITLE: Tag Stuff
+
   /**
    * Returns the tag name of the element.
    * @param {TinyElement} el - Target element.
@@ -4721,6 +4821,10 @@ class TinyHtml {
   id() {
     return TinyHtml.id(this);
   }
+
+  //////////////////////////////////////////////////////////////
+
+  // TITLE: DOM Content Stuff
 
   /**
    * Returns the BigInt content of the element.
@@ -5029,6 +5133,10 @@ class TinyHtml {
     return TinyHtml.setText(this, value);
   }
 
+  //////////////////////////////////////////////////////
+
+  // TITLE: DOM Content Stuff (Part 2)
+
   /**
    * Remove all child nodes from each element.
    * @template {TinyElement|TinyElement[]} T
@@ -5089,6 +5197,10 @@ class TinyHtml {
   setHtml(value) {
     return TinyHtml.setHtml(this, value);
   }
+
+  ///////////////////////////////////////////////
+
+  // TITLE: Value Stuff
 
   /** @readonly */
   static _valHooks = {
@@ -5530,6 +5642,8 @@ class TinyHtml {
 
   ////////////////////////////////////////////
 
+  // TITLE: Listen for Paste
+
   /**
    * Registers a listener for the "paste" event to extract files and text from the clipboard (e.g., when the user presses Ctrl+V).
    *
@@ -5585,6 +5699,10 @@ class TinyHtml {
   listenForPaste({ onFilePaste, onTextPaste } = {}) {
     return TinyHtml.listenForPaste(this, { onFilePaste, onTextPaste });
   }
+
+  /////////////////////////////////////////////////////
+
+  // TITLE: Events Stuff
 
   /**
    * Checks if the element has a listener for a specific event.
@@ -5933,6 +6051,8 @@ class TinyHtml {
 
   ///////////////////////////////////////////////////////////////
 
+  // TITLE: ProFix Manager
+
   /**
    * Internal property name normalization map (similar to jQuery's `propFix`).
    * Maps attribute-like names to their JavaScript DOM property equivalents.
@@ -6235,6 +6355,8 @@ class TinyHtml {
 
   /////////////////////////////////////////////////////
 
+  // TITLE: Remove Element
+
   /**
    * Removes an element from the DOM.
    * @template {TinyElement|TinyElement[]} T
@@ -6253,6 +6375,10 @@ class TinyHtml {
   remove() {
     return TinyHtml.remove(this);
   }
+
+  ///////////////////////////////////////////////////
+
+  // TITLE: Index Manager
 
   /**
    * Returns the index of the first element within its parent or relative to a selector/element.
@@ -6289,6 +6415,8 @@ class TinyHtml {
   }
 
   ////////////////////////////////////////////////////////////////////
+
+  // TITLE: Collision Stuff
 
   /**
    * Creates a new DOMRect object by copying the base rect and applying optional additional dimensions.
@@ -6584,6 +6712,8 @@ class TinyHtml {
 
   //////////////////////////////////////////////////////////////////////////////
 
+  // TITLE: Viewport Stuff
+
   /**
    * Checks if the given element is at least partially visible in the viewport.
    *
@@ -6733,6 +6863,8 @@ class TinyHtml {
   isFullyInContainer(cont) {
     return TinyHtml.isFullyInContainer(this, cont);
   }
+
+  // TITLE: Has Scroll
 
   /**
    * Checks if an element has scrollable content.
