@@ -3345,6 +3345,73 @@ class TinyHtml {
   };
 
   /**
+   * Get a cloned copy of predefined animation speeds.
+   * @returns {Record<string, number | KeyframeAnimationOptions>}
+   */
+  static get styleFxSpeeds() {
+    /** @type {Record<string, number | KeyframeAnimationOptions>} */
+    const data = {};
+    for (const name in TinyHtml.#styleFxSpeeds) {
+      const info = TinyHtml.#styleFxSpeeds[name];
+      data[name] = typeof info === 'object' ? { ...info } : info;
+    }
+    return data;
+  }
+
+  /**
+   * Replace the predefined animation speeds.
+   * @param {Record<string, number | KeyframeAnimationOptions>} speeds
+   * @throws {TypeError} If input is not a valid object of speed definitions.
+   */
+  static set styleFxSpeeds(speeds) {
+    if (typeof speeds !== 'object' || speeds === null || Array.isArray(speeds))
+      throw new TypeError('styleFxSpeeds must be an object.');
+
+    for (const [k, v] of Object.entries(speeds)) {
+      if (!(typeof v === 'number' || typeof v === 'object'))
+        throw new TypeError(`styleFxSpeeds["${k}"] must be a number or KeyframeAnimationOptions.`);
+    }
+
+    TinyHtml.#styleFxSpeeds = {};
+    for (const [k, v] of Object.entries(speeds)) TinyHtml.setStyleFxSpeed(k, v);
+  }
+
+  /**
+   * @param {string} name
+   * @returns {number | KeyframeAnimationOptions |undefined}
+   */
+  static getStyleFxSpeed(name) {
+    const spd = TinyHtml.#styleFxSpeeds[name];
+    return typeof spd === 'object' ? { ...spd } : spd;
+  }
+
+  /**
+   * @param {string} name
+   * @param {number | KeyframeAnimationOptions} value
+   */
+  static setStyleFxSpeed(name, value) {
+    if (!(typeof value === 'number' || typeof value === 'object'))
+      throw new TypeError('styleFxSpeed must be a number or KeyframeAnimationOptions');
+    TinyHtml.#styleFxSpeeds[name] = typeof value === 'object' ? { ...value } : value;
+  }
+
+  /**
+   * @param {string} name
+   * @returns {boolean}
+   */
+  static deleteStyleFxSpeed(name) {
+    return delete TinyHtml.#styleFxSpeeds[name];
+  }
+
+  /**
+   * @param {string} name
+   * @returns {boolean}
+   */
+  static hasStyleFxSpeed(name) {
+    return Object.prototype.hasOwnProperty.call(TinyHtml.#styleFxSpeeds, name);
+  }
+
+  /**
    * CSS expansion shorthand used by genStyleFx to include margin/padding values.
    * @typedef {['Top', 'Right', 'Bottom', 'Left']}
    */
@@ -3362,8 +3429,95 @@ class TinyHtml {
   };
 
   /**
+   * Returns a deep-cloned copy of the registered style effects.
+   *
+   * @returns {Record<string, StyleEffects>}
+   */
+  static get styleEffects() {
+    return JSON.parse(JSON.stringify(TinyHtml.#styleEffects));
+  }
+
+  /**
+   * Replace the entire styleEffects map with a new one.
+   *
+   * @param {Record<string, StyleEffects>} value
+   */
+  static set styleEffects(value) {
+    if (typeof value !== 'object' || value === null || Array.isArray(value))
+      throw new TypeError('styleEffects must be an object');
+    for (const [prop, mode] of Object.entries(value)) {
+      if (
+        typeof mode !== 'string' &&
+        (!Array.isArray(mode) || !mode.every((v) => typeof v === 'string' || typeof v === 'number'))
+      )
+        throw new TypeError(`Invalid styleEffect["${prop}"]`);
+    }
+
+    TinyHtml.#styleEffects = {};
+    for (const name in value) TinyHtml.setStyleEffect(name, value[name]);
+  }
+
+  /**
+   * Get a deep-cloned style effect by name.
+   * @param {string} name
+   * @returns {StyleEffects|undefined}
+   */
+  static getStyleEffect(name) {
+    const eff = TinyHtml.#styleEffects[name];
+    return eff ? JSON.parse(JSON.stringify(eff)) : undefined;
+  }
+
+  /**
+   * Set or replace a style effect.
+   * @param {string} name
+   * @param {StyleEffects} value
+   */
+  static setStyleEffect(name, value) {
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+      throw new TypeError('styleEffect must be an object');
+    }
+    /** @type {StyleEffects} */
+    const copy = {};
+    for (const [prop, mode] of Object.entries(value)) {
+      if (typeof mode === 'string') {
+        copy[prop] = mode;
+      } else if (
+        Array.isArray(mode) &&
+        mode.every((v) => typeof v === 'string' || typeof v === 'number')
+      ) {
+        copy[prop] = [...mode];
+      } else {
+        throw new TypeError(`Invalid styleEffect["${prop}"]`);
+      }
+    }
+    TinyHtml.#styleEffects[name] = copy;
+  }
+
+  /**
+   * Delete a style effect.
+   * @param {string} name
+   * @returns {boolean} True if deleted.
+   */
+  static deleteStyleEffect(name) {
+    return delete TinyHtml.#styleEffects[name];
+  }
+
+  /**
+   * Check if a style effect exists.
+   * @param {string} name
+   * @returns {boolean}
+   */
+  static hasStyleEffect(name) {
+    return Object.prototype.hasOwnProperty.call(TinyHtml.#styleEffects, name);
+  }
+
+  /**
+   * @typedef {(effects: AnimationSfxData) => boolean} StyleEffectsRdFn
+   */
+
+  /**
    * Style Effect Repeat Detector
-   * @type {Record<string, (effects: AnimationSfxData) => boolean>}
+   * @type {Record<string, StyleEffectsRdFn>}
    */
   static #styleEffectsRd = {
     slideDown: (effects) =>
@@ -3377,15 +3531,83 @@ class TinyHtml {
   };
 
   /**
-   * Effect property handlers for show, hide, and toggle.
-   * Each function builds keyframes depending on the property being animated.
-   *
-   * @type {Record<string, (
+   * Get a cloned copy of style effects repeat detectors.
+   * @returns {Record<string, StyleEffectsRdFn>}
+   */
+  static get styleEffectsRd() {
+    return { ...TinyHtml.#styleEffectsRd };
+  }
+
+  /**
+   * Replace the style effects repeat detectors.
+   * @param {Record<string, StyleEffectsRdFn>} detectors
+   * @throws {TypeError} If not a valid object with functions as values.
+   */
+  static set styleEffectsRd(detectors) {
+    if (typeof detectors !== 'object' || detectors === null)
+      throw new TypeError('styleEffectsRd must be an object.');
+
+    for (const [k, v] of Object.entries(detectors)) {
+      if (typeof v !== 'function')
+        throw new TypeError(`styleEffectsRd["${k}"] must be a function.`);
+    }
+
+    TinyHtml.#styleEffectsRd = {};
+    for (const [k, v] of Object.entries(detectors)) TinyHtml.setStyleEffectRd(k, v);
+  }
+
+  /**
+   * @param {string} name
+   * @returns {StyleEffectsRdFn|undefined}
+   */
+  static getStyleEffectRd(name) {
+    return TinyHtml.#styleEffectsRd[name] || undefined;
+  }
+
+  /**
+   * @param {string} name
+   * @param {StyleEffectsRdFn} fn
+   */
+  static setStyleEffectRd(name, fn) {
+    if (typeof fn !== 'function')
+      throw new TypeError(`styleEffectsRd["${name}"] must be a function.`);
+    TinyHtml.#styleEffectsRd[name] = fn;
+  }
+
+  /**
+   * @param {string} name
+   * @returns {boolean}
+   */
+  static deleteStyleEffectRd(name) {
+    return delete TinyHtml.#styleEffectsRd[name];
+  }
+
+  /**
+   * @param {string} name
+   * @returns {boolean}
+   */
+  static hasStyleEffectRd(name) {
+    return Object.prototype.hasOwnProperty.call(TinyHtml.#styleEffectsRd, name);
+  }
+
+  /**
+   * @typedef {(
    *   el: HTMLElement,
    *   keyframes: AnimationSfxData,
    *   prop: string,
    *   style: CSSStyleDeclaration
-   * ) => void>}
+   * ) => void} StyleEffectsFn
+   */
+
+  /**
+   * @typedef {Record<string, StyleEffectsFn>} StyleEffectsProps
+   */
+
+  /**
+   * Effect property handlers for show, hide, and toggle.
+   * Each function builds keyframes depending on the property being animated.
+   *
+   * @type {StyleEffectsProps}
    */
   static #styleEffectsProps = {
     show: (el, keyframes, prop, style) => {
@@ -3436,6 +3658,67 @@ class TinyHtml {
       }
     },
   };
+
+  /**
+   * Returns a shallow-cloned copy of the property effect handlers.
+   *
+   * @returns {StyleEffectsProps}
+   */
+  static get styleEffectsProps() {
+    return { ...TinyHtml.#styleEffectsProps };
+  }
+
+  /**
+   * Replace the entire styleEffectsProps map with a new one.
+   *
+   * @param {StyleEffectsProps} value
+   */
+  static set styleEffectsProps(value) {
+    if (typeof value !== 'object' || value === null || Array.isArray(value))
+      throw new TypeError('styleEffectsProps must be an object');
+
+    for (const [k, fn] of Object.entries(value)) {
+      if (typeof fn !== 'function')
+        throw new TypeError(`styleEffectsProps["${k}"] must be a function`);
+    }
+
+    TinyHtml.#styleEffectsProps = {};
+    for (const [k, fn] of Object.entries(value)) TinyHtml.setStyleEffectProp(k, fn);
+  }
+
+  /**
+   * @param {string} name
+   * @returns {StyleEffectsFn|undefined}
+   */
+  static getStyleEffectProp(name) {
+    return TinyHtml.#styleEffectsProps[name] || undefined;
+  }
+
+  /**
+   * @param {string} name
+   * @param {StyleEffectsFn} fn
+   */
+  static setStyleEffectProp(name, fn) {
+    if (typeof fn !== 'function')
+      throw new TypeError(`styleEffectsProps["${name}"] must be a function`);
+    TinyHtml.#styleEffectsProps[name] = fn;
+  }
+
+  /**
+   * @param {string} name
+   * @returns {boolean}
+   */
+  static deleteStyleEffectProp(name) {
+    return delete TinyHtml.#styleEffectsProps[name];
+  }
+
+  /**
+   * @param {string} name
+   * @returns {boolean}
+   */
+  static hasStyleEffectProp(name) {
+    return Object.prototype.hasOwnProperty.call(TinyHtml.#styleEffectsProps, name);
+  }
 
   /**
    * Generates effect parameters to create standard animations.
