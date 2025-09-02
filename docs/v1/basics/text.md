@@ -39,21 +39,23 @@ toTitleCaseLowerFirst('hello world'); // → "hello World"
 
 ---
 
-## 🎯 `addAiMarkerShortcut(key = 'a')`
+## 🎯 `addAiMarkerShortcut({ key = 'a', className = 'detect-made-by-ai' })`
 
-Enables a keyboard shortcut (`Ctrl + Alt + [key]`) that toggles a CSS class on the `<body>` element. Useful for marking or highlighting AI-generated content dynamically.
+Enables a keyboard shortcut (`Ctrl + Alt + [key]`) that toggles a CSS class on the `<body>` element.
+Useful for marking or highlighting AI-generated content dynamically.
 
 ### 🔤 Syntax
 
-```js
-addAiMarkerShortcut(key)
+```ts
+addAiMarkerShortcut({ key, className }) : function
 ```
 
 ### 🧾 Parameters
 
-| Name  | Type     | Default | Description                                                                  |
-| ----- | -------- | ------- | ---------------------------------------------------------------------------- |
-| `key` | `string` | `'a'`   | The character key to use in combination with `Ctrl + Alt`. Case-insensitive. |
+| Name        | Type     | Default               | Description                                                                  |
+| ----------- | -------- | --------------------- | ---------------------------------------------------------------------------- |
+| `key`       | `string` | `'a'`                 | The character key to use in combination with `Ctrl + Alt`. Case-insensitive. |
+| `className` | `string` | `'detect-made-by-ai'` | The CSS class name to toggle on the `<body>` element.                        |
 
 ### ⚙️ Behavior
 

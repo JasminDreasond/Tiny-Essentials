@@ -39,16 +39,19 @@ export function toTitleCaseLowerFirst(str) {
  * If executed outside of a browser environment (e.g., in Node.js), the function logs an error and exits.
  * If the `<body>` is not available at the moment the shortcut is triggered, a warning is logged.
  *
- * @param {string} [key='a'] - The lowercase character key to be used in combination with Ctrl and Alt.
+ * @param {Object} [config={}] - Configuration object.
+ * @param {string} [config.key='a'] - The lowercase character key to be used in combination with `Ctrl` and `Alt`.
+ * @param {string} [config.className='detect-made-by-ai'] - The CSS class to toggle on the `<body>` element.
+ * @returns {(this: Document, ev: KeyboardEvent) => any} The event handler attached to `document`.
  */
-export function addAiMarkerShortcut(key = 'a') {
-  if (typeof HTMLElement === 'undefined') {
-    console.error(
+export function addAiMarkerShortcut({ key = 'a', className = 'detect-made-by-ai' } = {}) {
+  if (typeof HTMLElement === 'undefined')
+    throw new Error(
       '[AiMarkerShortcut] Environment does not support the DOM. This function must be run in a browser.',
     );
-    return;
-  }
-  document.addEventListener('keydown', function (event) {
+
+  /** @type {(this: Document, ev: KeyboardEvent) => any} */
+  const keydownEvent = function (event) {
     if (event.ctrlKey && event.altKey && event.key.toLowerCase() === key) {
       event.preventDefault(); // Prevent any default behavior
       if (!document.body) {
@@ -57,9 +60,12 @@ export function addAiMarkerShortcut(key = 'a') {
         );
         return;
       }
-      document.body.classList.toggle('detect-made-by-ai');
+      document.body.classList.toggle(className);
     }
-  });
+  };
+
+  document.addEventListener('keydown', keydownEvent);
+  return keydownEvent;
 }
 
 /**
