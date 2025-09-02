@@ -64,29 +64,29 @@
 
       // Slide controls
       TinyHtml.getById('slideDownBtn').on('click', () => {
-        box.slideDown({ duration: 500, fill: 'forwards' });
+        console.log(box.slideDown());
         jBox.slideDown();
       });
       TinyHtml.getById('slideUpBtn').on('click', () => {
-        box.slideUp({ duration: 500, fill: 'forwards' });
+        console.log(box.slideUp());
         jBox.slideUp();
       });
       TinyHtml.getById('slideToggleBtn').on('click', () => {
-        box.slideToggle({ duration: 500, fill: 'forwards' });
+        console.log(box.slideToggle());
         jBox.slideToggle();
       });
 
       // Fade controls
       TinyHtml.getById('fadeInBtn').on('click', () => {
-        box.fadeIn({ duration: 500, fill: 'forwards' });
+        console.log(box.fadeIn());
         jBox.fadeIn();
       });
       TinyHtml.getById('fadeOutBtn').on('click', () => {
-        box.fadeOut({ duration: 500, fill: 'forwards' });
+        console.log(box.fadeOut());
         jBox.fadeOut();
       });
       TinyHtml.getById('fadeToggleBtn').on('click', () => {
-        box.fadeToggle({ duration: 500, fill: 'forwards' });
+        console.log(box.fadeToggle());
         jBox.fadeToggle();
       });
 
