@@ -21,12 +21,7 @@ class TinyElementObserver {
    *
    * @type {MutationObserverInit}
    */
-  #settings = {
-    attributeOldValue: true,
-    attributes: true,
-    subtree: true,
-    attributeFilter: ['style', 'class'],
-  };
+  #settings = {};
 
   /**
    * Get the observer settings.
@@ -116,10 +111,12 @@ class TinyElementObserver {
   /**
    * Create a new TinyElementObserver instance.
    *
-   * @param {Array<[string, ElementDetectorsFn]>} [initValues] - Initial list of detectors,
+   * @param {Array<[string, ElementDetectorsFn]>} [initDetectors=[]] - Optional list of initial detectors.
+   * @param {MutationObserverInit} [initSettings] - Optional initial settings for the observer.
    */
-  constructor(initValues) {
-    if (initValues) this.detectors = initValues;
+  constructor(initDetectors = [], initSettings = {}) {
+    if (initDetectors.length) this.detectors = initDetectors;
+    if (initSettings) this.settings = initSettings;
   }
 
   /**
