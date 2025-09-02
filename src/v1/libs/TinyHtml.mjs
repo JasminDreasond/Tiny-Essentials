@@ -22,6 +22,15 @@ const {
  */
 
 /**
+ * Represents a collection of active style-based animations.
+ *
+ * Each HTMLElement is associated with an array of its currently running
+ * `Animation` objects (from the Web Animations API).
+ *
+ * @typedef {Map<HTMLElement, Animation[]>} StyleFxResult
+ */
+
+/**
  * Callback invoked on each animation frame with the current scroll position,
  * normalized animation time (`0` to `1`), and a completion flag.
  *
@@ -3363,12 +3372,18 @@ class TinyHtml {
 
         const current = style[prop]; // pega valor atual
         keyframes[prop] = [current, targetSize];
+      } else if (prop.startsWith('margin') || prop.startsWith('padding')) {
+        // @ts-ignore
+        const orig = TinyHtml.getAnimateData(el, prop) || style[prop];
+        TinyHtml.setAnimateData(el, prop, orig);
+        keyframes[prop] = ['0px', orig];
       } else if (prop === 'opacity') {
         const current = style.opacity;
         keyframes[prop] = [current, 1];
       } else {
         // @ts-ignore
-        const current = style[prop];
+        const current = TinyHtml.getAnimateData(el, prop) || style[prop];
+        TinyHtml.setAnimateData(el, prop, current);
         // @ts-ignore
         keyframes[prop] = [current, style[prop] || 1];
       }
@@ -3380,12 +3395,20 @@ class TinyHtml {
 
         const current = style[prop]; // pega valor atual
         keyframes[prop] = [current, 0];
+      } else if (prop.startsWith('margin') || prop.startsWith('padding')) {
+        // @ts-ignore
+        const orig = TinyHtml.getAnimateData(el, prop) || style[prop];
+        TinyHtml.setAnimateData(el, prop, orig);
+
+        // @ts-ignore
+        keyframes[prop] = [style[prop], '0px'];
       } else if (prop === 'opacity') {
         const current = style.opacity;
         keyframes[prop] = [current, 0];
       } else {
         // @ts-ignore
-        const current = style[prop];
+        const current = TinyHtml.getAnimateData(el, prop) || style[prop];
+        TinyHtml.setAnimateData(el, prop, current);
         keyframes[prop] = [current, 0];
       }
     },
@@ -3398,6 +3421,15 @@ class TinyHtml {
         const current = style[prop];
 
         keyframes[prop] = isHidden ? [current, targetSize] : [current, 0];
+      } else if (prop.startsWith('margin') || prop.startsWith('padding')) {
+        // @ts-ignore
+        const orig = TinyHtml.getAnimateData(el, prop) || style[prop];
+        TinyHtml.setAnimateData(el, prop, orig);
+
+        // @ts-ignore
+        const isHidden = style[prop] === '0px' || style.display === 'none';
+        // @ts-ignore
+        keyframes[prop] = isHidden ? ['0px', orig] : [style[prop], '0px'];
       } else if (prop === 'opacity') {
         const isHidden = style.opacity === '0' || style.display === 'none';
         const current = style.opacity;
@@ -3405,7 +3437,8 @@ class TinyHtml {
         keyframes[prop] = isHidden ? [current, 1] : [current, 0];
       } else {
         // @ts-ignore
-        const current = style[prop];
+        const current = TinyHtml.getAnimateData(el, prop) || style[prop];
+        TinyHtml.setAnimateData(el, `orig${prop}`, current);
         // @ts-ignore
         const isHidden = style[prop] === '0';
         // @ts-ignore
@@ -3443,7 +3476,6 @@ class TinyHtml {
 
     return attrs;
   }
-
   /**
    * Applies style-based effects (slide, fade) to one or more elements.
    * Converts abstract effect definitions (e.g., `{ height: "show" }`)
@@ -3452,41 +3484,44 @@ class TinyHtml {
    * @param {TinyHtmlElement|TinyHtmlElement[]} el - A single element or an array of elements.
    * @param {StyleEffects} props - The style effect definition.
    * @param {number | KeyframeAnimationOptions} [ops] - Timing options.
-   * @returns {Animation[]}
+   * @returns {StyleFxResult}
    */
   static applyStyleFx(el, props, ops) {
-    const first = TinyHtml._preHtmlElem(el, 'applyStyleFx');
-
-    /**
-     * Generate keyframes based on props
-     * @type {Record<string, (string|number)[]>}
-     */
-    const keyframes = {};
-    for (const [prop, action] of Object.entries(props)) {
-      if (typeof action === 'string' && this.#styleEffectsProps[action]) {
-        const style = getComputedStyle(first);
-        this.#styleEffectsProps[action](first, keyframes, prop, style);
-      } else if (typeof action === 'object') {
-        keyframes[prop] = action;
+    /** @type {StyleFxResult} */
+    const results = new Map();
+    TinyHtml._preHtmlElems(el, 'applyStyleFx').forEach((first) => {
+      /**
+       * Generate keyframes based on props
+       * @type {Record<string, (string|number)[]>}
+       */
+      const keyframes = {};
+      for (const [prop, action] of Object.entries(props)) {
+        if (typeof action === 'string' && this.#styleEffectsProps[action]) {
+          const style = getComputedStyle(first);
+          this.#styleEffectsProps[action](first, keyframes, prop, style);
+        } else if (typeof action === 'object') {
+          keyframes[prop] = action;
+        }
       }
-    }
 
-    /**
-     *  Build Web Animations keyframe objects
-     * @type {Keyframe[]}
-     */
-    const kf = [];
-    const numFrames = keyframes[Object.keys(keyframes)[0]].length; // assume que todos têm o mesmo tamanho
-    for (let i = 0; i < numFrames; i++) {
-      /** @type {Keyframe} */
-      const frame = {};
-      for (const prop in keyframes) {
-        frame[prop] = keyframes[prop][i];
+      /**
+       *  Build Web Animations keyframe objects
+       * @type {Keyframe[]}
+       */
+      const kf = [];
+      const numFrames = keyframes[Object.keys(keyframes)[0]].length; // assume que todos têm o mesmo tamanho
+      for (let i = 0; i < numFrames; i++) {
+        /** @type {Keyframe} */
+        const frame = {};
+        for (const prop in keyframes) {
+          frame[prop] = keyframes[prop][i];
+        }
+        kf.push(frame);
       }
-      kf.push(frame);
-    }
 
-    return TinyHtml.animate(el, kf, ops);
+      results.set(first, TinyHtml.animate(el, kf, ops));
+    });
+    return results;
   }
 
   /**
@@ -3496,7 +3531,7 @@ class TinyHtml {
    *
    * @param {StyleEffects} props - The style effect definition.
    * @param {number | KeyframeAnimationOptions} [ops] - Timing options.
-   * @returns {Animation[]}
+   * @returns {StyleFxResult}
    */
   applyStyleFx(props, ops) {
     return TinyHtml.applyStyleFx(this, props, ops);
@@ -3589,7 +3624,7 @@ class TinyHtml {
    * Show animation (slideDown).
    * @param {TinyHtmlElement|TinyHtmlElement[]} el
    * @param {number | KeyframeAnimationOptions} [ops]
-   * @returns {Animation[]}
+   * @returns {StyleFxResult}
    */
   static slideDown(el, ops) {
     return TinyHtml.applyStyleFx(
@@ -3602,7 +3637,7 @@ class TinyHtml {
   /**
    * Show animation (slideDown).
    * @param {number | KeyframeAnimationOptions} [ops]
-   * @returns {Animation[]}
+   * @returns {StyleFxResult}
    */
   slideDown(ops) {
     return TinyHtml.slideDown(this, ops);
@@ -3612,7 +3647,7 @@ class TinyHtml {
    * Hide animation (slideUp).
    * @param {TinyHtmlElement|TinyHtmlElement[]} el
    * @param {number | KeyframeAnimationOptions} [ops]
-   * @returns {Animation[]}
+   * @returns {StyleFxResult}
    */
   static slideUp(el, ops) {
     return TinyHtml.applyStyleFx(el, this.#styleEffects['slideUp'], ops);
@@ -3621,7 +3656,7 @@ class TinyHtml {
   /**
    * Hide animation (slideUp).
    * @param {number | KeyframeAnimationOptions} [ops]
-   * @returns {Animation[]}
+   * @returns {StyleFxResult}
    */
   slideUp(ops) {
     return TinyHtml.slideUp(this, ops);
@@ -3631,7 +3666,7 @@ class TinyHtml {
    * Toggle slide animation.
    * @param {TinyHtmlElement|TinyHtmlElement[]} el
    * @param {number | KeyframeAnimationOptions} [ops]
-   * @returns {Animation[]}
+   * @returns {StyleFxResult}
    */
   static slideToggle(el, ops) {
     const first = TinyHtml._preHtmlElem(el, 'slideToggle');
@@ -3643,7 +3678,7 @@ class TinyHtml {
   /**
    * Toggle slide animation.
    * @param {number | KeyframeAnimationOptions} [ops]
-   * @returns {Animation[]}
+   * @returns {StyleFxResult}
    */
   slideToggle(ops) {
     return TinyHtml.slideToggle(this, ops);
@@ -3653,7 +3688,7 @@ class TinyHtml {
    * Fade in animation.
    * @param {TinyHtmlElement|TinyHtmlElement[]} el
    * @param {number | KeyframeAnimationOptions} [ops]
-   * @returns {Animation[]}
+   * @returns {StyleFxResult}
    */
   static fadeIn(el, ops) {
     return TinyHtml.applyStyleFx(el, this.#styleEffects['fadeIn'], ops);
@@ -3662,7 +3697,7 @@ class TinyHtml {
   /**
    * Fade in animation.
    * @param {number | KeyframeAnimationOptions} [ops]
-   * @returns {Animation[]}
+   * @returns {StyleFxResult}
    */
   fadeIn(ops) {
     return TinyHtml.fadeIn(this, ops);
@@ -3672,7 +3707,7 @@ class TinyHtml {
    * Fade out animation.
    * @param {TinyHtmlElement|TinyHtmlElement[]} el
    * @param {number | KeyframeAnimationOptions} [ops]
-   * @returns {Animation[]}
+   * @returns {StyleFxResult}
    */
   static fadeOut(el, ops) {
     return TinyHtml.applyStyleFx(el, this.#styleEffects['fadeOut'], ops);
@@ -3681,7 +3716,7 @@ class TinyHtml {
   /**
    * Fade out animation.
    * @param {number | KeyframeAnimationOptions} [ops]
-   * @returns {Animation[]}
+   * @returns {StyleFxResult}
    */
   fadeOut(ops) {
     return TinyHtml.fadeOut(this, ops);
@@ -3691,7 +3726,7 @@ class TinyHtml {
    * Fade toggle animation.
    * @param {TinyHtmlElement|TinyHtmlElement[]} el
    * @param {number | KeyframeAnimationOptions} [ops]
-   * @returns {Animation[]}
+   * @returns {StyleFxResult}
    */
   static fadeToggle(el, ops) {
     const first = TinyHtml._preHtmlElem(el, 'fadeToggle');
@@ -3702,7 +3737,7 @@ class TinyHtml {
   /**
    * Fade toggle animation.
    * @param {number | KeyframeAnimationOptions} [ops]
-   * @returns {Animation[]}
+   * @returns {StyleFxResult}
    */
   fadeToggle(ops) {
     return TinyHtml.fadeToggle(this, ops);
