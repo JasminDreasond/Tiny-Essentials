@@ -95,7 +95,7 @@ class TinyElementObserver {
    * Returns true if a MutationObserver is currently active.
    * @returns {boolean}
    */
-  get isUsing() {
+  get isActive() {
     return !!this.#observer;
   }
 
