@@ -3555,12 +3555,14 @@ class TinyHtml {
   static set styleEffects(value) {
     if (typeof value !== 'object' || value === null || Array.isArray(value))
       throw new TypeError('styleEffects must be an object');
-    for (const [prop, mode] of Object.entries(value)) {
-      if (
-        typeof mode !== 'string' &&
-        (!Array.isArray(mode) || !mode.every((v) => typeof v === 'string' || typeof v === 'number'))
-      )
-        throw new TypeError(`Invalid styleEffect["${prop}"]`);
+    for (const name in value) {
+      for (const [prop, mode] of Object.entries(value[name])) {
+        if (
+          typeof mode !== 'string' &&
+          (!Array.isArray(mode) || !mode.every((v) => typeof v === 'string' || typeof v === 'number'))
+        )
+          throw new TypeError(`Invalid styleEffect["${prop}"]`);
+      }
     }
 
     TinyHtml.#styleEffects = {};
