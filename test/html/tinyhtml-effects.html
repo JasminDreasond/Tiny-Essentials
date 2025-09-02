@@ -66,6 +66,9 @@
       window.box = box;
       window.jBox = jBox;
 
+      window.box.on('tinyhtml.stylechanged', (event) => console.log(event.detail));
+      window.box.on('tinyhtml.classchanged', (event) => console.log(event.detail));
+
       // Slide controls
       TinyHtml.getById('slideDownBtn').on('click', () => {
         console.log(box.slideDown());

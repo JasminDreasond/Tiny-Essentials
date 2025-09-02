@@ -110,6 +110,34 @@ export function safeTextTrim(text, limit, safeCutZone = 0.6) {
   return result;
 }
 
+/**
+ * Diff two string objects.
+ * @param {Record<string,string>} oldStyles
+ * @param {Record<string,string>} newStyles
+ */
+export function diffStrings(oldStyles, newStyles) {
+  /** @type {Record<string,Record<string,string|Record<string,string>>>}} */
+  const changes = { added: {}, removed: {}, modified: {} };
+
+  // detect removed and modified
+  for (const prop in oldStyles) {
+    if (!(prop in newStyles)) {
+      changes.removed[prop] = oldStyles[prop];
+    } else if (oldStyles[prop] !== newStyles[prop]) {
+      changes.modified[prop] = { old: oldStyles[prop], new: newStyles[prop] };
+    }
+  }
+
+  // detect added
+  for (const prop in newStyles) {
+    if (!(prop in oldStyles)) {
+      changes.added[prop] = newStyles[prop];
+    }
+  }
+
+  return changes;
+}
+
 /*
 import { useEffect } from "react";
 

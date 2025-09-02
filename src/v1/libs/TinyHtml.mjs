@@ -1,4 +1,6 @@
+import { diffArrayList } from '../basics/array.mjs';
 import * as TinyCollision from '../basics/collision.mjs';
+import { diffStrings } from '../basics/text.mjs';
 
 // TITLE: Introduction
 const {
@@ -20,6 +22,16 @@ const {
  * @callback HoverEventCallback
  * @param {MouseEvent} ev - The mouse event triggered on enter or leave.
  * @returns {void} Returns nothing.
+ */
+
+/**
+ * Callback type used for element mutation detectors.
+ *
+ * @callback ElementDetectorsFn
+ * @param {MutationRecord} mutation - Single mutation record being processed.
+ * @param {number} index - Index of the current mutation in the batch.
+ * @param {MutationRecord[]} mutations - Full list of mutation records from the observer callback.
+ * @returns {void}
  */
 
 /**
@@ -333,6 +345,211 @@ class TinyHtml {
   /** @typedef {import('../basics/collision.mjs').ObjRect} ObjRect */
 
   static Utils = { ...TinyCollision };
+
+  /**
+   * Parse inline styles into an object.
+   * @param {string} styleText
+   * @returns {Record<string,string>}
+   */
+  static parseStyle(styleText) {
+    /** @type {Record<string,string>}} */
+    const styles = {};
+    styleText.split(';').forEach((rule) => {
+      const [prop, value] = rule.split(':').map((s) => s && s.trim());
+      if (prop && value) {
+        styles[prop] = value;
+      }
+    });
+    return styles;
+  }
+
+  /////////////////////////////////////////////////////////////////////
+
+  /**
+   * Internal MutationObserver instance that tracks DOM attribute changes.
+   * @type {MutationObserver|null}
+   */
+  static #elementObserver = null;
+
+  /**
+   * Flag to determine if element observer should start automatically.
+   * @type {boolean}
+   */
+  static #autoStartElemObserver = true;
+
+  /**
+   * Get the auto-start flag for the observer.
+   * @returns {boolean}
+   */
+  static get autoStartElemObserver() {
+    return TinyHtml.#autoStartElemObserver;
+  }
+
+  /**
+   * Set the auto-start flag for the observer.
+   * @param {boolean} value
+   */
+  static set autoStartElemObserver(value) {
+    if (typeof value !== 'boolean') throw new TypeError('autoStartElemObserver must be a boolean.');
+    TinyHtml.#autoStartElemObserver = value;
+  }
+
+  /**
+   * Configuration settings for the MutationObserver instance.
+   *
+   * @type {MutationObserverInit}
+   */
+  static #elementObserverSettings = {
+    attributeOldValue: true,
+    attributes: true,
+    subtree: true,
+    attributeFilter: ['style', 'class'],
+  };
+
+  /**
+   * Get the observer settings.
+   * @returns {MutationObserverInit}
+   */
+  static get elementObserverSettings() {
+    return TinyHtml.#elementObserverSettings;
+  }
+
+  /**
+   * Set the observer settings.
+   * @param {MutationObserverInit} settings
+   */
+  static set elementObserverSettings(settings) {
+    if (typeof settings !== 'object' || settings === null)
+      throw new TypeError('elementObserverSettings must be a non-null object.');
+    TinyHtml.#elementObserverSettings = settings;
+  }
+
+  /**
+   * Returns true if a MutationObserver is currently active.
+   * @returns {boolean}
+   */
+  static get isUsingObserver() {
+    return !!TinyHtml.#elementObserver;
+  }
+
+  /**
+   * List of detectors executed on observed mutations.
+   * Each detector is a tuple:
+   * - name: string identifier
+   * - handler: function processing MutationRecords
+   *
+   * @type {Array<[string, ElementDetectorsFn]>}
+   */
+  static #elementDetectors = [
+    // Style Detector
+    [
+      'tinyStyleEvent',
+      (mutation) => {
+        if (
+          mutation.type !== 'attributes' ||
+          mutation.attributeName !== 'style' ||
+          !(mutation.target instanceof HTMLElement)
+        )
+          return;
+        const oldVal = mutation.oldValue || '';
+        const newVal = mutation.target.getAttribute('style') || '';
+
+        const oldStyles = TinyHtml.parseStyle(oldVal);
+        const newStyles = TinyHtml.parseStyle(newVal);
+
+        const changes = diffStrings(oldStyles, newStyles);
+
+        if (
+          Object.keys(changes.added).length ||
+          Object.keys(changes.removed).length ||
+          Object.keys(changes.modified).length
+        ) {
+          mutation.target.dispatchEvent(
+            new CustomEvent('tinyhtml.stylechanged', {
+              detail: changes,
+            }),
+          );
+        }
+      },
+    ],
+
+    // Class Detector
+    [
+      'tinyClassEvent',
+      (mutation) => {
+        if (
+          mutation.type !== 'attributes' ||
+          mutation.attributeName !== 'class' ||
+          !(mutation.target instanceof HTMLElement)
+        )
+          return;
+        const oldVal = mutation.oldValue || '';
+        const newVal = mutation.target.className || '';
+
+        const oldClasses = oldVal.split(/\s+/).filter(Boolean);
+        const newClasses = newVal.split(/\s+/).filter(Boolean);
+
+        const changes = diffArrayList(oldClasses, newClasses);
+
+        if (changes.added.length || changes.removed.length) {
+          mutation.target.dispatchEvent(
+            new CustomEvent('tinyhtml.classchanged', {
+              detail: changes,
+            }),
+          );
+        }
+      },
+    ],
+  ];
+
+  /**
+   * Get the element detectors.
+   * @returns {Array<[string, ElementDetectorsFn]>}
+   */
+  static get elementDetectors() {
+    return TinyHtml.#elementDetectors.map((item) => [item[0], item[1]]);
+  }
+
+  /**
+   * Set the element detectors.
+   * @param {Array<[string, ElementDetectorsFn]>} detectors
+   */
+  static set elementDetectors(detectors) {
+    if (!Array.isArray(detectors)) throw new TypeError('elementDetectors must be an array.');
+
+    /** @type {Array<[string, ElementDetectorsFn]>} */
+    const values = [];
+    for (const [name, fn] of detectors) {
+      if (typeof name !== 'string') throw new TypeError('Detector name must be a string.');
+      if (typeof fn !== 'function')
+        throw new TypeError(`Detector handler for "${name}" must be a function.`);
+      values.push([name, fn]);
+    }
+    TinyHtml.#elementDetectors = values;
+  }
+
+  /**
+   * Start tracking changes on the whole document.
+   */
+  static startStyleTracking() {
+    if (TinyHtml.#elementObserver) return;
+    TinyHtml.#elementObserver = new MutationObserver((mutations) => {
+      mutations.forEach((value, index, array) =>
+        TinyHtml.#elementDetectors.forEach((item) => item[1](value, index, array)),
+      );
+    });
+
+    TinyHtml.#elementObserver.observe(document.documentElement, TinyHtml.#elementObserverSettings);
+  }
+
+  /**
+   * Stop tracking changes.
+   */
+  static stopStyleTracking() {
+    if (!TinyHtml.#elementObserver) return;
+    TinyHtml.#elementObserver.disconnect();
+    TinyHtml.#elementObserver = null;
+  }
 
   // TITLE: Fetch Html List
 
@@ -3362,6 +3579,7 @@ class TinyHtml {
       dataset = {};
       __elementAnimateData.set(el, dataset);
     }
+    if (TinyHtml.#autoStartElemObserver) TinyHtml.startStyleTracking();
     return dataset[where];
   }
 
@@ -3386,6 +3604,7 @@ class TinyHtml {
       __elementAnimateData.set(el, dataset);
     }
     dataset[where] = value;
+    if (TinyHtml.#autoStartElemObserver) TinyHtml.startStyleTracking();
   }
 
   // TITLE: Animate DOM (cancelOldStyleFx)
@@ -3559,7 +3778,8 @@ class TinyHtml {
       for (const [prop, mode] of Object.entries(value[name])) {
         if (
           typeof mode !== 'string' &&
-          (!Array.isArray(mode) || !mode.every((v) => typeof v === 'string' || typeof v === 'number'))
+          (!Array.isArray(mode) ||
+            !mode.every((v) => typeof v === 'string' || typeof v === 'number'))
         )
           throw new TypeError(`Invalid styleEffect["${prop}"]`);
       }
@@ -4132,6 +4352,7 @@ class TinyHtml {
   static slideToggle(el, ops) {
     const first = TinyHtml._preHtmlElem(el, 'slideToggle');
     const style = getComputedStyle(first);
+    console.log(style.display, first.offsetHeight);
     const isHidden = style.display === 'none' || first.offsetHeight === 0;
     return isHidden ? TinyHtml.slideDown(el, ops) : TinyHtml.slideUp(el, ops);
   }
@@ -4191,7 +4412,9 @@ class TinyHtml {
    */
   static fadeToggle(el, ops) {
     const first = TinyHtml._preHtmlElem(el, 'fadeToggle');
-    const isHidden = getComputedStyle(first).opacity === '0' || first.offsetParent === null;
+    const style = getComputedStyle(first);
+    console.log(style.opacity, first.offsetParent);
+    const isHidden = style.opacity === '0' || first.offsetParent === null;
     return isHidden ? TinyHtml.fadeIn(el, ops) : TinyHtml.fadeOut(el, ops);
   }
 

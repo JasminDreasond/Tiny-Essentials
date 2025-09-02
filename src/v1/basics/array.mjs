@@ -45,3 +45,14 @@ export function multiplyArrayBlocks(phases, counts) {
   }
   return result;
 }
+
+/**
+ * Diff two class lists.
+ * @param {any[]} oldClasses
+ * @param {any[]} newClasses
+ */
+export function diffArrayList(oldClasses, newClasses) {
+  const removed = oldClasses.filter((c) => !newClasses.includes(c));
+  const added = newClasses.filter((c) => !oldClasses.includes(c));
+  return { added, removed };
+}
