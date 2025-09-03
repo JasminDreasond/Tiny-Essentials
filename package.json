@@ -135,7 +135,7 @@
     "marked": "^16.0.0",
     "md5": "^2.3.0",
     "moment": "^2.30.1",
-    "moment-timezone": "^0.5.48",
+    "moment-timezone": "^0.6.0",
     "mysql": "^2.18.1",
     "node-fetch": "^2.7.0",
     "node-polyfill-webpack-plugin": "^4.1.0",
