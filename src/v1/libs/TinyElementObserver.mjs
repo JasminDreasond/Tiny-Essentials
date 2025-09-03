@@ -36,8 +36,8 @@ class TinyElementObserver {
    * @throws {TypeError} If the provided value is not an Element.
    */
   set el(el) {
-    if (this.#el) throw new Error('');
-    if (typeof el !== 'undefined' && !(el instanceof Element)) throw new TypeError('');
+    if (this.#el) throw new Error('The observed element has already been set and cannot be reassigned.');
+    if (typeof el !== 'undefined' && !(el instanceof Element)) throw new TypeError('The observed element must be a valid DOM Element.');
     this.#el = el;
   }
 
@@ -189,7 +189,7 @@ class TinyElementObserver {
    * @param {string} name
    * @param {ElementDetectorsFn} handler
    */
-  addEnd(name, handler) {
+  add(name, handler) {
     this.#validateDetector(name, handler);
     this.#detectors.push([name, handler]);
   }
@@ -199,7 +199,7 @@ class TinyElementObserver {
    * @param {string} name
    * @param {ElementDetectorsFn} handler
    */
-  addStart(name, handler) {
+  insertAtStart(name, handler) {
     this.#validateDetector(name, handler);
     this.#detectors.unshift([name, handler]);
   }
