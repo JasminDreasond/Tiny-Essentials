@@ -6744,7 +6744,7 @@ class TinyHtml {
   static prop(el, name) {
     if (typeof name !== 'string')
       throw new TypeError('Invalid arguments passed to prop(). Expected string for "name".');
-    const elem = TinyHtml._preElem(el, 'attr');
+    const elem = TinyHtml._preElem(el, 'prop');
     // @ts-ignore
     return elem[name];
   }
