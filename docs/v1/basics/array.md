@@ -95,3 +95,23 @@ Generates a flattened array with phases repeated according to the specified coun
 multiplyArrayBlocks(['Full', 'Half1', 'Half2', 'New'], [4, 5, 5, 4]);
 // ➡ ['Full','Full','Full','Full','Half1','Half1','Half1','Half1','Half1', ...]
 ```
+
+---
+
+## 🔀 `diffArrayList(oldItems, newItems)`
+
+Compares two arrays and determines which items were **added** and which were **removed**.
+
+* **`oldItems`** 📜 — Array of original class names.
+* **`newItems`** 📜 — Array of updated class names.
+* **Returns** 📦 — An object with two arrays:
+
+  * `added` → classes that exist in `newItems` but not in `oldItems`.
+  * `removed` → classes that exist in `oldItems` but not in `newItems`.
+
+**Example:**
+
+```js
+diffArrayList(['btn', 'active'], ['btn', 'disabled']);
+// ➡ { added: ['disabled'], removed: ['active'] }
+```
