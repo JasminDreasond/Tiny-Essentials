@@ -3757,6 +3757,92 @@ class TinyHtml {
     return Object.prototype.hasOwnProperty.call(TinyHtml.#styleEffects, name);
   }
 
+  // TITLE: Animate DOM (styleEffectInverse)
+
+  /**
+   * Style Effect Inverse Values
+   * @type {Record<string, string>}
+   */
+  static #styleEffectInverse = {
+    slideDown: 'slideUp',
+    slideUp: 'slideDown',
+    fadeIn: 'fadeOut',
+    fadeOut: 'fadeIn',
+  };
+
+  /**
+   * Get a cloned copy of style inverse values.
+   * @returns {Record<string, string>}
+   */
+  static get styleEffectInverse() {
+    return { ...TinyHtml.#styleEffectInverse };
+  }
+
+  /**
+   * Replace the style inverse values.
+   * @param {Record<string, string>} values
+   * @throws {TypeError} If not a valid object with functions as values.
+   */
+  static set styleEffectInverse(values) {
+    if (typeof values !== 'object' || values === null)
+      throw new TypeError('styleEffectInverse must be an object.');
+
+    for (const [k, v] of Object.entries(values)) {
+      if (typeof v !== 'string')
+        throw new TypeError(`styleEffectInverse["${k}"] must be a string.`);
+    }
+
+    TinyHtml.#styleEffectInverse = {};
+    for (const [k, v] of Object.entries(values)) TinyHtml.setStyleEffectInverse(k, v);
+  }
+
+  /**
+   * Get a registered inverse values.
+   *
+   * @param {string} name - The detector name.
+   * @returns {string | null} The value if found, otherwise undefined.
+   */
+  static getStyleEffectInverse(name) {
+    if (typeof name !== 'string') throw new TypeError('The "name" parameter must be a string.');
+    return TinyHtml.#styleEffectInverse[name] || null;
+  }
+
+  /**
+   * Register or overwrite a inverse value.
+   *
+   * @param {string} name - The detector name.
+   * @param {string} value - The inverse value.
+   * @throws {TypeError} If fn is not a string.
+   */
+  static setStyleEffectInverse(name, value) {
+    if (typeof name !== 'string') throw new TypeError('The "name" parameter must be a string.');
+    if (typeof value !== 'string')
+      throw new TypeError(`styleEffectInverse["${name}"] must be a string.`);
+    TinyHtml.#styleEffectInverse[name] = value;
+  }
+
+  /**
+   * Delete a inverse value by name.
+   *
+   * @param {string} name - The inverse value name to delete.
+   * @returns {boolean} True if deleted, false otherwise.
+   */
+  static deleteStyleEffectInverse(name) {
+    if (typeof name !== 'string') throw new TypeError('The "name" parameter must be a string.');
+    return delete TinyHtml.#styleEffectInverse[name];
+  }
+
+  /**
+   * Check if a inverse value is registered.
+   *
+   * @param {string} name - The inverse value name to check.
+   * @returns {boolean} True if registered, false otherwise.
+   */
+  static hasStyleEffectInverse(name) {
+    if (typeof name !== 'string') throw new TypeError('The "name" parameter must be a string.');
+    return Object.prototype.hasOwnProperty.call(TinyHtml.#styleEffectInverse, name);
+  }
+
   // TITLE: Animate DOM (styleEffectsRd)
 
   /**
@@ -3804,11 +3890,11 @@ class TinyHtml {
    * Get a registered repeat detector function by name.
    *
    * @param {string} name - The detector name.
-   * @returns {StyleEffectsRdFn | undefined} The function if found, otherwise undefined.
+   * @returns {StyleEffectsRdFn | null} The function if found, otherwise undefined.
    */
   static getStyleEffectRd(name) {
     if (typeof name !== 'string') throw new TypeError('The "name" parameter must be a string.');
-    return TinyHtml.#styleEffectsRd[name] || undefined;
+    return TinyHtml.#styleEffectsRd[name] || null;
   }
 
   /**
@@ -3936,11 +4022,11 @@ class TinyHtml {
    * Get a style effect property handler by name.
    *
    * @param {string} name - The property handler name.
-   * @returns {StyleEffectsFn | undefined} The handler function, or undefined if not found.
+   * @returns {StyleEffectsFn | null} The handler function, or undefined if not found.
    */
   static getStyleEffectProp(name) {
     if (typeof name !== 'string') throw new TypeError('The "name" parameter must be a string.');
-    return TinyHtml.#styleEffectsProps[name] || undefined;
+    return TinyHtml.#styleEffectsProps[name] || null;
   }
 
   /**
