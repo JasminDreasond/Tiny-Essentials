@@ -38,7 +38,13 @@ import {
   getSimplePerc,
   ruleOfThree,
 } from './simpleMath.mjs';
-import { addAiMarkerShortcut, diffStrings, safeTextTrim, toTitleCase, toTitleCaseLowerFirst } from './text.mjs';
+import {
+  addAiMarkerShortcut,
+  diffStrings,
+  safeTextTrim,
+  toTitleCase,
+  toTitleCaseLowerFirst,
+} from './text.mjs';
 import {
   areElsCollTop,
   areElsCollBottom,

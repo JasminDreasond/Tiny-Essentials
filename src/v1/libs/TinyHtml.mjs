@@ -3766,6 +3766,7 @@ class TinyHtml {
     slideUp: 'slideDown',
     fadeIn: 'fadeOut',
     fadeOut: 'fadeIn',
+    fadeTo: 'fadeIn',
   };
 
   /**
@@ -4437,6 +4438,78 @@ class TinyHtml {
    */
   fadeToggle(ops) {
     return TinyHtml.fadeToggle(this, ops);
+  }
+
+  /**
+   * Animate the opacity of elements to a target value.
+   * If the element is hidden (display:none), it will be made visible first
+   * so the fade animation can occur.
+   *
+   * @param {TinyHtmlElement|TinyHtmlElement[]} el - Target element(s) to fade.
+   * @param {number} opacity - Final opacity value (between 0 and 1).
+   * @param {number | KeyframeAnimationOptions | string} [ops] - Duration or animation options.
+   * @returns {StyleFxResult}
+   * @throws {TypeError} If opacity is not a number between 0 and 1.
+   * @throws {TypeError} If ops is not number|string|object when provided.
+   */
+  static fadeTo(el, opacity, ops) {
+    if (typeof opacity !== 'number' || isNaN(opacity) || opacity < 0 || opacity > 1)
+      throw new TypeError('fadeTo: opacity must be a number between 0 and 1.');
+
+    if (
+      ops !== undefined &&
+      !(
+        typeof ops === 'number' ||
+        typeof ops === 'string' ||
+        (typeof ops === 'object' && ops !== null)
+      )
+    ) {
+      throw new TypeError(
+        'fadeTo: ops must be a number, string, KeyframeAnimationOptions, or undefined.',
+      );
+    }
+
+    /** @type {StyleFxResult} */
+    const results = new Map();
+    TinyHtml._preHtmlElems(el, 'fadeTo').forEach((elem) => {
+      const style = getComputedStyle(elem);
+      const isHidden = !(el instanceof Element)
+        ? true
+        : !(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+
+      if (isHidden) {
+        // Ensure element is visible (like jQuery does before fading)
+        const display = TinyHtml.getAnimateData(elem, `origdisplay`);
+        elem.style.display = typeof display === 'string' ? display : 'block';
+      }
+
+      /** @type {AnimationSfxData} */
+      const keyframes = {
+        opacity: [style.opacity, opacity],
+      };
+
+      // Build keyframe objects for Web Animations
+      const kf = keyframes.opacity.map((val) => ({ opacity: val }));
+
+      results.set(elem, TinyHtml.animate(elem, kf, ops, 'fadeTo')[0]);
+    });
+
+    return results;
+  }
+
+  /**
+   * Animate the opacity of elements to a target value.
+   * If the element is hidden (display:none), it will be made visible first
+   * so the fade animation can occur.
+   *
+   * @param {number} opacity - Final opacity value (between 0 and 1).
+   * @param {number | KeyframeAnimationOptions | string} [ops] - Duration or animation options.
+   * @returns {StyleFxResult}
+   * @throws {TypeError} If opacity is not a number between 0 and 1.
+   * @throws {TypeError} If ops is not number|string|object when provided.
+   */
+  fadeTo(opacity, ops) {
+    return TinyHtml.fadeTo(this, opacity, ops);
   }
 
   ///////////////////////////////////////////////////////////////

@@ -3141,6 +3141,32 @@ Instance method version.
 
 ---
 
+### `static fadeTo(el, opacity, ops?): StyleFxResult`
+
+Animate the opacity of elements to a target value.
+If the element is hidden (`display: none`), it will first be made visible before applying the fade animation.
+
+```js
+TinyHtml.fadeTo(el, 0.5, 400);     // Fade element to 50% opacity in 400ms
+TinyHtml.fadeTo(el, 1, "fast");    // Fade element to full opacity using predefined speed
+```
+
+* `el`: The target element(s) to animate.
+* `opacity`: The final opacity value (between `0` and `1`).
+* `ops`: Optional duration, animation options, or a predefined speed name.
+
+Returns a `StyleFxResult` mapping each element to its animation instance.
+
+### `fadeTo(opacity, ops?): StyleFxResult`
+
+Instance method version.
+
+```js
+element.fadeTo(0.3, { duration: 800, easing: "ease-in" });
+```
+
+---
+
 ## 🖱️ Focus & Blur
 
 TinyHtml provides utility methods to programmatically focus or blur HTML elements.
