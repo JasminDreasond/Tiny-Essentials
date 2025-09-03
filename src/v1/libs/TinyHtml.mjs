@@ -6734,6 +6734,31 @@ class TinyHtml {
     return TinyHtml.toggleProp(this, name, force);
   }
 
+  /**
+   * Get properties on an element.
+   *
+   * @param {TinyHtmlElement|TinyHtmlElement[]} el - Target element(s).
+   * @param {string} name - Property name.
+   * @returns {any} - Property value if getting, otherwise `undefined`.
+   */
+  static prop(el, name) {
+    if (typeof name !== 'string')
+      throw new TypeError('Invalid arguments passed to prop(). Expected string for "name".');
+    const elem = TinyHtml._preElem(el, 'attr');
+    // @ts-ignore
+    return elem[name];
+  }
+
+  /**
+   * Get properties on an element.
+   *
+   * @param {string} name - Property name.
+   * @returns {any} - Property value if getting, otherwise `undefined`.
+   */
+  prop(name) {
+    return TinyHtml.prop(this, name);
+  }
+
   /////////////////////////////////////////////////////
 
   // TITLE: Remove Element
