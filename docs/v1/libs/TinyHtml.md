@@ -1245,9 +1245,6 @@ This API set focuses on **measuring element offsets**, **scroll positions**, and
 
 ### 📍 Element Positioning
 
-#### `.animate(keyframes, ops?)` / `TinyHtml.animate(el, keyframes, ops?)`
-Applies an animation to one or more TinyElement instances using the Web Animations API.
-
 #### `.offset()` / `TinyHtml.offset(el)`
 Returns the coordinates `{ top, left }` of the element **relative to the document**.
 
@@ -2489,6 +2486,443 @@ myTinyElem.cssFloats(['paddingTop', 'paddingBottom']);
 
 **Returns:**
 `Record<string, number>` – A mapping of property names to their float values.
+
+---
+
+## 🎬 Animate DOM (Data)
+
+### `getAnimateData(el, where)`  
+🔍 Retrieves stored animation data for a given element and key.  
+If no data exists yet, it initializes storage for that element.  
+
+- **Parameters**:  
+  - `el` 👉 `HTMLElement` — The element whose data should be retrieved.  
+  - `where` 👉 `string` — The key to read (e.g., `"origHeight"`).  
+- **Returns**: `string | number | undefined` — The stored value, or `undefined`.  
+
+---
+
+### `setAnimateData(el, where, value)`  
+💾 Stores animation data for a given element and key.  
+Used to cache original size/values for animations.  
+
+- **Parameters**:  
+  - `el` 👉 `HTMLElement` — The element whose data should be set.  
+  - `where` 👉 `string` — The key to store under (e.g., `"origHeight"`).  
+  - `value` 👉 `string | number` — The value to store.  
+- **Throws**: `TypeError` if the arguments are invalid.  
+
+---
+
+## ⏹ Animate DOM (cancelOldStyleFx)
+
+### `#cancelOldStyleFx`  
+⚙️ Global configuration flag controlling whether old style-based animations  
+are cancelled before a new one starts. Defaults to **true**.  
+
+- **Type**: `boolean`  
+
+---
+
+### `cancelOldStyleFx` (getter / setter)  
+🛠 Controls whether old animations are automatically cancelled before new ones begin.  
+
+- **Getter**: Returns a `boolean`.  
+- **Setter**: Accepts a `boolean`. Throws `TypeError` otherwise.  
+
+---
+
+## ⏱ Animate DOM (styleFxSpeeds)
+
+### `#styleFxSpeeds`  
+⚡ Predefined animation speed options, inspired by `jQuery.fx.speeds`.  
+
+- **Example**:  
+```js
+  TinyHtml.animate(el, keyframes, 'fast');
+  TinyHtml.slideDown(el, 'slow');
+```
+
+* **Type**: `Record<string, number | KeyframeAnimationOptions>`
+
+---
+
+### `styleFxSpeeds` (getter / setter)
+
+🔄 Access or replace the full speed definitions.
+
+* **Getter**: Returns a cloned copy of speeds.
+* **Setter**: Accepts a valid object. Throws `TypeError` otherwise.
+
+---
+
+### `getStyleFxSpeed(name)`
+
+📥 Get a predefined speed by name.
+
+* **Parameters**:
+
+  * `name` 👉 `string` — The name of the speed entry.
+* **Returns**: `number | KeyframeAnimationOptions | undefined`
+
+---
+
+### `setStyleFxSpeed(name, value)`
+
+📤 Add or overwrite a speed entry.
+
+* **Parameters**:
+
+  * `name` 👉 `string`
+  * `value` 👉 `number | KeyframeAnimationOptions`
+
+---
+
+### `deleteStyleFxSpeed(name)`
+
+🗑 Delete a predefined speed by name.
+
+* **Returns**: `boolean`
+
+---
+
+### `hasStyleFxSpeed(name)`
+
+❓ Check if a predefined speed exists.
+
+* **Returns**: `boolean`
+
+---
+
+## 🎨 Animate DOM (styleEffects)
+
+### `#styleEffects`
+
+🎭 Predefined style-based animation effects.
+
+* **Default values**:
+
+  * `slideDown`
+  * `slideUp`
+  * `fadeIn`
+  * `fadeOut`
+
+---
+
+### `styleEffects` (getter / setter)
+
+📦 Manage the collection of style effects.
+
+* **Getter**: Returns a deep-cloned copy.
+* **Setter**: Replaces all effects with validation.
+
+---
+
+### `getStyleEffect(name)`
+
+📥 Retrieve a style effect by name.
+
+* **Returns**: `StyleEffects | undefined`
+
+---
+
+### `setStyleEffect(name, value)`
+
+📝 Register or overwrite a style effect.
+
+* **Throws**: `TypeError` if invalid.
+
+---
+
+### `deleteStyleEffect(name)`
+
+🗑 Delete a style effect by name.
+
+* **Returns**: `boolean`
+
+---
+
+### `hasStyleEffect(name)`
+
+❓ Check if a style effect exists.
+
+* **Returns**: `boolean`
+
+---
+
+## 🔄 Animate DOM (styleEffectInverse)
+
+### `#styleEffectInverse`
+
+↔️ Maps effects to their inverse.
+
+* **Default values**:
+
+  * `slideDown ↔ slideUp`
+  * `fadeIn ↔ fadeOut`
+
+---
+
+### `styleEffectInverse` (getter / setter)
+
+🔀 Manage inverse mappings.
+
+* **Getter**: Returns a cloned copy.
+* **Setter**: Replaces all inverse mappings.
+
+---
+
+### `getStyleEffectInverse(name)`
+
+📥 Retrieve inverse effect by name.
+
+* **Returns**: `string | null`
+
+---
+
+### `setStyleEffectInverse(name, value)`
+
+📝 Register or overwrite inverse mapping.
+
+---
+
+### `deleteStyleEffectInverse(name)`
+
+🗑 Delete an inverse mapping.
+
+* **Returns**: `boolean`
+
+---
+
+### `hasStyleEffectInverse(name)`
+
+❓ Check if an inverse mapping exists.
+
+* **Returns**: `boolean`
+
+---
+
+## 🔁 Animate DOM (styleEffectsRd)
+
+### `#styleEffectsRd`
+
+🔎 Repeat detector functions.
+Used to check if animations would produce no visible change.
+
+---
+
+### `styleEffectsRd` (getter / setter)
+
+⚙️ Manage repeat detectors.
+
+---
+
+### `getStyleEffectRd(name)`
+
+📥 Retrieve a repeat detector.
+
+* **Returns**: `StyleEffectsRdFn | null`
+
+---
+
+### `setStyleEffectRd(name, fn)`
+
+📝 Register or overwrite a repeat detector.
+
+---
+
+### `deleteStyleEffectRd(name)`
+
+🗑 Delete a repeat detector by name.
+
+---
+
+### `hasStyleEffectRd(name)`
+
+❓ Check if a repeat detector exists.
+
+* **Returns**: `boolean`
+
+---
+
+## 🧩 Animate DOM (styleEffectsProps)
+
+### `#styleEffectsProps`
+
+🛠 Effect property handlers for **show** and **hide**.
+Each function generates appropriate keyframes depending on the property.
+
+* **Supported props**:
+
+  * `height` / `width`
+  * `margin*` / `padding*`
+  * `opacity`
+  * Any other style property
+
+* **Type**: `StyleEffectsProps`
+
+---
+
+### `static get styleEffectsProps(): StyleEffectsProps`
+
+Returns a shallow-cloned copy of the property effect handlers.
+
+---
+
+### `static set styleEffectsProps(value: StyleEffectsProps): void`
+
+Replace the entire styleEffectsProps map with a new one.
+Throws a `TypeError` if `value` is not a plain object or if any property is not a function.
+
+---
+
+### `static getStyleEffectProp(name: string): StyleEffectsFn | null`
+
+Get a style effect property handler by name.
+Returns the handler function or `null` if not found.
+
+---
+
+### `static setStyleEffectProp(name: string, fn: StyleEffectsFn): void`
+
+Register or overwrite a style effect property handler.
+Throws a `TypeError` if `name` is not a string or `fn` is not a function.
+
+---
+
+### `static deleteStyleEffectProp(name: string): boolean`
+
+Delete a style effect property handler by name.
+Returns `true` if deleted, `false` otherwise.
+
+---
+
+### `static hasStyleEffectProp(name: string): boolean`
+
+Check if a style effect property handler exists.
+
+---
+
+## 🎨 Style FX Manager
+
+### `static genStyleFx(type: string, includeWidth = false): Record<string, string>`
+
+Generates effect parameters to create standard animations.
+
+* `type`: Effect type (e.g. `"show"`, `"hide"`).
+* `includeWidth`: Whether to also include `width` and `opacity`.
+
+---
+
+### `static applyStyleFx(el, id, props, ops?): StyleFxResult`
+
+Applies style-based effects (slide, fade) to one or more elements.
+Converts abstract effect definitions (e.g. `{ height: "show" }`) into Web Animations API keyframes.
+
+---
+
+### `applyStyleFx(id, props, ops?): StyleFxResult`
+
+Instance method version of `applyStyleFx`.
+
+---
+
+# 🎬 Animate Stuff
+
+### `static getCurrentAnimationId(el: HTMLElement): string | null | undefined`
+
+Get the current animation entry for a given element.
+Returns the animation `id`, `null`, or `undefined`.
+
+---
+
+### `static animate(el, keyframes, ops?, id?, cancelOldAnim?): Animation[]`
+
+Applies an animation to one or multiple elements.
+Optionally cancels any currently running animation on the same element.
+
+---
+
+### `animate(keyframes, ops?, id?, cancelOldAnim?): Animation[]`
+
+Instance method version of `animate`.
+
+---
+
+### `static stop(el): boolean[]`
+
+Stops the current animation(s) on one or multiple elements.
+Returns an array of booleans indicating success per element.
+
+---
+
+### `stop(): boolean[]`
+
+Instance method version of `stop`.
+
+---
+
+# ✨ Animate FXs
+
+### `static slideDown(el, ops?): StyleFxResult`
+
+Show animation (`slideDown`).
+
+### `slideDown(ops?): StyleFxResult`
+
+Instance method version.
+
+---
+
+### `static slideUp(el, ops?): StyleFxResult`
+
+Hide animation (`slideUp`).
+
+### `slideUp(ops?): StyleFxResult`
+
+Instance method version.
+
+---
+
+### `static slideToggle(el, ops?): StyleFxResult`
+
+Toggle slide animation.
+Determines visibility and plays `slideDown` or `slideUp`.
+
+### `slideToggle(ops?): StyleFxResult`
+
+Instance method version.
+
+---
+
+### `static fadeIn(el, ops?): StyleFxResult`
+
+Fade in animation.
+
+### `fadeIn(ops?): StyleFxResult`
+
+Instance method version.
+
+---
+
+### `static fadeOut(el, ops?): StyleFxResult`
+
+Fade out animation.
+
+### `fadeOut(ops?): StyleFxResult`
+
+Instance method version.
+
+---
+
+### `static fadeToggle(el, ops?): StyleFxResult`
+
+Toggle fade animation.
+Determines visibility and plays `fadeIn` or `fadeOut`.
+
+### `fadeToggle(ops?): StyleFxResult`
+
+Instance method version.
 
 ---
 

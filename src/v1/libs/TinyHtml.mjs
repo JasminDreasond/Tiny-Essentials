@@ -4206,7 +4206,7 @@ class TinyHtml {
    * Applies an animation to one or multiple TinyElement instances.
    *
    * If `cancelOldAnim` is true, any currently running animation on the same element
-   * will be cancelled before the new one starts (similar to jQuery's behavior).
+   * will be cancelled before the new one starts.
    *
    * @param {TinyHtmlElement|TinyHtmlElement[]} el - A single TinyElement or an array of TinyElements to animate.
    * @param {Keyframe[] | PropertyIndexedKeyframes | null} keyframes - Keyframes that define the animation.
@@ -4258,7 +4258,7 @@ class TinyHtml {
    * Applies an animation to one or multiple TinyElement instances.
    *
    * If `cancelOldAnim` is true, any currently running animation on the same element
-   * will be cancelled before the new one starts (similar to jQuery's behavior).
+   * will be cancelled before the new one starts.
    *
    * @param {Keyframe[] | PropertyIndexedKeyframes | null} keyframes - Keyframes that define the animation.
    * @param {number | KeyframeAnimationOptions | string} [ops] - Timing or configuration options for the animation.
