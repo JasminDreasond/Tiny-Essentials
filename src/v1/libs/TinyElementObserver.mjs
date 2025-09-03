@@ -16,6 +16,31 @@
  * with a system of configurable detectors that can dispatch custom events or run custom logic.
  */
 class TinyElementObserver {
+  /** @type {Element|undefined} */
+  #el;
+
+  /**
+   * Get the current element being observed.
+   * @returns {Element|undefined} The DOM element being tracked, or `undefined` if none is set.
+   */
+  get el() {
+    return this.#el;
+  }
+
+  /**
+   * Set the target element to be observed.
+   * Can only be set once.
+   *
+   * @param {Element|undefined} el - The DOM element to observe.
+   * @throws {Error} If the element is already defined.
+   * @throws {TypeError} If the provided value is not an Element.
+   */
+  set el(el) {
+    if (this.#el) throw new Error('');
+    if (typeof el !== 'undefined' && !(el instanceof Element)) throw new TypeError('');
+    this.#el = el;
+  }
+
   /**
    * Configuration settings for the MutationObserver instance.
    *
@@ -111,12 +136,15 @@ class TinyElementObserver {
   /**
    * Create a new TinyElementObserver instance.
    *
-   * @param {Array<[string, ElementDetectorsFn]>} [initDetectors=[]] - Optional list of initial detectors.
-   * @param {MutationObserverInit} [initSettings] - Optional initial settings for the observer.
+   * @param {Object} [settings={}] - Configuration object.
+   * @param {Element} [settings.el] - Optional DOM element to observe from the start.
+   * @param {Array<[string, ElementDetectorsFn]>} [settings.initDetectors=[]] - Optional initial detectors to register.
+   * @param {MutationObserverInit} [settings.initCfg] - Optional MutationObserver configuration.
    */
-  constructor(initDetectors = [], initSettings = {}) {
+  constructor({ el, initDetectors = [], initCfg = {} } = {}) {
+    this.el = el;
     if (initDetectors.length) this.detectors = initDetectors;
-    if (initSettings) this.settings = initSettings;
+    if (initCfg) this.settings = initCfg;
   }
 
   /**
@@ -129,9 +157,12 @@ class TinyElementObserver {
   }
 
   /**
-   * Start tracking changes on the whole document.
+   * Start tracking DOM mutations on the defined element.
+   *
+   * @throws {Error} If no element has been set to observe.
    */
   start() {
+    if (!this.#el) throw new Error('Cannot start observation: no target element has been set.');
     if (this.#observer) return;
     this.#observer = new MutationObserver((mutations) => {
       mutations.forEach((value, index, array) =>
@@ -139,7 +170,7 @@ class TinyElementObserver {
       );
     });
 
-    this.#observer.observe(document.documentElement, this.#settings);
+    this.#observer.observe(this.#el, this.#settings);
   }
 
   /**

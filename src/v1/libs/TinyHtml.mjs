@@ -380,8 +380,12 @@ class TinyHtml {
   }
 
   /** @type {TinyElementObserver} */
-  static #tinyObserver = new TinyElementObserver(
-    [
+  static #tinyObserver = new TinyElementObserver({
+    el:
+      typeof window !== 'undefined' && typeof window.document !== 'undefined'
+        ? window.document.documentElement
+        : undefined,
+    initDetectors: [
       // Style Detector
       [
         'tinyStyleEvent',
@@ -442,13 +446,13 @@ class TinyHtml {
         },
       ],
     ],
-    {
+    initCfg: {
       attributeOldValue: true,
       attributes: true,
       subtree: true,
       attributeFilter: ['style', 'class'],
     },
-  );
+  });
 
   /** @returns {TinyElementObserver} */
   static get tinyObserver() {
