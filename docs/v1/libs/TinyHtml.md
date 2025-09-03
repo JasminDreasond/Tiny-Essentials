@@ -359,6 +359,172 @@ HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | HTMLOptionElement
 
 ---
 
+### 💾 Internal Animation Storage
+
+```ts
+/**
+ * Internal storage for animation-related data, associated with elements.
+ * Used to remember original dimensions (height/width) and other properties
+ * so that animations like `slideUp` and `slideDown` can restore or continue
+ * smoothly, mimicking jQuery's behavior.
+ *
+ * Each element is mapped to a plain object with keys such as `origHeight`,
+ * `origWidth`, etc.
+ *
+ * @type {WeakMap<HTMLElement, Record<string, string|number>>}
+ */
+const __elementAnimateData = new WeakMap();
+```
+
+* **Purpose:** Tracks original dimensions and properties of elements for smooth animations.
+* **Type:** `WeakMap<HTMLElement, Record<string, string | number>>`
+* **Notes:** Uses a `WeakMap` so that memory is automatically freed when elements are removed from the DOM.
+
+---
+
+### 🎬 Active Animation Tracking
+
+```ts
+/**
+ * Stores the currently active animation for each element,
+ * allowing cancellation or replacement of ongoing animations.
+ *
+ * @type {WeakMap<HTMLElement, { animation: Animation, id: string }>}
+ */
+const __elementCurrentAnimation = new WeakMap();
+```
+
+* **Purpose:** Keeps track of the active animation per element.
+* **Type:** `WeakMap<HTMLElement, { animation: Animation, id: string }>`
+* **Notes:** Useful for stopping or replacing animations mid-flight.
+
+---
+
+### ✨ Style Effects Definitions
+
+```ts
+/**
+ * Mapping of animation shortcuts to their effect definitions.
+ * Similar to jQuery's predefined effects (slideDown, fadeIn, etc.).
+ *
+ * @typedef {Record<string, string|(string|number)[]>} StyleEffects
+ */
+```
+
+* **Purpose:** Defines reusable animation shortcuts.
+* **Example:** `"fadeIn": ["opacity", 0, 1]`
+
+---
+
+### 🖱️ Hover Event Callback
+
+```ts
+/**
+ * Callback function used for hover events.
+ * @callback HoverEventCallback
+ * @param {MouseEvent} ev - The mouse event triggered on enter or leave.
+ * @returns {void} Returns nothing.
+ */
+```
+
+* **Purpose:** Defines the expected signature for hover event callbacks.
+* **Parameters:** `MouseEvent ev`
+* **Returns:** `void`
+
+---
+
+### 🏃 Active Style Animation Collection
+
+```ts
+/**
+ * Represents a collection of active style-based animations.
+ *
+ * Each HTMLElement is associated with an array of its currently running
+ * `Animation` objects (from the Web Animations API).
+ *
+ * @typedef {Map<HTMLElement, Animation|null>} StyleFxResult
+ */
+```
+
+* **Purpose:** Tracks currently running Web Animations per element.
+* **Type:** `Map<HTMLElement, Animation|null>`
+
+---
+
+### 📊 Animation Keyframe Data
+
+```ts
+/**
+ * Represents a collection of animation keyframe data mapped by CSS property.
+ *
+ * - The **key** is the CSS property name (e.g. `"height"`, `"opacity"`).
+ * - The **value** is an array of values representing the start and end
+ *   states of the property during the animation.
+ *
+ * @typedef {Record<string, (string|number)[]>} AnimationSfxData
+ */
+```
+
+* **Purpose:** Stores start and end states of CSS properties for animations.
+* **Type:** `Record<string, (string|number)[]>`
+
+---
+
+### 🔁 Style Effects Repeat Detector
+
+```ts
+/**
+ * Function signature for style effects repeat detectors.
+ *
+ * @typedef {(effects: AnimationSfxData) => boolean} StyleEffectsRdFn
+ */
+```
+
+* **Purpose:** Determines if a style effect should repeat.
+* **Type:** `(effects: AnimationSfxData) => boolean`
+
+---
+
+### ⚡ Style Effect Property Handler
+
+```ts
+/**
+ * Function signature for style effect property handlers.
+ *
+ * @typedef {(
+ *   el: HTMLElement,
+ *   keyframes: AnimationSfxData,
+ *   prop: string,
+ *   style: CSSStyleDeclaration
+ * ) => void} StyleEffectsFn
+ */
+```
+
+* **Purpose:** Handles applying keyframe data to a specific CSS property on an element.
+* **Parameters:**
+
+  * `el: HTMLElement` – target element
+  * `keyframes: AnimationSfxData` – property keyframes
+  * `prop: string` – CSS property
+  * `style: CSSStyleDeclaration` – inline style object
+
+---
+
+### 🛠️ Style Effect Property Handlers Collection
+
+```ts
+/**
+ * A collection of style effect property handlers.
+ *
+ * @typedef {Record<string, StyleEffectsFn>} StyleEffectsProps
+ */
+```
+
+* **Purpose:** Groups multiple property handlers for different CSS properties.
+* **Type:** `Record<string, StyleEffectsFn>`
+
+---
+
 ## 🔨 Element Creation
 
 ### `TinyHtml.createFrom(tagName, attrs?)`
