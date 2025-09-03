@@ -3489,7 +3489,6 @@ class TinyHtml {
       dataset = {};
       __elementAnimateData.set(el, dataset);
     }
-    if (TinyHtml.#autoStartElemObserver) TinyHtml.#tinyObserver.start();
     return dataset[where];
   }
 
@@ -3514,7 +3513,6 @@ class TinyHtml {
       __elementAnimateData.set(el, dataset);
     }
     dataset[where] = value;
-    if (TinyHtml.#autoStartElemObserver) TinyHtml.#tinyObserver.start();
   }
 
   // TITLE: Animate DOM (cancelOldStyleFx)

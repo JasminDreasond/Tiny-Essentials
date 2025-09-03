@@ -445,6 +445,107 @@ Finds elements by tag name in a namespace (defaults to XHTML).
 
 ---
 
+## 🔍 Element Observer
+
+### ⚡ `autoStartElemObserver`
+
+A **flag** that determines whether the internal element observer should automatically start when some library code initializes.
+
+* **Type** 🔘 — `boolean`
+* **Default** 🏁 — `true`
+
+#### 📥 Getter
+
+```js
+TinyHtml.autoStartElemObserver; // returns true or false
+```
+
+Returns the current state of the auto-start flag.
+
+#### 📤 Setter
+
+```js
+TinyHtml.autoStartElemObserver = false;
+```
+
+Updates the flag.
+⚠️ Throws a `TypeError` if the value is not a boolean.
+
+---
+
+### 👀 `tinyObserver`
+
+The internal **[`TinyElementObserver`](./TinyElementObserver.md)** instance used by TinyHtml to track DOM changes.
+It is configured to observe the **document root element** (`document.documentElement`) and comes with **built-in detectors** for **style** and **class** attribute changes.
+
+* **Type** 📦 — `TinyElementObserver`
+
+#### 🔧 Configuration
+
+* **Target element**: `document.documentElement` (if available).
+* **Detectors**:
+
+  * 🎨 **Style Detector (`tinyStyleEvent`)**
+    Detects changes to inline styles (`style` attribute).
+
+    * Compares old vs new styles using `diffStrings`.
+    * Dispatches:
+
+      ```js
+      new CustomEvent('tinyhtml.stylechanged', { detail: changes })
+      ```
+  * 🏷️ **Class Detector (`tinyClassEvent`)**
+    Detects changes to the `class` attribute.
+
+    * Compares old vs new classes using `diffArrayList`.
+    * Dispatches:
+
+      ```js
+      new CustomEvent('tinyhtml.classchanged', { detail: changes })
+      ```
+* **Observer config** ⚙️:
+
+  ```js
+  {
+    attributeOldValue: true,
+    attributes: true,
+    subtree: true,
+    attributeFilter: ['style', 'class']
+  }
+  ```
+
+#### 📥 Getter
+
+```js
+const observer = TinyHtml.tinyObserver;
+```
+
+Retrieves the internal `TinyElementObserver` instance.
+
+---
+
+### ✨ Example Usage
+
+```js
+// Listen for style changes on any element in the document
+document.addEventListener('tinyhtml.stylechanged', (e) => {
+  console.log('🎨 Style changed:', e.detail);
+});
+
+// Listen for class changes
+document.addEventListener('tinyhtml.classchanged', (e) => {
+  console.log('🏷️ Class changed:', e.detail);
+});
+
+// Disable auto-start (if needed)
+TinyHtml.autoStartElemObserver = false;
+
+// Manually start the observer
+TinyHtml.tinyObserver.start();
+```
+
+---
+
 ## 📑 HTML Parser
 
 ### Type Definition
