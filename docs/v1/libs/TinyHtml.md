@@ -16,6 +16,55 @@ TinyHtml.createElement('div')
 
 This design keeps your code concise while maintaining clarity and control over the DOM structure.
 
+## 📑 Table of Contents
+
+- [🧩 Type Definitions – Core Building Blocks](#-type-definitions--core-building-blocks)
+- [🔨 Element Creation](#-element-creation)
+- [🔎 Static DOM Selectors](#-static-dom-selectors)
+- [🔍 Element Observer](#-element-observer)
+- [📑 HTML Parser](#-html-parser)
+- [🧩 Internal Element Access](#-internal-element-access)
+- [🛠️ Static Pre-Validation Utilities](#-static-pre-validation-utilities)
+- [🔁 Conversion Helpers](#-conversion-helpers)
+- [🧹 Element Filtering & Matching](#-element-filtering--matching)
+- [💾 Element Data Store](#-element-data-store)
+- [🔄 DOM Traversal Methods](#-dom-traversal-methods)
+- [🧱 DOM Manipulation](#-dom-manipulation)
+- [🧮 Easing Functions](#-easing-functions)
+- [🧭 Smooth Scrolling](#-smooth-scrolling)
+- [⚙️ Internal Scroll Mechanism](#-internal-scroll-mechanism)
+- [📏 Dimensions (Size API)](#-dimensions-size-api)
+- [📌 Position, Scroll & Box Spacing](#-position-scroll--box-spacing)
+- [🎨 Class Manipulation](#-class-manipulation)
+- [📄 Content & Element Info](#-content--element-info)
+- [🎛️ Form Value Handling & Input Hooks](#-form-value-handling--input-hooks)
+- [🎉 Event Handling](#-event-handling)
+- [🧬 Attribute & Property Manipulation](#-attribute--property-manipulation)
+- [🛠️ Element Utilities](#-element-utilities)
+- [📦 Collision Detection](#-collision-detection)
+- [🔐 Collision Locking System](#-collision-locking-system)
+- [🧼 Collision Lock Reset](#-collision-lock-reset)
+- [👁️ Viewport Detection](#-viewport-detection)
+- [🧠 Property Name Normalization](#-property-name-normalization)
+- [🔁 Attribute ↔ Property Mapping](#-attribute--property-mapping)
+- [🎨 CSS Property Aliases (`cssPropAliases`)](#-css-property-aliases-csspropaliases)
+- [✂️ Utility Functions](#-utility-functions)
+- [🧩 Style Methods](#-style-methods)
+- [🧪 Reading Computed Styles](#-reading-computed-styles)
+- [🎬 Animate DOM (Data)](#-animate-dom-data)
+- [⏹ Animate DOM (cancelOldStyleFx)](#-animate-dom-canceloldstylefx)
+- [⏱ Animate DOM (styleFxSpeeds)](#-animate-dom-stylefxspeeds)
+- [🎨 Animate DOM (styleEffects)](#-animate-dom-styleeffects)
+- [🔄 Animate DOM (styleEffectInverse)](#-animate-dom-styleeffectinverse)
+- [🔁 Animate DOM (styleEffectsRd)](#-animate-dom-styleeffectsrd)
+- [🧩 Animate DOM (styleEffectsProps)](#-animate-dom-styleeffectsprops)
+- [🎨 Style FX Manager](#-style-fx-manager)
+- [🎬 Animate Stuff](#-animate-stuff)
+- [✨ Animate FXs](#-animate-fxs)
+- [🖱️ Focus & Blur](#-focus--blur)
+- [🌐 Window Scroll & Viewport Helpers](#-window-scroll--viewport-helpers)
+
+---
 
 ## 🧩 Type Definitions – Core Building Blocks
 
@@ -2827,7 +2876,7 @@ Instance method version of `applyStyleFx`.
 
 ---
 
-# 🎬 Animate Stuff
+## 🎬 Animate Stuff
 
 ### `static getCurrentAnimationId(el: HTMLElement): string | null | undefined`
 
@@ -2862,7 +2911,7 @@ Instance method version of `stop`.
 
 ---
 
-# ✨ Animate FXs
+## ✨ Animate FXs
 
 ### `static slideDown(el, ops?): StyleFxResult`
 
