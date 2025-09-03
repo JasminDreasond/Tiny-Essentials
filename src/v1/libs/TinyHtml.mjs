@@ -6737,7 +6737,7 @@ class TinyHtml {
   /**
    * Get properties on an element.
    *
-   * @param {TinyHtmlElement} el - Target element(s).
+   * @param {TinyHtmlElement} el - Target element.
    * @param {string} name - Property name.
    * @returns {any} - Property value if getting, otherwise `undefined`.
    */
