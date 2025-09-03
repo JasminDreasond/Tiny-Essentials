@@ -1,7 +1,7 @@
 import asyncReplace from '../legacy/libs/replaceAsync.mjs';
 import TinyLevelUp from '../legacy/libs/userLevel.mjs';
 import arraySortPositions from '../legacy/libs/arraySortPositions.mjs';
-import { shuffleArray } from './basics/array.mjs';
+import { diffArrayList, shuffleArray } from './basics/array.mjs';
 import {
   breakdownDuration,
   formatCustomTimer,
@@ -38,6 +38,7 @@ import {
 } from './basics/simpleMath.mjs';
 import {
   addAiMarkerShortcut,
+  diffStrings,
   safeTextTrim,
   toTitleCase,
   toTitleCaseLowerFirst,
@@ -175,6 +176,8 @@ export {
   ColorSafeStringify,
   TinyPromiseQueue,
   TinyLevelUp,
+  diffArrayList,
+  diffStrings,
   breakdownDuration,
   calculateMarketcap,
   compareMarketcap,
