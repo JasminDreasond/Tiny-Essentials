@@ -2303,6 +2303,22 @@ TinyHtml provides multiple utilities for reading CSS styles from elements, both 
 
 ---
 
+### 🎨 `static parseStyle(styleText)`
+
+Parses an inline CSS style string into an **object** representation.
+
+* **`styleText`** 📝 — CSS inline style string (e.g., `"color: red; font-size: 12px;"`).
+* **Returns** 📦 — An object mapping CSS properties to their values.
+
+**Example:**
+
+```js
+parseStyle('color: red; font-size: 12px;');
+// ➡ { color: 'red', 'font-size': '12px' }
+```
+
+---
+
 ### 🧬 `TinyHtml.css(el)` / `el.css()`
 
 Returns the full computed style object for a given element.
