@@ -244,7 +244,7 @@ const __elementAnimateData = new WeakMap();
  * Stores the currently active animation for each element,
  * allowing cancellation or replacement of ongoing animations.
  *
- * @type {WeakMap<HTMLElement, Animation>}
+ * @type {WeakMap<HTMLElement, { animation: Animation, id: string }>}
  */
 const __elementCurrentAnimation = new WeakMap();
 
@@ -4173,7 +4173,7 @@ class TinyHtml {
         kf.push(frame);
       }
 
-      results.set(first, TinyHtml.animate(el, kf, ops)[0]);
+      results.set(first, TinyHtml.animate(el, kf, ops, id)[0]);
     });
     return results;
   }
@@ -4195,6 +4195,16 @@ class TinyHtml {
   // TITLE: Animate Stuff
 
   /**
+   * Get the current animation entry for a given element.
+   * @param {HTMLElement} el - The target element.
+   * @returns {string|null|undefined} Returns string or null to animation.
+   */
+  static getCurrentAnimationId(el) {
+    if (!(el instanceof HTMLElement)) throw new TypeError('Expected an HTMLElement.');
+    return __elementCurrentAnimation.get(el)?.id ?? undefined;
+  }
+
+  /**
    * Applies an animation to one or multiple TinyElement instances.
    *
    * If `cancelOldAnim` is true, any currently running animation on the same element
@@ -4203,6 +4213,7 @@ class TinyHtml {
    * @param {TinyHtmlElement|TinyHtmlElement[]} el - A single TinyElement or an array of TinyElements to animate.
    * @param {Keyframe[] | PropertyIndexedKeyframes | null} keyframes - Keyframes that define the animation.
    * @param {number | KeyframeAnimationOptions | string} [ops] - Timing or configuration options for the animation.
+   * @param {string|null} [id] - The style effect id.
    * @param {boolean} [cancelOldAnim=TinyHtml.cancelOldStyleFx] - Whether to cancel previous animations on the same element.
    * @returns {Animation[]}
    */
@@ -4210,6 +4221,7 @@ class TinyHtml {
     el,
     keyframes,
     ops = TinyHtml.#styleFxSpeeds._default,
+    id = null,
     cancelOldAnim = TinyHtml.#cancelOldStyleFx,
   ) {
     /** @type {number | KeyframeAnimationOptions}  */
@@ -4229,14 +4241,15 @@ class TinyHtml {
     TinyHtml._preHtmlElems(el, 'animate').forEach((elem) => {
       if (cancelOldAnim) {
         const prevAnim = __elementCurrentAnimation.get(elem);
-        if (prevAnim) prevAnim.cancel();
+        if (prevAnim) prevAnim.animation.cancel();
       }
 
       const anim = elem.animate(keyframes, fxSpeed);
       results.push(anim);
-      __elementCurrentAnimation.set(elem, anim);
+      __elementCurrentAnimation.set(elem, { animation: anim, id: id ?? '' });
       anim.addEventListener('finish', () => {
-        if (__elementCurrentAnimation.get(elem) === anim) __elementCurrentAnimation.delete(elem);
+        if (__elementCurrentAnimation.get(elem)?.animation === anim)
+          __elementCurrentAnimation.delete(elem);
       });
     });
 
@@ -4251,11 +4264,12 @@ class TinyHtml {
    *
    * @param {Keyframe[] | PropertyIndexedKeyframes | null} keyframes - Keyframes that define the animation.
    * @param {number | KeyframeAnimationOptions | string} [ops] - Timing or configuration options for the animation.
+   * @param {string|null} [id] - The style effect id.
    * @param {boolean} [cancelOldAnim=TinyHtml.cancelOldStyleFx] - Whether to cancel previous animations on the same element.
    * @returns {Animation[]}
    */
-  animate(keyframes, ops, cancelOldAnim) {
-    return TinyHtml.animate(this, keyframes, ops, cancelOldAnim);
+  animate(keyframes, ops, id, cancelOldAnim) {
+    return TinyHtml.animate(this, keyframes, ops, id, cancelOldAnim);
   }
 
   /**
@@ -4272,7 +4286,7 @@ class TinyHtml {
     TinyHtml._preHtmlElems(el, 'stop').forEach((elem) => {
       const anim = __elementCurrentAnimation.get(elem);
       if (anim) {
-        anim.cancel();
+        anim.animation.cancel();
         __elementCurrentAnimation.delete(elem);
         results.push(true);
       } else results.push(false);
@@ -4348,9 +4362,11 @@ class TinyHtml {
   static slideToggle(el, ops) {
     const first = TinyHtml._preHtmlElem(el, 'slideToggle');
     const style = getComputedStyle(first);
-    console.log(style.display, first.offsetHeight);
+    const id = TinyHtml.getCurrentAnimationId(first);
     const isHidden = style.display === 'none' || first.offsetHeight === 0;
-    return isHidden ? TinyHtml.slideDown(el, ops) : TinyHtml.slideUp(el, ops);
+    return (typeof id === 'string' ? id === 'slideUp' : isHidden)
+      ? TinyHtml.slideDown(el, ops)
+      : TinyHtml.slideUp(el, ops);
   }
 
   /**
@@ -4409,9 +4425,11 @@ class TinyHtml {
   static fadeToggle(el, ops) {
     const first = TinyHtml._preHtmlElem(el, 'fadeToggle');
     const style = getComputedStyle(first);
-    console.log(style.opacity, first.offsetParent);
+    const id = TinyHtml.getCurrentAnimationId(first);
     const isHidden = style.opacity === '0' || first.offsetParent === null;
-    return isHidden ? TinyHtml.fadeIn(el, ops) : TinyHtml.fadeOut(el, ops);
+    return (typeof id === 'string' ? id === 'fadeOut' : isHidden)
+      ? TinyHtml.fadeIn(el, ops)
+      : TinyHtml.fadeOut(el, ops);
   }
 
   /**

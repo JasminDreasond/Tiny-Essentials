@@ -36,8 +36,10 @@ class TinyElementObserver {
    * @throws {TypeError} If the provided value is not an Element.
    */
   set el(el) {
-    if (this.#el) throw new Error('The observed element has already been set and cannot be reassigned.');
-    if (typeof el !== 'undefined' && !(el instanceof Element)) throw new TypeError('The observed element must be a valid DOM Element.');
+    if (this.#el)
+      throw new Error('The observed element has already been set and cannot be reassigned.');
+    if (typeof el !== 'undefined' && !(el instanceof Element))
+      throw new TypeError('The observed element must be a valid DOM Element.');
     this.#el = el;
   }
 
