@@ -112,26 +112,26 @@ export function safeTextTrim(text, limit, safeCutZone = 0.6) {
 
 /**
  * Diff two string objects.
- * @param {Record<string,string>} oldStyles
- * @param {Record<string,string>} newStyles
+ * @param {Record<string,string>} oldStrings
+ * @param {Record<string,string>} newStrings
  */
-export function diffStrings(oldStyles, newStyles) {
+export function diffStrings(oldStrings, newStrings) {
   /** @type {Record<string,Record<string,string|Record<string,string>>>}} */
   const changes = { added: {}, removed: {}, modified: {} };
 
   // detect removed and modified
-  for (const prop in oldStyles) {
-    if (!(prop in newStyles)) {
-      changes.removed[prop] = oldStyles[prop];
-    } else if (oldStyles[prop] !== newStyles[prop]) {
-      changes.modified[prop] = { old: oldStyles[prop], new: newStyles[prop] };
+  for (const prop in oldStrings) {
+    if (!(prop in newStrings)) {
+      changes.removed[prop] = oldStrings[prop];
+    } else if (oldStrings[prop] !== newStrings[prop]) {
+      changes.modified[prop] = { old: oldStrings[prop], new: newStrings[prop] };
     }
   }
 
   // detect added
-  for (const prop in newStyles) {
-    if (!(prop in oldStyles)) {
-      changes.added[prop] = newStyles[prop];
+  for (const prop in newStrings) {
+    if (!(prop in oldStrings)) {
+      changes.added[prop] = newStrings[prop];
     }
   }
 

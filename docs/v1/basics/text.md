@@ -159,3 +159,32 @@ const longText = "This is a sample sentence that will be trimmed properly.";
 console.log(safeTextTrim(longText, 30));
 // Output: "This is a sample sentence that..."
 ```
+
+---
+
+## 🔎 `diffStrings(oldStrings, newStrings)`
+
+Compares two **style objects** and identifies which properties were **added**, **removed**, or **modified**.
+
+* **`oldStrings`** 🎨 — Record of string values (original state).
+* **`newStrings`** 🎨 — Record of string values (new state).
+* **Returns** 📦 — An object with three sub-objects:
+
+  * `added` → new properties not present before.
+  * `removed` → properties that no longer exist.
+  * `modified` → properties whose values have changed (with `old` and `new`).
+
+**Example:**
+
+```js
+diffStrings(
+  { color: 'red', display: 'block' },
+  { color: 'blue', visibility: 'hidden' }
+);
+
+// ➡ {
+//   added: { visibility: 'hidden' },
+//   removed: { display: 'block' },
+//   modified: { color: { old: 'red', new: 'blue' } }
+// }
+```
