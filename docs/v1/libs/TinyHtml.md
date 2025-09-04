@@ -19,6 +19,7 @@ This design keeps your code concise while maintaining clarity and control over t
 ## 📑 Table of Contents
 
 - [🧩 Type Definitions – Core Building Blocks](#-type-definitions--core-building-blocks)
+- [🔍 Element Debugging System](#-element-debugging-system)
 - [🔨 Element Creation](#-element-creation)
 - [🔎 Static DOM Selectors](#-static-dom-selectors)
 - [🔍 Element Observer](#-element-observer)
@@ -522,6 +523,110 @@ const __elementCurrentAnimation = new WeakMap();
 
 * **Purpose:** Groups multiple property handlers for different CSS properties.
 * **Type:** `Record<string, StyleEffectsFn>`
+
+---
+
+## 🔍 Element Debugging System
+
+TinyHtml includes a built-in **element debugging system** to help developers identify issues with elements during validation, construction, or event handling.
+
+This feature is **disabled by default** and can be toggled on or off.
+
+---
+
+### ⚙️ Enabling Debug Mode
+
+```js
+TinyHtml.elemDebug = true;  // Enable
+TinyHtml.elemDebug = false; // Disable
+```
+
+#### API
+
+* **`TinyHtml.elemDebug` (boolean)**
+  Controls whether TinyHtml emits detailed debug output to the console.
+
+* **Getter**
+
+  ```js
+  TinyHtml.elemDebug; // Returns true or false
+  ```
+
+* **Setter**
+
+  ```js
+  TinyHtml.elemDebug = true;  // Enable debug logs
+  TinyHtml.elemDebug = false; // Disable debug logs
+  ```
+
+  🚨 Throws `TypeError` if the value is not a boolean.
+
+---
+
+### 🛠 Debugging Invalid Elements
+
+When debug mode is enabled, TinyHtml will log structured information whenever an invalid or unexpected element is passed to its internal operations.
+
+This is done through the internal method:
+
+```js
+TinyHtml._debugElemError(elems, elem);
+```
+
+#### Parameters
+
+* **`elems`** → An array of elements (`ConstructorElValues | EventTarget | TinyElement | null`) involved in the operation.
+* **`elem`** *(optional)* → The specific element that triggered the error.
+
+#### Output Includes
+
+* ❌ **Error header** in the console
+* 🧭 **Stack trace** (with `console.trace` or captured stack)
+* 📊 **`console.table`** showing:
+
+  * Index
+  * `typeof`
+  * Constructor name
+  * Summary (DOM tag, ID, class, or nodeType)
+  * The raw value
+* 🎯 **Problematic element** highlighted separately via `console.dir`
+
+---
+
+### 📋 Example Output
+
+When debug mode is enabled and an invalid element is detected, you may see something like this:
+
+```
+[TinyHtml Debug] Element validation error
+Error: [TinyHtml Debug] Element validation error
+    at TinyHtml._debugElemError (...)
+    at ...
+```
+
+Followed by a **console.table**:
+
+| index | typeOf | constructor | summary            | value         |
+| ----- | ------ | ----------- | ------------------ | ------------- |
+| 0     | object | TinyElement | div#main.container | TinyElement{} |
+| 1     | string | primitive   |                    | "invalid"     |
+| 2     | null   | null        |                    | null          |
+
+And a detailed log of the problematic element:
+
+```
+[TinyHtml Debug] Problematic element:
+<div id="main" class="container">...</div>
+```
+
+---
+
+### ✅ Summary
+
+* 🔧 Enable debug with `TinyHtml.elemDebug = true;`
+* 🐞 Detailed errors are shown only when debug mode is on
+* 📊 Uses `console.table`, `console.error`, and `console.dir` for clarity
+* 🚀 Zero runtime overhead when disabled
 
 ---
 
