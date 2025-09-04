@@ -2081,12 +2081,13 @@ Safe and type-checked — throws if misuse is detected.
 
 ---
 
-### 🧲 `.hasProp()` / `.addProp()` / `.removeProp()` / `.toggleProp()` / `.prop()`
+### 🧲 `.hasProp()` / `.addProp()` / `.removeProp()` / `.toggleProp()` / `.prop()` / `.setProp()`
 
 Properties
 
 ```js
 element.prop('scrollHeight');           // get scrollHeight value
+element.setProp('disabled', true);      // set true
 element.hasProp("disabled");            // true/false
 element.addProp("checked");             // set true
 element.removeProp("checked");          // set false

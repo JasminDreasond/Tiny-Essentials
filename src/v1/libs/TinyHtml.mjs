@@ -661,7 +661,7 @@ class TinyHtml {
    * ```
    *
    * @param {string} tagName - The HTML tag name (e.g., 'div', 'span', 'button').
-   * @param {Record<string, string|null>} [attrs] - Optional key-value pairs representing HTML attributes.
+   * @param {Record<string, string|number|null>} [attrs] - Optional key-value pairs representing HTML attributes.
    *                                                If the value is `null`, the attribute will still be set with an empty value.
    * @returns {TinyHtml<HTMLElement>} - A new instance of TinyHtml representing the created element.
    * @throws {TypeError} - If `tagName` is not a string, or `attrs` is not a plain object when defined.
@@ -6532,7 +6532,7 @@ class TinyHtml {
    * @template {TinyElement|TinyElement[]} T
    * @param {T} el - Target element(s).
    * @param {string|Record<string, string|null>} name - Attribute name or an object of attributes.
-   * @param {string|null} [value=null] - Attribute value (ignored if "name" is an object).
+   * @param {string|number|null} [value=null] - Attribute value (ignored if "name" is an object).
    * @returns {T}
    */
   static setAttr(el, name, value = null) {
@@ -6541,8 +6541,8 @@ class TinyHtml {
     // Multiple attributes at once
     if (typeof name === 'object' && name !== null) {
       Object.entries(name).forEach(([attr, val]) => {
-        if (val !== null && typeof val !== 'string')
-          throw new TypeError(`The value for "${attr}" must be a string or null.`);
+        if (val !== null && typeof val !== 'string' && typeof val !== 'number')
+          throw new TypeError(`The value for "${attr}" must be a string/number or null.`);
         elems.forEach((elem) => {
           if (val === null) elem.removeAttribute(TinyHtml.getAttrName(attr));
           else elem.setAttribute(TinyHtml.getAttrName(attr), val);
@@ -6567,7 +6567,7 @@ class TinyHtml {
   /**
    * Set one or multiple attributes on an element.
    * @param {string|Record<string, string|null>} name - Attribute name or an object of attributes.
-   * @param {string|null} [value=null] - Attribute value (ignored if "name" is an object).
+   * @param {string|number|null} [value=null] - Attribute value (ignored if "name" is an object).
    * @returns {this}
    */
   setAttr(name, value) {
@@ -6757,6 +6757,34 @@ class TinyHtml {
    */
   prop(name) {
     return TinyHtml.prop(this, name);
+  }
+
+  /**
+   * Set a property on elements.
+   * @template {TinyElement|TinyElement[]} T
+   * @param {T} el - Target element(s).
+   * @param {string} name - Property name.
+   * @param {any} value - Value to set.
+   * @returns {T}
+   */
+  static setProp(el, name, value) {
+    if (typeof name !== 'string' || name.trim() === '')
+      throw new Error('Property name must be a non-empty string.');
+    TinyHtml._preElems(el, 'setProp').forEach((elem) => {
+      // @ts-ignore
+      elem[name] = value;
+    });
+    return el;
+  }
+
+  /**
+   * Set a property on this element.
+   * @param {string} name - Property name.
+   * @param {any} value - Value to set.
+   * @returns {this} The same element.
+   */
+  setProp(name, value) {
+    return TinyHtml.setProp(this, name, value);
   }
 
   /////////////////////////////////////////////////////
