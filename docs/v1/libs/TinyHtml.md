@@ -2076,6 +2076,42 @@ element.removeAttr("data-test");       // Remove
 element.hasAttr("id");                 // Check
 ```
 
+```js
+element.attrBigInt("example");             // Get
+element.setAttrBigInt("example", 10n);     // Set
+element.setAttrBigInt({ "example": 10n }); // Set
+```
+
+```js
+element.attrDate("example");                    // Get
+element.setAttrDate("example", new Date());     // Set
+element.setAttrDate({ "example": new Date() }); // Set
+```
+
+```js
+element.attrJson("example");                           // Get
+element.setAttrJson("example", { pudding: true });     // Set
+element.setAttrJson({ "example": { pudding: true } }); // Set
+```
+
+```js
+element.attrNumber("example");           // Get
+element.setAttrNumber("example", 1);     // Set
+element.setAttrNumber({ "example": 1 }); // Set
+```
+
+```js
+element.attrBoolean("example");              // Get
+element.setAttrBoolean("example", true);     // Set
+element.setAttrBoolean({ "example": true }); // Set
+```
+
+```js
+element.attrString("example");                   // Get
+element.setAttrString("example", "pudding");     // Set
+element.setAttrString({ "example": "pudding" }); // Set
+```
+
 Works on both single and multiple elements (static or instance).
 Safe and type-checked — throws if misuse is detected.
 

@@ -6516,6 +6516,291 @@ class TinyHtml {
     return propName;
   }
 
+  ////////////////////////////////////////////////////////////////////
+
+  /**
+   * Returns the BigInt value of an attribute.
+   * @param {TinyElement} el
+   * @param {string} name
+   * @returns {bigint|null}
+   */
+  static attrBigInt(el, name) {
+    const elem = TinyHtml._preElem(el, 'attrBigInt');
+    const val = elem.getAttribute(TinyHtml.getAttrName(name));
+    if (val == null) return null;
+    try {
+      return BigInt(val);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Returns the BigInt value of an attribute.
+   * @param {string} name
+   * @returns {bigint|null}
+   */
+  attrBigInt(name) {
+    return TinyHtml.attrBigInt(this, name);
+  }
+
+  /**
+   * Set a BigInt attribute.
+   * @template {TinyElement|TinyElement[]} T
+   * @param {T} el
+   * @param {string} name
+   * @param {bigint} value
+   * @returns {T}
+   */
+  static setAttrBigInt(el, name, value) {
+    if (typeof value !== 'bigint') throw new Error('Value is not a valid BigInt.');
+    return TinyHtml.setAttr(el, name, value.toString());
+  }
+
+  /**
+   * Set a BigInt attribute.
+   * @param {string} name
+   * @param {bigint} value
+   * @returns {this}
+   */
+  setAttrBigInt(name, value) {
+    return TinyHtml.setAttrBigInt(this, name, value);
+  }
+
+  /**
+   * Returns the Date value of an attribute.
+   * @param {TinyElement} el
+   * @param {string} name
+   * @returns {Date|null}
+   */
+  static attrDate(el, name) {
+    const elem = TinyHtml._preElem(el, 'attrDate');
+    const val = elem.getAttribute(TinyHtml.getAttrName(name));
+    if (!val) return null;
+    const d = new Date(val);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+
+  /**
+   * Returns the Date value of an attribute.
+   * @param {string} name
+   * @returns {Date|null}
+   */
+  attrDate(name) {
+    return TinyHtml.attrDate(this, name);
+  }
+
+  /**
+   * Set a Date attribute.
+   * @template {TinyElement|TinyElement[]} T
+   * @param {T} el
+   * @param {string} name
+   * @param {Date} value
+   * @returns {T}
+   */
+  static setAttrDate(el, name, value) {
+    if (!(value instanceof Date) || Number.isNaN(value.getTime()))
+      throw new Error('Value is not a valid Date.');
+    return TinyHtml.setAttr(el, name, value.toISOString());
+  }
+
+  /**
+   * Set a Date attribute.
+   * @param {string} name
+   * @param {Date} value
+   * @returns {this}
+   */
+  setAttrDate(name, value) {
+    return TinyHtml.setAttrDate(this, name, value);
+  }
+
+  /**
+   * Returns the JSON value of an attribute.
+   * @param {TinyElement} el
+   * @param {string} name
+   * @returns {any|null}
+   */
+  static attrJson(el, name) {
+    const elem = TinyHtml._preElem(el, 'attrJson');
+    const val = elem.getAttribute(TinyHtml.getAttrName(name));
+    if (!val) return null;
+    try {
+      return JSON.parse(val);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Returns the JSON value of an attribute.
+   * @param {string} name
+   * @returns {any|null}
+   */
+  attrJson(name) {
+    return TinyHtml.attrJson(this, name);
+  }
+
+  /**
+   * Set a JSON attribute.
+   * @template {TinyElement|TinyElement[]} T
+   * @param {T} el
+   * @param {string} name
+   * @param {any} value
+   * @param {(this: any, key: string, value: any) => any} [replacer]
+   * @param {number|string} [space]
+   * @returns {T}
+   */
+  static setAttrJson(el, name, value, replacer, space) {
+    const data = JSON.stringify(value, replacer, space);
+    return TinyHtml.setAttr(el, name, data);
+  }
+
+  /**
+   * Set a JSON attribute.
+   * @param {string} name
+   * @param {any} value
+   * @param {(this: any, key: string, value: any) => any} [replacer]
+   * @param {number|string} [space]
+   * @returns {this}
+   */
+  setAttrJson(name, value, replacer, space) {
+    return TinyHtml.setAttrJson(this, name, value, replacer, space);
+  }
+
+  /**
+   * Returns the number value of an attribute.
+   * @param {TinyElement} el
+   * @param {string} name
+   * @returns {number|null}
+   */
+  static attrNumber(el, name) {
+    const elem = TinyHtml._preElem(el, 'attrNumber');
+    const val = elem.getAttribute(TinyHtml.getAttrName(name));
+    return val != null ? parseFloat(val) : null;
+  }
+
+  /**
+   * Returns the number value of an attribute.
+   * @param {string} name
+   * @returns {number|null}
+   */
+  attrNumber(name) {
+    return TinyHtml.attrNumber(this, name);
+  }
+
+  /**
+   * Set a number attribute.
+   * @template {TinyElement|TinyElement[]} T
+   * @param {T} el
+   * @param {string} name
+   * @param {number} value
+   * @returns {T}
+   */
+  static setAttrNumber(el, name, value) {
+    if (typeof value !== 'number') throw new Error('Value is not a valid number.');
+    return TinyHtml.setAttr(el, name, value.toString());
+  }
+
+  /**
+   * Set a number attribute.
+   * @param {string} name
+   * @param {number} value
+   * @returns {this}
+   */
+  setAttrNumber(name, value) {
+    return TinyHtml.setAttrNumber(this, name, value);
+  }
+
+  /**
+   * Returns the boolean value of an attribute.
+   * @param {TinyElement} el
+   * @param {string} name
+   * @returns {boolean|null}
+   */
+  static attrBoolean(el, name) {
+    const elem = TinyHtml._preElem(el, 'attrBoolean');
+    const val = elem.getAttribute(TinyHtml.getAttrName(name));
+    if (val === null) return null;
+    if (val !== 'true' && val !== 'false') return null;
+    return /^true$/i.test(val);
+  }
+
+  /**
+   * Returns the boolean value of an attribute.
+   * @param {string} name
+   * @returns {boolean|null}
+   */
+  attrBoolean(name) {
+    return TinyHtml.attrBoolean(this, name);
+  }
+
+  /**
+   * Set a boolean attribute.
+   * @template {TinyElement|TinyElement[]} T
+   * @param {T} el
+   * @param {string} name
+   * @param {boolean} value
+   * @returns {T}
+   */
+  static setAttrBoolean(el, name, value) {
+    if (typeof value !== 'boolean') throw new Error('Value is not a valid boolean.');
+    return TinyHtml.setAttr(el, name, value.toString());
+  }
+
+  /**
+   * Set a boolean attribute.
+   * @param {string} name
+   * @param {boolean} value
+   * @returns {this}
+   */
+  setAttrBoolean(name, value) {
+    return TinyHtml.setAttrBoolean(this, name, value);
+  }
+
+  /**
+   * Returns the string value of an attribute.
+   * @param {TinyElement} el
+   * @param {string} name
+   * @returns {string|null}
+   */
+  static attrString(el, name) {
+    const elem = TinyHtml._preElem(el, 'attrString');
+    const value = elem.getAttribute(TinyHtml.getAttrName(name));
+    return typeof value === 'string' ? value : null;
+  }
+
+  /**
+   * Returns the string value of an attribute.
+   * @param {string} name
+   * @returns {string|null}
+   */
+  attrString(name) {
+    return TinyHtml.attrString(this, name);
+  }
+
+  /**
+   * Set a string attribute.
+   * @template {TinyElement|TinyElement[]} T
+   * @param {T} el
+   * @param {string} name
+   * @param {string} value
+   * @returns {T}
+   */
+  static setAttrString(el, name, value) {
+    if (typeof value !== 'string') throw new Error('Value is not a valid string.');
+    return TinyHtml.setAttr(el, name, value);
+  }
+
+  /**
+   * Set a string attribute.
+   * @param {string} name
+   * @param {string} value
+   * @returns {this}
+   */
+  setAttrString(name, value) {
+    return TinyHtml.setAttrString(this, name, value);
+  }
+
   /**
    * Get an attribute on an element.
    * @param {TinyElement} el
@@ -6541,8 +6826,8 @@ class TinyHtml {
    * Set one or multiple attributes on an element.
    * @template {TinyElement|TinyElement[]} T
    * @param {T} el - Target element(s).
-   * @param {string|Record<string, string|number|null>} name - Attribute name or an object of attributes.
-   * @param {string|number|null} [value=null] - Attribute value (ignored if "name" is an object).
+   * @param {string|Record<string, any>} name - Attribute name or an object of attributes.
+   * @param {any} [value=null] - Attribute value (ignored if "name" is an object).
    * @returns {T}
    */
   static setAttr(el, name, value = null) {
@@ -6550,22 +6835,17 @@ class TinyHtml {
 
     // Multiple attributes at once
     if (typeof name === 'object' && name !== null) {
-      Object.entries(name).forEach(([attr, val]) => {
-        if (val !== null && typeof val !== 'string' && typeof val !== 'number')
-          throw new TypeError(`The value for "${attr}" must be a string/number or null.`);
+      Object.entries(name).forEach(([attr, val]) =>
         elems.forEach((elem) => {
           if (val === null) elem.removeAttribute(TinyHtml.getAttrName(attr));
           else elem.setAttribute(TinyHtml.getAttrName(attr), String(val));
-        });
-      });
+        }),
+      );
       return el;
     }
 
     // Single attribute
     if (typeof name !== 'string') throw new TypeError('The "name" must be a string.');
-    if (value !== null && typeof value !== 'string' && typeof value !== 'number')
-      throw new TypeError('The "value" must be a string.');
-
     elems.forEach((elem) => {
       if (value === null) elem.removeAttribute(TinyHtml.getAttrName(name));
       else elem.setAttribute(TinyHtml.getAttrName(name), String(value));
@@ -6576,8 +6856,8 @@ class TinyHtml {
 
   /**
    * Set one or multiple attributes on an element.
-   * @param {string|Record<string, string|number|null>} name - Attribute name or an object of attributes.
-   * @param {string|number|null} [value=null] - Attribute value (ignored if "name" is an object).
+   * @param {string|Record<string, any>} name - Attribute name or an object of attributes.
+   * @param {any} [value=null] - Attribute value (ignored if "name" is an object).
    * @returns {this}
    */
   setAttr(name, value) {
