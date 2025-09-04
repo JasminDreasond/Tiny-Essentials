@@ -337,29 +337,92 @@ class TinyHtml {
 
   static Utils = { ...TinyCollision };
 
-  /** @type {boolean} */
+  /**
+   * Controls whether TinyHtml emits detailed debug output to the console.
+   * When enabled, helper methods print structured diagnostics for easier troubleshooting.
+   * @type {boolean}
+   */
   static #elemDebug = false;
 
-  /** @returns {boolean} */
+  /**
+   * Gets whether debug output is enabled.
+   * @returns {boolean} True if debug output is enabled; otherwise, false.
+   */
   static get elemDebug() {
     return TinyHtml.#elemDebug;
   }
 
-  /** @param {boolean} value */
+  /**
+   * Enables or disables debug output.
+   * @param {boolean} value True to enable debug output; false to disable.
+   * @throws {TypeError} Thrown if the provided value is not a boolean.
+   * @returns {void}
+   */
   static set elemDebug(value) {
-    if (typeof value !== 'boolean') throw new TypeError('');
+    if (typeof value !== 'boolean') throw new TypeError('Expected a boolean value for elemDebug');
     TinyHtml.#elemDebug = value;
   }
 
   /**
-   * @param {(ConstructorElValues | EventTarget | TinyElement| null)[]} elems
-   * @param {ConstructorElValues | EventTarget | TinyElement| null} [elem]
+   * Logs a standardized debug error for element validation, including a console.table
+   * with the involved elements. Use this when an element argument is invalid, unexpected,
+   * or fails a guard/validation.
+   *
+   * The output includes:
+   *  - A concise error header
+   *  - A stack trace (when supported)
+   *  - A table of elements (index, typeof, constructor, summary, value)
+   *  - The specific problematic element, if provided
+   *
+   * @param {(ConstructorElValues | EventTarget | TinyElement | null)[]} elems
+   *        A list of elements participating in the operation (may include nulls).
+   * @param {ConstructorElValues | EventTarget | TinyElement | null} [elem]
+   *        The specific element that triggered the error, if available.
+   * @returns {void}
    */
   static _debugElemError(elems, elem) {
-    if (TinyHtml.#elemDebug) {
-      console.log(elems);
-      if (elem) console.log(elem);
+    if (!TinyHtml.#elemDebug) return;
+    const header = '[TinyHtml Debug] Element validation error';
+
+    console.groupCollapsed(`${header}${elem ? ' — details below' : ''}`);
+    console.error(header);
+
+    // Stack trace for call-site visibility
+    if (typeof Error !== 'undefined' && typeof Error.captureStackTrace === 'function') {
+      const err = new Error(header);
+      Error.captureStackTrace(err, TinyHtml._debugElemError);
+      console.error(err.stack);
+    } else {
+      console.trace(header);
     }
+
+    // Tabular overview of provided elements
+    if (Array.isArray(elems)) {
+      const rows = elems.map((el, index) => {
+        const typeOf = el === null ? 'null' : typeof el;
+        const ctor = el?.constructor?.name ?? (el === null ? 'null' : 'primitive');
+        const isDomEl = typeof Element !== 'undefined' && el instanceof Element;
+        const summary = isDomEl
+          ? `${el.tagName?.toLowerCase?.() ?? 'element'}#${el.id || ''}.${String(el.className || '')
+              .trim()
+              .replace(/\s+/g, '.')}`
+          : el && typeof el === 'object' && 'nodeType' in el
+            ? `nodeType:${/** @type {any} */ (el).nodeType}`
+            : '';
+        return { index, typeOf, constructor: ctor, summary, value: el };
+      });
+      console.table(rows);
+    } else {
+      console.warn('[TinyHtml Debug] "elems" is not an array:', elems);
+    }
+
+    // Highlight the specific problematic element, if any
+    if (arguments.length > 1) {
+      console.error('[TinyHtml Debug] Problematic element:', elem);
+      if (elem && typeof elem === 'object') console.dir(elem);
+    }
+
+    console.groupEnd();
   }
 
   /**
