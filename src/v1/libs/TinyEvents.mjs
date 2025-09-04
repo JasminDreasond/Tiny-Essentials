@@ -142,7 +142,7 @@ class TinyEvents {
    * @param {boolean} [settings.once=false] - This is a once event.
    */
   #on(event, handler, { once = false } = {}) {
-    const events = this.#normalizeEvents(event, '#on');
+    const events = this.#normalizeEvents(event, 'on');
     for (const ev of events) {
       let eventData = this.#listeners.get(ev);
       if (!Array.isArray(eventData)) {
