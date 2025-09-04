@@ -337,6 +337,31 @@ class TinyHtml {
 
   static Utils = { ...TinyCollision };
 
+  /** @type {boolean} */
+  static #elemDebug = false;
+
+  /** @returns {boolean} */
+  static get elemDebug() {
+    return TinyHtml.#elemDebug;
+  }
+
+  /** @param {boolean} value */
+  static set elemDebug(value) {
+    if (typeof value !== 'boolean') throw new TypeError('');
+    TinyHtml.#elemDebug = value;
+  }
+
+  /**
+   * @param {(ConstructorElValues | EventTarget | TinyElement| null)[]} elems
+   * @param {ConstructorElValues | EventTarget | TinyElement| null} [elem]
+   */
+  static _debugElemError(elems, elem) {
+    if (TinyHtml.#elemDebug) {
+      console.log(elems);
+      if (elem) console.log(elem);
+    }
+  }
+
   /**
    * Parse inline styles into an object.
    * @param {string} styleText
@@ -941,8 +966,10 @@ class TinyHtml {
       !(this.#el[index] instanceof Window) &&
       !(this.#el[index] instanceof Document) &&
       !(this.#el[index] instanceof Text)
-    )
+    ) {
+      TinyHtml._debugElemError([...this.#el], this.#el[index]);
       throw new Error(`[TinyHtml] Invalid Element in ${where}().`);
+    }
     return this.#el[index];
   }
 
@@ -962,8 +989,10 @@ class TinyHtml {
           el instanceof Document ||
           el instanceof Text,
       )
-    )
+    ) {
+      TinyHtml._debugElemError([...this.#el]);
       throw new Error(`[TinyHtml] Invalid Element in ${where}().`);
+    }
     return [...this.#el];
   }
 
@@ -996,10 +1025,12 @@ class TinyHtml {
               break;
             }
           }
-          if (!allowed)
+          if (!allowed) {
+            TinyHtml._debugElemError([...item], result);
             throw new Error(
               `[TinyHtml] Invalid element of the list "${elemName.join(',')}" in ${where}().`,
             );
+          }
           results.push(result);
           return result;
         }),
@@ -1027,10 +1058,12 @@ class TinyHtml {
     const checkElement = (item) => {
       const elem = item[0];
       const result = elem instanceof TinyHtml ? elem._getElements(where) : [elem];
-      if (result.length > 1)
+      if (result.length > 1) {
+        TinyHtml._debugElemError([...item]);
         throw new Error(
           `[TinyHtml] Invalid element amount in ${where}() (Received ${result.length}/1).`,
         );
+      }
 
       let allowed = false;
       for (const TheTinyElement of TheTinyElements) {
@@ -1045,17 +1078,21 @@ class TinyHtml {
         allowed = true;
       }
 
-      if (!allowed)
+      if (!allowed) {
+        TinyHtml._debugElemError([...item], result[0]);
         throw new Error(
           `[TinyHtml] Invalid element of the list "${elemName.join(',')}" in ${where}().`,
         );
+      }
       return result[0];
     };
     if (!Array.isArray(elems)) return checkElement([elems]);
-    if (elems.length > 1)
+    if (elems.length > 1) {
+      TinyHtml._debugElemError([...elems]);
       throw new Error(
         `[TinyHtml] Invalid element amount in ${where}() (Received ${elems.length}/1).`,
       );
+    }
     return checkElement(elems);
   }
 
