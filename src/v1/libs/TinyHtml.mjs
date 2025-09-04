@@ -858,12 +858,21 @@ class TinyHtml {
   // TITLE: Element getter
 
   /**
+   * Returns the current targets held by this instance.
+   *
+   * @returns {ConstructorElValues[]} - The instance's targets element.
+   */
+  get elements() {
+    return [...this.#el];
+  }
+
+  /**
    * Iterates over all elements, executing the provided callback on each.
    * @param {(element: TinyHtmlAny, index: number, items: TinyHtmlAny[]) => void} callback - Function invoked for each element.
    * @returns {this} The current instance for chaining.
    */
   forEach(callback) {
-    const elems = this.getAll().map((el, index) => this.extract(index));
+    const elems = this.elements.map((el, index) => this.extract(index));
     for (const index in elems) callback(elems[index], Number(index), elems);
     return this;
   }
@@ -905,6 +914,7 @@ class TinyHtml {
   }
 
   /**
+   * @deprecated Use the getter {@link elements} instead.
    * Returns the current targets held by this instance.
    *
    * @returns {ConstructorElValues[]} - The instance's targets element.

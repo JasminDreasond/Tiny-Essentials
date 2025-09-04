@@ -935,7 +935,7 @@ Extracts a single DOM element from the internal list at the specified index.
 
 ---
 
-### `getAll()`
+### `get elements`
 Returns the current targets held by this instance.
 
 - **Returns**: `ConstructorElValues[]`
