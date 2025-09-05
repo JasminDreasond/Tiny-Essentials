@@ -2160,7 +2160,7 @@ class TinyHtml {
       )
         continue;
       if (typeof nds[index] !== 'string') {
-        results.push(TinyHtml._preNodeElem(nds[index], where));
+        results.push(TinyHtml._preNodeElems(nds[index], where)[0]);
       } else results.push(nds[index]);
     }
     return results;
