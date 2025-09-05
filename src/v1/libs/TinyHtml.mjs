@@ -19,6 +19,12 @@ const {
  */
 
 /**
+ * Represents the valid values that can be appended to a TinyNode.
+ *
+ * @typedef {TinyNode | TinyNode[] | string | false | null | undefined} AppendCheckerValues
+ */
+
+/**
  * Callback function used for hover events.
  * @callback HoverEventCallback
  * @param {MouseEvent} ev - The mouse event triggered on enter or leave.
@@ -2140,13 +2146,19 @@ class TinyHtml {
   /**
    * Normalize and validate nodes before DOM insertion.
    * Converts TinyNode-like structures or strings into DOM-compatible nodes.
-   * @type {(where: string, ...nodes: (TinyNode | TinyNode[] | string)[]) => (Node | string)[]}
+   * @type {(where: string, ...nodes: AppendCheckerValues[]) => (Node | string)[]}
    * @readonly
    */
   static _appendChecker(where, ...nodes) {
     const results = [];
     const nds = [...nodes];
     for (const index in nds) {
+      if (
+        typeof nds[index] === 'undefined' ||
+        nds[index] === null ||
+        nds[index] === false
+      )
+        continue;
       if (typeof nds[index] !== 'string') {
         results.push(TinyHtml._preNodeElem(nds[index], where));
       } else results.push(nds[index]);
@@ -2159,7 +2171,7 @@ class TinyHtml {
    *
    * @template {TinyElement} T
    * @param {T} el - The target element(s) to receive children.
-   * @param {...(TinyNode | TinyNode[] | string)} children - The child elements or text to append.
+   * @param {...AppendCheckerValues} children - The child elements or text to append.
    * @returns {T}
    */
   static append(el, ...children) {
@@ -2171,7 +2183,7 @@ class TinyHtml {
   /**
    * Appends child elements or strings to the end of the target element(s).
    *
-   * @param {...(TinyNode | TinyNode[] | string)} children - The child elements or text to append.
+   * @param {...AppendCheckerValues} children - The child elements or text to append.
    * @returns {this}
    */
   append(...children) {
@@ -2183,7 +2195,7 @@ class TinyHtml {
    *
    * @template {TinyElement} T
    * @param {T} el - The target element(s) to receive children.
-   * @param {...(TinyNode | TinyNode[] | string)} children - The child elements or text to prepend.
+   * @param {...AppendCheckerValues} children - The child elements or text to prepend.
    * @returns {T}
    */
   static prepend(el, ...children) {
@@ -2195,7 +2207,7 @@ class TinyHtml {
   /**
    * Prepends child elements or strings to the beginning of the target element(s).
    *
-   * @param {...(TinyNode | TinyNode[] | string)} children - The child elements or text to prepend.
+   * @param {...AppendCheckerValues} children - The child elements or text to prepend.
    * @returns {this}
    */
   prepend(...children) {
@@ -2207,7 +2219,7 @@ class TinyHtml {
    *
    * @template {TinyElement} T
    * @param {T} el - The target element(s) before which new content is inserted.
-   * @param {...(TinyNode | TinyNode[] | string)} children - Elements or text to insert before the target.
+   * @param {...AppendCheckerValues} children - Elements or text to insert before the target.
    * @returns {T}
    */
   static before(el, ...children) {
@@ -2219,7 +2231,7 @@ class TinyHtml {
   /**
    * Inserts elements or strings immediately before the target element(s) in the DOM.
    *
-   * @param {...(TinyNode | TinyNode[] | string)} children - Elements or text to insert before the target.
+   * @param {...AppendCheckerValues} children - Elements or text to insert before the target.
    * @returns {this}
    */
   before(...children) {
@@ -2231,7 +2243,7 @@ class TinyHtml {
    *
    * @template {TinyElement} T
    * @param {T} el - The target element(s) after which new content is inserted.
-   * @param {...(TinyNode | TinyNode[] | string)} children - Elements or text to insert after the target.
+   * @param {...AppendCheckerValues} children - Elements or text to insert after the target.
    * @returns {T}
    */
   static after(el, ...children) {
@@ -2243,7 +2255,7 @@ class TinyHtml {
   /**
    * Inserts elements or strings immediately after the target element(s) in the DOM.
    *
-   * @param {...(TinyNode | TinyNode[] | string)} children - Elements or text to insert after the target.
+   * @param {...AppendCheckerValues} children - Elements or text to insert after the target.
    * @returns {this}
    */
   after(...children) {
@@ -2255,7 +2267,7 @@ class TinyHtml {
    *
    * @template {TinyElement} T
    * @param {T} el - The element(s) to be replaced.
-   * @param {...(TinyNode | TinyNode[] | string)} newNodes - New elements or text to replace the target.
+   * @param {...AppendCheckerValues} newNodes - New elements or text to replace the target.
    * @returns {T}
    */
   static replaceWith(el, ...newNodes) {
@@ -2267,7 +2279,7 @@ class TinyHtml {
   /**
    * Replaces the target element(s) in the DOM with new elements or text.
    *
-   * @param {...(TinyNode | TinyNode[] | string)} newNodes - New elements or text to replace the target.
+   * @param {...AppendCheckerValues} newNodes - New elements or text to replace the target.
    * @returns {this}
    */
   replaceWith(...newNodes) {
