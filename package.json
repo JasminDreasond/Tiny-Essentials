@@ -38,6 +38,10 @@
   "types": "./dist/v1/index.d.mts",
   "ethereum": "jasmindreasond.x",
   "exports": {
+    "./css/aiMarker.min.css": "./dist/v1/css/aiMarker.min.css",
+    "./css/TinyCookieConsent.min.css": "./dist/v1/css/TinyCookieConsent.min.css",
+    "./css/TinyDraggerExample.min.css": "./dist/v1/css/TinyDraggerExample.min.css",
+    "./css/TinyNotify.min.css": "./dist/v1/css/TinyNotify.min.css",
     ".": {
       "require": "./dist/v1/index.cjs",
       "import": "./dist/v1/index.mjs"
