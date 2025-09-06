@@ -21,7 +21,13 @@ const {
 /**
  * Represents the valid values that can be appended to a TinyNode.
  *
- * @typedef {TinyNode | TinyNode[] | string | false | null | undefined} AppendCheckerValues
+ * @typedef {TinyNode | TinyNode[] | string | false | null | undefined} AppendCheckerTemplate
+ */
+
+/**
+ * Represents the the collection of values that can be appended to a TinyNode.
+ *
+ * @typedef {AppendCheckerTemplate|AppendCheckerTemplate[]} AppendCheckerValues
  */
 
 /**
@@ -2150,18 +2156,14 @@ class TinyHtml {
    * @readonly
    */
   static _appendChecker(where, ...nodes) {
+    /** @type {(string | Node)[]} */
     const results = [];
-    const nds = [...nodes];
-    for (const index in nds) {
-      if (
-        typeof nds[index] === 'undefined' ||
-        nds[index] === null ||
-        nds[index] === false
-      )
-        continue;
-      if (typeof nds[index] !== 'string') {
-        results.push(TinyHtml._preNodeElems(nds[index], where)[0]);
-      } else results.push(nds[index]);
+    for (const item of nodes) {
+      if (typeof item === 'undefined' || item === null || item === false) continue;
+      if (typeof item !== 'string') {
+        if (!Array.isArray(item)) results.push(TinyHtml._preNodeElems(item, where)[0]);
+        else results.push(...TinyHtml._appendChecker(where, ...item));
+      } else results.push(item);
     }
     return results;
   }
