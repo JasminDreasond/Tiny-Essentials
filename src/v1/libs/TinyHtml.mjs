@@ -1625,12 +1625,12 @@ class TinyHtml {
   }
 
   /**
-   * Return if the element has the target(s).
+   * Returns elements from the current list that contain the given target(s).
    * @param {string|TinyElement|TinyElement[]} target - Selector or DOM element(s).
-   * @returns {boolean} Elements that contain the target.
+   * @returns {Element[]} Elements that contain the target.
    */
   has(target) {
-    return TinyHtml.has(this, target).length > 0;
+    return TinyHtml.has(this, target);
   }
 
   /**
@@ -2152,7 +2152,7 @@ class TinyHtml {
   /**
    * Normalize and validate nodes before DOM insertion.
    * Converts TinyNode-like structures or strings into DOM-compatible nodes.
-   * @type {(where: string, ...nodes: AppendCheckerValues[]) => (Node | string)[]}
+   * @type {(where: string, ...nodes: (AppendCheckerValues|Record<string, AppendCheckerValues>)[]) => (Node | string)[]}
    * @readonly
    */
   static _appendChecker(where, ...nodes) {
@@ -2160,9 +2160,16 @@ class TinyHtml {
     const results = [];
     for (const item of nodes) {
       if (typeof item === 'undefined' || item === null || item === false) continue;
-      if (typeof item !== 'string') {
-        if (!Array.isArray(item)) results.push(TinyHtml._preNodeElems(item, where)[0]);
-        else results.push(...TinyHtml._appendChecker(where, ...item));
+      if (typeof item !== 'string' && typeof item !== 'number') {
+        if (item instanceof Node || item instanceof TinyHtml)
+          results.push(TinyHtml._preNodeElems(item, where)[0]);
+        else if (Array.isArray(item)) results.push(...TinyHtml._appendChecker(where, ...item));
+        else {
+          for (const name in item) {
+            const elems = item[name];
+            results.push(...TinyHtml._appendChecker(where, elems));
+          }
+        }
       } else results.push(item);
     }
     return results;
@@ -2173,7 +2180,7 @@ class TinyHtml {
    *
    * @template {TinyElement} T
    * @param {T} el - The target element(s) to receive children.
-   * @param {...AppendCheckerValues} children - The child elements or text to append.
+   * @param {...(AppendCheckerValues|Record<string, AppendCheckerValues>)} children - The child elements or text to append.
    * @returns {T}
    */
   static append(el, ...children) {
@@ -2185,7 +2192,7 @@ class TinyHtml {
   /**
    * Appends child elements or strings to the end of the target element(s).
    *
-   * @param {...AppendCheckerValues} children - The child elements or text to append.
+   * @param {...(AppendCheckerValues|Record<string, AppendCheckerValues>)} children - The child elements or text to append.
    * @returns {this}
    */
   append(...children) {
@@ -2197,7 +2204,7 @@ class TinyHtml {
    *
    * @template {TinyElement} T
    * @param {T} el - The target element(s) to receive children.
-   * @param {...AppendCheckerValues} children - The child elements or text to prepend.
+   * @param {...(AppendCheckerValues|Record<string, AppendCheckerValues>)} children - The child elements or text to prepend.
    * @returns {T}
    */
   static prepend(el, ...children) {
@@ -2209,7 +2216,7 @@ class TinyHtml {
   /**
    * Prepends child elements or strings to the beginning of the target element(s).
    *
-   * @param {...AppendCheckerValues} children - The child elements or text to prepend.
+   * @param {...(AppendCheckerValues|Record<string, AppendCheckerValues>)} children - The child elements or text to prepend.
    * @returns {this}
    */
   prepend(...children) {
@@ -2221,7 +2228,7 @@ class TinyHtml {
    *
    * @template {TinyElement} T
    * @param {T} el - The target element(s) before which new content is inserted.
-   * @param {...AppendCheckerValues} children - Elements or text to insert before the target.
+   * @param {...(AppendCheckerValues|Record<string, AppendCheckerValues>)} children - Elements or text to insert before the target.
    * @returns {T}
    */
   static before(el, ...children) {
@@ -2233,7 +2240,7 @@ class TinyHtml {
   /**
    * Inserts elements or strings immediately before the target element(s) in the DOM.
    *
-   * @param {...AppendCheckerValues} children - Elements or text to insert before the target.
+   * @param {...(AppendCheckerValues|Record<string, AppendCheckerValues>)} children - Elements or text to insert before the target.
    * @returns {this}
    */
   before(...children) {
@@ -2245,7 +2252,7 @@ class TinyHtml {
    *
    * @template {TinyElement} T
    * @param {T} el - The target element(s) after which new content is inserted.
-   * @param {...AppendCheckerValues} children - Elements or text to insert after the target.
+   * @param {...(AppendCheckerValues|Record<string, AppendCheckerValues>)} children - Elements or text to insert after the target.
    * @returns {T}
    */
   static after(el, ...children) {
@@ -2257,7 +2264,7 @@ class TinyHtml {
   /**
    * Inserts elements or strings immediately after the target element(s) in the DOM.
    *
-   * @param {...AppendCheckerValues} children - Elements or text to insert after the target.
+   * @param {...(AppendCheckerValues|Record<string, AppendCheckerValues>)} children - Elements or text to insert after the target.
    * @returns {this}
    */
   after(...children) {
@@ -2269,7 +2276,7 @@ class TinyHtml {
    *
    * @template {TinyElement} T
    * @param {T} el - The element(s) to be replaced.
-   * @param {...AppendCheckerValues} newNodes - New elements or text to replace the target.
+   * @param {...(AppendCheckerValues|Record<string, AppendCheckerValues>)} newNodes - New elements or text to replace the target.
    * @returns {T}
    */
   static replaceWith(el, ...newNodes) {
@@ -2281,7 +2288,7 @@ class TinyHtml {
   /**
    * Replaces the target element(s) in the DOM with new elements or text.
    *
-   * @param {...AppendCheckerValues} newNodes - New elements or text to replace the target.
+   * @param {...(AppendCheckerValues|Record<string, AppendCheckerValues>)} newNodes - New elements or text to replace the target.
    * @returns {this}
    */
   replaceWith(...newNodes) {
