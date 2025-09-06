@@ -1822,7 +1822,8 @@ class TinyHtml {
   static setData(el, key, value, isPrivate = false) {
     const data = TinyHtml._dataSelector[!isPrivate ? 'public' : 'private']('setData', el);
     if (typeof key !== 'string') throw new TypeError('The key must be a string.');
-    data[key] = value;
+    if (typeof value !== 'undefined') data[key] = value;
+    else TinyHtml.removeData(el, key);
     return el;
   }
 
@@ -1836,6 +1837,57 @@ class TinyHtml {
    */
   setData(key, value, isPrivate = false) {
     return TinyHtml.setData(this, key, value, isPrivate);
+  }
+
+  /**
+   * Checks if a specific key exists in the data store of a DOM element.
+   *
+   * @template {TinyElement} T
+   * @param {T} el - The DOM element.
+   * @param {string} key - The key to check.
+   * @param {boolean} [isPrivate=false] - Whether to check the private store.
+   * @returns {boolean}
+   */
+  static hasData(el, key, isPrivate = false) {
+    if (typeof key !== 'string') throw new TypeError('The key must be a string.');
+    const data = TinyHtml._dataSelector[!isPrivate ? 'public' : 'private']('hasData', el);
+    return Object.prototype.hasOwnProperty.call(data, key);
+  }
+
+  /**
+   * Checks if a specific key exists in the data store of this element.
+   *
+   * @param {string} key - The key to check.
+   * @param {boolean} [isPrivate=false] - Whether to check the private store.
+   * @returns {boolean}
+   */
+  hasData(key, isPrivate = false) {
+    return TinyHtml.hasData(this, key, isPrivate);
+  }
+
+  /**
+   * Removes a value associated with a specific key from the data store of a DOM element.
+   *
+   * @param {TinyElement} el - The DOM element.
+   * @param {string} key - The key to remove.
+   * @param {boolean} [isPrivate=false] - Whether to remove from the private store.
+   * @returns {boolean}
+   */
+  static removeData(el, key, isPrivate = false) {
+    if (typeof key !== 'string') throw new TypeError('The key must be a string.');
+    const data = TinyHtml._dataSelector[!isPrivate ? 'public' : 'private']('removeData', el);
+    return delete data[key];
+  }
+
+  /**
+   * Removes a value associated with a specific key from the data store of this element.
+   *
+   * @param {string} key - The key to remove.
+   * @param {boolean} [isPrivate=false] - Whether to remove from the private store.
+   * @returns {boolean}
+   */
+  removeData(key, isPrivate = false) {
+    return TinyHtml.removeData(this, key, isPrivate);
   }
 
   //////////////////////////////////////////////////////
@@ -2486,6 +2538,70 @@ class TinyHtml {
   }
 
   /**
+   * Validates if all provided items are acceptable constructor values.
+   *
+   * @param {any[]} els - The elements to validate.
+   * @throws {Error} If any element is not a valid target.
+   */
+  _elCheck(els) {
+    if (
+      !els.every(
+        (el) =>
+          el instanceof Element ||
+          el instanceof Window ||
+          el instanceof Document ||
+          el instanceof Text,
+      )
+    )
+      throw new Error(`[TinyHtml] Invalid Target in constructor.`);
+  }
+
+  /**
+   * Adds elements to the end of the internal collection.
+   *
+   * @param {...ConstructorElValues} el - The elements to add.
+   * @returns {number} The new length of the internal collection.
+   */
+  add(...el) {
+    this._elCheck(el);
+    return this.#el.push(...el);
+  }
+
+  /**
+   * Adds elements to the beginning of the internal collection.
+   *
+   * @param {...ConstructorElValues} el - The elements to add.
+   * @returns {number} The new length of the internal collection.
+   */
+  addBack(...el) {
+    this._elCheck(el);
+    return this.#el.unshift(...el);
+  }
+
+  /**
+   * Removes an element at the specified index.
+   *
+   * @param {number} index - The index of the element to remove.
+   * @param {number} [deleteCount=1] - The number of elements to remove.
+   */
+  delete(index, deleteCount = 1) {
+    if (typeof index !== 'number' || !Number.isInteger(index))
+      throw new TypeError('The index must be an integer.');
+    if (typeof deleteCount !== 'number' || !Number.isInteger(deleteCount))
+      throw new TypeError('The deleteCount must be an integer.');
+    if (index < 0 || index >= this.#el.length)
+      throw new Error('The index must be an valid position.');
+    this.#el.splice(index, deleteCount);
+  }
+
+  /**
+   * Clears all elements from the internal collection.
+   */
+  clear() {
+    this.#el = [];
+  }
+
+  /**
    * Creates an instance of TinyHtml for a specific Element.
    * Useful when you want to operate repeatedly on the same element using instance methods.
    * @param {TinyHtmlT} el - The element to wrap and manipulate.
@@ -2496,32 +2612,18 @@ class TinyHtml {
         `[TinyHtml] You are trying to put a TinyHtml inside another TinyHtml in constructor.`,
       );
 
-    /** @param {any[]} els */
-    const elCheck = (els) => {
-      if (
-        !els.every(
-          (el) =>
-            el instanceof Element ||
-            el instanceof Window ||
-            el instanceof Document ||
-            el instanceof Text,
-        )
-      )
-        throw new Error(`[TinyHtml] Invalid Target in constructor.`);
-    };
-
     if (Array.isArray(el)) {
-      elCheck(el);
+      this._elCheck(el);
       this.#el = el;
     } else if (el instanceof NodeList || el instanceof HTMLCollection) {
       /** @type {ConstructorElValues[]} */
       // @ts-ignore
       const els = [...el];
-      elCheck(els);
+      this._elCheck(els);
       this.#el = els;
     } else {
       const els = [el];
-      elCheck(els);
+      this._elCheck(els);
       // @ts-ignore
       this.#el = els;
     }

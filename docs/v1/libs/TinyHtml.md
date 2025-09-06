@@ -1001,6 +1001,65 @@ static jsonToTinyElems(jsonArray: HtmlParsed[]): TinyHtml[]
 
 ## 🧩 Internal Element Access
 
+### `_elCheck(els)`
+
+Validates if all provided items are acceptable constructor values.
+
+* **Parameters**:
+
+  * `els` (`ConstructorElValues[]`) — The elements to validate.
+* **Throws**:
+
+  * `Error` — If any element is not a valid target.
+* **Returns**: `void`
+
+---
+
+### `add(...el)`
+
+Adds elements to the end of the internal collection.
+
+* **Parameters**:
+
+  * `...el` (`ConstructorElValues`) — The elements to add.
+* **Returns**: `number` — The new length of the internal collection.
+
+---
+
+### `addBack(...el)`
+
+Adds elements to the beginning of the internal collection.
+
+* **Parameters**:
+
+  * `...el` (`ConstructorElValues`) — The elements to add.
+* **Returns**: `number` — The new length of the internal collection.
+
+---
+
+### `delete(index, deleteCount = 1)`
+
+Removes elements at the specified index.
+
+* **Parameters**:
+
+  * `index` (`number`) — The starting index for removal.
+  * `deleteCount` (`number`, optional, default = `1`) — The number of elements to remove.
+* **Throws**:
+
+  * `TypeError` — If `index` or `deleteCount` are not integers.
+  * `Error` — If `index` is out of range.
+
+---
+
+### `clear()`
+
+Clears all elements from the internal collection.
+
+* **Returns**: `void`
+
+---
+
 ### `exists(index)`
 Checks whether the element exists at the given index.
 
@@ -1214,6 +1273,14 @@ Gets data from the element.
 
 Sets a value on the element’s data store.
 
+#### `TinyHtml.hasData(el, key, isPrivate?)`
+
+Checks if a specific key exists in the data store of a DOM element.
+
+#### `TinyHtml.removeData(el, key, isPrivate?)`
+
+Removes a value associated with a specific key from the data store of a DOM element.
+
 ---
 
 ### 📌 Instance Methods
@@ -1225,6 +1292,14 @@ Shortcut for getting data from the current instance’s element.
 #### `.setData(key, value, isPrivate?)`
 
 Shortcut for setting data on the current element.
+
+#### `.hasData(key, isPrivate?)`
+
+Checks if a specific key exists in the data store of this element.
+
+#### `.removeData(key, isPrivate?)`
+
+Removes a value associated with a specific key from the data store of this element.
 
 ---
 
