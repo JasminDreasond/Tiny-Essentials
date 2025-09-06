@@ -702,16 +702,16 @@ This method is useful when you want to insert raw text content into the DOM with
 
 ---
 
-### `TinyHtml.createElementFromHTML(htmlString)`
+### `TinyHtml.createFromHTML(htmlString)`
 
-Creates an `HTMLElement` or `TextNode` from an HTML string.
+Creates an `HTMLElement` from an HTML string.
 Supports both elements and plain text.
 
 * **Parameters**:
 
   * `htmlString` *(string)* — The HTML string to convert.
 
-* **Returns**: `TinyHtml` — A `TinyHtml` instance wrapping the resulting `HTMLElement` or `TextNode`.
+* **Returns**: `TinyHtml` — A `TinyHtml` instance wrapping the resulting `HTMLElement`.
 
 * **Throws**:
 

@@ -813,6 +813,8 @@ class TinyHtml {
   }
 
   /**
+   * @deprecated Use the {@link createFromHTML} instead.
+   *
    * Creates an HTMLElement or TextNode from an HTML string.
    * Supports both elements and plain text.
    *
@@ -832,6 +834,24 @@ class TinyHtml {
     if (!(template.content.firstChild instanceof Element))
       throw new Error('The HTML string must contain a valid HTML element.');
     return new TinyHtml(template.content.firstChild);
+  }
+
+  /**
+   * Creates an HTMLElement or TextNode from an HTML string.
+   * Supports both elements and plain text.
+   *
+   * @param {string} htmlString - The HTML string to convert.
+   * @returns {TinyHtml<Element>} - A single HTMLElement or TextNode.
+   */
+  static createFromHTML(htmlString) {
+    const template = document.createElement('template');
+    htmlString = htmlString.trim();
+
+    template.innerHTML = htmlString;
+    const elems = Array.from(template.content.childNodes);
+    if (!elems.every((item) => item instanceof Element || item instanceof Text))
+      throw new Error('The HTML string must contain a valid HTML element.');
+    return new TinyHtml(elems);
   }
 
   ///////////////////////////////////////////////////
@@ -2162,7 +2182,7 @@ class TinyHtml {
       if (typeof item === 'undefined' || item === null || item === false) continue;
       if (typeof item !== 'string' && typeof item !== 'number') {
         if (item instanceof Node || item instanceof TinyHtml)
-          results.push(TinyHtml._preNodeElems(item, where)[0]);
+          results.push(...TinyHtml._preNodeElems(item, where));
         else if (Array.isArray(item)) results.push(...TinyHtml._appendChecker(where, ...item));
         else {
           for (const name in item) {
