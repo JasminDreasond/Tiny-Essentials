@@ -80,3 +80,55 @@ Aliases are especially handy when:
 ---
 
 👉 In summary, **TinyHtml is flexible**: you can stick to its original method names for clarity, or create **shortcuts** to match your own workflow.
+
+---
+
+# 📦 Creating a TinyHtml Shortcuts Module
+
+Instead of redefining your shortcuts (`$`, `$$`, `$$$`) in every file, you can create a **dedicated module** that exports them.
+This makes your setup **cleaner, reusable, and consistent** across the whole project.
+
+---
+
+## 🛠️ Example: shortcuts.js
+
+```js
+// Enable debugging mode
+TinyHtml.elemDebug = true;
+
+// jQuery-style single element selector
+export const $ = (queryString) => new TinyHtml(queryString);
+
+// Create elements from HTML strings
+export const $$ = TinyHtml.createFrom;
+
+// Create elements from HTML objects
+export const $$$ = TinyHtml.createFromHTML;
+
+// Export TinyHtml’s observer utility
+export const mainObserver = TinyHtml.tinyObserver;
+```
+
+---
+
+## 🚀 Usage in Your Project
+
+Now you can simply import the shortcuts wherever you need them:
+
+```js
+import { $, $$, $$$ } from './shortcuts.js';
+
+// Select a button
+const btn = $('#submit');
+
+// Create and append an element
+const newBox = $$('div', { class: 'box' });
+
+// Create an element
+const newBox2 = $$$('<div class="box">Hello!</div>');
+$('body').append(newBox);
+```
+
+---
+
+👉 With this setup, you end up with your own **personalized DOM toolkit**, powered by TinyHtml but feeling **as smooth as jQuery**.
