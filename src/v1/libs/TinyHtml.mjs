@@ -2575,7 +2575,7 @@ class TinyHtml {
    *
    * @template {TinyHtmlConstructor} T
    * @param {T} el - The elements to add.
-   * @returns {TinyHtml<T>} The new length of the internal collection.
+   * @returns {TinyHtml<TinyHtmlT|T>} The new length of the internal collection.
    */
   add(el) {
     return new TinyHtml([...this.#el, ...TinyHtml._selector(el)]);
