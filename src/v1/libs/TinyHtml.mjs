@@ -333,7 +333,20 @@ const __elemCollision = {
 
 // TITLE: Class Intro
 
-/** @typedef {ConstructorElValues|ConstructorElValues[]|NodeListOf<Element>|HTMLCollectionOf<Element>|NodeListOf<HTMLElement>|string} TinyHtmlConstructor */
+/**
+ * Represents all possible inputs accepted by the TinyHtml constructor.
+ * Can be a single element, an array of elements, array-like DOM collections,
+ * or a CSS selector string.
+ *
+ * @typedef {(
+ *   ConstructorElValues |
+ *   ConstructorElValues[] |
+ *   NodeListOf<Element> |
+ *   HTMLCollectionOf<Element> |
+ *   NodeListOf<HTMLElement> |
+ *   string
+ * )} TinyHtmlConstructor
+ */
 
 /**
  * TinyHtml is a utility class that provides static and instance-level methods
@@ -2601,8 +2614,12 @@ class TinyHtml {
   }
 
   /**
-   * @param {TinyHtmlConstructor} el
-   * @returns {ConstructorElValues[]}
+   * Resolves the given constructor input into a normalized array of elements.
+   *
+   * @param {TinyHtmlConstructor} el - A selector string, element, array-like collection, or array of constructor values.
+   * @returns {ConstructorElValues[]} A normalized array of DOM elements/values.
+   * @throws {Error} If a TinyHtml instance is passed (nesting TinyHtml inside TinyHtml is not allowed).
+   * @throws {Error} If the resolved elements are not valid constructor values.
    */
   static _selector(el) {
     if (el instanceof TinyHtml)
