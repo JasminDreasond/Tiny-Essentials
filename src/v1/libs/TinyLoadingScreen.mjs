@@ -18,10 +18,23 @@ class TinyLoadingScreen {
   /** @type {LoadingStatus} */
   #status = 'none';
 
-  /** @type {string|null} */
+  /** @type {string|HTMLElement|null} */
   #message = null;
 
-  /** @returns {string|null} */
+  /** @type {boolean} */
+  #allowHtmlText = false;
+
+  /** @returns {boolean} */
+  get allowHtmlText() {
+    return this.#allowHtmlText;
+  }
+
+  /** @param {boolean} value */
+  set allowHtmlText(value) {
+    this.#allowHtmlText = value;
+  }
+
+  /** @returns {string|HTMLElement|null} */
   get message() {
     return this.#message;
   }
@@ -65,8 +78,24 @@ class TinyLoadingScreen {
   }
 
   /**
+   * @param {string|HTMLElement} message
+   */
+  _updateMessage(message) {
+    if (!this.#messageElement) throw new Error('');
+    this.#message = message;
+    if (typeof message === 'string') {
+      if (!this.#allowHtmlText) this.#messageElement.textContent = message;
+      else this.#messageElement.innerHTML = message;
+    } else {
+      if (!this.#allowHtmlText) throw new Error('');
+      this.#messageElement.textContent = '';
+      this.#messageElement.appendChild(message);
+    }
+  }
+
+  /**
    * Starts or updates the loading screen with a message.
-   * @param {string} message
+   * @param {string|HTMLElement} message
    * @returns {boolean}
    */
   start(message = 'Loading...') {
@@ -98,27 +127,22 @@ class TinyLoadingScreen {
         this.#overlay?.classList.add('active');
       }, this.#options.fadeIn);
 
-      this.#message = message;
-      this.#messageElement.textContent = message;
+      this._updateMessage(message);
       return true;
     }
 
-    if (this.#messageElement) {
-      this.#message = message;
-      this.#messageElement.textContent = message;
-    }
+    if (this.#messageElement) this._updateMessage(message);
     return false;
   }
 
   /**
    * Updates the loading screen with a message.
-   * @param {string} message
+   * @param {string|HTMLElement} message
    * @returns {boolean}
    */
   update(message = 'Loading...') {
     if (this.#messageElement) {
-      this.#message = message;
-      this.#messageElement.textContent = message;
+      this._updateMessage(message);
       return true;
     }
     return false;
