@@ -2,6 +2,10 @@
  * @typedef {'none'|'active'|'fadeIn'|'fadeOut'} LoadingStatus
  */
 
+/**
+ * @typedef {{ fadeIn: number|null, fadeOut: number|null, zIndex: number }} LoadingSettings
+ */
+
 class TinyLoadingScreen {
   /** @type {HTMLDivElement|null} */
   #overlay = null;
@@ -12,8 +16,8 @@ class TinyLoadingScreen {
   /** @type {HTMLElement} */
   #container;
 
-  /** @type {{ fadeIn: number, fadeOut: number, zIndex: number }} */
-  #options;
+  /** @type {LoadingSettings} */
+  #options = { fadeIn: null, fadeOut: null, zIndex: 9999 };
 
   /** @type {LoadingStatus} */
   #status = 'none';
@@ -23,6 +27,12 @@ class TinyLoadingScreen {
 
   /** @type {boolean} */
   #allowHtmlText = false;
+
+  /**@type {NodeJS.Timeout|null} */
+  #fadeInTimeout = null;
+
+  /**@type {NodeJS.Timeout|null} */
+  #fadeOutTimeout = null;
 
   /** @returns {boolean} */
   get allowHtmlText() {
@@ -64,15 +74,25 @@ class TinyLoadingScreen {
     return this.#container;
   }
 
+  /** @returns {LoadingSettings} */
+  get options() {
+    return { ...this.#options };
+  }
+
+  /** @param {LoadingSettings} value */
+  set options(value) {
+    this.#options = { ...value };
+  }
+
   /**
    * @param {HTMLElement} [container=document.body] - Where the loading screen should be attached.
    * @param {{ fadeIn?: number, fadeOut?: number, zIndex?: number }} [options={}] - Config options (ms).
    */
   constructor(container = document.body, options = {}) {
     this.#container = container;
-    this.#options = {
-      fadeIn: options.fadeIn ?? 300, // default 300ms
-      fadeOut: options.fadeOut ?? 300, // default 300ms
+    this.options = {
+      fadeIn: options.fadeIn ?? null, // default 300ms
+      fadeOut: options.fadeOut ?? null, // default 300ms
       zIndex: options.zIndex ?? 9999, // default overlay level
     };
   }
@@ -121,11 +141,18 @@ class TinyLoadingScreen {
       // trigger fade in
       this.#status = 'fadeIn';
       this.#overlay.classList.add('fadeIn');
-      setTimeout(() => {
+      const fadeIn = () => {
+        this.#fadeInTimeout = null;
         this.#status = 'active';
         this.#overlay?.classList.remove('fadeIn');
         this.#overlay?.classList.add('active');
-      }, this.#options.fadeIn);
+      };
+
+      if (typeof this.#options.fadeIn === 'number') {
+        if (this.#fadeInTimeout) clearTimeout(this.#fadeInTimeout);
+        this.#fadeInTimeout = setTimeout(fadeIn, this.#options.fadeIn);
+      }
+      else fadeIn();
 
       this._updateMessage(message);
       return true;
@@ -159,13 +186,20 @@ class TinyLoadingScreen {
       this.#overlay.classList.add('fadeOut');
 
       // trigger fade out
-      setTimeout(() => {
+      const fadeOut = () => {
+        this.#fadeOutTimeout = null;
         this.#status = 'none';
         this.#overlay?.remove();
         this.#overlay = null;
         this.#messageElement = null;
         this.#message = null;
-      }, this.#options.fadeOut);
+      };
+
+      if (typeof this.#options.fadeOut === 'number') {
+        if (this.#fadeOutTimeout) clearTimeout(this.#fadeOutTimeout);
+        this.#fadeOutTimeout = setTimeout(fadeOut, this.#options.fadeOut);
+      }
+      else fadeOut();
 
       return true;
     }
