@@ -1,6 +1,6 @@
 {
   "name": "tiny-essentials",
-  "version": "1.22.15",
+  "version": "1.23.0",
   "description": "Collection of small, essential scripts designed to be used across various projects. These simple utilities are crafted for speed, ease of use, and versatility.",
   "scripts": {
     "test": "npm run test:mjs && npm run test:cjs && npm run test:js",
@@ -25,11 +25,12 @@
     "build:js": "tsc -p tsconfig.json && rollup -c && webpack --mode production",
     "build-clean": "npm run clean && npm run build",
     "build-dist": "npm run build",
-    "build:css": "npm run build:css:aimaker && npm run build:css:tinynotify && npm run build:css:tinydragger:example && npm run build:css:tinycookieconsent",
+    "build:css": "npm run build:css:aimaker && npm run build:css:tinynotify && npm run build:css:tinydragger:example && npm run build:css:tinycookieconsent && npm run build:css:tinyloadingscreen",
     "build:css:tinydragger:example": "sass src/v1/scss/TinyDraggerExample.scss dist/v1/css/TinyDraggerExample.min.css --no-source-map --style=compressed",
     "build:css:aimaker": "sass src/v1/scss/aiMarker.scss dist/v1/css/aiMarker.min.css --no-source-map --style=compressed",
     "build:css:tinynotify": "sass src/v1/scss/TinyNotify.scss dist/v1/css/TinyNotify.min.css --no-source-map --style=compressed",
     "build:css:tinycookieconsent": "sass src/v1/scss/TinyCookieConsent.scss dist/v1/css/TinyCookieConsent.min.css --no-source-map --style=compressed",
+    "build:css:tinyloadingscreen": "sass src/v1/scss/TinyLoadingScreen.scss dist/v1/css/TinyLoadingScreen.min.css --no-source-map --style=compressed",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run build"
   },
@@ -42,6 +43,7 @@
     "./css/TinyCookieConsent.min.css": "./dist/v1/css/TinyCookieConsent.min.css",
     "./css/TinyDraggerExample.min.css": "./dist/v1/css/TinyDraggerExample.min.css",
     "./css/TinyNotify.min.css": "./dist/v1/css/TinyNotify.min.css",
+    "./css/TinyLoadingScreen.min.css": "./dist/v1/css/TinyLoadingScreen.min.css",
     ".": {
       "require": "./dist/v1/index.cjs",
       "import": "./dist/v1/index.mjs"

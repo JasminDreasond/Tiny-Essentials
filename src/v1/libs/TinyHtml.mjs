@@ -3736,19 +3736,19 @@ class TinyHtml {
   /** @type {string} */
   #mainDisplay = '';
 
-/**
- * Gets the current display value.
- * @returns {string}
- */
+  /**
+   * Gets the current display value.
+   * @returns {string}
+   */
   get mainDisplay() {
     return this.#mainDisplay;
   }
 
-/**
- * Sets the display value.
- * @param {string} value
- * @throws {TypeError} If the value is not a string.
- */
+  /**
+   * Sets the display value.
+   * @param {string} value
+   * @throws {TypeError} If the value is not a string.
+   */
   set mainDisplay(value) {
     if (typeof value !== 'string') throw new TypeError('mainDisplay must be a string.');
     this.#mainDisplay = value;
@@ -3757,19 +3757,19 @@ class TinyHtml {
   /** @type {string} */
   static #defaultDisplay = 'block';
 
-/**
- * Gets the default display value.
- * @returns {string}
- */
+  /**
+   * Gets the default display value.
+   * @returns {string}
+   */
   static get defaultDisplay() {
     return TinyHtml.#defaultDisplay;
   }
 
-/**
- * Sets the default display value.
- * @param {string} value
- * @throws {TypeError} If the value is not a string.
- */
+  /**
+   * Sets the default display value.
+   * @param {string} value
+   * @throws {TypeError} If the value is not a string.
+   */
   static set defaultDisplay(value) {
     if (typeof value !== 'string') throw new TypeError('defaultDisplay must be a string.');
     TinyHtml.#defaultDisplay = value;
