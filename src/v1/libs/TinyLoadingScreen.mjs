@@ -52,6 +52,19 @@ class TinyLoadingScreen {
     return this.#status;
   }
 
+  /** @type {string|HTMLElement} */
+  #defaultMessage = '';
+
+  /** @returns {string|HTMLElement} */
+  get defaultMessage() {
+    return this.#defaultMessage;
+  }
+
+  /** @param {string|HTMLElement} value */
+  set defaultMessage(value) {
+    this.#defaultMessage = value;
+  }
+
   /** @type {string|HTMLElement|null} */
   #message = null;
 
@@ -108,9 +121,9 @@ class TinyLoadingScreen {
   }
 
   /**
-   * @param {string|HTMLElement} message
+   * @param {string|HTMLElement} [message=this.#defaultMessage]
    */
-  _updateMessage(message) {
+  _updateMessage(message = this.#defaultMessage) {
     if (!this.#messageElement) throw new Error('');
     this.#message = message;
     if (typeof message === 'string') {
@@ -125,10 +138,10 @@ class TinyLoadingScreen {
 
   /**
    * Starts or updates the loading screen with a message.
-   * @param {string|HTMLElement} message
+   * @param {string|HTMLElement} [message=this.#defaultMessage]
    * @returns {boolean}
    */
-  start(message = 'Loading...') {
+  start(message = this.#defaultMessage) {
     if (!this.#overlay) {
       this.#overlay = document.createElement('div');
       this.#overlay.classList.add('loading-overlay');
@@ -173,10 +186,10 @@ class TinyLoadingScreen {
 
   /**
    * Updates the loading screen with a message.
-   * @param {string|HTMLElement} message
+   * @param {string|HTMLElement} [message=this.#defaultMessage]
    * @returns {boolean}
    */
-  update(message = 'Loading...') {
+  update(message = this.#defaultMessage) {
     if (this.#messageElement) {
       this._updateMessage(message);
       return true;
