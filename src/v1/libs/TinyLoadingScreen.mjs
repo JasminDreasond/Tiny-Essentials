@@ -63,20 +63,35 @@ class TinyLoadingScreen {
 
   /**
    * Updates the loading screen options.
-   * @param {LoadingSettings} value - New configuration values.
+   * @param {Partial<LoadingSettings>} value - New configuration values.
    * @throws {TypeError} If any option has an invalid type or value.
    */
   set options(value) {
     if (typeof value !== 'object' || value === null)
       throw new TypeError('options must be an object');
-    if (value.fadeIn !== null && (typeof value.fadeIn !== 'number' || value.fadeIn < 0))
+    if (
+      typeof value.fadeIn !== 'undefined' &&
+      value.fadeIn !== null &&
+      (typeof value.fadeIn !== 'number' || value.fadeIn < 0)
+    )
       throw new TypeError('fadeIn must be a non-negative number or null');
-    if (value.fadeOut !== null && (typeof value.fadeOut !== 'number' || value.fadeOut < 0))
+    if (
+      typeof value.fadeOut !== 'undefined' &&
+      value.fadeOut !== null &&
+      (typeof value.fadeOut !== 'number' || value.fadeOut < 0)
+    )
       throw new TypeError('fadeOut must be a non-negative number or null');
-    if (typeof value.zIndex !== 'number' || !Number.isInteger(value.zIndex))
+    if (
+      typeof value.zIndex !== 'undefined' &&
+      (typeof value.zIndex !== 'number' || !Number.isInteger(value.zIndex))
+    )
       throw new TypeError('zIndex must be an integer number');
 
-    this.#options = { ...value };
+    this.#options = {
+      fadeIn: value.fadeIn ?? null,
+      fadeOut: value.fadeOut ?? null,
+      zIndex: value.zIndex ?? 9999,
+    };
   }
 
   /** @type {LoadingStatus} Current status of the loading screen */
@@ -189,21 +204,12 @@ class TinyLoadingScreen {
   /**
    * Creates a new TinyLoadingScreen instance.
    * @param {HTMLElement} [container=document.body] - The container element where the overlay should be appended.
-   * @param {{ fadeIn?: number, fadeOut?: number, zIndex?: number }} [options={}] - Initial configuration options.
-   * @throws {TypeError} If container is not an HTMLElement or options is not an object.
+   * @throws {TypeError} If container is not an HTMLElement.
    */
-  constructor(container = document.body, options = {}) {
+  constructor(container = document.body) {
     if (!(container instanceof HTMLElement))
       throw new TypeError('container must be an HTMLElement');
-    if (typeof options !== 'object' || options === null)
-      throw new TypeError('options must be an object');
-
     this.#container = container;
-    this.options = {
-      fadeIn: options.fadeIn ?? null,
-      fadeOut: options.fadeOut ?? null,
-      zIndex: options.zIndex ?? 9999,
-    };
   }
 
   /**
