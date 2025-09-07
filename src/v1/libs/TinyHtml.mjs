@@ -2571,46 +2571,14 @@ class TinyHtml {
   }
 
   /**
-   * Adds elements to the end of the internal collection.
+   * A new TinyHtml object containing the combined elements.
    *
-   * @param {TinyHtmlConstructor} el - The elements to add.
-   * @returns {number} The new length of the internal collection.
+   * @template {TinyHtmlConstructor} T
+   * @param {T} el - The elements to add.
+   * @returns {TinyHtml<T>} The new length of the internal collection.
    */
   add(el) {
-    return this.#el.push(...TinyHtml._selector(el));
-  }
-
-  /**
-   * Adds elements to the beginning of the internal collection.
-   *
-   * @param {TinyHtmlConstructor} el - The elements to add.
-   * @returns {number} The new length of the internal collection.
-   */
-  addBack(el) {
-    return this.#el.unshift(...TinyHtml._selector(el));
-  }
-
-  /**
-   * Removes an element at the specified index.
-   *
-   * @param {number} index - The index of the element to remove.
-   * @param {number} [deleteCount=1] - The number of elements to remove.
-   */
-  delete(index, deleteCount = 1) {
-    if (typeof index !== 'number' || !Number.isInteger(index))
-      throw new TypeError('The index must be an integer.');
-    if (typeof deleteCount !== 'number' || !Number.isInteger(deleteCount))
-      throw new TypeError('The deleteCount must be an integer.');
-    if (index < 0 || index >= this.#el.length)
-      throw new Error('The index must be an valid position.');
-    this.#el.splice(index, deleteCount);
-  }
-
-  /**
-   * Clears all elements from the internal collection.
-   */
-  clear() {
-    this.#el = [];
+    return new TinyHtml([...this.#el, ...TinyHtml._selector(el)]);
   }
 
   /**

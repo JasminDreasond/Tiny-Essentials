@@ -1022,41 +1022,7 @@ Adds elements to the end of the internal collection.
 * **Parameters**:
 
   * `...el` (`ConstructorElValues`) — The elements to add.
-* **Returns**: `number` — The new length of the internal collection.
-
----
-
-### `addBack(...el)`
-
-Adds elements to the beginning of the internal collection.
-
-* **Parameters**:
-
-  * `...el` (`ConstructorElValues`) — The elements to add.
-* **Returns**: `number` — The new length of the internal collection.
-
----
-
-### `delete(index, deleteCount = 1)`
-
-Removes elements at the specified index.
-
-* **Parameters**:
-
-  * `index` (`number`) — The starting index for removal.
-  * `deleteCount` (`number`, optional, default = `1`) — The number of elements to remove.
-* **Throws**:
-
-  * `TypeError` — If `index` or `deleteCount` are not integers.
-  * `Error` — If `index` is out of range.
-
----
-
-### `clear()`
-
-Clears all elements from the internal collection.
-
-* **Returns**: `void`
+* **Returns**: `TinyHtml` — A new TinyHtml object containing the combined elements.
 
 ---
 
