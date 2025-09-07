@@ -153,6 +153,40 @@ class TinyLoadingScreen {
   }
 
   /**
+   * Optional callback fired whenever the loading screen status changes.
+   * @type {((status: LoadingStatus) => void) | null}
+   */
+  #onChange = null;
+
+  /**
+   * Returns the current status-change callback.
+   * @returns {((status: LoadingStatus) => void) | null}
+   */
+  get onChange() {
+    return this.#onChange;
+  }
+
+  /**
+   * Sets the status-change callback.
+   * @param {((status: LoadingStatus) => void) | null} value
+   * @throws {TypeError} If value is neither a function nor null.
+   */
+  set onChange(value) {
+    if (value !== null && typeof value !== 'function') {
+      throw new TypeError('onChange must be a function or null');
+    }
+    this.#onChange = value;
+  }
+
+  /**
+   * Internal helper to emit the onChange callback.
+   * @private
+   */
+  _emitChange() {
+    if (typeof this.#onChange === 'function') this.#onChange(this.#status);
+  }
+
+  /**
    * Creates a new TinyLoadingScreen instance.
    * @param {HTMLElement} [container=document.body] - The container element where the overlay should be appended.
    * @param {{ fadeIn?: number, fadeOut?: number, zIndex?: number }} [options={}] - Initial configuration options.
@@ -198,6 +232,19 @@ class TinyLoadingScreen {
   }
 
   /**
+   * Removes all status-related CSS classes (`active`, `fadeIn`, `fadeOut`)
+   * from the overlay element, if it exists.
+   *
+   * @private
+   * @returns {void}
+   */
+  _removeOldClasses() {
+    this.#overlay?.classList.remove('active');
+    this.#overlay?.classList.remove('fadeIn');
+    this.#overlay?.classList.remove('fadeOut');
+  }
+
+  /**
    * Starts the loading screen or updates its message if already active.
    * @param {string|HTMLElement} [message=this.#defaultMessage] - Message to display.
    * @returns {boolean} `true` if the overlay was created, `false` if only the message was updated.
@@ -227,13 +274,16 @@ class TinyLoadingScreen {
       this.#container.appendChild(this.#overlay);
 
       // trigger fade in
+      this._removeOldClasses();
       this.#status = 'fadeIn';
       this.#overlay.classList.add('fadeIn');
+      this._emitChange();
       const fadeIn = () => {
+        this._removeOldClasses();
         this.#fadeInTimeout = null;
         this.#status = 'active';
-        this.#overlay?.classList.remove('fadeIn');
         this.#overlay?.classList.add('active');
+        this._emitChange();
       };
 
       if (typeof this.#options.fadeIn === 'number') {
@@ -272,18 +322,21 @@ class TinyLoadingScreen {
    */
   stop() {
     if (this.#overlay) {
+      this._removeOldClasses();
       this.#status = 'fadeOut';
-      this.#overlay.classList.remove('active');
       this.#overlay.classList.add('fadeOut');
+      this._emitChange();
 
       // trigger fade out
       const fadeOut = () => {
+        this._removeOldClasses();
         this.#fadeOutTimeout = null;
         this.#status = 'none';
         this.#overlay?.remove();
         this.#overlay = null;
         this.#messageElement = null;
         this.#message = null;
+        this._emitChange();
       };
 
       if (typeof this.#options.fadeOut === 'number') {
