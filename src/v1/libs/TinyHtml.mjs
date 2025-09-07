@@ -869,6 +869,17 @@ class TinyHtml {
     return new TinyHtml(elems);
   }
 
+  /**
+   * Creates an HTMLElement or TextNode from an HTML string.
+   * Supports both elements and plain text.
+   *
+   * @param {string} htmlString - The HTML string to convert.
+   * @returns {TinyHtml<Element>} - A single HTMLElement or TextNode.
+   */
+  static createFromHtml(htmlString) {
+    return TinyHtml.createFromHTML(htmlString);
+  }
+
   ///////////////////////////////////////////////////
   // TITLE: Query Script
 

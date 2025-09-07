@@ -64,6 +64,14 @@ This folder contains the core scripts we have worked on so far. Each file is a m
 
 ---
 
+## 📚 Tip Directories
+
+### 1. **`libs/`** 
+
+- 🧱 **[TinyHtml](./libs/TinyHtmlTips.md)** — Usage examples and practical tips.
+
+---
+
 ## 🚀 Usage
 
 To get started, navigate to the appropriate directory and explore the files listed. Each script includes detailed documentation on how to use the respective functionality.
