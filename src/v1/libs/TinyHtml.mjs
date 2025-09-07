@@ -333,6 +333,8 @@ const __elemCollision = {
 
 // TITLE: Class Intro
 
+/** @typedef {ConstructorElValues|ConstructorElValues[]|NodeListOf<Element>|HTMLCollectionOf<Element>|NodeListOf<HTMLElement>|string} TinyHtmlConstructor */
+
 /**
  * TinyHtml is a utility class that provides static and instance-level methods
  * for precise dimension and position computations on HTML elements.
@@ -341,7 +343,7 @@ const __elemCollision = {
  * Inspired by the jQuery project's open source implementations of element dimension
  * and offset utilities. This class serves as a lightweight alternative using modern DOM APIs.
  *
- * @template {ConstructorElValues|ConstructorElValues[]|NodeListOf<Element>|HTMLCollectionOf<Element>|NodeListOf<HTMLElement>} TinyHtmlT
+ * @template {TinyHtmlConstructor} TinyHtmlT
  * @class
  */
 class TinyHtml {
@@ -2540,42 +2542,39 @@ class TinyHtml {
   /**
    * Validates if all provided items are acceptable constructor values.
    *
-   * @param {any[]} els - The elements to validate.
+   * @param {any[]|NodeListOf<Element>|HTMLCollectionOf<Element>|NodeListOf<HTMLElement>} els - The elements to validate.
    * @throws {Error} If any element is not a valid target.
    */
-  _elCheck(els) {
-    if (
-      !els.every(
-        (el) =>
-          el instanceof Element ||
-          el instanceof Window ||
-          el instanceof Document ||
-          el instanceof Text,
+  static _elCheck(els) {
+    for (const item of els) {
+      if (
+        !(item instanceof Element) &&
+        !(item instanceof Window) &&
+        !(item instanceof Document) &&
+        !(item instanceof Text)
       )
-    )
-      throw new Error(`[TinyHtml] Invalid Target in constructor.`);
+        throw new Error(`[TinyHtml] Invalid Target in constructor.`);
+    }
   }
 
   /**
    * Adds elements to the end of the internal collection.
    *
-   * @param {...ConstructorElValues} el - The elements to add.
+   * @param {TinyHtmlConstructor} el - The elements to add.
    * @returns {number} The new length of the internal collection.
    */
-  add(...el) {
-    this._elCheck(el);
-    return this.#el.push(...el);
+  add(el) {
+    return this.#el.push(...TinyHtml._selector(el));
   }
 
   /**
    * Adds elements to the beginning of the internal collection.
    *
-   * @param {...ConstructorElValues} el - The elements to add.
+   * @param {TinyHtmlConstructor} el - The elements to add.
    * @returns {number} The new length of the internal collection.
    */
-  addBack(...el) {
-    this._elCheck(el);
-    return this.#el.unshift(...el);
+  addBack(el) {
+    return this.#el.unshift(...TinyHtml._selector(el));
   }
 
   /**
@@ -2602,31 +2601,38 @@ class TinyHtml {
   }
 
   /**
-   * Creates an instance of TinyHtml for a specific Element.
-   * Useful when you want to operate repeatedly on the same element using instance methods.
-   * @param {TinyHtmlT} el - The element to wrap and manipulate.
+   * @param {TinyHtmlConstructor} el
+   * @returns {ConstructorElValues[]}
    */
-  constructor(el) {
+  static _selector(el) {
     if (el instanceof TinyHtml)
       throw new Error(
         `[TinyHtml] You are trying to put a TinyHtml inside another TinyHtml in constructor.`,
       );
 
-    if (Array.isArray(el)) {
-      this._elCheck(el);
-      this.#el = el;
-    } else if (el instanceof NodeList || el instanceof HTMLCollection) {
-      /** @type {ConstructorElValues[]} */
-      // @ts-ignore
-      const els = [...el];
-      this._elCheck(els);
-      this.#el = els;
+    const selector = typeof el !== 'string' ? el : document.querySelectorAll(el);
+    if (Array.isArray(selector)) {
+      TinyHtml._elCheck(selector);
+      return selector;
+    } else if (selector instanceof NodeList || selector instanceof HTMLCollection) {
+      const els = [...selector];
+      TinyHtml._elCheck(els);
+      return els;
     } else {
-      const els = [el];
-      this._elCheck(els);
+      const els = [selector];
+      TinyHtml._elCheck(els);
       // @ts-ignore
-      this.#el = els;
+      return els;
     }
+  }
+
+  /**
+   * Creates an instance of TinyHtml for a specific Element.
+   * Useful when you want to operate repeatedly on the same element using instance methods.
+   * @param {TinyHtmlT} el - The element to wrap and manipulate.
+   */
+  constructor(el) {
+    this.#el = TinyHtml._selector(el);
   }
 
   /**
