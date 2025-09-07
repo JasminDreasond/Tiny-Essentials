@@ -15,6 +15,19 @@
  * @property {number} zIndex - CSS z-index of the overlay element.
  */
 
+/**
+ * TinyLoadingScreen
+ *
+ * A lightweight, fully-configurable loading overlay component that can be appended to any HTMLElement.
+ *
+ * Key features:
+ * - Configurable fadeIn/fadeOut durations (milliseconds) and zIndex.
+ * - Accepts string or HTMLElement messages.
+ * - Optionally allows HTML inside string messages when `allowHtmlText` is enabled.
+ * - Exposes `overlay`, `messageElement`, `status`, `options` and helpers for testing and integration.
+ *
+ * @class
+ */
 class TinyLoadingScreen {
   /** @type {HTMLDivElement|null} Overlay container element */
   #overlay = null;
