@@ -2595,19 +2595,21 @@ class TinyHtml {
         `[TinyHtml] You are trying to put a TinyHtml inside another TinyHtml in constructor.`,
       );
 
+    /** @type {(list: any[]) => any[]} */
+    const fixItemList = (list) => Array.from(new Set(list));
     const selector = typeof el !== 'string' ? el : document.querySelectorAll(el);
     if (Array.isArray(selector)) {
       TinyHtml._elCheck(selector);
-      return selector;
+      return fixItemList(selector);
     } else if (selector instanceof NodeList || selector instanceof HTMLCollection) {
       const els = [...selector];
       TinyHtml._elCheck(els);
-      return els;
+      return fixItemList(els);
     } else {
       const els = [selector];
       TinyHtml._elCheck(els);
       // @ts-ignore
-      return els;
+      return fixItemList(els);
     }
   }
 
