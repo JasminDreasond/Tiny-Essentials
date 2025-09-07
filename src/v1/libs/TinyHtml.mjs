@@ -4747,7 +4747,7 @@ class TinyHtml {
    * @param {TinyHtmlElement|TinyHtmlElement[]} el - Target element(s) to fade.
    * @param {number} opacity - Final opacity value (between 0 and 1).
    * @param {number | KeyframeAnimationOptions | string} [ops] - Duration or animation options.
-   * @param {string} [mainDisplay=TinyHtml.#defaultDisplay]
+   * @param {string} [mainDisplay=TinyHtml.#defaultDisplay] - Sets the main display value.
    * @returns {StyleFxResult}
    * @throws {TypeError} If opacity is not a number between 0 and 1.
    * @throws {TypeError} If ops is not number|string|object when provided.
@@ -4804,7 +4804,7 @@ class TinyHtml {
    *
    * @param {number} opacity - Final opacity value (between 0 and 1).
    * @param {number | KeyframeAnimationOptions | string} [ops] - Duration or animation options.
-   * @param {string} [mainDisplay=this.#mainDisplay]
+   * @param {string} [mainDisplay=this.#mainDisplay] - Sets the main display value.
    * @returns {StyleFxResult}
    * @throws {TypeError} If opacity is not a number between 0 and 1.
    * @throws {TypeError} If ops is not number|string|object when provided.
