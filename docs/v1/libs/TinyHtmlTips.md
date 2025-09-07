@@ -99,10 +99,10 @@ TinyHtml.elemDebug = true;
 // jQuery-style single element selector
 export const $ = (queryString) => new TinyHtml(queryString);
 
-// Create elements from HTML strings
+// Create elements from HTML objects
 export const $$ = TinyHtml.createFrom;
 
-// Create elements from HTML objects
+// Create elements from HTML strings
 export const $$$ = TinyHtml.createFromHTML;
 
 // Export TinyHtml’s observer utility
