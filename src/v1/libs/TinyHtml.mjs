@@ -3732,6 +3732,48 @@ class TinyHtml {
 
   // TITLE: Animate DOM (Data)
 
+  /** @type {string} */
+  #mainDisplay = 'block';
+
+/**
+ * Gets the current display value.
+ * @returns {string}
+ */
+  get mainDisplay() {
+    return this.#mainDisplay;
+  }
+
+/**
+ * Sets the display value.
+ * @param {string} value
+ * @throws {TypeError} If the value is not a string.
+ */
+  set mainDisplay(value) {
+    if (typeof value !== 'string') throw new TypeError('mainDisplay must be a string.');
+    this.#mainDisplay = value;
+  }
+
+  /** @type {string} */
+  static #defaultDisplay = 'block';
+
+/**
+ * Gets the default display value.
+ * @returns {string}
+ */
+  static get defaultDisplay() {
+    return TinyHtml.#defaultDisplay;
+  }
+
+/**
+ * Sets the default display value.
+ * @param {string} value
+ * @throws {TypeError} If the value is not a string.
+ */
+  static set defaultDisplay(value) {
+    if (typeof value !== 'string') throw new TypeError('defaultDisplay must be a string.');
+    TinyHtml.#defaultDisplay = value;
+  }
+
   /**
    * Retrieves stored animation data for a given element and key.
    * If no data exists yet, initializes storage for that element.
@@ -4705,11 +4747,12 @@ class TinyHtml {
    * @param {TinyHtmlElement|TinyHtmlElement[]} el - Target element(s) to fade.
    * @param {number} opacity - Final opacity value (between 0 and 1).
    * @param {number | KeyframeAnimationOptions | string} [ops] - Duration or animation options.
+   * @param {string} [mainDisplay=TinyHtml.#defaultDisplay]
    * @returns {StyleFxResult}
    * @throws {TypeError} If opacity is not a number between 0 and 1.
    * @throws {TypeError} If ops is not number|string|object when provided.
    */
-  static fadeTo(el, opacity, ops) {
+  static fadeTo(el, opacity, ops, mainDisplay = TinyHtml.#defaultDisplay) {
     if (typeof opacity !== 'number' || isNaN(opacity) || opacity < 0 || opacity > 1)
       throw new TypeError('fadeTo: opacity must be a number between 0 and 1.');
 
@@ -4737,7 +4780,7 @@ class TinyHtml {
       if (isHidden) {
         // Ensure element is visible (like jQuery does before fading)
         const display = TinyHtml.getAnimateData(elem, `origdisplay`);
-        elem.style.display = typeof display === 'string' ? display : 'block';
+        elem.style.display = typeof display === 'string' ? display : mainDisplay;
       }
 
       /** @type {AnimationSfxData} */
@@ -4761,12 +4804,13 @@ class TinyHtml {
    *
    * @param {number} opacity - Final opacity value (between 0 and 1).
    * @param {number | KeyframeAnimationOptions | string} [ops] - Duration or animation options.
+   * @param {string} [mainDisplay=this.#mainDisplay]
    * @returns {StyleFxResult}
    * @throws {TypeError} If opacity is not a number between 0 and 1.
    * @throws {TypeError} If ops is not number|string|object when provided.
    */
-  fadeTo(opacity, ops) {
-    return TinyHtml.fadeTo(this, opacity, ops);
+  fadeTo(opacity, ops, mainDisplay = this.#mainDisplay) {
+    return TinyHtml.fadeTo(this, opacity, ops, mainDisplay);
   }
 
   ///////////////////////////////////////////////////////////////

@@ -107,6 +107,9 @@ export const $$$ = TinyHtml.createFromHTML;
 
 // Export TinyHtml’s observer utility
 export const mainObserver = TinyHtml.tinyObserver;
+
+// Set TinyHtml’s default display css
+TinyHtml.defaultDisplay = 'block';
 ```
 
 ---
@@ -123,6 +126,9 @@ const btn = $('#submit');
 
 // Create and append an element
 const newBox = $$('div', { class: 'box' });
+
+// Set element's default display css
+newBox.mainDisplay = 'block';
 
 // Create an element
 const newBox2 = $$$('<div class="box">Hello!</div>');
