@@ -2631,6 +2631,7 @@ class TinyHtml {
    */
   constructor(el) {
     this.#el = TinyHtml._selector(el);
+    this.#mainDisplay = TinyHtml.#defaultDisplay;
   }
 
   /**
@@ -3733,7 +3734,7 @@ class TinyHtml {
   // TITLE: Animate DOM (Data)
 
   /** @type {string} */
-  #mainDisplay = 'block';
+  #mainDisplay = '';
 
 /**
  * Gets the current display value.
