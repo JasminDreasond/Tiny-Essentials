@@ -11,28 +11,57 @@ class TinyLoadingScreen {
   #overlay = null;
 
   /** @type {HTMLDivElement|null} */
+  get overlay() {
+    return this.#overlay;
+  }
+
+  /** @type {HTMLDivElement|null} */
   #messageElement = null;
+
+  /** @type {HTMLDivElement|null} */
+  get messageElement() {
+    return this.#messageElement;
+  }
 
   /** @type {HTMLElement} */
   #container;
 
+  /** @type {HTMLElement} */
+  get container() {
+    return this.#container;
+  }
+
   /** @type {LoadingSettings} */
   #options = { fadeIn: null, fadeOut: null, zIndex: 9999 };
+
+  /** @returns {LoadingSettings} */
+  get options() {
+    return { ...this.#options };
+  }
+
+  /** @param {LoadingSettings} value */
+  set options(value) {
+    this.#options = { ...value };
+  }
 
   /** @type {LoadingStatus} */
   #status = 'none';
 
+  /** @type {LoadingStatus} */
+  get status() {
+    return this.#status;
+  }
+
   /** @type {string|HTMLElement|null} */
   #message = null;
 
+  /** @returns {string|HTMLElement|null} */
+  get message() {
+    return this.#message;
+  }
+
   /** @type {boolean} */
   #allowHtmlText = false;
-
-  /**@type {NodeJS.Timeout|null} */
-  #fadeInTimeout = null;
-
-  /**@type {NodeJS.Timeout|null} */
-  #fadeOutTimeout = null;
 
   /** @returns {boolean} */
   get allowHtmlText() {
@@ -44,44 +73,25 @@ class TinyLoadingScreen {
     this.#allowHtmlText = value;
   }
 
-  /** @returns {string|HTMLElement|null} */
-  get message() {
-    return this.#message;
+  /**@type {NodeJS.Timeout|null} */
+  #fadeInTimeout = null;
+
+  /** @returns {boolean} */
+  get fadeInTimeout() {
+    return this.#fadeInTimeout !== null;
+  }
+
+  /**@type {NodeJS.Timeout|null} */
+  #fadeOutTimeout = null;
+
+  /** @returns {boolean} */
+  get fadeOutTimeout() {
+    return this.#fadeOutTimeout !== null;
   }
 
   /** @returns {boolean} */
   get visible() {
     return !!this.#overlay;
-  }
-
-  /** @type {LoadingStatus} */
-  get status() {
-    return this.#status;
-  }
-
-  /** @type {HTMLDivElement|null} */
-  get overlay() {
-    return this.#overlay;
-  }
-
-  /** @type {HTMLDivElement|null} */
-  get messageElement() {
-    return this.#messageElement;
-  }
-
-  /** @type {HTMLElement} */
-  get container() {
-    return this.#container;
-  }
-
-  /** @returns {LoadingSettings} */
-  get options() {
-    return { ...this.#options };
-  }
-
-  /** @param {LoadingSettings} value */
-  set options(value) {
-    this.#options = { ...value };
   }
 
   /**
@@ -151,8 +161,7 @@ class TinyLoadingScreen {
       if (typeof this.#options.fadeIn === 'number') {
         if (this.#fadeInTimeout) clearTimeout(this.#fadeInTimeout);
         this.#fadeInTimeout = setTimeout(fadeIn, this.#options.fadeIn);
-      }
-      else fadeIn();
+      } else fadeIn();
 
       this._updateMessage(message);
       return true;
@@ -198,8 +207,7 @@ class TinyLoadingScreen {
       if (typeof this.#options.fadeOut === 'number') {
         if (this.#fadeOutTimeout) clearTimeout(this.#fadeOutTimeout);
         this.#fadeOutTimeout = setTimeout(fadeOut, this.#options.fadeOut);
-      }
-      else fadeOut();
+      } else fadeOut();
 
       return true;
     }
