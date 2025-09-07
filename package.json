@@ -60,6 +60,42 @@
       "require": "./dist/v1/fileManager/index.cjs",
       "import": "./dist/v1/fileManager/index.mjs"
     },
+    "./basics/array": {
+      "require": "./dist/v1/libs/array.cjs",
+      "import": "./dist/v1/libs/array.mjs"
+    },
+    "./basics/clock": {
+      "require": "./dist/v1/libs/clock.cjs",
+      "import": "./dist/v1/libs/clock.mjs"
+    },
+    "./basics/collision": {
+      "require": "./dist/v1/libs/collision.cjs",
+      "import": "./dist/v1/libs/collision.mjs"
+    },
+    "./basics/fullScreen": {
+      "require": "./dist/v1/libs/fullScreen.cjs",
+      "import": "./dist/v1/libs/fullScreen.mjs"
+    },
+    "./basics/html": {
+      "require": "./dist/v1/libs/html.cjs",
+      "import": "./dist/v1/libs/html.mjs"
+    },
+    "./basics/objChecker": {
+      "require": "./dist/v1/libs/objChecker.cjs",
+      "import": "./dist/v1/libs/objChecker.mjs"
+    },
+    "./basics/objFilter": {
+      "require": "./dist/v1/libs/objFilter.cjs",
+      "import": "./dist/v1/libs/objFilter.mjs"
+    },
+    "./basics/simpleMath": {
+      "require": "./dist/v1/libs/simpleMath.cjs",
+      "import": "./dist/v1/libs/simpleMath.mjs"
+    },
+    "./basics/text": {
+      "require": "./dist/v1/libs/text.cjs",
+      "import": "./dist/v1/libs/text.mjs"
+    },
     "./libs/ColorSafeStringify": {
       "require": "./dist/v1/libs/ColorSafeStringify.cjs",
       "import": "./dist/v1/libs/ColorSafeStringify.mjs"
