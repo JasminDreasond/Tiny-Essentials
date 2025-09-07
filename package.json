@@ -59,6 +59,146 @@
     "./fileManager": {
       "require": "./dist/v1/fileManager/index.cjs",
       "import": "./dist/v1/fileManager/index.mjs"
+    },
+    "./libs/ColorSafeStringify": {
+      "require": "./dist/v1/libs/ColorSafeStringify.cjs",
+      "import": "./dist/v1/libs/ColorSafeStringify.mjs"
+    },
+    "./libs/UltraRandomMsgGen": {
+      "require": "./dist/v1/libs/UltraRandomMsgGen.cjs",
+      "import": "./dist/v1/libs/UltraRandomMsgGen.mjs"
+    },
+    "./libs/TinyUploadClicker": {
+      "require": "./dist/v1/libs/TinyUploadClicker.cjs",
+      "import": "./dist/v1/libs/TinyUploadClicker.mjs"
+    },
+    "./libs/TinyToastNotify": {
+      "require": "./dist/v1/libs/TinyToastNotify.cjs",
+      "import": "./dist/v1/libs/TinyToastNotify.mjs"
+    },
+    "./libs/TinyTimeout": {
+      "require": "./dist/v1/libs/TinyTimeout.cjs",
+      "import": "./dist/v1/libs/TinyTimeout.mjs"
+    },
+    "./libs/TinyTextRangeEditor": {
+      "require": "./dist/v1/libs/TinyTextRangeEditor.cjs",
+      "import": "./dist/v1/libs/TinyTextRangeEditor.mjs"
+    },
+    "./libs/TinyTextarea": {
+      "require": "./dist/v1/libs/TinyTextarea.cjs",
+      "import": "./dist/v1/libs/TinyTextarea.mjs"
+    },
+    "./libs/TinySmartScroller": {
+      "require": "./dist/v1/libs/TinySmartScroller.cjs",
+      "import": "./dist/v1/libs/TinySmartScroller.mjs"
+    },
+    "./libs/TinySimpleDice": {
+      "require": "./dist/v1/libs/TinySimpleDice.cjs",
+      "import": "./dist/v1/libs/TinySimpleDice.mjs"
+    },
+    "./libs/TinyRateLimiter": {
+      "require": "./dist/v1/libs/TinyRateLimiter.cjs",
+      "import": "./dist/v1/libs/TinyRateLimiter.mjs"
+    },
+    "./libs/TinyPromiseQueue": {
+      "require": "./dist/v1/libs/TinyPromiseQueue.cjs",
+      "import": "./dist/v1/libs/TinyPromiseQueue.mjs"
+    },
+    "./libs/TinyNotifyCenter": {
+      "require": "./dist/v1/libs/TinyNotifyCenter.cjs",
+      "import": "./dist/v1/libs/TinyNotifyCenter.mjs"
+    },
+    "./libs/TinyNotifications": {
+      "require": "./dist/v1/libs/TinyNotifications.cjs",
+      "import": "./dist/v1/libs/TinyNotifications.mjs"
+    },
+    "./libs/TinyNewWinEvents": {
+      "require": "./dist/v1/libs/TinyNewWinEvents.cjs",
+      "import": "./dist/v1/libs/TinyNewWinEvents.mjs"
+    },
+    "./libs/TinyNeedBar": {
+      "require": "./dist/v1/libs/TinyNeedBar.cjs",
+      "import": "./dist/v1/libs/TinyNeedBar.mjs"
+    },
+    "./libs/TinyLocalStorage": {
+      "require": "./dist/v1/libs/TinyLocalStorage.cjs",
+      "import": "./dist/v1/libs/TinyLocalStorage.mjs"
+    },
+    "./libs/TinyLoadingScreen": {
+      "require": "./dist/v1/libs/TinyLoadingScreen.cjs",
+      "import": "./dist/v1/libs/TinyLoadingScreen.mjs"
+    },
+    "./libs/TinyInventoryTrader": {
+      "require": "./dist/v1/libs/TinyInventoryTrader.cjs",
+      "import": "./dist/v1/libs/TinyInventoryTrader.mjs"
+    },
+    "./libs/TinyInventory": {
+      "require": "./dist/v1/libs/TinyInventory.cjs",
+      "import": "./dist/v1/libs/TinyInventory.mjs"
+    },
+    "./libs/TinyIframeEvents": {
+      "require": "./dist/v1/libs/TinyIframeEvents.cjs",
+      "import": "./dist/v1/libs/TinyIframeEvents.mjs"
+    },
+    "./libs/TinyI18": {
+      "require": "./dist/v1/libs/TinyI18.cjs",
+      "import": "./dist/v1/libs/TinyI18.mjs"
+    },
+    "./libs/TinyHtml": {
+      "require": "./dist/v1/libs/TinyHtml.cjs",
+      "import": "./dist/v1/libs/TinyHtml.mjs"
+    },
+    "./libs/TinyGamepad": {
+      "require": "./dist/v1/libs/TinyGamepad.cjs",
+      "import": "./dist/v1/libs/TinyGamepad.mjs"
+    },
+    "./libs/TinyEvents": {
+      "require": "./dist/v1/libs/TinyEvents.cjs",
+      "import": "./dist/v1/libs/TinyEvents.mjs"
+    },
+    "./libs/TinyElementObserver": {
+      "require": "./dist/v1/libs/TinyElementObserver.cjs",
+      "import": "./dist/v1/libs/TinyElementObserver.mjs"
+    },
+    "./libs/TinyDragger": {
+      "require": "./dist/v1/libs/TinyDragger.cjs",
+      "import": "./dist/v1/libs/TinyDragger.mjs"
+    },
+    "./libs/TinyDragDropDetector": {
+      "require": "./dist/v1/libs/TinyDragDropDetector.cjs",
+      "import": "./dist/v1/libs/TinyDragDropDetector.mjs"
+    },
+    "./libs/TinyDomReadyManager": {
+      "require": "./dist/v1/libs/TinyDomReadyManager.cjs",
+      "import": "./dist/v1/libs/TinyDomReadyManager.mjs"
+    },
+    "./libs/TinyDayNightCycle": {
+      "require": "./dist/v1/libs/TinyDayNightCycle.cjs",
+      "import": "./dist/v1/libs/TinyDayNightCycle.mjs"
+    },
+    "./libs/TinyCookieConsent": {
+      "require": "./dist/v1/libs/TinyCookieConsent.cjs",
+      "import": "./dist/v1/libs/TinyCookieConsent.mjs"
+    },
+    "./libs/TinyColorConverter": {
+      "require": "./dist/v1/libs/TinyColorConverter.cjs",
+      "import": "./dist/v1/libs/TinyColorConverter.mjs"
+    },
+    "./libs/TinyClipboard": {
+      "require": "./dist/v1/libs/TinyClipboard.cjs",
+      "import": "./dist/v1/libs/TinyClipboard.mjs"
+    },
+    "./libs/TinyArrayPaginator": {
+      "require": "./dist/v1/libs/TinyArrayPaginator.cjs",
+      "import": "./dist/v1/libs/TinyArrayPaginator.mjs"
+    },
+    "./libs/TinyAfterScrollWatcher": {
+      "require": "./dist/v1/libs/TinyAfterScrollWatcher.cjs",
+      "import": "./dist/v1/libs/TinyAfterScrollWatcher.mjs"
+    },
+    "./libs/TinyAdvancedRaffle": {
+      "require": "./dist/v1/libs/TinyAdvancedRaffle.cjs",
+      "import": "./dist/v1/libs/TinyAdvancedRaffle.mjs"
     }
   },
   "repository": {
