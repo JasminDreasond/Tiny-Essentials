@@ -41,6 +41,15 @@ class TinyLoadingScreen {
 
   /** @param {LoadingSettings} value */
   set options(value) {
+    if (typeof value !== 'object' || value === null)
+      throw new TypeError('options must be an object');
+    if (value.fadeIn !== null && (typeof value.fadeIn !== 'number' || value.fadeIn < 0))
+      throw new TypeError('fadeIn must be a non-negative number or null');
+    if (value.fadeOut !== null && (typeof value.fadeOut !== 'number' || value.fadeOut < 0))
+      throw new TypeError('fadeOut must be a non-negative number or null');
+    if (typeof value.zIndex !== 'number' || !Number.isInteger(value.zIndex))
+      throw new TypeError('zIndex must be an integer number');
+
     this.#options = { ...value };
   }
 
@@ -62,6 +71,8 @@ class TinyLoadingScreen {
 
   /** @param {string|HTMLElement} value */
   set defaultMessage(value) {
+    if (typeof value !== 'string' && !(value instanceof HTMLElement))
+      throw new TypeError('defaultMessage must be a string or an HTMLElement');
     this.#defaultMessage = value;
   }
 
@@ -83,6 +94,7 @@ class TinyLoadingScreen {
 
   /** @param {boolean} value */
   set allowHtmlText(value) {
+    if (typeof value !== 'boolean') throw new TypeError('allowHtmlText must be a boolean');
     this.#allowHtmlText = value;
   }
 
@@ -112,11 +124,16 @@ class TinyLoadingScreen {
    * @param {{ fadeIn?: number, fadeOut?: number, zIndex?: number }} [options={}] - Config options (ms).
    */
   constructor(container = document.body, options = {}) {
+    if (!(container instanceof HTMLElement))
+      throw new TypeError('container must be an HTMLElement');
+    if (typeof options !== 'object' || options === null)
+      throw new TypeError('options must be an object');
+
     this.#container = container;
     this.options = {
-      fadeIn: options.fadeIn ?? null, // default 300ms
-      fadeOut: options.fadeOut ?? null, // default 300ms
-      zIndex: options.zIndex ?? 9999, // default overlay level
+      fadeIn: options.fadeIn ?? null,
+      fadeOut: options.fadeOut ?? null,
+      zIndex: options.zIndex ?? 9999,
     };
   }
 
@@ -124,13 +141,18 @@ class TinyLoadingScreen {
    * @param {string|HTMLElement} [message=this.#defaultMessage]
    */
   _updateMessage(message = this.#defaultMessage) {
-    if (!this.#messageElement) throw new Error('');
+    if (!this.#messageElement) throw new Error('messageElement is not initialized');
+    if (typeof message !== 'string' && !(message instanceof HTMLElement))
+      throw new TypeError('message must be a string or an HTMLElement');
+
     this.#message = message;
+
     if (typeof message === 'string') {
       if (!this.#allowHtmlText) this.#messageElement.textContent = message;
       else this.#messageElement.innerHTML = message;
     } else {
-      if (!this.#allowHtmlText) throw new Error('');
+      if (!this.#allowHtmlText)
+        throw new Error('HTMLElement messages require allowHtmlText = true');
       this.#messageElement.textContent = '';
       this.#messageElement.appendChild(message);
     }
@@ -142,6 +164,9 @@ class TinyLoadingScreen {
    * @returns {boolean}
    */
   start(message = this.#defaultMessage) {
+    if (typeof message !== 'string' && !(message instanceof HTMLElement)) 
+      throw new TypeError('message must be a string or an HTMLElement');
+
     if (!this.#overlay) {
       this.#overlay = document.createElement('div');
       this.#overlay.classList.add('loading-overlay');
@@ -190,6 +215,9 @@ class TinyLoadingScreen {
    * @returns {boolean}
    */
   update(message = this.#defaultMessage) {
+    if (typeof message !== 'string' && !(message instanceof HTMLElement)) 
+      throw new TypeError('message must be a string or an HTMLElement');
+
     if (this.#messageElement) {
       this._updateMessage(message);
       return true;
