@@ -58,6 +58,7 @@ This folder contains the core scripts we have worked on so far. Each file is a m
 - 🎮 **[TinyNeedBar](./libs/TinyNeedBar.md)** — A versatile "need bar" system for simulating decay over time with multiple configurable factors, serialization, cloning, and full control over clamped and infinite values.
 - 🎲 **[TinySimpleDice](./libs/TinySimpleDice.md)** — A lightweight and flexible dice rolling utility with configurable maximum values, zero allowance, and array/Set index rolling support.
 - 👀 **[TinyElementObserver](./libs/TinyElementObserver.md)** — A DOM mutation tracking utility built on MutationObserver, with customizable detectors for handling changes, event dispatching, and lifecycle management.  
+- ⏳ **[TinyLoadingScreen](./libs/TinyLoadingScreen.md)** — A lightweight, fully-configurable loading overlay with fade-in/out animations, custom messages (string or HTMLElement), HTML rendering option, and status-change callbacks.
 
 ### 3. **`fileManager/`**
 * 📁 **[Main](./fileManager/main.md)** — A Node.js file/directory utility module with support for JSON, backups, renaming, size analysis, and more.
