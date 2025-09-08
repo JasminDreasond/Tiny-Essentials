@@ -29,7 +29,7 @@ const HWB_REGEX = new RegExp(
 
 // LAB
 
-const LAB_AB = `(-?\\d{1,3})`;
+const LAB_AB = `(-?\\d+)`;
 
 const LAB_REGEX = new RegExp(
   `^lab\\(\\s*${NUM_0_100}%?\\s*${LAB_AB}%?\\s*${LAB_AB}%?\\s*\\)$`
