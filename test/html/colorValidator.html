@@ -248,7 +248,9 @@
     </main>
 
     <script type="module">
-      import {
+      import * as ColorsScript from './src/v1/basics/colors.mjs';
+
+      const {
         validateHTMLColor,
         validateHTMLColorHex,
         validateHTMLColorHexa,
@@ -261,7 +263,30 @@
         validateHTMLColorLch,
         validateHTMLColorName,
         validateHTMLColorSpecialName,
-      } from './src/v1/basics/colorValidator.mjs';
+        parseHtmlHex,
+        parseHtmlHexa,
+        parseHtmlRgb,
+        parseHtmlRgba,
+        parseHtmlHsl,
+        parseHtmlHsla,
+        parseHtmlHwb,
+        parseHtmlLab,
+        parseHtmlLch,
+      } = ColorsScript;
+
+      window.ColorsScript = ColorsScript;
+    
+      const parsers = {
+        validateHTMLColorHex: parseHtmlHex,
+        validateHTMLColorHexa: parseHtmlHexa,
+        validateHTMLColorRgb: parseHtmlRgb,
+        validateHTMLColorRgba: parseHtmlRgba,
+        validateHTMLColorHsl: parseHtmlHsl,
+        validateHTMLColorHsla: parseHtmlHsla,
+        validateHTMLColorHwb: parseHtmlHwb,
+        validateHTMLColorLab: parseHtmlLab,
+        validateHTMLColorLch: parseHtmlLch,
+      };
 
       const colorInput = document.getElementById('colorInput');
       const validateAllBtn = document.getElementById('validateAllBtn');
@@ -397,16 +422,19 @@
 
       function runSingleTest(color) {
         const results = [];
+        const parsed = {};
         for (const [fnName, fn] of Object.entries(validators)) {
           let passed = false;
           try {
             passed = fn(color);
+            if (passed) parsed[fnName] = parsers[fnName](color);
           } catch (e) {
             passed = false;
           }
           if (passed) results.push(fnName);
         }
 
+        console.log(parsed);
         return results;
       }
 
@@ -459,13 +487,21 @@
         <tbody>
       `;
 
+        const parsed = {};
         for (const color of arr) {
           const rowResults = {};
-          for (const [fnName, fn] of Object.entries(validators)) {
+          const values = Object.entries(validators);
+          for (const index in values) {
+            const [fnName, fn] = values[index];
             try {
               rowResults[fnName] = fn(color);
             } catch {
               rowResults[fnName] = false;
+            }
+            const id = index;
+            if (parsers[fnName] && rowResults[fnName]) {
+                const result = parsers[fnName](color);
+                if (result) parsed[id] = result;
             }
           }
 
@@ -482,6 +518,7 @@
         `;
         }
 
+        console.table(parsed);
         table += '</tbody></table>';
         document.getElementById('batchResult').innerHTML = table;
       });

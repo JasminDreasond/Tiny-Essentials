@@ -2,34 +2,19 @@
 const HEX_REGEX = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
 const HEXA_REGEX = /^#([A-Fa-f0-9]{8})$/;
 
-const HEX_REGEX_GM = new RegExp(HEX_REGEX, 'gm');
-const HEXA_REGEX_GM = new RegExp(HEXA_REGEX, 'gm');
-
 const RGB_REGEX = /^rgb\((\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\)$/;
 const RGBA_REGEX = /^rgba\((\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1}|0?\.\d+)\)$/;
-
-const RGB_REGEX_GM = new RegExp(RGB_REGEX, 'gm');
-const RGBA_REGEX_GM = new RegExp(RGBA_REGEX, 'gm');
 
 const HSL_REGEX = /^hsl\((\d{1,3})\s*,\s*(\d{1,3})%\s*,\s*(\d{1,3})%\)$/;
 const HSLA_REGEX = /^hsla\((\d{1,3})\s*,\s*(\d{1,3})%\s*,\s*(\d{1,3})%\s*,\s*(\d{1}|0?\.\d+)\)$/;
 
-const HSL_REGEX_GM = new RegExp(HSL_REGEX, 'gm');
-const HSLA_REGEX_GM = new RegExp(HSLA_REGEX, 'gm');
-
 const HWB_REGEX =
   /^hwb\(\s*\d{1,3}(deg|grad|rad|turn)?\s*\d{1,3}%\s*\d{1,3}%\s*(,\s*(0|1|0?\.\d+))?\)$/;
 
-const HWB_REGEX_GM = new RegExp(HWB_REGEX, 'gm');
-
 const LAB_REGEX = /^lab\(\s*\d{1,3}%?\s*-?\d{1,3}%?\s*-?\d{1,3}%?\s*(\/\s*(0|1|0?\.\d+))?\)$/;
-
-const LAB_REGEX_GM = new RegExp(LAB_REGEX, 'gm');
 
 const LCH_REGEX =
   /^lch\(\s*\d{1,3}%?\s*\d{1,3}%?\s*\d{1,3}(deg|grad|rad|turn)?\s*(\/\s*(0|1|0?\.\d+))?\)$/;
-
-const LCH_REGEX_GM = new RegExp(LCH_REGEX, 'gm');
 
 // CSS Level 4 color names
 const HTML_COLOR_NAMES = new Set([
@@ -435,7 +420,7 @@ export function validateHTMLColor(input) {
  */
 export function parseHtmlHex(input) {
   if (typeof input !== 'string') throw new TypeError('parseHtmlHex: input must be a string.');
-  return HEX_REGEX_GM.exec(input.trim());
+  return new RegExp(HEX_REGEX, 'gm').exec(input.trim());
 }
 
 /**
@@ -447,7 +432,7 @@ export function parseHtmlHex(input) {
  */
 export function parseHtmlHexa(input) {
   if (typeof input !== 'string') throw new TypeError('parseHtmlHexa: input must be a string.');
-  return HEXA_REGEX_GM.exec(input.trim());
+  return new RegExp(HEXA_REGEX, 'gm').exec(input.trim());
 }
 
 // --- RGB / RGBA ---
@@ -461,7 +446,7 @@ export function parseHtmlHexa(input) {
  */
 export function parseHtmlRgb(input) {
   if (typeof input !== 'string') throw new TypeError('parseHtmlRgb: input must be a string.');
-  return RGB_REGEX_GM.exec(input.trim());
+  return new RegExp(RGB_REGEX, 'gm').exec(input.trim());
 }
 
 /**
@@ -473,7 +458,7 @@ export function parseHtmlRgb(input) {
  */
 export function parseHtmlRgba(input) {
   if (typeof input !== 'string') throw new TypeError('parseHtmlRgba: input must be a string.');
-  return RGBA_REGEX_GM.exec(input.trim());
+  return new RegExp(RGBA_REGEX, 'gm').exec(input.trim());
 }
 
 // --- HSL / HSLA ---
@@ -487,7 +472,7 @@ export function parseHtmlRgba(input) {
  */
 export function parseHtmlHsl(input) {
   if (typeof input !== 'string') throw new TypeError('parseHtmlHsl: input must be a string.');
-  return HSL_REGEX_GM.exec(input.trim());
+  return new RegExp(HSL_REGEX, 'gm').exec(input.trim());
 }
 
 /**
@@ -499,7 +484,7 @@ export function parseHtmlHsl(input) {
  */
 export function parseHtmlHsla(input) {
   if (typeof input !== 'string') throw new TypeError('parseHtmlHsla: input must be a string.');
-  return HSLA_REGEX_GM.exec(input.trim());
+  return new RegExp(HSLA_REGEX, 'gm').exec(input.trim());
 }
 
 // --- HWB ---
@@ -513,7 +498,7 @@ export function parseHtmlHsla(input) {
  */
 export function parseHtmlHwb(input) {
   if (typeof input !== 'string') throw new TypeError('parseHtmlHwb: input must be a string.');
-  return HWB_REGEX_GM.exec(input.trim());
+  return new RegExp(HWB_REGEX, 'gm').exec(input.trim());
 }
 
 // --- Lab ---
@@ -527,7 +512,7 @@ export function parseHtmlHwb(input) {
  */
 export function parseHtmlLab(input) {
   if (typeof input !== 'string') throw new TypeError('parseHtmlLab: input must be a string.');
-  return LAB_REGEX_GM.exec(input.trim());
+  return new RegExp(LAB_REGEX, 'gm').exec(input.trim());
 }
 
 // --- LCH ---
@@ -541,5 +526,5 @@ export function parseHtmlLab(input) {
  */
 export function parseHtmlLch(input) {
   if (typeof input !== 'string') throw new TypeError('parseHtmlLch: input must be a string.');
-  return LCH_REGEX_GM.exec(input.trim());
+  return new RegExp(LCH_REGEX, 'gm').exec(input.trim());
 }
