@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Color Validators Test Suite</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #f5f7fa;
+        color: #333;
+        line-height: 1.5;
+      }
+
+      header {
+        background: #2d3748;
+        color: #fff;
+        padding: 1rem 2rem;
+      }
+
+      header h1 {
+        margin: 0;
+        font-size: 1.6rem;
+      }
+
+      main {
+        padding: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      section {
+        margin-bottom: 2.5rem;
+        background: #fff;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      }
+
+      section h2 {
+        margin-top: 0;
+        font-size: 1.3rem;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 0.5rem;
+      }
+
+      .form-group {
+        margin-bottom: 1rem;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 0.3rem;
+        font-weight: 600;
+      }
+
+      input,
+      select,
+      button,
+      textarea {
+        padding: 0.5rem 0.7rem;
+        font-size: 1rem;
+        border-radius: 4px;
+        border: 1px solid #cbd5e0;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      button {
+        background: #2b6cb0;
+        color: white;
+        cursor: pointer;
+        border: none;
+      }
+
+      button:hover {
+        background: #2c5282;
+      }
+
+      .results {
+        margin-top: 1rem;
+        background: #edf2f7;
+        padding: 1rem;
+        border-radius: 6px;
+        font-family: monospace;
+        white-space: pre-wrap;
+        max-height: 200px;
+        overflow: auto;
+      }
+
+      .flex {
+        display: flex;
+        gap: 1rem;
+      }
+      .flex > * {
+        flex: 1;
+      }
+
+      h1 {
+        margin-bottom: 10px;
+      }
+      textarea,
+      input {
+        width: 100%;
+        margin: 5px 0;
+        padding: 8px;
+        font-family: monospace;
+      }
+
+      .result {
+        margin-top: 15px;
+        border-top: 1px solid #ccc;
+        padding-top: 10px;
+      }
+      .color-sample {
+        display: inline-block;
+        width: 30px;
+        height: 20px;
+        border: 1px solid #ccc;
+        margin-right: 8px;
+        vertical-align: middle;
+      }
+      .valid {
+        color: green;
+        font-weight: bold;
+      }
+      .invalid {
+        color: red;
+        font-weight: bold;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+        background: white;
+      }
+      th,
+      td {
+        padding: 8px;
+        border: 1px solid #ddd;
+        text-align: left;
+      }
+      th {
+        background: #f0f0f0;
+      }
+      .passed {
+        background: #e0ffe0;
+      }
+      .failed {
+        background: #ffe0e0;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Color Validators Test Suite</h1>
+    </header>
+
+    <main>
+      <!-- General Color Validation -->
+      <section>
+        <h2>General Color Validation</h2>
+        <div class="form-group">
+          <label for="colorInput">Enter a color value (hex, rgb, hsl, etc.):</label>
+          <input id="colorInput" type="text" placeholder="e.g. #ff0000, rgb(255,0,0), red" />
+        </div>
+        <div class="flex">
+          <button id="validateAllBtn">Validate Any Color</button>
+          <button id="clearAllBtn">Clear</button>
+        </div>
+        <div class="results" id="validateAllResults"></div>
+      </section>
+
+      <!-- Specific Validators -->
+      <section>
+        <h2>Specific Validators</h2>
+        <p>Test individual validators to see which ones pass.</p>
+        <div class="form-group">
+          <label for="specificInput">Enter a color value:</label>
+          <input id="specificInput" type="text" placeholder="e.g. hsl(120, 100%, 50%)" />
+        </div>
+        <div class="flex">
+          <button data-validator="validateHTMLColorHex">HEX</button>
+          <button data-validator="validateHTMLColorHexa">HEXA</button>
+          <button data-validator="validateHTMLColorRgb">RGB</button>
+          <button data-validator="validateHTMLColorRgba">RGBA</button>
+          <button data-validator="validateHTMLColorHsl">HSL</button>
+          <button data-validator="validateHTMLColorHsla">HSLA</button>
+          <button data-validator="validateHTMLColorHwb">HWB</button>
+          <button data-validator="validateHTMLColorLab">Lab</button>
+          <button data-validator="validateHTMLColorLch">LCH</button>
+          <button data-validator="validateHTMLColorName">Name</button>
+          <button data-validator="validateHTMLColorSpecialName">Special</button>
+        </div>
+        <div class="results" id="specificResults"></div>
+      </section>
+
+      <!-- Color Registry -->
+      <section>
+        <h2>Color Registry</h2>
+        <p>Manage HTML color names and special color names dynamically.</p>
+
+        <div class="flex">
+          <div>
+            <h3>HTML Color Names</h3>
+            <div class="form-group">
+              <label for="htmlName">Color Name:</label>
+              <input id="htmlName" type="text" placeholder="e.g. skyblue" />
+            </div>
+            <div class="flex">
+              <button id="addHtmlName">Add</button>
+              <button id="removeHtmlName">Remove</button>
+              <button id="checkHtmlName">Check</button>
+            </div>
+            <div class="results" id="htmlResults"></div>
+          </div>
+
+          <div>
+            <h3>Special Color Names</h3>
+            <div class="form-group">
+              <label for="specialName">Special Name:</label>
+              <input id="specialName" type="text" placeholder="e.g. transparent" />
+            </div>
+            <div class="flex">
+              <button id="addSpecialName">Add</button>
+              <button id="removeSpecialName">Remove</button>
+              <button id="checkSpecialName">Check</button>
+            </div>
+            <div class="results" id="specialResults"></div>
+          </div>
+        </div>
+      </section>
+
+      <h1>Color Validators Tester</h1>
+
+      <h2>Quick Test</h2>
+      <input type="text" id="singleInput" placeholder="Enter a color string..." />
+      <button id="singleTestBtn">Test Single Color</button>
+      <div id="singleResult" class="result"></div>
+
+      <h2>Batch Test (Array Loader)</h2>
+      <textarea id="batchInput" rows="8"></textarea>
+      <button id="batchTestBtn">Run Batch Test</button>
+      <div id="batchResult" class="result"></div>
+    </main>
+
+    <script type="module">
+      import {
+        validateHTMLColor,
+        validateHTMLColorHex,
+        validateHTMLColorHexa,
+        validateHTMLColorRgb,
+        validateHTMLColorRgba,
+        validateHTMLColorHsl,
+        validateHTMLColorHsla,
+        validateHTMLColorHwb,
+        validateHTMLColorLab,
+        validateHTMLColorLch,
+        validateHTMLColorName,
+        validateHTMLColorSpecialName,
+      } from './src/v1/basics/colorValidator.mjs';
+
+      const colorInput = document.getElementById('colorInput');
+      const validateAllBtn = document.getElementById('validateAllBtn');
+      const clearAllBtn = document.getElementById('clearAllBtn');
+      const validateAllResults = document.getElementById('validateAllResults');
+
+      validateAllBtn.addEventListener('click', () => {
+        try {
+          const value = colorInput.value.trim();
+          const result = validateHTMLColor(value);
+          validateAllResults.textContent = `Input: "${value}"\nResult: ${result}`;
+        } catch (err) {
+          validateAllResults.textContent = `Error: ${err.message}`;
+        }
+      });
+
+      clearAllBtn.addEventListener('click', () => {
+        colorInput.value = '';
+        validateAllResults.textContent = '';
+      });
+
+      // Specific validators
+      const specificInput = document.getElementById('specificInput');
+      const specificResults = document.getElementById('specificResults');
+
+      document.querySelectorAll('[data-validator]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const validatorName = button.dataset.validator;
+          const value = specificInput.value.trim();
+          try {
+            const fn = eval(validatorName); // dynamic function access
+            const result = fn(value);
+            specificResults.textContent = `Validator: ${validatorName}\nInput: "${value}"\nResult: ${result}`;
+          } catch (err) {
+            specificResults.textContent = `Error with ${validatorName}: ${err.message}`;
+          }
+        });
+      });
+
+      // HTML Color Registry
+      const htmlName = document.getElementById('htmlName');
+      const htmlResults = document.getElementById('htmlResults');
+      document.getElementById('addHtmlName').addEventListener('click', () => {
+        try {
+          const result = ColorRegistry.addHTMLColorName(htmlName.value);
+          htmlResults.textContent = `Added "${htmlName.value}": ${result}`;
+        } catch (err) {
+          htmlResults.textContent = `Error: ${err.message}`;
+        }
+      });
+      document.getElementById('removeHtmlName').addEventListener('click', () => {
+        try {
+          const result = ColorRegistry.removeHTMLColorName(htmlName.value);
+          htmlResults.textContent = `Removed "${htmlName.value}": ${result}`;
+        } catch (err) {
+          htmlResults.textContent = `Error: ${err.message}`;
+        }
+      });
+      document.getElementById('checkHtmlName').addEventListener('click', () => {
+        try {
+          const result = ColorRegistry.hasHTMLColorName(htmlName.value);
+          htmlResults.textContent = `Exists "${htmlName.value}": ${result}`;
+        } catch (err) {
+          htmlResults.textContent = `Error: ${err.message}`;
+        }
+      });
+
+      // Special Color Registry
+      const specialName = document.getElementById('specialName');
+      const specialResults = document.getElementById('specialResults');
+      document.getElementById('addSpecialName').addEventListener('click', () => {
+        try {
+          const result = ColorRegistry.addSpecialColorName(specialName.value);
+          specialResults.textContent = `Added "${specialName.value}": ${result}`;
+        } catch (err) {
+          specialResults.textContent = `Error: ${err.message}`;
+        }
+      });
+      document.getElementById('removeSpecialName').addEventListener('click', () => {
+        try {
+          const result = ColorRegistry.removeSpecialColorName(specialName.value);
+          specialResults.textContent = `Removed "${specialName.value}": ${result}`;
+        } catch (err) {
+          specialResults.textContent = `Error: ${err.message}`;
+        }
+      });
+      document.getElementById('checkSpecialName').addEventListener('click', () => {
+        try {
+          const result = ColorRegistry.hasSpecialColorName(specialName.value);
+          specialResults.textContent = `Exists "${specialName.value}": ${result}`;
+        } catch (err) {
+          specialResults.textContent = `Error: ${err.message}`;
+        }
+      });
+
+      // --- Predefined test colors ---
+      const predefinedColors = [
+        '#fff',
+        '#ffffff',
+        '#ffffffff', // hex
+        'rgb(255, 0, 0)', // rgb
+        'rgba(0,255,0,0.5)', // rgba
+        'hsl(120, 100%, 50%)',
+        'hsla(240,100%,50%,0.3)', // hsl
+        'hwb(200 20% 30%)', // hwb
+        'lab(50% -20 30)',
+        'lch(60% 70 120)', // lab/lch
+        'red',
+        'blue',
+        'rebeccapurple', // names
+        'transparent',
+        'currentColor', // special names
+        'invalidColor',
+        '#12',
+        'rgb(999,0,0)', // invalid
+      ];
+      document.getElementById('batchInput').value = JSON.stringify(predefinedColors, null, 2);
+
+      const validators = {
+        validateHTMLColor,
+        validateHTMLColorHex,
+        validateHTMLColorHexa,
+        validateHTMLColorRgb,
+        validateHTMLColorRgba,
+        validateHTMLColorHsl,
+        validateHTMLColorHsla,
+        validateHTMLColorHwb,
+        validateHTMLColorLab,
+        validateHTMLColorLch,
+        validateHTMLColorName,
+        validateHTMLColorSpecialName,
+      };
+
+      function runSingleTest(color) {
+        const results = [];
+        for (const [fnName, fn] of Object.entries(validators)) {
+          let passed = false;
+          try {
+            passed = fn(color);
+          } catch (e) {
+            passed = false;
+          }
+          if (passed) results.push(fnName);
+        }
+
+        return results;
+      }
+
+      // --- Single test handler ---
+      document.getElementById('singleTestBtn').addEventListener('click', () => {
+        const input = document.getElementById('singleInput').value.trim();
+        if (!input) return;
+
+        const results = runSingleTest(input);
+        const div = document.getElementById('singleResult');
+        div.innerHTML = `
+        <div>
+          <span class="color-sample" style="background:${input}"></span>
+          <code>${input}</code>
+        </div>
+        <div>${
+          results.length > 0
+            ? `<span class="valid">Valid in: ${results.join(', ')}</span>`
+            : `<span class="invalid">No match found</span>`
+        }</div>
+      `;
+      });
+
+      // --- Batch test handler ---
+      document.getElementById('batchTestBtn').addEventListener('click', () => {
+        const textarea = document.getElementById('batchInput');
+        let arr;
+        try {
+          arr = JSON.parse(textarea.value);
+          if (!Array.isArray(arr)) throw new Error();
+        } catch {
+          alert('Invalid JSON array');
+          return;
+        }
+
+        let table = `<table>
+        <thead>
+          <tr>
+            <th>Sample</th>
+            <th>Color</th>
+            ${Object.keys(validators)
+              .map((fn) => {
+                let panelName = fn.replace('validateHTMLColor', '');
+                if (!panelName) panelName = 'Main';
+                return `<th>${panelName}</th>`;
+              })
+              .join('')}
+          </tr>
+        </thead>
+        <tbody>
+      `;
+
+        for (const color of arr) {
+          const rowResults = {};
+          for (const [fnName, fn] of Object.entries(validators)) {
+            try {
+              rowResults[fnName] = fn(color);
+            } catch {
+              rowResults[fnName] = false;
+            }
+          }
+
+          table += `
+          <tr>
+            <td><span class="color-sample" style="background:${color}"></span></td>
+            <td><code>${color}</code></td>
+            ${Object.entries(rowResults)
+              .map(
+                ([fnName, passed]) => `<td class="${passed ? 'passed' : 'failed'}">${passed}</td>`,
+              )
+              .join('')}
+          </tr>
+        `;
+        }
+
+        table += '</tbody></table>';
+        document.getElementById('batchResult').innerHTML = table;
+      });
+    </script>
+  </body>
+</html>
