@@ -2,19 +2,34 @@
 const HEX_REGEX = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
 const HEXA_REGEX = /^#([A-Fa-f0-9]{8})$/;
 
+const HEX_REGEX_GM = new RegExp(HEX_REGEX, 'gm');
+const HEXA_REGEX_GM = new RegExp(HEXA_REGEX, 'gm');
+
 const RGB_REGEX = /^rgb\((\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\)$/;
 const RGBA_REGEX = /^rgba\((\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1}|0?\.\d+)\)$/;
+
+const RGB_REGEX_GM = new RegExp(RGB_REGEX, 'gm');
+const RGBA_REGEX_GM = new RegExp(RGBA_REGEX, 'gm');
 
 const HSL_REGEX = /^hsl\((\d{1,3})\s*,\s*(\d{1,3})%\s*,\s*(\d{1,3})%\)$/;
 const HSLA_REGEX = /^hsla\((\d{1,3})\s*,\s*(\d{1,3})%\s*,\s*(\d{1,3})%\s*,\s*(\d{1}|0?\.\d+)\)$/;
 
-const HWB_REGEX =
-  /^hwb\(\s*\d{1,3}(deg|grad|rad|turn)?\s*\d{1,3}%\s*\d{1,3}%\s*(,\s*(0|1|0?\.\d+))?\)$/i;
+const HSL_REGEX_GM = new RegExp(HSL_REGEX, 'gm');
+const HSLA_REGEX_GM = new RegExp(HSLA_REGEX, 'gm');
 
-const LAB_REGEX = /^lab\(\s*\d{1,3}%?\s*-?\d{1,3}%?\s*-?\d{1,3}%?\s*(\/\s*(0|1|0?\.\d+))?\)$/i;
+const HWB_REGEX =
+  /^hwb\(\s*\d{1,3}(deg|grad|rad|turn)?\s*\d{1,3}%\s*\d{1,3}%\s*(,\s*(0|1|0?\.\d+))?\)$/;
+
+const HWB_REGEX_GM = new RegExp(HWB_REGEX, 'gm');
+
+const LAB_REGEX = /^lab\(\s*\d{1,3}%?\s*-?\d{1,3}%?\s*-?\d{1,3}%?\s*(\/\s*(0|1|0?\.\d+))?\)$/;
+
+const LAB_REGEX_GM = new RegExp(LAB_REGEX, 'gm');
 
 const LCH_REGEX =
-  /^lch\(\s*\d{1,3}%?\s*\d{1,3}%?\s*\d{1,3}(deg|grad|rad|turn)?\s*(\/\s*(0|1|0?\.\d+))?\)$/i;
+  /^lch\(\s*\d{1,3}%?\s*\d{1,3}%?\s*\d{1,3}(deg|grad|rad|turn)?\s*(\/\s*(0|1|0?\.\d+))?\)$/;
+
+const LCH_REGEX_GM = new RegExp(LCH_REGEX, 'gm');
 
 // CSS Level 4 color names
 const HTML_COLOR_NAMES = new Set([
@@ -407,4 +422,124 @@ export function validateHTMLColor(input) {
     validateHTMLColorName(input) ||
     validateHTMLColorSpecialName(input)
   );
+}
+
+// --- HEX / HEXA ---
+
+/**
+ * Parses a HEX color string (#RGB or #RRGGBB).
+ * Returns the regex match array with captured groups or null if invalid.
+ * @param {string} input - The input string to parse.
+ * @returns {RegExpExecArray|null} Regex match result with captured groups, or null if not valid.
+ * @throws {TypeError} If input is not a string.
+ */
+export function parseHtmlHex(input) {
+  if (typeof input !== 'string') throw new TypeError('parseHtmlHex: input must be a string.');
+  return HEX_REGEX_GM.exec(input.trim());
+}
+
+/**
+ * Parses a HEXA color string (#RRGGBBAA).
+ * Returns the regex match array with captured groups or null if invalid.
+ * @param {string} input - The input string to parse.
+ * @returns {RegExpExecArray|null} Regex match result with captured groups, or null if not valid.
+ * @throws {TypeError} If input is not a string.
+ */
+export function parseHtmlHexa(input) {
+  if (typeof input !== 'string') throw new TypeError('parseHtmlHexa: input must be a string.');
+  return HEXA_REGEX_GM.exec(input.trim());
+}
+
+// --- RGB / RGBA ---
+
+/**
+ * Parses an RGB color string (rgb(r, g, b)).
+ * Returns the regex match array with captured groups for r, g, and b or null if invalid.
+ * @param {string} input - The input string to parse.
+ * @returns {RegExpExecArray|null} Regex match result with groups [r, g, b], or null if not valid.
+ * @throws {TypeError} If input is not a string.
+ */
+export function parseHtmlRgb(input) {
+  if (typeof input !== 'string') throw new TypeError('parseHtmlRgb: input must be a string.');
+  return RGB_REGEX_GM.exec(input.trim());
+}
+
+/**
+ * Parses an RGBA color string (rgba(r, g, b, a)).
+ * Returns the regex match array with captured groups for r, g, b, and a or null if invalid.
+ * @param {string} input - The input string to parse.
+ * @returns {RegExpExecArray|null} Regex match result with groups [r, g, b, a], or null if not valid.
+ * @throws {TypeError} If input is not a string.
+ */
+export function parseHtmlRgba(input) {
+  if (typeof input !== 'string') throw new TypeError('parseHtmlRgba: input must be a string.');
+  return RGBA_REGEX_GM.exec(input.trim());
+}
+
+// --- HSL / HSLA ---
+
+/**
+ * Parses an HSL color string (hsl(h, s%, l%)).
+ * Returns the regex match array with captured groups for h, s, and l or null if invalid.
+ * @param {string} input - The input string to parse.
+ * @returns {RegExpExecArray|null} Regex match result with groups [h, s, l], or null if not valid.
+ * @throws {TypeError} If input is not a string.
+ */
+export function parseHtmlHsl(input) {
+  if (typeof input !== 'string') throw new TypeError('parseHtmlHsl: input must be a string.');
+  return HSL_REGEX_GM.exec(input.trim());
+}
+
+/**
+ * Parses an HSLA color string (hsla(h, s%, l%, a)).
+ * Returns the regex match array with captured groups for h, s, l, and a or null if invalid.
+ * @param {string} input - The input string to parse.
+ * @returns {RegExpExecArray|null} Regex match result with groups [h, s, l, a], or null if not valid.
+ * @throws {TypeError} If input is not a string.
+ */
+export function parseHtmlHsla(input) {
+  if (typeof input !== 'string') throw new TypeError('parseHtmlHsla: input must be a string.');
+  return HSLA_REGEX_GM.exec(input.trim());
+}
+
+// --- HWB ---
+
+/**
+ * Parses an HWB color string (hwb(hue, whiteness%, blackness%[, alpha])).
+ * Returns the regex match array with captured groups or null if invalid.
+ * @param {string} input - The input string to parse.
+ * @returns {RegExpExecArray|null} Regex match result with captured groups, or null if not valid.
+ * @throws {TypeError} If input is not a string.
+ */
+export function parseHtmlHwb(input) {
+  if (typeof input !== 'string') throw new TypeError('parseHtmlHwb: input must be a string.');
+  return HWB_REGEX_GM.exec(input.trim());
+}
+
+// --- Lab ---
+
+/**
+ * Parses a CIELAB color string (lab(L a b[/alpha])).
+ * Returns the regex match array with captured groups or null if invalid.
+ * @param {string} input - The input string to parse.
+ * @returns {RegExpExecArray|null} Regex match result with captured groups, or null if not valid.
+ * @throws {TypeError} If input is not a string.
+ */
+export function parseHtmlLab(input) {
+  if (typeof input !== 'string') throw new TypeError('parseHtmlLab: input must be a string.');
+  return LAB_REGEX_GM.exec(input.trim());
+}
+
+// --- LCH ---
+
+/**
+ * Parses an LCH color string (lch(L C H[/alpha])).
+ * Returns the regex match array with captured groups or null if invalid.
+ * @param {string} input - The input string to parse.
+ * @returns {RegExpExecArray|null} Regex match result with captured groups, or null if not valid.
+ * @throws {TypeError} If input is not a string.
+ */
+export function parseHtmlLch(input) {
+  if (typeof input !== 'string') throw new TypeError('parseHtmlLch: input must be a string.');
+  return LCH_REGEX_GM.exec(input.trim());
 }
