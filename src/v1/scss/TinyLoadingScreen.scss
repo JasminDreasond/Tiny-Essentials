@@ -32,7 +32,7 @@
     width: 50px;
     height: 50px;
     margin: 0 auto 15px;
-    animation: spin 1s linear infinite;
+    animation: loading-spin 1s linear infinite;
 
     &::after {
       content: '';
@@ -50,9 +50,10 @@
 
   .loading-message {
     font-size: 1.2em;
+    user-select: none !important;
   }
 
-  @keyframes spin {
+  @keyframes loading-spin {
     0% {
       transform: rotate(0deg);
     }

@@ -5279,6 +5279,26 @@ class TinyHtml {
 
   // TITLE: Class Stuff
 
+  /** @type {boolean} */
+  static #classCanWhitespace = false;
+
+  /**
+   * Gets the value of classCanWhitespace.
+   * @returns {boolean}
+   */
+  static get classCanWhitespace() {
+    return this.#classCanWhitespace;
+  }
+
+  /**
+   * Sets the value of classCanWhitespace.
+   * @param {boolean} value
+   */
+  static set classCanWhitespace(value) {
+    if (typeof value !== 'boolean') throw new TypeError('classCanWhitespace must be a boolean');
+    this.#classCanWhitespace = value;
+  }
+
   /**
    * Adds one or more CSS class names to the element.
    * @template {TinyElement|TinyElement[]} T
@@ -5287,7 +5307,17 @@ class TinyHtml {
    * @returns {T}
    */
   static addClass(el, ...args) {
-    TinyHtml._preElems(el, 'addClass').forEach((elem) => elem.classList.add(...args));
+    /** @type {string[]} */
+    const classes = [];
+    for (const name of args) {
+      if (!TinyHtml.#classCanWhitespace) classes.push(name);
+      else {
+        const classesList = name.split(' ');
+        for (const name2 of classesList) classes.push(name2);
+      }
+    }
+
+    TinyHtml._preElems(el, 'addClass').forEach((elem) => elem.classList.add(...classes));
     return el;
   }
 
@@ -5308,7 +5338,17 @@ class TinyHtml {
    * @returns {T}
    */
   static removeClass(el, ...args) {
-    TinyHtml._preElems(el, 'removeClass').forEach((elem) => elem.classList.remove(...args));
+    /** @type {string[]} */
+    const classes = [];
+    for (const name of args) {
+      if (!TinyHtml.#classCanWhitespace) classes.push(name);
+      else {
+        const classesList = name.split(' ');
+        for (const name2 of classesList) classes.push(name2);
+      }
+    }
+
+    TinyHtml._preElems(el, 'removeClass').forEach((elem) => elem.classList.remove(...classes));
     return el;
   }
 

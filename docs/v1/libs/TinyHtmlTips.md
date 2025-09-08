@@ -69,6 +69,30 @@ const newDiv = $$$('<div class="box">Hello!</div>');
 
 ---
 
+## ⚙️ Controlling Whitespace in Class Names
+
+TinyHtml includes a static flag called `classCanWhitespace`.
+This allows you to decide whether **class names with whitespace** should be considered valid or not.
+
+```js
+// Enable or disable whitespace in class names
+TinyHtml.classCanWhitespace = true;   // ✅ allows whitespace
+console.log(TinyHtml.classCanWhitespace); // true
+
+TinyHtml.classCanWhitespace = false;  // 🚫 disallows whitespace
+console.log(TinyHtml.classCanWhitespace); // false
+```
+
+⚠️ If you try to assign a non-boolean value, TinyHtml will throw an error:
+
+```js
+// ❌ Throws TypeError
+TinyHtml.classCanWhitespace = "yes"; 
+// -> Uncaught TypeError: classCanWhitespace must be a boolean
+```
+
+---
+
 ## 🚀 Why Aliases?
 
 Aliases are especially handy when:
@@ -95,6 +119,9 @@ This makes your setup **cleaner, reusable, and consistent** across the whole pro
 ```js
 // Enable debugging mode
 TinyHtml.elemDebug = true;
+
+// Allow whitespace in class names
+TinyHtml.classCanWhitespace = true;
 
 // jQuery-style single element selector
 export const $ = (queryString) => new TinyHtml(queryString);
@@ -133,6 +160,10 @@ newBox.mainDisplay = 'block';
 // Create an element
 const newBox2 = $$$('<div class="box">Hello!</div>');
 $('body').append(newBox);
+
+// Control class whitespace support
+console.log(TinyHtml.classCanWhitespace); // true
+TinyHtml.classCanWhitespace = false;      // disable whitespace
 ```
 
 ---
