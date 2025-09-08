@@ -14,59 +14,51 @@ const NUM_0_360 = `(0|[1-9]\\d?|[1-2]\\d{2}|3[0-5]\\d|360)`;
 const NUM_0_100 = `(0|[1-9]?\\d|100)`;
 
 // RGB
-const RGB_REGEX = new RegExp(`^rgb\\(\\s*${NUM_0_255}\\s*,\\s*${NUM_0_255}\\s*,\\s*${NUM_0_255}\\s*\\)$`);
-const RGBA_REGEX = new RegExp(`^rgba\\(\\s*${NUM_0_255}\\s*,\\s*${NUM_0_255}\\s*,\\s*${NUM_0_255}\\s*,\\s*${ALPHA}\\s*\\)$`);
+const RGB_REGEX = new RegExp(
+  `^rgb\\(\\s*${NUM_0_255}\\s*,\\s*${NUM_0_255}\\s*,\\s*${NUM_0_255}\\s*\\)$`,
+);
+const RGBA_REGEX = new RegExp(
+  `^rgba\\(\\s*${NUM_0_255}\\s*,\\s*${NUM_0_255}\\s*,\\s*${NUM_0_255}\\s*,\\s*${ALPHA}\\s*\\)$`,
+);
 
 // HSL
-const HSL_REGEX = new RegExp(`^hsl\\(\\s*${NUM_0_360}\\s*,\\s*${NUM_0_100}%\\s*,\\s*${NUM_0_100}%\\s*\\)$`);
-const HSLA_REGEX = new RegExp(`^hsla\\(\\s*${NUM_0_360}\\s*,\\s*${NUM_0_100}%\\s*,\\s*${NUM_0_100}%\\s*,\\s*${ALPHA}\\s*\\)$`);
+const HSL_REGEX = new RegExp(
+  `^hsl\\(\\s*${NUM_0_360}\\s*,\\s*${NUM_0_100}%\\s*,\\s*${NUM_0_100}%\\s*\\)$`,
+);
+const HSLA_REGEX = new RegExp(
+  `^hsla\\(\\s*${NUM_0_360}\\s*,\\s*${NUM_0_100}%\\s*,\\s*${NUM_0_100}%\\s*,\\s*${ALPHA}\\s*\\)$`,
+);
 
 // HWB
 
 const HWB_REGEX = new RegExp(
-  `^hwb\\(\\s*${NUM_0_360}(deg|grad|rad|turn)?\\s*${NUM_0_100}%\\s*${NUM_0_100}%\\s*\\)$`
+  `^hwb\\(\\s*${NUM_0_360}(deg|grad|rad|turn)?\\s*${NUM_0_100}%\\s*${NUM_0_100}%\\s*\\)$`,
 );
 
 // LAB
 
 const LAB_AB = `(-?\\d+)`;
 
-const LAB_REGEX = new RegExp(
-  `^lab\\(\\s*${NUM_0_100}%?\\s*${LAB_AB}%?\\s*${LAB_AB}%?\\s*\\)$`
-);
+const LAB_REGEX = new RegExp(`^lab\\(\\s*${NUM_0_100}%?\\s*${LAB_AB}%?\\s*${LAB_AB}%?\\s*\\)$`);
 
 // LCH
 
 const LCH_REGEX = new RegExp(
-  `^lch\\(\\s*${NUM_0_100}%?\\s*${NUM_0_100}%?\\s*${NUM_0_360}(deg|grad|rad|turn)?\\s*\\)$`
+  `^lch\\(\\s*${NUM_0_100}%?\\s*${NUM_0_100}%?\\s*${NUM_0_360}(deg|grad|rad|turn)?\\s*\\)$`,
 );
 
 // CSS Level 4 color names
 const HTML_COLOR_NAMES = new Set([
-  'red',
-  'blue',
-  'green',
-  'black',
-  'white',
-  'gray',
-  'silver',
-  'maroon',
-  'olive',
-  'lime',
-  'aqua',
-  'teal',
-  'navy',
-  'fuchsia',
-  'purple',
-  'yellow',
-  'orange',
   'aliceblue',
   'antiquewhite',
+  'aqua',
   'aquamarine',
   'azure',
   'beige',
   'bisque',
+  'black',
   'blanchedalmond',
+  'blue',
   'blueviolet',
   'brown',
   'burlywood',
@@ -105,10 +97,13 @@ const HTML_COLOR_NAMES = new Set([
   'firebrick',
   'floralwhite',
   'forestgreen',
+  'fuchsia',
   'gainsboro',
   'ghostwhite',
   'gold',
   'goldenrod',
+  'gray',
+  'green',
   'greenyellow',
   'grey',
   'honeydew',
@@ -136,9 +131,11 @@ const HTML_COLOR_NAMES = new Set([
   'lightslategrey',
   'lightsteelblue',
   'lightyellow',
+  'lime',
   'limegreen',
   'linen',
   'magenta',
+  'maroon',
   'mediumaquamarine',
   'mediumblue',
   'mediumorchid',
@@ -153,8 +150,11 @@ const HTML_COLOR_NAMES = new Set([
   'mistyrose',
   'moccasin',
   'navajowhite',
+  'navy',
   'oldlace',
+  'olive',
   'olivedrab',
+  'orange',
   'orangered',
   'orchid',
   'palegoldenrod',
@@ -167,6 +167,9 @@ const HTML_COLOR_NAMES = new Set([
   'pink',
   'plum',
   'powderblue',
+  'purple',
+  'rebeccapurple',
+  'red',
   'rosybrown',
   'royalblue',
   'saddlebrown',
@@ -175,6 +178,7 @@ const HTML_COLOR_NAMES = new Set([
   'seagreen',
   'seashell',
   'sienna',
+  'silver',
   'skyblue',
   'slateblue',
   'slategray',
@@ -183,14 +187,16 @@ const HTML_COLOR_NAMES = new Set([
   'springgreen',
   'steelblue',
   'tan',
+  'teal',
   'thistle',
   'tomato',
   'turquoise',
   'violet',
   'wheat',
+  'white',
   'whitesmoke',
+  'yellow',
   'yellowgreen',
-  'rebeccapurple',
 ]);
 
 // CSS system special names

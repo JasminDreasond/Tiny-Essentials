@@ -251,6 +251,7 @@
       import * as ColorsScript from './src/v1/basics/colors.mjs';
 
       const {
+        ColorRegistry,
         validateHTMLColor,
         validateHTMLColorHex,
         validateHTMLColorHexa,
@@ -275,7 +276,7 @@
       } = ColorsScript;
 
       window.ColorsScript = ColorsScript;
-    
+
       const parsers = {
         validateHTMLColorHex: parseHtmlHex,
         validateHTMLColorHexa: parseHtmlHexa,
@@ -383,6 +384,7 @@
       });
 
       // --- Predefined test colors ---
+      const defaultColors = ColorRegistry.getHTMLColorNames();
       const predefinedColors = [
         '#fff',
         '#ffffff',
@@ -402,9 +404,11 @@
         'invalidColor',
         '#12',
         'rgb(999,0,0)', // invalid
+        ...defaultColors,
       ];
       document.getElementById('batchInput').value = JSON.stringify(predefinedColors, null, 2);
 
+      console.log(defaultColors);
       const validators = {
         validateHTMLColor,
         validateHTMLColorHex,
@@ -500,8 +504,8 @@
             }
             const id = index;
             if (parsers[fnName] && rowResults[fnName]) {
-                const result = parsers[fnName](color);
-                if (result) parsed[id] = result;
+              const result = parsers[fnName](color);
+              if (result) parsed[id] = result;
             }
           }
 
