@@ -2,16 +2,35 @@
 const HEX_REGEX = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
 const HEXA_REGEX = /^#([A-Fa-f0-9]{8})$/;
 
-const RGB_REGEX = /^rgb\((\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\)$/;
-const RGBA_REGEX = /^rgba\((\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1}|0?\.\d+)\)$/;
+// Alpha 0-1
+const ALPHA = `(0|1|0?\\.\\d+)`;
 
-const HSL_REGEX = /^hsl\((\d{1,3})\s*,\s*(\d{1,3})%\s*,\s*(\d{1,3})%\)$/;
-const HSLA_REGEX = /^hsla\((\d{1,3})\s*,\s*(\d{1,3})%\s*,\s*(\d{1,3})%\s*,\s*(\d{1}|0?\.\d+)\)$/;
+// Matches integers from 0 to 255
+const NUM_0_255 = `(0|[1-9]\\d?|1\\d{2}|2[0-4]\\d|25[0-5])`;
+
+// Numbers 0-360
+const NUM_0_360 = `(0|[1-9]\\d?|[1-2]\\d{2}|3[0-5]\\d|360)`;
+// Numbers 0-100
+const NUM_0_100 = `(0|[1-9]?\\d|100)`;
+
+// RGB
+const RGB_REGEX = new RegExp(`^rgb\\(\\s*${NUM_0_255}\\s*,\\s*${NUM_0_255}\\s*,\\s*${NUM_0_255}\\s*\\)$`);
+const RGBA_REGEX = new RegExp(`^rgba\\(\\s*${NUM_0_255}\\s*,\\s*${NUM_0_255}\\s*,\\s*${NUM_0_255}\\s*,\\s*${ALPHA}\\s*\\)$`);
+
+// HSL
+const HSL_REGEX = new RegExp(`^hsl\\(\\s*${NUM_0_360}\\s*,\\s*${NUM_0_100}%\\s*,\\s*${NUM_0_100}%\\s*\\)$`);
+const HSLA_REGEX = new RegExp(`^hsla\\(\\s*${NUM_0_360}\\s*,\\s*${NUM_0_100}%\\s*,\\s*${NUM_0_100}%\\s*,\\s*${ALPHA}\\s*\\)$`);
+
+// HWB
 
 const HWB_REGEX =
   /^hwb\(\s*\d{1,3}(deg|grad|rad|turn)?\s*\d{1,3}%\s*\d{1,3}%\s*(,\s*(0|1|0?\.\d+))?\)$/;
 
+// LAB
+
 const LAB_REGEX = /^lab\(\s*\d{1,3}%?\s*-?\d{1,3}%?\s*-?\d{1,3}%?\s*(\/\s*(0|1|0?\.\d+))?\)$/;
+
+// LCH
 
 const LCH_REGEX =
   /^lch\(\s*\d{1,3}%?\s*\d{1,3}%?\s*\d{1,3}(deg|grad|rad|turn)?\s*(\/\s*(0|1|0?\.\d+))?\)$/;
