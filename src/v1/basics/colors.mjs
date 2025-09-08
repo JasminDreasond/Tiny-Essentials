@@ -24,16 +24,16 @@ const HSLA_REGEX = new RegExp(`^hsla\\(\\s*${NUM_0_360}\\s*,\\s*${NUM_0_100}%\\s
 // HWB
 
 const HWB_REGEX =
-  /^hwb\(\s*\d{1,3}(deg|grad|rad|turn)?\s*\d{1,3}%\s*\d{1,3}%\s*(,\s*(0|1|0?\.\d+))?\)$/;
+  /^hwb\(\s*(\d{1,3})(deg|grad|rad|turn)?\s*(\d{1,3})%\s*(\d{1,3})%\s*\)$/;;
 
 // LAB
 
-const LAB_REGEX = /^lab\(\s*\d{1,3}%?\s*-?\d{1,3}%?\s*-?\d{1,3}%?\s*(\/\s*(0|1|0?\.\d+))?\)$/;
+const LAB_REGEX = /^lab\(\s*(\d{1,3})%?\s*(-?\d{1,3})%?\s*(-?\d{1,3})%?\s*\)$/;
 
 // LCH
 
 const LCH_REGEX =
-  /^lch\(\s*\d{1,3}%?\s*\d{1,3}%?\s*\d{1,3}(deg|grad|rad|turn)?\s*(\/\s*(0|1|0?\.\d+))?\)$/;
+  /^lch\(\s*(\d{1,3})%?\s*(\d{1,3})%?\s*(\d{1,3})(deg|grad|rad|turn)?\s*\)$/;
 
 // CSS Level 4 color names
 const HTML_COLOR_NAMES = new Set([
