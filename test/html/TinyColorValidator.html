@@ -183,17 +183,17 @@
           <input id="specificInput" type="text" placeholder="e.g. hsl(120, 100%, 50%)" />
         </div>
         <div class="flex">
-          <button data-validator="validateHTMLColorHex">HEX</button>
-          <button data-validator="validateHTMLColorHexa">HEXA</button>
-          <button data-validator="validateHTMLColorRgb">RGB</button>
-          <button data-validator="validateHTMLColorRgba">RGBA</button>
-          <button data-validator="validateHTMLColorHsl">HSL</button>
-          <button data-validator="validateHTMLColorHsla">HSLA</button>
-          <button data-validator="validateHTMLColorHwb">HWB</button>
-          <button data-validator="validateHTMLColorLab">Lab</button>
-          <button data-validator="validateHTMLColorLch">LCH</button>
-          <button data-validator="validateHTMLColorName">Name</button>
-          <button data-validator="validateHTMLColorSpecialName">Special</button>
+          <button data-validator="isHex">HEX</button>
+          <button data-validator="isHexa">HEXA</button>
+          <button data-validator="IsRgb">RGB</button>
+          <button data-validator="isRgba">RGBA</button>
+          <button data-validator="isHsl">HSL</button>
+          <button data-validator="isHsla">HSLA</button>
+          <button data-validator="isHwb">HWB</button>
+          <button data-validator="isLab">Lab</button>
+          <button data-validator="isLch">LCH</button>
+          <button data-validator="isName">Name</button>
+          <button data-validator="isSpecialName">Special</button>
         </div>
         <div class="results" id="specificResults"></div>
       </section>
@@ -252,40 +252,40 @@
 
       const {
         validateHTMLColor,
-        validateHTMLColorHex,
-        validateHTMLColorHexa,
-        validateHTMLColorRgb,
-        validateHTMLColorRgba,
-        validateHTMLColorHsl,
-        validateHTMLColorHsla,
-        validateHTMLColorHwb,
-        validateHTMLColorLab,
-        validateHTMLColorLch,
-        validateHTMLColorName,
-        validateHTMLColorSpecialName,
-        parseHtmlHex,
-        parseHtmlHexa,
-        parseHtmlRgb,
-        parseHtmlRgba,
-        parseHtmlHsl,
-        parseHtmlHsla,
-        parseHtmlHwb,
-        parseHtmlLab,
-        parseHtmlLch,
+        isHex,
+        isHexa,
+        IsRgb,
+        isRgba,
+        isHsl,
+        isHsla,
+        isHwb,
+        isLab,
+        isLch,
+        isName,
+        isSpecialName,
+        parseHex,
+        parseHexa,
+        parseRgb,
+        parseRgba,
+        parseHsl,
+        parseHsla,
+        parseHwb,
+        parseLab,
+        parseLch,
       } = TinyColorValidator;
 
       window.TinyColorValidator = TinyColorValidator;
 
       const parsers = {
-        validateHTMLColorHex: parseHtmlHex,
-        validateHTMLColorHexa: parseHtmlHexa,
-        validateHTMLColorRgb: parseHtmlRgb,
-        validateHTMLColorRgba: parseHtmlRgba,
-        validateHTMLColorHsl: parseHtmlHsl,
-        validateHTMLColorHsla: parseHtmlHsla,
-        validateHTMLColorHwb: parseHtmlHwb,
-        validateHTMLColorLab: parseHtmlLab,
-        validateHTMLColorLch: parseHtmlLch,
+        isHex: parseHex,
+        isHexa: parseHexa,
+        IsRgb: parseRgb,
+        isRgba: parseRgba,
+        isHsl: parseHsl,
+        isHsla: parseHsla,
+        isHwb: parseHwb,
+        isLab: parseLab,
+        isLch: parseLch,
       };
 
       const colorInput = document.getElementById('colorInput');
@@ -331,7 +331,7 @@
       const htmlResults = document.getElementById('htmlResults');
       document.getElementById('addHtmlName').addEventListener('click', () => {
         try {
-          const result = TinyColorValidator.addHTMLColorName(htmlName.value);
+          const result = TinyColorValidator.addName(htmlName.value);
           htmlResults.textContent = `Added "${htmlName.value}": ${result}`;
         } catch (err) {
           htmlResults.textContent = `Error: ${err.message}`;
@@ -339,7 +339,7 @@
       });
       document.getElementById('removeHtmlName').addEventListener('click', () => {
         try {
-          const result = TinyColorValidator.removeHTMLColorName(htmlName.value);
+          const result = TinyColorValidator.removeName(htmlName.value);
           htmlResults.textContent = `Removed "${htmlName.value}": ${result}`;
         } catch (err) {
           htmlResults.textContent = `Error: ${err.message}`;
@@ -347,7 +347,7 @@
       });
       document.getElementById('checkHtmlName').addEventListener('click', () => {
         try {
-          const result = TinyColorValidator.hasHTMLColorName(htmlName.value);
+          const result = TinyColorValidator.hasName(htmlName.value);
           htmlResults.textContent = `Exists "${htmlName.value}": ${result}`;
         } catch (err) {
           htmlResults.textContent = `Error: ${err.message}`;
@@ -359,7 +359,7 @@
       const specialResults = document.getElementById('specialResults');
       document.getElementById('addSpecialName').addEventListener('click', () => {
         try {
-          const result = TinyColorValidator.addSpecialColorName(specialName.value);
+          const result = TinyColorValidator.addSpecialName(specialName.value);
           specialResults.textContent = `Added "${specialName.value}": ${result}`;
         } catch (err) {
           specialResults.textContent = `Error: ${err.message}`;
@@ -367,7 +367,7 @@
       });
       document.getElementById('removeSpecialName').addEventListener('click', () => {
         try {
-          const result = TinyColorValidator.removeSpecialColorName(specialName.value);
+          const result = TinyColorValidator.removeSpecialName(specialName.value);
           specialResults.textContent = `Removed "${specialName.value}": ${result}`;
         } catch (err) {
           specialResults.textContent = `Error: ${err.message}`;
@@ -375,7 +375,7 @@
       });
       document.getElementById('checkSpecialName').addEventListener('click', () => {
         try {
-          const result = TinyColorValidator.hasSpecialColorName(specialName.value);
+          const result = TinyColorValidator.hasSpecialName(specialName.value);
           specialResults.textContent = `Exists "${specialName.value}": ${result}`;
         } catch (err) {
           specialResults.textContent = `Error: ${err.message}`;
@@ -383,7 +383,7 @@
       });
 
       // --- Predefined test colors ---
-      const defaultColors = TinyColorValidator.getHTMLColorNames();
+      const defaultColors = TinyColorValidator.getNames();
       const predefinedColors = [
         '#fff',
         '#ffffff',
@@ -410,17 +410,17 @@
       console.log(defaultColors);
       const validators = {
         validateHTMLColor,
-        validateHTMLColorHex,
-        validateHTMLColorHexa,
-        validateHTMLColorRgb,
-        validateHTMLColorRgba,
-        validateHTMLColorHsl,
-        validateHTMLColorHsla,
-        validateHTMLColorHwb,
-        validateHTMLColorLab,
-        validateHTMLColorLch,
-        validateHTMLColorName,
-        validateHTMLColorSpecialName,
+        isHex,
+        isHexa,
+        IsRgb,
+        isRgba,
+        isHsl,
+        isHsla,
+        isHwb,
+        isLab,
+        isLch,
+        isName,
+        isSpecialName,
       };
 
       function runSingleTest(color) {
