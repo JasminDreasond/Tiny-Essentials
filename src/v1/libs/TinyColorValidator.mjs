@@ -9,6 +9,34 @@
  * @typedef {'deg' | 'grad' | 'rad' | 'turn'} AngleUnit
  */
 
+/**
+ * Utility class for validating and parsing CSS color values.
+ *
+ * Supports multiple CSS color syntaxes:
+ * - **Hexadecimal**: `#RGB`, `#RRGGBB`, `#RRGGBBAA`
+ * - **RGB/RGBA**: `rgb(r, g, b)`, `rgba(r, g, b, a)`
+ * - **HSL/HSLA**: `hsl(h, s%, l%)`, `hsla(h, s%, l%, a)`
+ * - **HWB**: `hwb(hue whiteness% blackness%)`
+ * - **CIELAB**: `lab(L a b)`
+ * - **LCH**: `lch(L C H)`
+ * - **Named colors**: standard HTML color names (e.g., `red`, `blue`, `rebeccapurple`)
+ * - **Special keywords**: `transparent`, `currentColor`
+ *
+ * Features:
+ * - Provides validation (`isHex`, `isRgb`, `isHsl`, etc.) for each format.
+ * - Provides parsing methods (`parseRgb`, `parseHsl`, etc.) returning numeric components.
+ * - Allows extending and managing HTML color names and special keywords dynamically.
+ *
+ * Example:
+ * ```js
+ * const validator = new TinyColorValidator("rgb(255, 0, 0)");
+ * console.log(validator.isRgb());   // true
+ * console.log(validator.parseRgb()); // [255, 0, 0]
+ * ```
+ *
+ * @class
+ * @template {string} TinyColorValidatorT
+ */
 class TinyColorValidator {
   // Utility regex patterns
   static #HEX_REGEX = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
@@ -310,7 +338,7 @@ class TinyColorValidator {
 
   /**
    * Creates a new instance of Example.
-   * @param {string} code - The code to be stored.
+   * @param {TinyColorValidatorT} code - The code to be stored.
    */
   constructor(code) {
     this.#code = code;
