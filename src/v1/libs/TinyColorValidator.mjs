@@ -313,9 +313,9 @@ class TinyColorValidator {
    * @returns {boolean} True if the input is a valid RGB color.
    * @throws {TypeError} If input is not a string.
    */
-  static IsRgb(input) {
+  static isRgb(input) {
     if (typeof input !== 'string')
-      throw new TypeError('IsRgb: input must be a string.');
+      throw new TypeError('isRgb: input must be a string.');
     return TinyColorValidator.#RGB_REGEX.test(input.trim());
   }
 
@@ -421,13 +421,13 @@ class TinyColorValidator {
    * @returns {boolean} True if the input is a valid CSS color.
    * @throws {TypeError} If input is not a string.
    */
-  static validateHTMLColor(input) {
+  static isColor(input) {
     if (typeof input !== 'string')
-      throw new TypeError('validateHTMLColor: input must be a string.');
+      throw new TypeError('isColor: input must be a string.');
     return (
       TinyColorValidator.isHex(input) ||
       TinyColorValidator.isHexa(input) ||
-      TinyColorValidator.IsRgb(input) ||
+      TinyColorValidator.isRgb(input) ||
       TinyColorValidator.isRgba(input) ||
       TinyColorValidator.isHsl(input) ||
       TinyColorValidator.isHsla(input) ||

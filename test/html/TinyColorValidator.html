@@ -185,7 +185,7 @@
         <div class="flex">
           <button data-validator="isHex">HEX</button>
           <button data-validator="isHexa">HEXA</button>
-          <button data-validator="IsRgb">RGB</button>
+          <button data-validator="isRgb">RGB</button>
           <button data-validator="isRgba">RGBA</button>
           <button data-validator="isHsl">HSL</button>
           <button data-validator="isHsla">HSLA</button>
@@ -251,10 +251,10 @@
       import { TinyColorValidator } from './src/v1/libs/TinyColorValidator.mjs';
 
       const {
-        validateHTMLColor,
+        isColor,
         isHex,
         isHexa,
-        IsRgb,
+        isRgb,
         isRgba,
         isHsl,
         isHsla,
@@ -279,7 +279,7 @@
       const parsers = {
         isHex: parseHex,
         isHexa: parseHexa,
-        IsRgb: parseRgb,
+        isRgb: parseRgb,
         isRgba: parseRgba,
         isHsl: parseHsl,
         isHsla: parseHsla,
@@ -296,7 +296,7 @@
       validateAllBtn.addEventListener('click', () => {
         try {
           const value = colorInput.value.trim();
-          const result = validateHTMLColor(value);
+          const result = isColor(value);
           validateAllResults.textContent = `Input: "${value}"\nResult: ${result}`;
         } catch (err) {
           validateAllResults.textContent = `Error: ${err.message}`;
@@ -409,10 +409,10 @@
 
       console.log(defaultColors);
       const validators = {
-        validateHTMLColor,
+        isColor,
         isHex,
         isHexa,
-        IsRgb,
+        isRgb,
         isRgba,
         isHsl,
         isHsla,
@@ -480,8 +480,7 @@
             <th>Color</th>
             ${Object.keys(validators)
               .map((fn) => {
-                let panelName = fn.replace('validateHTMLColor', '');
-                if (!panelName) panelName = 'Main';
+                let panelName = fn.replace('is', '');
                 return `<th>${panelName}</th>`;
               })
               .join('')}
