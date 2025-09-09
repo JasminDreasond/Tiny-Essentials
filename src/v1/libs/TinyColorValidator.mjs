@@ -1,3 +1,14 @@
+/**
+ * Represents the allowed angle unit types for CSS color functions.
+ *
+ * - `deg` → Degrees (0–360).
+ * - `grad` → Gradians (0–400).
+ * - `rad` → Radians (0–2π).
+ * - `turn` → Turns (0–1).
+ *
+ * @typedef {'deg' | 'grad' | 'rad' | 'turn'} AngleUnit
+ */
+
 class TinyColorValidator {
   // Utility regex patterns
   static #HEX_REGEX = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
@@ -283,15 +294,24 @@ class TinyColorValidator {
 
   // Validators
 
-  /** @returns {string} */
+  /**
+   * Internal storage for the code value.
+   * @type {string}
+   */
   #code;
 
-  /** @returns {string} */
+  /**
+   * Gets the current code.
+   * @returns {string} The stored code.
+   */
   get code() {
     return this.#code;
   }
 
-  /** @param {string} code */
+  /**
+   * Creates a new instance of Example.
+   * @param {string} code - The code to be stored.
+   */
   constructor(code) {
     this.#code = code;
   }
@@ -547,17 +567,6 @@ class TinyColorValidator {
   isColor() {
     return TinyColorValidator.isColor(this.#code);
   }
-
-  /**
-   * Represents the allowed angle unit types for CSS color functions.
-   *
-   * - `deg` → Degrees (0–360).
-   * - `grad` → Gradians (0–400).
-   * - `rad` → Radians (0–2π).
-   * - `turn` → Turns (0–1).
-   *
-   * @typedef {'deg' | 'grad' | 'rad' | 'turn'} AngleUnit
-   */
 
   // --- HEX / HEXA ---
 
