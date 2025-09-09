@@ -141,8 +141,10 @@ import TinyNeedBar from './libs/TinyNeedBar.mjs';
 import TinySimpleDice from './libs/TinySimpleDice.mjs';
 import TinyElementObserver from './libs/TinyElementObserver.mjs';
 import TinyLoadingScreen from './libs/TinyLoadingScreen.mjs';
+import TinyColorValidator from './libs/TinyColorValidator.mjs';
 
 export {
+  TinyColorValidator,
   TinyLoadingScreen,
   TinyElementObserver,
   TinySimpleDice,

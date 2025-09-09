@@ -164,6 +164,10 @@
       "require": "./dist/v1/libs/TinyLoadingScreen.cjs",
       "import": "./dist/v1/libs/TinyLoadingScreen.mjs"
     },
+    "./libs/TinyColorValidator": {
+      "require": "./dist/v1/libs/TinyColorValidator.cjs",
+      "import": "./dist/v1/libs/TinyColorValidator.mjs"
+    },
     "./libs/TinyInventoryTrader": {
       "require": "./dist/v1/libs/TinyInventoryTrader.cjs",
       "import": "./dist/v1/libs/TinyInventoryTrader.mjs"
