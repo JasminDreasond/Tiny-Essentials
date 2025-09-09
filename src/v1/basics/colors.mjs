@@ -205,7 +205,7 @@ const SPECIAL_COLOR_NAMES = new Set(['transparent', 'currentColor']);
 /**
  * ColorRegistry provides controlled access to color name sets.
  */
-export const ColorRegistry = {
+export const getColorRegistry = () => ({
   // --- HTML Color Names ---
   /**
    * Returns all HTML color names as an array.
@@ -281,7 +281,7 @@ export const ColorRegistry = {
   hasSpecialColorName(name) {
     return SPECIAL_COLOR_NAMES.has(name);
   },
-};
+});
 
 // Validators
 
@@ -440,30 +440,45 @@ export function validateHTMLColor(input) {
   );
 }
 
+/**
+ * Represents the allowed angle unit types for CSS color functions.
+ *
+ * - `deg` → Degrees (0–360).
+ * - `grad` → Gradians (0–400).
+ * - `rad` → Radians (0–2π).
+ * - `turn` → Turns (0–1).
+ *
+ * @typedef {'deg' | 'grad' | 'rad' | 'turn'} AngleUnit
+ */
+
 // --- HEX / HEXA ---
 
 /**
  * Parses a HEX color string (#RGB or #RRGGBB).
  * Returns the regex match array with captured groups or null if invalid.
  * @param {string} input - The input string to parse.
- * @returns {RegExpExecArray|null} Regex match result with captured groups, or null if not valid.
+ * @returns {string|null} Regex match result with captured groups, or null if not valid.
  * @throws {TypeError} If input is not a string.
  */
 export function parseHtmlHex(input) {
   if (typeof input !== 'string') throw new TypeError('parseHtmlHex: input must be a string.');
-  return new RegExp(HEX_REGEX, 'gm').exec(input.trim());
+  const result = new RegExp(HEX_REGEX, 'gm').exec(input.trim());
+  if (!result) return null;
+  return result[1];
 }
 
 /**
  * Parses a HEXA color string (#RRGGBBAA).
  * Returns the regex match array with captured groups or null if invalid.
  * @param {string} input - The input string to parse.
- * @returns {RegExpExecArray|null} Regex match result with captured groups, or null if not valid.
+ * @returns {string|null} Regex match result with captured groups, or null if not valid.
  * @throws {TypeError} If input is not a string.
  */
 export function parseHtmlHexa(input) {
   if (typeof input !== 'string') throw new TypeError('parseHtmlHexa: input must be a string.');
-  return new RegExp(HEXA_REGEX, 'gm').exec(input.trim());
+  const result = new RegExp(HEXA_REGEX, 'gm').exec(input.trim());
+  if (!result) return null;
+  return result[1];
 }
 
 // --- RGB / RGBA ---
@@ -472,24 +487,33 @@ export function parseHtmlHexa(input) {
  * Parses an RGB color string (rgb(r, g, b)).
  * Returns the regex match array with captured groups for r, g, and b or null if invalid.
  * @param {string} input - The input string to parse.
- * @returns {RegExpExecArray|null} Regex match result with groups [r, g, b], or null if not valid.
+ * @returns {[number, number, number]|null} Regex match result with groups [r, g, b], or null if not valid.
  * @throws {TypeError} If input is not a string.
  */
 export function parseHtmlRgb(input) {
   if (typeof input !== 'string') throw new TypeError('parseHtmlRgb: input must be a string.');
-  return new RegExp(RGB_REGEX, 'gm').exec(input.trim());
+  const result = new RegExp(RGB_REGEX, 'gm').exec(input.trim());
+  if (!result) return null;
+  return [parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3])];
 }
 
 /**
  * Parses an RGBA color string (rgba(r, g, b, a)).
  * Returns the regex match array with captured groups for r, g, b, and a or null if invalid.
  * @param {string} input - The input string to parse.
- * @returns {RegExpExecArray|null} Regex match result with groups [r, g, b, a], or null if not valid.
+ * @returns {[number, number, number, number]|null} Regex match result with groups [r, g, b, a], or null if not valid.
  * @throws {TypeError} If input is not a string.
  */
 export function parseHtmlRgba(input) {
   if (typeof input !== 'string') throw new TypeError('parseHtmlRgba: input must be a string.');
-  return new RegExp(RGBA_REGEX, 'gm').exec(input.trim());
+  const result = new RegExp(RGBA_REGEX, 'gm').exec(input.trim());
+  if (!result) return null;
+  return [
+    parseFloat(result[1]),
+    parseFloat(result[2]),
+    parseFloat(result[3]),
+    parseFloat(result[4]),
+  ];
 }
 
 // --- HSL / HSLA ---
@@ -498,24 +522,33 @@ export function parseHtmlRgba(input) {
  * Parses an HSL color string (hsl(h, s%, l%)).
  * Returns the regex match array with captured groups for h, s, and l or null if invalid.
  * @param {string} input - The input string to parse.
- * @returns {RegExpExecArray|null} Regex match result with groups [h, s, l], or null if not valid.
+ * @returns {[number, number, number]|null} Regex match result with groups [h, s, l], or null if not valid.
  * @throws {TypeError} If input is not a string.
  */
 export function parseHtmlHsl(input) {
   if (typeof input !== 'string') throw new TypeError('parseHtmlHsl: input must be a string.');
-  return new RegExp(HSL_REGEX, 'gm').exec(input.trim());
+  const result = new RegExp(HSL_REGEX, 'gm').exec(input.trim());
+  if (!result) return null;
+  return [parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3])];
 }
 
 /**
  * Parses an HSLA color string (hsla(h, s%, l%, a)).
  * Returns the regex match array with captured groups for h, s, l, and a or null if invalid.
  * @param {string} input - The input string to parse.
- * @returns {RegExpExecArray|null} Regex match result with groups [h, s, l, a], or null if not valid.
+ * @returns {[number, number, number, number]|null} Regex match result with groups [h, s, l, a], or null if not valid.
  * @throws {TypeError} If input is not a string.
  */
 export function parseHtmlHsla(input) {
   if (typeof input !== 'string') throw new TypeError('parseHtmlHsla: input must be a string.');
-  return new RegExp(HSLA_REGEX, 'gm').exec(input.trim());
+  const result = new RegExp(HSLA_REGEX, 'gm').exec(input.trim());
+  if (!result) return null;
+  return [
+    parseFloat(result[1]),
+    parseFloat(result[2]),
+    parseFloat(result[3]),
+    parseFloat(result[4]),
+  ];
 }
 
 // --- HWB ---
@@ -524,12 +557,20 @@ export function parseHtmlHsla(input) {
  * Parses an HWB color string (hwb(hue, whiteness%, blackness%[, alpha])).
  * Returns the regex match array with captured groups or null if invalid.
  * @param {string} input - The input string to parse.
- * @returns {RegExpExecArray|null} Regex match result with captured groups, or null if not valid.
+ * @returns {[number, AngleUnit|null, number, number]|null} Regex match result with captured groups, or null if not valid.
  * @throws {TypeError} If input is not a string.
  */
 export function parseHtmlHwb(input) {
   if (typeof input !== 'string') throw new TypeError('parseHtmlHwb: input must be a string.');
-  return new RegExp(HWB_REGEX, 'gm').exec(input.trim());
+  const result = new RegExp(HWB_REGEX, 'gm').exec(input.trim());
+  if (!result) return null;
+  return [
+    parseFloat(result[1]),
+    // @ts-ignore
+    result[2] ?? null,
+    parseFloat(result[3]),
+    parseFloat(result[4]),
+  ];
 }
 
 // --- Lab ---
@@ -538,12 +579,14 @@ export function parseHtmlHwb(input) {
  * Parses a CIELAB color string (lab(L a b[/alpha])).
  * Returns the regex match array with captured groups or null if invalid.
  * @param {string} input - The input string to parse.
- * @returns {RegExpExecArray|null} Regex match result with captured groups, or null if not valid.
+ * @returns {[number, number, number]|null} Regex match result with captured groups, or null if not valid.
  * @throws {TypeError} If input is not a string.
  */
 export function parseHtmlLab(input) {
   if (typeof input !== 'string') throw new TypeError('parseHtmlLab: input must be a string.');
-  return new RegExp(LAB_REGEX, 'gm').exec(input.trim());
+  const result = new RegExp(LAB_REGEX, 'gm').exec(input.trim());
+  if (!result) return null;
+  return [parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3])];
 }
 
 // --- LCH ---
@@ -552,10 +595,18 @@ export function parseHtmlLab(input) {
  * Parses an LCH color string (lch(L C H[/alpha])).
  * Returns the regex match array with captured groups or null if invalid.
  * @param {string} input - The input string to parse.
- * @returns {RegExpExecArray|null} Regex match result with captured groups, or null if not valid.
+ * @returns {[number, number, number, AngleUnit|null]|null} Regex match result with captured groups, or null if not valid.
  * @throws {TypeError} If input is not a string.
  */
 export function parseHtmlLch(input) {
   if (typeof input !== 'string') throw new TypeError('parseHtmlLch: input must be a string.');
-  return new RegExp(LCH_REGEX, 'gm').exec(input.trim());
+  const result = new RegExp(LCH_REGEX, 'gm').exec(input.trim());
+  if (!result) return null;
+  return [
+    parseFloat(result[1]),
+    parseFloat(result[2]),
+    parseFloat(result[3]),
+    // @ts-ignore
+    result[4] ?? null,
+  ];
 }

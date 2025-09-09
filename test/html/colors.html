@@ -251,7 +251,7 @@
       import * as ColorsScript from './src/v1/basics/colors.mjs';
 
       const {
-        ColorRegistry,
+        getColorRegistry,
         validateHTMLColor,
         validateHTMLColorHex,
         validateHTMLColorHexa,
@@ -332,7 +332,7 @@
       const htmlResults = document.getElementById('htmlResults');
       document.getElementById('addHtmlName').addEventListener('click', () => {
         try {
-          const result = ColorRegistry.addHTMLColorName(htmlName.value);
+          const result = getColorRegistry().addHTMLColorName(htmlName.value);
           htmlResults.textContent = `Added "${htmlName.value}": ${result}`;
         } catch (err) {
           htmlResults.textContent = `Error: ${err.message}`;
@@ -340,7 +340,7 @@
       });
       document.getElementById('removeHtmlName').addEventListener('click', () => {
         try {
-          const result = ColorRegistry.removeHTMLColorName(htmlName.value);
+          const result = getColorRegistry().removeHTMLColorName(htmlName.value);
           htmlResults.textContent = `Removed "${htmlName.value}": ${result}`;
         } catch (err) {
           htmlResults.textContent = `Error: ${err.message}`;
@@ -348,7 +348,7 @@
       });
       document.getElementById('checkHtmlName').addEventListener('click', () => {
         try {
-          const result = ColorRegistry.hasHTMLColorName(htmlName.value);
+          const result = getColorRegistry().hasHTMLColorName(htmlName.value);
           htmlResults.textContent = `Exists "${htmlName.value}": ${result}`;
         } catch (err) {
           htmlResults.textContent = `Error: ${err.message}`;
@@ -360,7 +360,7 @@
       const specialResults = document.getElementById('specialResults');
       document.getElementById('addSpecialName').addEventListener('click', () => {
         try {
-          const result = ColorRegistry.addSpecialColorName(specialName.value);
+          const result = getColorRegistry().addSpecialColorName(specialName.value);
           specialResults.textContent = `Added "${specialName.value}": ${result}`;
         } catch (err) {
           specialResults.textContent = `Error: ${err.message}`;
@@ -368,7 +368,7 @@
       });
       document.getElementById('removeSpecialName').addEventListener('click', () => {
         try {
-          const result = ColorRegistry.removeSpecialColorName(specialName.value);
+          const result = getColorRegistry().removeSpecialColorName(specialName.value);
           specialResults.textContent = `Removed "${specialName.value}": ${result}`;
         } catch (err) {
           specialResults.textContent = `Error: ${err.message}`;
@@ -376,7 +376,7 @@
       });
       document.getElementById('checkSpecialName').addEventListener('click', () => {
         try {
-          const result = ColorRegistry.hasSpecialColorName(specialName.value);
+          const result = getColorRegistry().hasSpecialColorName(specialName.value);
           specialResults.textContent = `Exists "${specialName.value}": ${result}`;
         } catch (err) {
           specialResults.textContent = `Error: ${err.message}`;
@@ -384,7 +384,7 @@
       });
 
       // --- Predefined test colors ---
-      const defaultColors = ColorRegistry.getHTMLColorNames();
+      const defaultColors = getColorRegistry().getHTMLColorNames();
       const predefinedColors = [
         '#fff',
         '#ffffff',
