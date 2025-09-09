@@ -248,10 +248,9 @@
     </main>
 
     <script type="module">
-      import * as ColorsScript from './src/v1/basics/colors.mjs';
+      import { TinyColorValidator } from './src/v1/libs/TinyColorValidator.mjs';
 
       const {
-        getColorRegistry,
         validateHTMLColor,
         validateHTMLColorHex,
         validateHTMLColorHexa,
@@ -273,9 +272,9 @@
         parseHtmlHwb,
         parseHtmlLab,
         parseHtmlLch,
-      } = ColorsScript;
+      } = TinyColorValidator;
 
-      window.ColorsScript = ColorsScript;
+      window.TinyColorValidator = TinyColorValidator;
 
       const parsers = {
         validateHTMLColorHex: parseHtmlHex,
@@ -332,7 +331,7 @@
       const htmlResults = document.getElementById('htmlResults');
       document.getElementById('addHtmlName').addEventListener('click', () => {
         try {
-          const result = getColorRegistry().addHTMLColorName(htmlName.value);
+          const result = TinyColorValidator.addHTMLColorName(htmlName.value);
           htmlResults.textContent = `Added "${htmlName.value}": ${result}`;
         } catch (err) {
           htmlResults.textContent = `Error: ${err.message}`;
@@ -340,7 +339,7 @@
       });
       document.getElementById('removeHtmlName').addEventListener('click', () => {
         try {
-          const result = getColorRegistry().removeHTMLColorName(htmlName.value);
+          const result = TinyColorValidator.removeHTMLColorName(htmlName.value);
           htmlResults.textContent = `Removed "${htmlName.value}": ${result}`;
         } catch (err) {
           htmlResults.textContent = `Error: ${err.message}`;
@@ -348,7 +347,7 @@
       });
       document.getElementById('checkHtmlName').addEventListener('click', () => {
         try {
-          const result = getColorRegistry().hasHTMLColorName(htmlName.value);
+          const result = TinyColorValidator.hasHTMLColorName(htmlName.value);
           htmlResults.textContent = `Exists "${htmlName.value}": ${result}`;
         } catch (err) {
           htmlResults.textContent = `Error: ${err.message}`;
@@ -360,7 +359,7 @@
       const specialResults = document.getElementById('specialResults');
       document.getElementById('addSpecialName').addEventListener('click', () => {
         try {
-          const result = getColorRegistry().addSpecialColorName(specialName.value);
+          const result = TinyColorValidator.addSpecialColorName(specialName.value);
           specialResults.textContent = `Added "${specialName.value}": ${result}`;
         } catch (err) {
           specialResults.textContent = `Error: ${err.message}`;
@@ -368,7 +367,7 @@
       });
       document.getElementById('removeSpecialName').addEventListener('click', () => {
         try {
-          const result = getColorRegistry().removeSpecialColorName(specialName.value);
+          const result = TinyColorValidator.removeSpecialColorName(specialName.value);
           specialResults.textContent = `Removed "${specialName.value}": ${result}`;
         } catch (err) {
           specialResults.textContent = `Error: ${err.message}`;
@@ -376,7 +375,7 @@
       });
       document.getElementById('checkSpecialName').addEventListener('click', () => {
         try {
-          const result = getColorRegistry().hasSpecialColorName(specialName.value);
+          const result = TinyColorValidator.hasSpecialColorName(specialName.value);
           specialResults.textContent = `Exists "${specialName.value}": ${result}`;
         } catch (err) {
           specialResults.textContent = `Error: ${err.message}`;
@@ -384,7 +383,7 @@
       });
 
       // --- Predefined test colors ---
-      const defaultColors = getColorRegistry().getHTMLColorNames();
+      const defaultColors = TinyColorValidator.getHTMLColorNames();
       const predefinedColors = [
         '#fff',
         '#ffffff',
@@ -502,10 +501,9 @@
             } catch {
               rowResults[fnName] = false;
             }
-            const id = index;
             if (parsers[fnName] && rowResults[fnName]) {
               const result = parsers[fnName](color);
-              if (result) parsed[id] = result;
+              if (result) parsed[fnName] = result;
             }
           }
 
