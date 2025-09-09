@@ -283,6 +283,19 @@ class TinyColorValidator {
 
   // Validators
 
+  /** @returns {string} */
+  #code;
+
+  /** @returns {string} */
+  get code() {
+    return this.#code;
+  }
+
+  /** @param {string} code */
+  constructor(code) {
+    this.#code = code;
+  }
+
   /**
    * Validates if a string is a valid HEX color (#RGB, #RRGGBB).
    * @param {string} input - The input string to validate.
@@ -290,9 +303,17 @@ class TinyColorValidator {
    * @throws {TypeError} If input is not a string.
    */
   static isHex(input) {
-    if (typeof input !== 'string')
-      throw new TypeError('isHex: input must be a string.');
+    if (typeof input !== 'string') throw new TypeError('isHex: input must be a string.');
     return TinyColorValidator.#HEX_REGEX.test(input.trim());
+  }
+
+  /**
+   * Validates if a string is a valid HEX color (#RGB, #RRGGBB).
+   * @returns {boolean} True if the input is a valid HEX color.
+   * @throws {TypeError} If input is not a string.
+   */
+  isHex() {
+    return TinyColorValidator.isHex(this.#code);
   }
 
   /**
@@ -302,9 +323,17 @@ class TinyColorValidator {
    * @throws {TypeError} If input is not a string.
    */
   static isHexa(input) {
-    if (typeof input !== 'string')
-      throw new TypeError('isHexa: input must be a string.');
+    if (typeof input !== 'string') throw new TypeError('isHexa: input must be a string.');
     return TinyColorValidator.#HEXA_REGEX.test(input.trim());
+  }
+
+  /**
+   * Validates if a string is a valid HEX color (#RRGGBBAA).
+   * @returns {boolean} True if the input is a valid HEXA color.
+   * @throws {TypeError} If input is not a string.
+   */
+  isHexa() {
+    return TinyColorValidator.isHexa(this.#code);
   }
 
   /**
@@ -314,9 +343,17 @@ class TinyColorValidator {
    * @throws {TypeError} If input is not a string.
    */
   static isRgb(input) {
-    if (typeof input !== 'string')
-      throw new TypeError('isRgb: input must be a string.');
+    if (typeof input !== 'string') throw new TypeError('isRgb: input must be a string.');
     return TinyColorValidator.#RGB_REGEX.test(input.trim());
+  }
+
+  /**
+   * Validates if a string is a valid RGB color.
+   * @returns {boolean} True if the input is a valid RGB color.
+   * @throws {TypeError} If input is not a string.
+   */
+  isRgb() {
+    return TinyColorValidator.isRgb(this.#code);
   }
 
   /**
@@ -326,9 +363,17 @@ class TinyColorValidator {
    * @throws {TypeError} If input is not a string.
    */
   static isRgba(input) {
-    if (typeof input !== 'string')
-      throw new TypeError('isRgba: input must be a string.');
+    if (typeof input !== 'string') throw new TypeError('isRgba: input must be a string.');
     return TinyColorValidator.#RGBA_REGEX.test(input.trim());
+  }
+
+  /**
+   * Validates if a string is a valid RGBA color.
+   * @returns {boolean} True if the input is a valid RGBA color.
+   * @throws {TypeError} If input is not a string.
+   */
+  isRgba() {
+    return TinyColorValidator.isRgba(this.#code);
   }
 
   /**
@@ -338,9 +383,17 @@ class TinyColorValidator {
    * @throws {TypeError} If input is not a string.
    */
   static isHsl(input) {
-    if (typeof input !== 'string')
-      throw new TypeError('isHsl: input must be a string.');
+    if (typeof input !== 'string') throw new TypeError('isHsl: input must be a string.');
     return TinyColorValidator.#HSL_REGEX.test(input.trim());
+  }
+
+  /**
+   * Validates if a string is a valid HSL color.
+   * @returns {boolean} True if the input is a valid HSL color.
+   * @throws {TypeError} If input is not a string.
+   */
+  isHsl() {
+    return TinyColorValidator.isHsl(this.#code);
   }
 
   /**
@@ -350,9 +403,17 @@ class TinyColorValidator {
    * @throws {TypeError} If input is not a string.
    */
   static isHsla(input) {
-    if (typeof input !== 'string')
-      throw new TypeError('isHsla: input must be a string.');
+    if (typeof input !== 'string') throw new TypeError('isHsla: input must be a string.');
     return TinyColorValidator.#HSLA_REGEX.test(input.trim());
+  }
+
+  /**
+   * Validates if a string is a valid HSLA color.
+   * @returns {boolean} True if the input is a valid HSLA color.
+   * @throws {TypeError} If input is not a string.
+   */
+  isHsla() {
+    return TinyColorValidator.isHsla(this.#code);
   }
 
   /**
@@ -362,9 +423,17 @@ class TinyColorValidator {
    * @throws {TypeError} If input is not a string.
    */
   static isHwb(input) {
-    if (typeof input !== 'string')
-      throw new TypeError('isHwb: input must be a string.');
+    if (typeof input !== 'string') throw new TypeError('isHwb: input must be a string.');
     return TinyColorValidator.#HWB_REGEX.test(input.trim());
+  }
+
+  /**
+   * Validates if a string is a valid HWB color.
+   * @returns {boolean} True if the input is a valid HWB color.
+   * @throws {TypeError} If input is not a string.
+   */
+  isHwb() {
+    return TinyColorValidator.isHwb(this.#code);
   }
 
   /**
@@ -374,9 +443,17 @@ class TinyColorValidator {
    * @throws {TypeError} If input is not a string.
    */
   static isLab(input) {
-    if (typeof input !== 'string')
-      throw new TypeError('isLab: input must be a string.');
+    if (typeof input !== 'string') throw new TypeError('isLab: input must be a string.');
     return TinyColorValidator.#LAB_REGEX.test(input.trim());
+  }
+
+  /**
+   * Validates if a string is a valid CIELAB color.
+   * @returns {boolean} True if the input is a valid Lab color.
+   * @throws {TypeError} If input is not a string.
+   */
+  isLab() {
+    return TinyColorValidator.isLab(this.#code);
   }
 
   /**
@@ -386,9 +463,17 @@ class TinyColorValidator {
    * @throws {TypeError} If input is not a string.
    */
   static isLch(input) {
-    if (typeof input !== 'string')
-      throw new TypeError('isLch: input must be a string.');
+    if (typeof input !== 'string') throw new TypeError('isLch: input must be a string.');
     return TinyColorValidator.#LCH_REGEX.test(input.trim());
+  }
+
+  /**
+   * Validates if a string is a valid LCH color.
+   * @returns {boolean} True if the input is a valid LCH color.
+   * @throws {TypeError} If input is not a string.
+   */
+  isLch() {
+    return TinyColorValidator.isLch(this.#code);
   }
 
   /**
@@ -398,9 +483,17 @@ class TinyColorValidator {
    * @throws {TypeError} If input is not a string.
    */
   static isName(input) {
-    if (typeof input !== 'string')
-      throw new TypeError('isName: input must be a string.');
+    if (typeof input !== 'string') throw new TypeError('isName: input must be a string.');
     return TinyColorValidator.#HTML_COLOR_NAMES.has(input.trim().toLowerCase());
+  }
+
+  /**
+   * Validates if a string matches a standard HTML color name.
+   * @returns {boolean} True if the input is a valid HTML color name.
+   * @throws {TypeError} If input is not a string.
+   */
+  isName() {
+    return TinyColorValidator.isName(this.#code);
   }
 
   /**
@@ -410,9 +503,17 @@ class TinyColorValidator {
    * @throws {TypeError} If input is not a string.
    */
   static isSpecialName(input) {
-    if (typeof input !== 'string')
-      throw new TypeError('isSpecialName: input must be a string.');
+    if (typeof input !== 'string') throw new TypeError('isSpecialName: input must be a string.');
     return TinyColorValidator.#SPECIAL_COLOR_NAMES.has(input.trim());
+  }
+
+  /**
+   * Validates if a string matches a special CSS color keyword.
+   * @returns {boolean} True if the input is a special color keyword.
+   * @throws {TypeError} If input is not a string.
+   */
+  isSpecialName() {
+    return TinyColorValidator.isSpecialName(this.#code);
   }
 
   /**
@@ -422,8 +523,7 @@ class TinyColorValidator {
    * @throws {TypeError} If input is not a string.
    */
   static isColor(input) {
-    if (typeof input !== 'string')
-      throw new TypeError('isColor: input must be a string.');
+    if (typeof input !== 'string') throw new TypeError('isColor: input must be a string.');
     return (
       TinyColorValidator.isHex(input) ||
       TinyColorValidator.isHexa(input) ||
@@ -437,6 +537,15 @@ class TinyColorValidator {
       TinyColorValidator.isName(input) ||
       TinyColorValidator.isSpecialName(input)
     );
+  }
+
+  /**
+   * Validates if a string is any valid CSS color (HEX, RGB, HSL, HWB, Lab, LCH, name, or special name).
+   * @returns {boolean} True if the input is a valid CSS color.
+   * @throws {TypeError} If input is not a string.
+   */
+  isColor() {
+    return TinyColorValidator.isColor(this.#code);
   }
 
   /**
@@ -467,6 +576,16 @@ class TinyColorValidator {
   }
 
   /**
+   * Parses a HEX color string (#RGB or #RRGGBB).
+   * Returns the regex match array with captured groups or null if invalid.
+   * @returns {string|null} Regex match result with captured groups, or null if not valid.
+   * @throws {TypeError} If input is not a string.
+   */
+  parseHex() {
+    return TinyColorValidator.parseHex(this.#code);
+  }
+
+  /**
    * Parses a HEXA color string (#RRGGBBAA).
    * Returns the regex match array with captured groups or null if invalid.
    * @param {string} input - The input string to parse.
@@ -478,6 +597,16 @@ class TinyColorValidator {
     const result = new RegExp(TinyColorValidator.#HEXA_REGEX, 'gm').exec(input.trim());
     if (!result) return null;
     return result[1];
+  }
+
+  /**
+   * Parses a HEXA color string (#RRGGBBAA).
+   * Returns the regex match array with captured groups or null if invalid.
+   * @returns {string|null} Regex match result with captured groups, or null if not valid.
+   * @throws {TypeError} If input is not a string.
+   */
+  parseHexa() {
+    return TinyColorValidator.parseHexa(this.#code);
   }
 
   // --- RGB / RGBA ---
@@ -494,6 +623,16 @@ class TinyColorValidator {
     const result = new RegExp(TinyColorValidator.#RGB_REGEX, 'gm').exec(input.trim());
     if (!result) return null;
     return [parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3])];
+  }
+
+  /**
+   * Parses an RGB color string (rgb(r, g, b)).
+   * Returns the regex match array with captured groups for r, g, and b or null if invalid.
+   * @returns {[number, number, number]|null} Regex match result with groups [r, g, b], or null if not valid.
+   * @throws {TypeError} If input is not a string.
+   */
+  parseRgb() {
+    return TinyColorValidator.parseRgb(this.#code);
   }
 
   /**
@@ -515,6 +654,16 @@ class TinyColorValidator {
     ];
   }
 
+  /**
+   * Parses an RGBA color string (rgba(r, g, b, a)).
+   * Returns the regex match array with captured groups for r, g, b, and a or null if invalid.
+   * @returns {[number, number, number, number]|null} Regex match result with groups [r, g, b, a], or null if not valid.
+   * @throws {TypeError} If input is not a string.
+   */
+  parseRgba() {
+    return TinyColorValidator.parseRgba(this.#code);
+  }
+
   // --- HSL / HSLA ---
 
   /**
@@ -529,6 +678,16 @@ class TinyColorValidator {
     const result = new RegExp(TinyColorValidator.#HSL_REGEX, 'gm').exec(input.trim());
     if (!result) return null;
     return [parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3])];
+  }
+
+  /**
+   * Parses an HSL color string (hsl(h, s%, l%)).
+   * Returns the regex match array with captured groups for h, s, and l or null if invalid.
+   * @returns {[number, number, number]|null} Regex match result with groups [h, s, l], or null if not valid.
+   * @throws {TypeError} If input is not a string.
+   */
+  parseHsl() {
+    return TinyColorValidator.parseHsl(this.#code);
   }
 
   /**
@@ -548,6 +707,16 @@ class TinyColorValidator {
       parseFloat(result[3]),
       parseFloat(result[4]),
     ];
+  }
+
+  /**
+   * Parses an HSLA color string (hsla(h, s%, l%, a)).
+   * Returns the regex match array with captured groups for h, s, l, and a or null if invalid.
+   * @returns {[number, number, number, number]|null} Regex match result with groups [h, s, l, a], or null if not valid.
+   * @throws {TypeError} If input is not a string.
+   */
+  parseHsla() {
+    return TinyColorValidator.parseHsla(this.#code);
   }
 
   // --- HWB ---
@@ -572,6 +741,16 @@ class TinyColorValidator {
     ];
   }
 
+  /**
+   * Parses an HWB color string (hwb(hue, whiteness%, blackness%[, alpha])).
+   * Returns the regex match array with captured groups or null if invalid.
+   * @returns {[number, AngleUnit|null, number, number]|null} Regex match result with captured groups, or null if not valid.
+   * @throws {TypeError} If input is not a string.
+   */
+  parseHwb() {
+    return TinyColorValidator.parseHwb(this.#code);
+  }
+
   // --- Lab ---
 
   /**
@@ -586,6 +765,16 @@ class TinyColorValidator {
     const result = new RegExp(TinyColorValidator.#LAB_REGEX, 'gm').exec(input.trim());
     if (!result) return null;
     return [parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3])];
+  }
+
+  /**
+   * Parses a CIELAB color string (lab(L a b[/alpha])).
+   * Returns the regex match array with captured groups or null if invalid.
+   * @returns {[number, number, number]|null} Regex match result with captured groups, or null if not valid.
+   * @throws {TypeError} If input is not a string.
+   */
+  parseLab() {
+    return TinyColorValidator.parseLab(this.#code);
   }
 
   // --- LCH ---
@@ -608,6 +797,16 @@ class TinyColorValidator {
       // @ts-ignore
       result[4] ?? null,
     ];
+  }
+
+  /**
+   * Parses an LCH color string (lch(L C H[/alpha])).
+   * Returns the regex match array with captured groups or null if invalid.
+   * @returns {[number, number, number, AngleUnit|null]|null} Regex match result with captured groups, or null if not valid.
+   * @throws {TypeError} If input is not a string.
+   */
+  parseLch() {
+    return TinyColorValidator.parseLch(this.#code);
   }
 }
 
