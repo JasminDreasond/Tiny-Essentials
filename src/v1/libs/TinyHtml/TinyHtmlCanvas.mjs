@@ -3,6 +3,8 @@ import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
 /**
  * TinyCanvas is a helper for <canvas> elements,
  * providing a direct way to configure its size and retrieve the rendering context.
+ *
+ * @extends TinyHtmlTemplate<HTMLCanvasElement>
  */
 class TinyHtmlCanvas extends TinyHtmlTemplate {
   /**
@@ -13,8 +15,8 @@ class TinyHtmlCanvas extends TinyHtmlTemplate {
    * @param {string|string[]|Set<string>} [config.tags=[]]
    * @param {string} [config.mainClass=""]
    */
-  constructor({ width = 300, height = 150, tags = [], mainClass = '' } = {}) {
-    super('canvas', tags, mainClass);
+  constructor({ width = 300, height = 150, tags = [], mainClass = '' }) {
+    super(document.createElement('canvas'), tags, mainClass);
     this.setAttr('width', width);
     this.setAttr('height', height);
   }

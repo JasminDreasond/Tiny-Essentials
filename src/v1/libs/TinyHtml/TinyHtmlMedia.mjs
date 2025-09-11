@@ -7,17 +7,20 @@ import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
  * It provides a consistent API to control media playback and access
  * standard {@link HTMLMediaElement} properties and methods.
  *
+ * @template {HTMLMediaElement} TinyHtmlT
+ * @extends TinyHtmlTemplate<TinyHtmlT>
+ *
  * @beta
  */
 class TinyHtmlMedia extends TinyHtmlTemplate {
   /**
    * Creates a new TinyHtmlMedia instance.
-   * @param {string} tagName - The HTML tag name (e.g., 'audio', 'video').
+   * @param {TinyHtmlT} tag - The HTML tag name (e.g., 'audio', 'video').
    * @param {ClassSetter} [tags=[]] - Initial CSS classes to apply.
    * @param {ClassSetter} [mainClass=[]] - Main CSS classes to apply.
    */
-  constructor(tagName = '', tags = [], mainClass = []) {
-    super(tagName, tags, mainClass);
+  constructor(tag, tags = [], mainClass = []) {
+    super(tag, tags, mainClass);
   }
 
   // ------------------------

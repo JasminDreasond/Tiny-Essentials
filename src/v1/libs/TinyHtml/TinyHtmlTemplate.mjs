@@ -20,7 +20,8 @@ import TinyHtml from '../TinyHtml.mjs';
  * abstraction for HTML elements, serving as a lightweight building block
  * for higher-level UI helpers.
  *
- * @extends TinyHtml<Element>
+ * @template {Element} TinyHtmlT
+ * @extends TinyHtml<TinyHtmlT>
  */
 class TinyHtmlTemplate extends TinyHtml {
   /** @type {Set<string>} */
@@ -112,14 +113,12 @@ class TinyHtmlTemplate extends TinyHtml {
 
   /**
    * Creates a new TinyHtmlTemplate instance.
-   * @param {string} tagName - The HTML tag name to create (e.g., 'div', 'span').
+   * @param {TinyHtmlT} tag - The HTML tag name to create (e.g., 'div', 'span').
    * @param {ClassSetter} [tags=[]] - Initial CSS classes to apply.
    * @param {ClassSetter} [mainClass=[]] - Main CSS classes to apply.
    */
-  constructor(tagName = '', tags = [], mainClass = []) {
-    if (typeof tagName !== 'string' || !tagName.trim())
-      throw new TypeError(`Invalid tagName: expected non-empty string, got "${tagName}"`);
-    super(document.createElement(tagName));
+  constructor(tag, tags = [], mainClass = []) {
+    super(tag);
     this.mainClass = mainClass;
     this.classes = tags;
   }

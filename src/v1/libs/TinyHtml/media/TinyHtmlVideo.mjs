@@ -6,6 +6,8 @@ import TinyHtmlMedia from '../TinyHtmlMedia.mjs';
  * playsinline, poster, preload, disablepictureinpicture, and disableremoteplayback.
  * It also provides methods for controlling playback and volume.
  * @beta
+ *
+ * @extends TinyHtmlMedia<HTMLVideoElement>
  */
 class TinyHtmlVideo extends TinyHtmlMedia {
   /**
@@ -48,7 +50,7 @@ class TinyHtmlVideo extends TinyHtmlMedia {
     tags = [],
     mainClass = '',
   }) {
-    super('video', tags, mainClass);
+    super(document.createElement('video'), tags, mainClass);
 
     if (src) this.setAttr('src', src);
     if (poster) this.setAttr('poster', poster);

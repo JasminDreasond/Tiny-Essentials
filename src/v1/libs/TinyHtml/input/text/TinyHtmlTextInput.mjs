@@ -13,7 +13,7 @@ class TinyHtmlTextInput extends TinyHtmlInput {
    * @param {string|string[]|Set<string>} [config.tags=[]]
    * @param {string} [config.mainClass='']
    */
-  constructor({ value, placeholder, minLength, maxLength, tags = [], mainClass = '' } = {}) {
+  constructor({ value, placeholder, minLength, maxLength, tags = [], mainClass = '' }) {
     super({ type: 'text', tags, mainClass });
     if (value) this.setAttr('value', value);
     if (placeholder) this.setAttr('placeholder', placeholder);

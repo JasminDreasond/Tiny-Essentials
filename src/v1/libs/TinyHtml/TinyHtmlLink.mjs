@@ -6,6 +6,8 @@ import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
  *
  * @example
  * const link = new TinyLink({ href: 'https://puddy.club', label: 'Visit Puddy Club' });
+ *
+ * @extends TinyHtmlTemplate<HTMLAnchorElement>
  */
 class TinyHtmlLink extends TinyHtmlTemplate {
   /**
@@ -19,7 +21,7 @@ class TinyHtmlLink extends TinyHtmlTemplate {
    * @param {string} [config.mainClass='']
    */
   constructor({ href, label, target = '_self', allowHtml = false, tags = [], mainClass = '' }) {
-    super('a', tags, mainClass);
+    super(document.createElement('a'), tags, mainClass);
     if (typeof href !== 'string' || !href.trim())
       throw new TypeError(`TinyLink: 'href' must be a non-empty string. Got: ${href}`);
 

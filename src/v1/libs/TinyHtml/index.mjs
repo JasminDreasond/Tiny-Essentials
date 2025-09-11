@@ -36,7 +36,7 @@ import TinyHtmlIframe from './TinyHtmlIframe.mjs';
 import TinyHtmlImage from './TinyHtmlImage.mjs';
 import TinyHtmlInput from './TinyHtmlInput.mjs';
 import TinyHtmlLink from './TinyHtmlLink.mjs';
-import TinyHtmlObject from './TinyHtmlObject.mjs';
+import TinyHtmlObject from './media/TinyHtmlObject.mjs';
 import TinyHtmlSelect from './TinyHtmlSelect.mjs';
 import TinyHtmlTextarea from './TinyHtmlTextarea.mjs';
 import TinyHtmlVideo from './media/TinyHtmlVideo.mjs';

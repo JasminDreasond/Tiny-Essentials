@@ -6,6 +6,8 @@ import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
  *
  * @example
  * const form = new TinyForm({ action: '/submit', method: 'post' });
+ *
+ * @extends TinyHtmlTemplate<HTMLFormElement>
  */
 class TinyHtmlForm extends TinyHtmlTemplate {
   /**
@@ -18,7 +20,7 @@ class TinyHtmlForm extends TinyHtmlTemplate {
    * @param {string} [config.mainClass='']
    */
   constructor({ action = '', method = 'get', enctype, tags = [], mainClass = '' } = {}) {
-    super('form', tags, mainClass);
+    super(document.createElement('form'), tags, mainClass);
 
     this.setAttr('method', method.toLowerCase());
     if (action) this.setAttr('action', action);

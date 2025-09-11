@@ -16,7 +16,7 @@ class TinyHtmlFileInput extends TinyHtmlInput {
    * @param {string|string[]|Set<string>} [config.tags=[]]
    * @param {string} [config.mainClass='']
    */
-  constructor({ name, multiple = false, accept, tags = [], mainClass = '' } = {}) {
+  constructor({ name, multiple = false, accept, tags = [], mainClass = '' }) {
     super({ type: 'file', name, tags, mainClass });
 
     if (multiple) this.setAttr('multiple', 'multiple');

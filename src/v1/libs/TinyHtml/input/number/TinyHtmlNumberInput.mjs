@@ -13,7 +13,7 @@ class TinyHtmlNumberInput extends TinyHtmlInput {
    * @param {string|string[]|Set<string>} [config.tags=[]]
    * @param {string} [config.mainClass='']
    */
-  constructor({ value, min, max, step, tags = [], mainClass = '' } = {}) {
+  constructor({ value, min, max, step, tags = [], mainClass = '' }) {
     super({ type: 'number', tags, mainClass });
     if (value !== undefined) this.setAttr('value', String(value));
     if (min !== undefined) this.setAttr('min', String(min));

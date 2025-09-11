@@ -5,6 +5,8 @@ import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
  *
  * @example
  * const iframe = new TinyIframe({ src: 'https://example.com', width: 600, height: 400 });
+ *
+ * @extends TinyHtmlTemplate<HTMLIFrameElement>
  */
 class TinyHtmlIframe extends TinyHtmlTemplate {
   /**
@@ -28,8 +30,8 @@ class TinyHtmlIframe extends TinyHtmlTemplate {
     loading = 'lazy',
     tags = [],
     mainClass = '',
-  } = {}) {
-    super('iframe', tags, mainClass);
+  }) {
+    super(document.createElement('iframe'), tags, mainClass);
 
     if (src) this.setAttr('src', src);
     if (width) this.setAttr('width', width);

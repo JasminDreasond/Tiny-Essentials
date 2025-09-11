@@ -14,15 +14,7 @@ class TinyHtmlTelInput extends TinyHtmlInput {
    * @param {string|string[]|Set<string>} [config.tags=[]]
    * @param {string} [config.mainClass='']
    */
-  constructor({
-    value,
-    placeholder,
-    pattern,
-    minLength,
-    maxLength,
-    tags = [],
-    mainClass = '',
-  } = {}) {
+  constructor({ value, placeholder, pattern, minLength, maxLength, tags = [], mainClass = '' }) {
     super({ type: 'tel', tags, mainClass });
     if (value) this.setAttr('value', value);
     if (placeholder) this.setAttr('placeholder', placeholder);

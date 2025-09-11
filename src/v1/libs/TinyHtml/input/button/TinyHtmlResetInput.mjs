@@ -10,7 +10,7 @@ class TinyHtmlResetInput extends TinyHtmlInput {
    * @param {string|string[]|Set<string>} [config.tags=[]]
    * @param {string} [config.mainClass='']
    */
-  constructor({ value = 'Reset', tags = [], mainClass = '' } = {}) {
+  constructor({ value = 'Reset', tags = [], mainClass = '' }) {
     super({ type: 'reset', tags, mainClass });
     this.setAttr('value', value);
   }

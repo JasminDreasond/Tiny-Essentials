@@ -5,6 +5,8 @@ import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
  * TinyButton is a lightweight helper class for managing <button> elements
  * with class-based styling, a main class, and label handling.
  * It extends TinyHtml to provide direct DOM element manipulation.
+ *
+ * @extends TinyHtmlTemplate<HTMLButtonElement>
  */
 class TinyHtmlButton extends TinyHtmlTemplate {
   /**
@@ -16,7 +18,7 @@ class TinyHtmlButton extends TinyHtmlTemplate {
    * @param {string} [config.mainClass='']
    */
   constructor({ label, tags = [], type = 'button', mainClass = '' }) {
-    super('button', tags, mainClass);
+    super(document.createElement('button'), tags, mainClass);
     this.setAttr('type', type);
     this.setText(label);
   }

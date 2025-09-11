@@ -13,7 +13,7 @@ class TinyHtmlDateTimeInput extends TinyHtmlInput {
    * @param {string|string[]|Set<string>} [config.tags=[]]
    * @param {string} [config.mainClass='']
    */
-  constructor({ value, min, max, step, tags = [], mainClass = '' } = {}) {
+  constructor({ value, min, max, step, tags = [], mainClass = '' }) {
     super({ type: 'datetime-local', tags, mainClass });
     if (value) this.setAttr('value', value);
     if (min) this.setAttr('min', min);

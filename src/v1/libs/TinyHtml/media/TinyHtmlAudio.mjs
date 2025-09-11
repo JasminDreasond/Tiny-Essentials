@@ -4,6 +4,8 @@ import TinyHtmlMedia from '../TinyHtmlMedia.mjs';
  * TinyAudio is a helper for managing <audio> elements with full support for
  * attributes and playback controls (play, pause, mute, seek, speed, etc).
  * @beta
+ *
+ * @extends TinyHtmlMedia<HTMLAudioElement>
  */
 class TinyHtmlAudio extends TinyHtmlMedia {
   /**
@@ -28,8 +30,8 @@ class TinyHtmlAudio extends TinyHtmlMedia {
     volume,
     tags = [],
     mainClass = '',
-  } = {}) {
-    super('audio', tags, mainClass);
+  }) {
+    super(document.createElement('audio'), tags, mainClass);
 
     if (src) this.setAttr('src', src);
     if (preload) this.setAttr('preload', preload);

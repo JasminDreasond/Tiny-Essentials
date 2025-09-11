@@ -3,6 +3,8 @@ import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
 /**
  * TinyEmbed is a helper class for <embed> elements,
  * typically used to embed external interactive content or media.
+ *
+ * @extends TinyHtmlTemplate<HTMLEmbedElement>
  */
 class TinyHtmlEmbed extends TinyHtmlTemplate {
   /**
@@ -14,7 +16,7 @@ class TinyHtmlEmbed extends TinyHtmlTemplate {
    * @param {string} [config.mainClass=""]
    */
   constructor({ src = '', type = '', tags = [], mainClass = '' } = {}) {
-    super('embed', tags, mainClass);
+    super(document.createElement('embed'), tags, mainClass);
     if (src) this.setAttr('src', src);
     if (type) this.setAttr('type', type);
   }

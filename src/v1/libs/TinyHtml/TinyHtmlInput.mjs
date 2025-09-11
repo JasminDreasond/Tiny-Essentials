@@ -8,6 +8,8 @@ import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
  * @example
  * const input = new TinyHtmlInput({ type: 'text', placeholder: 'Your name' });
  * input.setValue('Yasmin');
+ *
+ * @extends TinyHtmlTemplate<HTMLInputElement>
  */
 class TinyHtmlInput extends TinyHtmlTemplate {
   /**
@@ -28,7 +30,7 @@ class TinyHtmlInput extends TinyHtmlTemplate {
     tags = [],
     mainClass = '',
   } = {}) {
-    super('input', tags, mainClass);
+    super(document.createElement('input'), tags, mainClass);
     if (typeof type !== 'string' || !type.trim())
       throw new TypeError(`TinyHtmlInput: 'type' must be a non-empty string. Got: ${type}`);
 

@@ -5,6 +5,8 @@ import TinyHtmlTemplate from '../../TinyHtmlTemplate.mjs';
  *
  * @example
  * const radio = new TinyRadio({ name: 'gender', value: 'female', checked: true });
+ *
+ * @extends TinyHtmlTemplate<HTMLInputElement>
  */
 class TinyHtmlRadioInput extends TinyHtmlTemplate {
   /**
@@ -17,7 +19,7 @@ class TinyHtmlRadioInput extends TinyHtmlTemplate {
    * @param {string} [config.mainClass='']
    */
   constructor({ name, value, checked = false, tags = [], mainClass = '' }) {
-    super('input', tags, mainClass);
+    super(document.createElement('input'), tags, mainClass);
 
     if (typeof name !== 'string' || !name.trim()) {
       throw new TypeError('TinyRadio: "name" is required and must be a string.');

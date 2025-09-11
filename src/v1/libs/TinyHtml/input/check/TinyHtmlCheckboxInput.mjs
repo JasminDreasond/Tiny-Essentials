@@ -5,6 +5,8 @@ import TinyHtmlTemplate from '../../TinyHtmlTemplate.mjs';
  *
  * @example
  * const checkbox = new TinyCheckbox({ checked: true });
+ *
+ * @extends TinyHtmlTemplate<HTMLInputElement>
  */
 class TinyHtmlCheckboxInput extends TinyHtmlTemplate {
   /**
@@ -16,8 +18,8 @@ class TinyHtmlCheckboxInput extends TinyHtmlTemplate {
    * @param {string|string[]|Set<string>} [config.tags=[]] - Initial CSS classes.
    * @param {string} [config.mainClass='']
    */
-  constructor({ checked = false, name, value = 'on', tags = [], mainClass = '' } = {}) {
-    super('input', tags, mainClass);
+  constructor({ checked = false, name, value = 'on', tags = [], mainClass = '' }) {
+    super(document.createElement('input'), tags, mainClass);
 
     this.setAttr('type', 'checkbox');
     this.setAttr('value', value);

@@ -6,6 +6,8 @@ import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
  *
  * @example
  * const img = new TinyImage({ src: '/logo.png', alt: 'Logo', width: 200 });
+ *
+ * @extends TinyHtmlTemplate<HTMLImageElement>
  */
 class TinyHtmlImage extends TinyHtmlTemplate {
   /** @type {boolean} */
@@ -34,7 +36,7 @@ class TinyHtmlImage extends TinyHtmlTemplate {
     mainClass = '',
     fetchMode = TinyHtmlImage.fetchMode,
   }) {
-    super('img', tags, mainClass);
+    super(document.createElement('img'), tags, mainClass);
     if (typeof src !== 'string')
       throw new TypeError(`TinyImage: 'src' must be a string. Got: ${src}`);
     if (typeof fetchMode !== 'boolean')

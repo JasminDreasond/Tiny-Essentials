@@ -1,8 +1,10 @@
-import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
+import TinyHtmlTemplate from '../TinyHtmlTemplate.mjs';
 
 /**
  * TinyObject is a lightweight helper class for managing <object> elements,
  * commonly used to embed external resources like PDFs, HTML, or SVGs.
+ *
+ * @extends TinyHtmlTemplate<HTMLObjectElement>
  */
 class TinyHtmlObject extends TinyHtmlTemplate {
   /**
@@ -13,8 +15,8 @@ class TinyHtmlObject extends TinyHtmlTemplate {
    * @param {string|string[]|Set<string>} [config.tags=[]] - Initial CSS classes.
    * @param {string} [config.mainClass=""]
    */
-  constructor({ data = '', type = '', tags = [], mainClass = '' } = {}) {
-    super('object', tags, mainClass);
+  constructor({ data = '', type = '', tags = [], mainClass = '' }) {
+    super(document.createElement('object'), tags, mainClass);
     if (data) this.setAttr('data', data);
     if (type) this.setAttr('type', type);
   }

@@ -6,6 +6,7 @@ import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
  *
  * @example
  * const textarea = new TinyTextarea({ rows: 5, placeholder: 'Write here...' });
+ * @extends TinyHtmlTemplate<HTMLTextAreaElement>
  */
 class TinyHtmlTextarea extends TinyHtmlTemplate {
   /**
@@ -19,7 +20,7 @@ class TinyHtmlTextarea extends TinyHtmlTemplate {
    * @param {string} [config.mainClass='']
    */
   constructor({ value = '', rows, cols, placeholder, tags = [], mainClass = '' } = {}) {
-    super('textarea', tags, mainClass);
+    super(document.createElement('textarea'), tags, mainClass);
 
     if (value) this.setText(value);
     if (rows) this.setAttr('rows', rows);

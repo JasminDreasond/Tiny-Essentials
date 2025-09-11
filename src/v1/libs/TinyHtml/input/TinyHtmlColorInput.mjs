@@ -11,7 +11,7 @@ class TinyHtmlColorInput extends TinyHtmlInput {
    * @param {string|string[]|Set<string>} [config.tags=[]]
    * @param {string} [config.mainClass='']
    */
-  constructor({ value = '#000000', name = '', tags = [], mainClass = '' } = {}) {
+  constructor({ value = '#000000', name = '', tags = [], mainClass = '' }) {
     super({ type: 'color', name, tags, mainClass });
     this.setAttr('value', value);
   }

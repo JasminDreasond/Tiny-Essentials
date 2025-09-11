@@ -6,6 +6,8 @@ import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
  *
  * @example
  * const select = new TinySelect({ options: [{ value: '1', label: 'One' }] });
+ *
+ * @extends TinyHtmlTemplate<HTMLSelectElement>
  */
 class TinyHtmlSelect extends TinyHtmlTemplate {
   /**
@@ -18,7 +20,7 @@ class TinyHtmlSelect extends TinyHtmlTemplate {
    * @param {string} [config.mainClass='']
    */
   constructor({ options = [], multiple = false, tags = [], mainClass = '' } = {}) {
-    super('select', tags, mainClass);
+    super(document.createElement('select'), tags, mainClass);
 
     if (multiple) this.setAttr('multiple', 'multiple');
 

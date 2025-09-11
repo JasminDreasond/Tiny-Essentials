@@ -12,7 +12,7 @@ class TinyHtmlMonthInput extends TinyHtmlInput {
    * @param {string|string[]|Set<string>} [config.tags=[]]
    * @param {string} [config.mainClass='']
    */
-  constructor({ value, min, max, tags = [], mainClass = '' } = {}) {
+  constructor({ value, min, max, tags = [], mainClass = '' }) {
     super({ type: 'month', tags, mainClass });
     if (value) this.setAttr('value', value);
     if (min) this.setAttr('min', min);
