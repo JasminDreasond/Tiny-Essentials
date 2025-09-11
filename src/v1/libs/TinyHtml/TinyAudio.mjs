@@ -1,64 +1,44 @@
-import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
+import TinyMedia from './TinyMedia.mjs';
 
 /**
- * TinyAudio is a helper for managing <audio> elements
- * with attributes like src, controls, autoplay, loop, and volume.
+ * TinyAudio is a helper for managing <audio> elements with full support for
+ * attributes and playback controls (play, pause, mute, seek, speed, etc).
  */
-class TinyAudio extends TinyHtmlTemplate {
+class TinyAudio extends TinyMedia {
   /**
    * @param {Object} config
    * @param {string} [config.src='']
-   * @param {boolean} [config.controls=true]
+   * @param {boolean} [config.controls=false]
    * @param {boolean} [config.autoplay=false]
    * @param {boolean} [config.loop=false]
+   * @param {boolean} [config.muted=false]
    * @param {number} [config.volume]
-   * @param {string|string[]|Set<string>} [config.tags=[]] - Initial CSS classes.
+   * @param {'auto'|'metadata'|'none'} [config.preload]
+   * @param {string|string[]|Set<string>} [config.tags=[]]
    * @param {string} [config.mainClass=""]
    */
   constructor({
     src = '',
-    controls = true,
+    preload,
+    controls = false,
     autoplay = false,
     loop = false,
+    muted = false,
     volume,
     tags = [],
     mainClass = '',
   } = {}) {
     super('audio', tags, mainClass);
+
     if (src) this.setAttr('src', src);
-    if (controls) this.setAttr('controls', 'true');
-    if (autoplay) this.setAttr('autoplay', 'true');
-    if (loop) this.setAttr('loop', 'true');
-    if (typeof volume === 'number') this.setVolume(volume);
-  }
+    if (preload) this.setAttr('preload', preload);
 
-  play() {
-    /** @type {Promise<void>[]} */
-    const plays = [];
-    this.elements.forEach((element) =>
-      element instanceof HTMLAudioElement ? plays.push(element.play()) : null,
-    );
-    return Promise.all(plays);
-  }
+    if (controls) this.addProp('controls');
+    if (autoplay) this.addProp('autoplay');
+    if (loop) this.addProp('loop');
+    if (muted) this.addProp('muted');
 
-  pause() {
-    this.elements.forEach((element) =>
-      element instanceof HTMLAudioElement ? element.pause() : null,
-    );
-    return this;
-  }
-
-  /**
-   * @param {number} level
-   */
-  setVolume(level) {
-    if (typeof level !== 'number') throw new TypeError('Volume must be a number between 0 and 1');
-    this.setProp('volume', Math.min(1, Math.max(0, level)));
-    return this;
-  }
-
-  getVolume() {
-    return this.prop('volume');
+    if (typeof volume === 'number') this.volume = volume;
   }
 }
 

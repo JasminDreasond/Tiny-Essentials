@@ -16,18 +16,26 @@
     </style>
   </head>
   <body>
+    <div id="base"></div>
     <script type="module">
       import { TinyHtml } from './src/v1/libs/TinyHtml.mjs';
-      import { TinyHtmlTemplate } from './src/v1/libs/TinyHtml/TinyHtmlTemplate.mjs';
-      import { TinyButton } from './src/v1/libs/TinyHtml/TinyButton.mjs';
-      import { TinyIcon } from './src/v1/libs/TinyHtml/TinyIcon.mjs';
+      import { TinyHtmlElems } from './src/v1/libs/TinyHtml/index.mjs';
 
-      const modules = { TinyHtml, TinyHtmlTemplate, TinyButton, TinyIcon };
-      Object.assign(window, modules);
-      for (const index in modules) modules[index].elemDebug = true;
+      window.TinyHtmlElems = TinyHtmlElems;
+      window.TinyHtml = TinyHtml;
+      TinyHtml.elemDebug = true;
 
-      window.tinyButton = new TinyButton({ label: 'Mio' }).appendTo(document.body);
-      window.tinyIcon = new TinyIcon('tiny-icon').appendTo(document.body);
+      window.tinyButton = new TinyHtmlElems.Button({ label: 'Mio' }).prependTo(document.body);
+      window.tinyIcon = new TinyHtmlElems.Icon('tiny-icon').prependTo(document.body);
+
+      window.tinyVideo = new TinyHtmlElems.Video({
+        src: '/temp/test.mp4',
+        controls: false,
+        autoplay: false,
+        loop: false,
+        muted: false,
+        volume: 1,
+      }).appendTo(TinyHtml.getById('base'));
     </script>
   </body>
 </html>

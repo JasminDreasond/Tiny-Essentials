@@ -40,6 +40,7 @@ import TinyObject from './TinyObject.mjs';
 import TinySelect from './TinySelect.mjs';
 import TinyTextarea from './TinyTextarea.mjs';
 import TinyVideo from './TinyVideo.mjs';
+import TinyMedia from './TinyMedia.mjs';
 
 ///////////////////////////////////////////////////
 
@@ -81,6 +82,7 @@ class TinyHtmlElems {
     TinySelect,
     TinyTextarea,
     TinyVideo,
+    TinyMedia,
     ////////////////////////////////////////////////////
     TinyHtmlTemplate,
   ];
@@ -128,6 +130,7 @@ class TinyHtmlElems {
   static Select = TinySelect;
   static Textarea = TinyTextarea;
   static Video = TinyVideo;
+  static Media = TinyMedia;
 
   ////////////////////////////////////////////////////
 
@@ -177,5 +180,6 @@ export {
   TinySelect,
   TinyTextarea,
   TinyVideo,
+  TinyMedia,
 };
  */

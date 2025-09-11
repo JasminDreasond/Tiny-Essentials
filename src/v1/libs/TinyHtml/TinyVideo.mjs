@@ -1,29 +1,46 @@
-import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
+import TinyMedia from './TinyMedia.mjs';
 
 /**
- * TinyVideo is a helper for managing <video> elements
- * with attributes like src, controls, autoplay, loop, width, height, and volume.
+ * TinyVideo is a helper for managing <video> elements with extended support for
+ * attributes like autoplay, controls, controlslist, crossorigin, loop, muted,
+ * playsinline, poster, preload, disablepictureinpicture, and disableremoteplayback.
+ * It also provides methods for controlling playback and volume.
  */
-class TinyVideo extends TinyHtmlTemplate {
+class TinyVideo extends TinyMedia {
   /**
+   * Creates a new TinyVideo instance.
    * @param {Object} config
-   * @param {string} [config.src='']
-   * @param {boolean} [config.controls=true]
-   * @param {boolean} [config.autoplay=false]
-   * @param {boolean} [config.loop=false]
-   * @param {boolean} [config.muted=false]
-   * @param {number} [config.width]
-   * @param {number} [config.height]
-   * @param {number} [config.volume]
+   * @param {string} [config.src=''] - The video file URL.
+   * @param {string} [config.poster=''] - Image URL shown before playback starts.
+   * @param {boolean} [config.controls=false] - Whether to show default controls.
+   * @param {boolean} [config.autoplay=false] - Start playback automatically (muted may be required).
+   * @param {boolean} [config.loop=false] - Replay automatically when finished.
+   * @param {boolean} [config.muted=false] - Start playback muted.
+   * @param {boolean} [config.playsinline=false] - Play inline instead of fullscreen (mobile devices).
+   * @param {'nodownload'|'nofullscreen'|'noremoteplayback'|string} [config.controlslist] - Restrict controls visibility.
+   * @param {'anonymous'|'use-credentials'} [config.crossorigin] - CORS setting for the video request.
+   * @param {boolean} [config.disablepictureinpicture=false] - Disable Picture-in-Picture mode.
+   * @param {boolean} [config.disableremoteplayback=false] - Disable casting / remote playback.
+   * @param {'auto'|'metadata'|'none'} [config.preload] - Preload behavior suggestion.
+   * @param {number} [config.width] - CSS pixel width of the video display.
+   * @param {number} [config.height] - CSS pixel height of the video display.
+   * @param {number} [config.volume] - Initial volume (0.0–1.0).
    * @param {string|string[]|Set<string>} [config.tags=[]] - Initial CSS classes.
-   * @param {string} [config.mainClass=""]
+   * @param {string} [config.mainClass=""] - Main CSS class applied.
    */
   constructor({
     src = '',
-    controls = true,
+    poster = '',
+    controls = false,
     autoplay = false,
     loop = false,
     muted = false,
+    playsinline = false,
+    controlslist,
+    crossorigin,
+    disablepictureinpicture = false,
+    disableremoteplayback = false,
+    preload,
     width,
     height,
     volume,
@@ -31,43 +48,44 @@ class TinyVideo extends TinyHtmlTemplate {
     mainClass = '',
   }) {
     super('video', tags, mainClass);
+
     if (src) this.setAttr('src', src);
-    if (controls) this.setAttr('controls', 'true');
-    if (autoplay) this.setAttr('autoplay', 'true');
-    if (loop) this.setAttr('loop', 'true');
-    if (muted) this.setAttr('muted', 'true');
-    if (width !== undefined) this.setAttr('width', String(width));
-    if (height !== undefined) this.setAttr('height', String(height));
-    if (typeof volume === 'number') this.setVolume(volume);
+    if (poster) this.setAttr('poster', poster);
+    if (preload) this.setAttr('preload', preload);
+
+    if (controls) this.addProp('controls');
+    if (autoplay) this.addProp('autoplay');
+    if (loop) this.addProp('loop');
+    if (muted) this.addProp('muted');
+    if (playsinline) this.addProp('playsinline');
+    if (disablepictureinpicture) this.addProp('disablepictureinpicture');
+    if (disableremoteplayback) this.addProp('disableremoteplayback');
+
+    if (controlslist) this.setAttr('controlslist', controlslist);
+    if (crossorigin) this.setAttr('crossorigin', crossorigin);
+
+    if (typeof volume === 'number') this.volume = volume;
+    if (width !== undefined) this.setAttr('width', width);
+    if (height !== undefined) this.setAttr('height', height);
   }
 
-  play() {
-    /** @type {Promise<void>[]} */
-    const plays = [];
-    this.elements.forEach((element) =>
-      element instanceof HTMLVideoElement ? plays.push(element.play()) : null,
-    );
-    return Promise.all(plays);
+  // ------------------------
+  // Fullscreen controls
+  // ------------------------
+
+  /** @returns {Promise<void>|undefined} */
+  requestFullscreen() {
+    const first = this.elements[0];
+    if (first instanceof HTMLVideoElement) {
+      return first.requestFullscreen();
+    }
   }
 
-  pause() {
-    this.elements.forEach((element) =>
-      element instanceof HTMLVideoElement ? element.pause() : null,
-    );
-    return this;
-  }
-
-  /**
-   * @param {number} level
-   */
-  setVolume(level) {
-    if (typeof level !== 'number') throw new TypeError('Volume must be a number between 0 and 1');
-    this.setProp('volume', Math.min(1, Math.max(0, level)));
-    return this;
-  }
-
-  getVolume() {
-    return this.prop('volume');
+  /** @returns {Promise<void>|undefined} */
+  exitFullscreen() {
+    if (document.fullscreenElement) {
+      return document.exitFullscreen();
+    }
   }
 }
 

@@ -4,7 +4,7 @@ import TinyInput from '../../TinyInput.mjs';
  * TinyDateInput is a helper for managing <input type="date"> elements.
  */
 class TinyDateInput extends TinyInput {
-    /**
+  /**
    * @param {Object} config
    * @param {string} [config.value]
    * @param {string} [config.min]
