@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>TinyHtml</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #f8f9fa 0%, #dee2e6 100%);
+        overflow: auto;
+        height: 100%;
+        width: 100%;
+        padding: 30px;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="module">
+      import { TinyHtml } from './src/v1/libs/TinyHtml.mjs';
+      import { TinyHtmlTemplate } from './src/v1/libs/TinyHtml/TinyHtmlTemplate.mjs';
+      import { TinyButton } from './src/v1/libs/TinyHtml/TinyButton.mjs';
+      import { TinyIcon } from './src/v1/libs/TinyHtml/TinyIcon.mjs';
+
+      const modules = { TinyHtml, TinyHtmlTemplate, TinyButton, TinyIcon };
+      Object.assign(window, modules);
+      for (const index in modules) modules[index].elemDebug = true;
+
+      window.tinyButton = new TinyButton({ label: 'Mio' }).appendTo(document.body);
+      new TinyIcon('tiny-icon').appendTo(document.body);
+    </script>
+  </body>
+</html>
