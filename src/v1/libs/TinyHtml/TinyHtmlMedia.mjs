@@ -89,7 +89,8 @@ class TinyHtmlMedia extends TinyHtmlTemplate {
    */
   addTextTrack(kind, label, language) {
     const first = this.elements[0];
-    if (!(first instanceof HTMLMediaElement)) throw new Error('No HTMLMediaElement found to add a text track');
+    if (!(first instanceof HTMLMediaElement))
+      throw new Error('No HTMLMediaElement found to add a text track');
     return first.addTextTrack(kind, label, language);
   }
 
@@ -149,7 +150,8 @@ class TinyHtmlMedia extends TinyHtmlTemplate {
   /** @returns {TimeRanges} The buffered time ranges. */
   get buffered() {
     const first = this.elements[0];
-    if (!(first instanceof HTMLMediaElement)) throw new Error('No HTMLMediaElement found to access buffered ranges');
+    if (!(first instanceof HTMLMediaElement))
+      throw new Error('No HTMLMediaElement found to access buffered ranges');
     return first.buffered;
   }
 
@@ -298,7 +300,8 @@ class TinyHtmlMedia extends TinyHtmlTemplate {
   /** @returns {TimeRanges} Played time ranges. */
   get played() {
     const first = this.elements[0];
-    if (!(first instanceof HTMLMediaElement)) throw new Error('No HTMLMediaElement found to access played ranges');
+    if (!(first instanceof HTMLMediaElement))
+      throw new Error('No HTMLMediaElement found to access played ranges');
     return first.played;
   }
 
@@ -326,7 +329,7 @@ class TinyHtmlMedia extends TinyHtmlTemplate {
     return first instanceof HTMLMediaElement ? first.readyState : 0;
   }
 
-  /** @returns {any} Remote playback interface. */
+  /** @returns {RemotePlayback|null} Remote playback interface. */
   get remote() {
     const first = this.elements[0];
     return first instanceof HTMLMediaElement ? first.remote : null;
@@ -335,7 +338,8 @@ class TinyHtmlMedia extends TinyHtmlTemplate {
   /** @returns {TimeRanges} Seekable time ranges. */
   get seekable() {
     const first = this.elements[0];
-    if (!(first instanceof HTMLMediaElement)) throw new Error('No HTMLMediaElement found to access seekable ranges');
+    if (!(first instanceof HTMLMediaElement))
+      throw new Error('No HTMLMediaElement found to access seekable ranges');
     return first.seekable;
   }
 
@@ -371,7 +375,8 @@ class TinyHtmlMedia extends TinyHtmlTemplate {
   /** @returns {TextTrackList} Available text tracks. */
   get textTracks() {
     const first = this.elements[0];
-    if (!(first instanceof HTMLMediaElement)) throw new Error('No HTMLMediaElement found to access text tracks');
+    if (!(first instanceof HTMLMediaElement))
+      throw new Error('No HTMLMediaElement found to access text tracks');
     return first.textTracks;
   }
 
@@ -389,9 +394,7 @@ class TinyHtmlMedia extends TinyHtmlTemplate {
    * @throws {TypeError} If not a number.
    */
   set volume(level) {
-    if (typeof level !== 'number') {
-      throw new TypeError('Volume must be a number between 0 and 1');
-    }
+    if (typeof level !== 'number') throw new TypeError('Volume must be a number between 0 and 1');
     const safe = Math.min(1, Math.max(0, level));
     this.elements.forEach((el) => (el instanceof HTMLMediaElement ? (el.volume = safe) : null));
   }
