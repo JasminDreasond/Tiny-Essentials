@@ -5,6 +5,7 @@ import TinyHtmlMedia from '../TinyHtmlMedia.mjs';
  * attributes like autoplay, controls, controlslist, crossorigin, loop, muted,
  * playsinline, poster, preload, disablepictureinpicture, and disableremoteplayback.
  * It also provides methods for controlling playback and volume.
+ * @beta
  */
 class TinyHtmlVideo extends TinyHtmlMedia {
   /**
@@ -81,11 +82,13 @@ class TinyHtmlVideo extends TinyHtmlMedia {
     }
   }
 
-  /** @returns {Promise<void>|undefined} */
-  exitFullscreen() {
-    if (document.fullscreenElement) {
-      return document.exitFullscreen();
+  /** @returns {Promise<boolean>} */
+  async exitFullscreen() {
+    if (document.fullscreenElement === this.elements[0]) {
+      await document.exitFullscreen();
+      return true;
     }
+    return false;
   }
 }
 
