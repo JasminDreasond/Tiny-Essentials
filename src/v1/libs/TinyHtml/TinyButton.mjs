@@ -22,16 +22,35 @@ class TinyButton extends TinyHtmlTemplate {
   }
 
   /**
-   * @param {string|Element|TinyHtml<any>} label
-   * @returns {this}
+   * Updates the button label with text, HTML, or an element.
+   *
+   * @param {string|Element|TinyHtml<any>} label - The new label to set.
+   * - If a string is provided:
+   *   - By default, the string is set as plain text.
+   *   - If `allowHtml` is true, the string is interpreted as raw HTML.
+   * - If an Element or TinyHtml is provided:
+   *   - It is appended as a child, but only if `allowHtml` is true.
+   *   - Otherwise, an error is thrown.
+   * @param {boolean} [allowHtml=false] - Whether to allow raw HTML or DOM elements instead of plain text.
+   * @returns {this} Returns the current instance for chaining.
+   * @throws {TypeError} If `label` is not a string, Element, or TinyHtml.
+   * @throws {Error} If an Element/TinyHtml is passed but `allowHtml` is false.
+   *
+   * @example
+   * btn.setLabel("Save"); // plain text
+   * btn.setLabel("<b>Save</b>", true); // raw HTML
+   * btn.setLabel(document.createElement("span"), true); // DOM element
    */
   setLabel(label, allowHtml = false) {
     if (typeof label === 'string') {
       if (!allowHtml) this.setText(label);
       else this.setHtml(label);
-    } else if (allowHtml) {
+    } else if (label instanceof Element || label instanceof TinyHtml) {
+      if (!allowHtml)
+        throw new Error('setLabel: Passing an Element/TinyHtml requires allowHtml=true.');
       this.empty().append(label);
-    } else throw new Error('');
+    } else
+      throw new TypeError("setLabel: 'label' must be a string, Element, or TinyHtml instance.");
     return this;
   }
 }
