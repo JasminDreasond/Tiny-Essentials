@@ -1,46 +1,46 @@
 ///////////////////////////////////////////////////
 
-import TinyButtonInput from './input/button/TinyButtonInput.mjs';
-import TinyResetInput from './input/button/TinyResetInput.mjs';
-import TinySubmitInput from './input/button/TinySubmitInput.mjs';
+import TinyHtmlButtonInput from './input/button/TinyHtmlButtonInput.mjs';
+import TinyHtmlResetInput from './input/button/TinyHtmlResetInput.mjs';
+import TinyHtmlSubmitInput from './input/button/TinyHtmlSubmitInput.mjs';
 
 /////////////////////////////////////////////////////
 
-import TinyNumberInput from './input/number/TinyNumberInput.mjs';
-import TinyRangeInput from './input/number/TinyRangeInput.mjs';
+import TinyHtmlNumberInput from './input/number/TinyHtmlNumberInput.mjs';
+import TinyHtmlRangeInput from './input/number/TinyHtmlRangeInput.mjs';
 
 //////////////////////////////////////////////////
 
-import TinyEmailInput from './input/text/TinyEmailInput.mjs';
-import TinyPasswordInput from './input/text/TinyPasswordInput.mjs';
-import TinySearchInput from './input/text/TinySearchInput.mjs';
-import TinyTelInput from './input/text/TinyTelInput.mjs';
-import TinyTextInput from './input/text/TinyTextInput.mjs';
-import TinyUrlInput from './input/text/TinyUrlInput.mjs';
+import TinyHtmlEmailInput from './input/text/TinyHtmlEmailInput.mjs';
+import TinyHtmlPasswordInput from './input/text/TinyHtmlPasswordInput.mjs';
+import TinyHtmlSearchInput from './input/text/TinyHtmlSearchInput.mjs';
+import TinyHtmlTelInput from './input/text/TinyHtmlTelInput.mjs';
+import TinyHtmlTextInput from './input/text/TinyHtmlTextInput.mjs';
+import TinyHtmlUrlInput from './input/text/TinyHtmlUrlInput.mjs';
 
 //////////////////////////////////////////////////////
 
-import TinyColorInput from './input/TinyColorInput.mjs';
-import TinyFileInput from './input/TinyFileInput.mjs';
-import TinyHiddenInput from './input/TinyHiddenInput.mjs';
+import TinyHtmlColorInput from './input/TinyHtmlColorInput.mjs';
+import TinyHtmlFileInput from './input/TinyHtmlFileInput.mjs';
+import TinyHtmlHiddenInput from './input/TinyHtmlHiddenInput.mjs';
 
 ////////////////////////////////////////////////////
 
-import TinyAudio from './TinyAudio.mjs';
-import TinyButton from './TinyButton.mjs';
-import TinyCanvas from './TinyCanvas.mjs';
-import TinyEmbed from './TinyEmbed.mjs';
-import TinyForm from './TinyForm.mjs';
-import TinyIcon from './TinyIcon.mjs';
-import TinyIframe from './TinyIframe.mjs';
-import TinyImage from './TinyImage.mjs';
-import TinyInput from './TinyInput.mjs';
-import TinyLink from './TinyLink.mjs';
-import TinyObject from './TinyObject.mjs';
-import TinySelect from './TinySelect.mjs';
-import TinyTextarea from './TinyTextarea.mjs';
-import TinyVideo from './TinyVideo.mjs';
-import TinyMedia from './TinyMedia.mjs';
+import TinyHtmlAudio from './media/TinyHtmlAudio.mjs';
+import TinyHtmlButton from './TinyHtmlButton.mjs';
+import TinyHtmlCanvas from './TinyHtmlCanvas.mjs';
+import TinyHtmlEmbed from './TinyHtmlEmbed.mjs';
+import TinyHtmlForm from './TinyHtmlForm.mjs';
+import TinyHtmlIcon from './TinyHtmlIcon.mjs';
+import TinyHtmlIframe from './TinyHtmlIframe.mjs';
+import TinyHtmlImage from './TinyHtmlImage.mjs';
+import TinyHtmlInput from './TinyHtmlInput.mjs';
+import TinyHtmlLink from './TinyHtmlLink.mjs';
+import TinyHtmlObject from './TinyHtmlObject.mjs';
+import TinyHtmlSelect from './TinyHtmlSelect.mjs';
+import TinyHtmlTextarea from './TinyHtmlTextarea.mjs';
+import TinyHtmlVideo from './media/TinyHtmlVideo.mjs';
+import TinyHtmlMedia from './TinyHtmlMedia.mjs';
 
 ///////////////////////////////////////////////////
 
@@ -50,39 +50,39 @@ import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
 
 class TinyHtmlElems {
   static #list = [
-    TinyButtonInput,
-    TinyResetInput,
-    TinySubmitInput,
+    TinyHtmlButtonInput,
+    TinyHtmlResetInput,
+    TinyHtmlSubmitInput,
     /////////////////////////////////////////////////////
-    TinyNumberInput,
-    TinyRangeInput,
+    TinyHtmlNumberInput,
+    TinyHtmlRangeInput,
     //////////////////////////////////////////////////
-    TinyEmailInput,
-    TinyPasswordInput,
-    TinySearchInput,
-    TinyTelInput,
-    TinyTextInput,
-    TinyUrlInput,
+    TinyHtmlEmailInput,
+    TinyHtmlPasswordInput,
+    TinyHtmlSearchInput,
+    TinyHtmlTelInput,
+    TinyHtmlTextInput,
+    TinyHtmlUrlInput,
     //////////////////////////////////////////////////////
-    TinyColorInput,
-    TinyFileInput,
-    TinyHiddenInput,
+    TinyHtmlColorInput,
+    TinyHtmlFileInput,
+    TinyHtmlHiddenInput,
     ////////////////////////////////////////////////////
-    TinyAudio,
-    TinyButton,
-    TinyCanvas,
-    TinyEmbed,
-    TinyForm,
-    TinyIcon,
-    TinyIframe,
-    TinyImage,
-    TinyInput,
-    TinyLink,
-    TinyObject,
-    TinySelect,
-    TinyTextarea,
-    TinyVideo,
-    TinyMedia,
+    TinyHtmlAudio,
+    TinyHtmlButton,
+    TinyHtmlCanvas,
+    TinyHtmlEmbed,
+    TinyHtmlForm,
+    TinyHtmlIcon,
+    TinyHtmlIframe,
+    TinyHtmlImage,
+    TinyHtmlInput,
+    TinyHtmlLink,
+    TinyHtmlObject,
+    TinyHtmlSelect,
+    TinyHtmlTextarea,
+    TinyHtmlVideo,
+    TinyHtmlMedia,
     ////////////////////////////////////////////////////
     TinyHtmlTemplate,
   ];
@@ -91,46 +91,46 @@ class TinyHtmlElems {
     return [...this.#list];
   }
 
-  static ButtonInput = TinyButtonInput;
-  static ResetInput = TinyResetInput;
-  static SubmitInput = TinySubmitInput;
+  static ButtonInput = TinyHtmlButtonInput;
+  static ResetInput = TinyHtmlResetInput;
+  static SubmitInput = TinyHtmlSubmitInput;
 
   /////////////////////////////////////////////////////
-  static NumberInput = TinyNumberInput;
-  static RangerInput = TinyRangeInput;
+  static NumberInput = TinyHtmlNumberInput;
+  static RangerInput = TinyHtmlRangeInput;
 
   //////////////////////////////////////////////////
 
-  static EmailInput = TinyEmailInput;
-  static PasswordInput = TinyPasswordInput;
-  static SearchInput = TinySearchInput;
-  static TelInput = TinyTelInput;
-  static TextInput = TinyTextInput;
-  static UrlInput = TinyUrlInput;
+  static EmailInput = TinyHtmlEmailInput;
+  static PasswordInput = TinyHtmlPasswordInput;
+  static SearchInput = TinyHtmlSearchInput;
+  static TelInput = TinyHtmlTelInput;
+  static TextInput = TinyHtmlTextInput;
+  static UrlInput = TinyHtmlUrlInput;
 
   //////////////////////////////////////////////////////
 
-  static ColorInput = TinyColorInput;
-  static FileInput = TinyFileInput;
-  static HiddenInput = TinyHiddenInput;
+  static ColorInput = TinyHtmlColorInput;
+  static FileInput = TinyHtmlFileInput;
+  static HiddenInput = TinyHtmlHiddenInput;
 
   ////////////////////////////////////////////////////
 
-  static Audio = TinyAudio;
-  static Button = TinyButton;
-  static Canvas = TinyCanvas;
-  static Embed = TinyEmbed;
-  static Form = TinyForm;
-  static Icon = TinyIcon;
-  static Iframe = TinyIframe;
-  static Img = TinyImage;
-  static Input = TinyInput;
-  static Link = TinyLink;
-  static Object = TinyObject;
-  static Select = TinySelect;
-  static Textarea = TinyTextarea;
-  static Video = TinyVideo;
-  static Media = TinyMedia;
+  static Audio = TinyHtmlAudio;
+  static Button = TinyHtmlButton;
+  static Canvas = TinyHtmlCanvas;
+  static Embed = TinyHtmlEmbed;
+  static Form = TinyHtmlForm;
+  static Icon = TinyHtmlIcon;
+  static Iframe = TinyHtmlIframe;
+  static Img = TinyHtmlImage;
+  static Input = TinyHtmlInput;
+  static Link = TinyHtmlLink;
+  static Object = TinyHtmlObject;
+  static Select = TinyHtmlSelect;
+  static Textarea = TinyHtmlTextarea;
+  static Video = TinyHtmlVideo;
+  static Media = TinyHtmlMedia;
 
   ////////////////////////////////////////////////////
 
@@ -147,39 +147,39 @@ export default TinyHtmlElems;
 
 /**
 export {
-  TinyButtonInput,
-  TinyResetInput,
-  TinySubmitInput,
+  TinyHtmlButtonInput,
+  TinyHtmlResetInput,
+  TinyHtmlSubmitInput,
   /////////////////////////////////////////////////////
-  TinyNumberInput,
-  TinyRangeInput,
+  TinyHtmlNumberInput,
+  TinyHtmlRangeInput,
   //////////////////////////////////////////////////
-  TinyEmailInput,
-  TinyPasswordInput,
-  TinySearchInput,
-  TinyTelInput,
-  TinyTextInput,
-  TinyUrlInput,
+  TinyHtmlEmailInput,
+  TinyHtmlPasswordInput,
+  TinyHtmlSearchInput,
+  TinyHtmlTelInput,
+  TinyHtmlTextInput,
+  TinyHtmlUrlInput,
   //////////////////////////////////////////////////////
-  TinyColorInput,
-  TinyFileInput,
-  TinyHiddenInput,
+  TinyHtmlColorInput,
+  TinyHtmlFileInput,
+  TinyHtmlHiddenInput,
   ////////////////////////////////////////////////////
-  TinyAudio,
-  TinyButton,
-  TinyCanvas,
-  TinyEmbed,
-  TinyForm,
+  TinyHtmlAudio,
+  TinyHtmlButton,
+  TinyHtmlCanvas,
+  TinyHtmlEmbed,
+  TinyHtmlForm,
   TinyHtmlTemplate,
-  TinyIcon,
-  TinyIframe,
-  TinyImage,
-  TinyInput,
-  TinyLink,
-  TinyObject,
-  TinySelect,
-  TinyTextarea,
-  TinyVideo,
-  TinyMedia,
+  TinyHtmlIcon,
+  TinyHtmlIframe,
+  TinyHtmlImage,
+  TinyHtmlInput,
+  TinyHtmlLink,
+  TinyHtmlObject,
+  TinyHtmlSelect,
+  TinyHtmlTextarea,
+  TinyHtmlVideo,
+  TinyHtmlMedia,
 };
  */
