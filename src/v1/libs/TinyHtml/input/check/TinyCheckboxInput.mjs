@@ -1,4 +1,4 @@
-import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
+import TinyHtmlTemplate from '../../TinyHtmlTemplate.mjs';
 
 /**
  * TinyCheckbox is a lightweight helper class for managing <input type="checkbox">.
@@ -6,7 +6,7 @@ import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
  * @example
  * const checkbox = new TinyCheckbox({ checked: true });
  */
-class TinyCheckbox extends TinyHtmlTemplate {
+class TinyCheckboxInput extends TinyHtmlTemplate {
   /**
    * Creates a new TinyCheckbox instance.
    * @param {Object} config - Configuration object.
@@ -61,4 +61,4 @@ class TinyCheckbox extends TinyHtmlTemplate {
   }
 }
 
-export default TinyCheckbox;
+export default TinyCheckboxInput;

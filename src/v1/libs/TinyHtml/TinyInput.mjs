@@ -16,15 +16,24 @@ class TinyInput extends TinyHtmlTemplate {
    * @param {string} [config.type="text"] - Input type (e.g., "text", "password", "email").
    * @param {string} [config.value=""] - Initial value.
    * @param {string} [config.placeholder=""] - Placeholder text.
+   * @param {string} [config.name=""] - Input name.
    * @param {string|string[]|Set<string>} [config.tags=[]] - Initial CSS classes.
    * @param {string} [config.mainClass='']
    */
-  constructor({ type = 'text', value = '', placeholder = '', tags = [], mainClass = '' } = {}) {
+  constructor({
+    type = 'text',
+    value = '',
+    placeholder = '',
+    name = '',
+    tags = [],
+    mainClass = '',
+  } = {}) {
     super('input', tags, mainClass);
     if (typeof type !== 'string' || !type.trim())
       throw new TypeError(`TinyInput: 'type' must be a non-empty string. Got: ${type}`);
 
     this.setAttr('type', type);
+    if (name) this.setAttr('name', name);
     if (value) this.setAttr('value', value);
     if (placeholder) this.setAttr('placeholder', placeholder);
   }

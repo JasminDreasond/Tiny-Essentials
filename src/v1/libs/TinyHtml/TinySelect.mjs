@@ -44,6 +44,36 @@ class TinySelect extends TinyHtmlTemplate {
     this.append(opt);
     return this;
   }
+
+  /**
+   * Gets the currently selected value.
+   * @returns {string}
+   */
+  getValue() {
+    if (!this.hasProp('multiple')) throw new Error('');
+    return this.valTxt();
+  }
+
+  /**
+   * Gets the currently selected values.
+   * @returns {string[]}
+   */
+  getValues() {
+    return Array.from(this.prop('selectedOptions')).map((o) => o.value);
+  }
+
+  /**
+   * Sets the selected value(s).
+   * @param {string|string[]} value
+   * @returns {this}
+   */
+  setValue(value) {
+    const values = Array.isArray(value) ? value : [value];
+    for (const opt of this.prop('options')) {
+      opt.selected = values.includes(opt.value);
+    }
+    return this;
+  }
 }
 
 export default TinySelect;

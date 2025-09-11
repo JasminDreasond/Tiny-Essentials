@@ -24,6 +24,28 @@ class TinyForm extends TinyHtmlTemplate {
     if (action) this.setAttr('action', action);
     if (enctype) this.setAttr('enctype', enctype);
   }
+
+  /**
+   * Programmatically submits the form.
+   * @returns {this}
+   */
+  submit() {
+    this.elements.forEach((element) =>
+      element instanceof HTMLFormElement ? element.submit() : null,
+    );
+    return this;
+  }
+
+  /**
+   * Resets the form.
+   * @returns {this}
+   */
+  reset() {
+    this.elements.forEach((element) =>
+      element instanceof HTMLFormElement ? element.reset() : null,
+    );
+    return this;
+  }
 }
 
 export default TinyForm;

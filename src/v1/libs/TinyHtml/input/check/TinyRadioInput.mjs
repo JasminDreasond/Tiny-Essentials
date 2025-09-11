@@ -1,4 +1,4 @@
-import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
+import TinyHtmlTemplate from '../../TinyHtmlTemplate.mjs';
 
 /**
  * TinyRadio is a lightweight helper class for managing <input type="radio">.
@@ -6,7 +6,7 @@ import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
  * @example
  * const radio = new TinyRadio({ name: 'gender', value: 'female', checked: true });
  */
-class TinyRadio extends TinyHtmlTemplate {
+class TinyRadioInput extends TinyHtmlTemplate {
   /**
    * Creates a new TinyRadio instance.
    * @param {Object} config - Configuration object.
@@ -68,4 +68,4 @@ class TinyRadio extends TinyHtmlTemplate {
   }
 }
 
-export default TinyRadio;
+export default TinyRadioInput;
