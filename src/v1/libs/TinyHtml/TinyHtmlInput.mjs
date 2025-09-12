@@ -16,7 +16,7 @@ class TinyHtmlInput extends TinyHtmlTemplate {
    * Creates a new TinyHtmlInput instance.
    * @param {Object} config - Configuration object.
    * @param {string} [config.type="text"] - Input type (e.g., "text", "password", "email").
-   * @param {string} [config.value=""] - Initial value.
+   * @param {string|number} [config.value=""] - Initial value.
    * @param {string} [config.placeholder=""] - Placeholder text.
    * @param {string} [config.name=""] - Input name.
    * @param {string|string[]|Set<string>} [config.tags=[]] - Initial CSS classes.
@@ -36,7 +36,7 @@ class TinyHtmlInput extends TinyHtmlTemplate {
 
     this.setAttr('type', type);
     if (name) this.setAttr('name', name);
-    if (value) this.setAttr('value', value);
+    if (typeof value !== 'undefined') this.setAttr('value', value);
     if (placeholder) this.setAttr('placeholder', placeholder);
   }
 }

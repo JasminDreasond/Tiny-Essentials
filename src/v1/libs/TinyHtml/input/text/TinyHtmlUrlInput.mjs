@@ -14,9 +14,7 @@ class TinyHtmlUrlInput extends TinyHtmlInput {
    * @param {string} [config.mainClass='']
    */
   constructor({ value, placeholder, minLength, maxLength, tags = [], mainClass = '' }) {
-    super({ type: 'url', tags, mainClass });
-    if (value) this.setAttr('value', value);
-    if (placeholder) this.setAttr('placeholder', placeholder);
+    super({ value, placeholder, type: 'url', tags, mainClass });
     if (minLength !== undefined) this.setAttr('minlength', String(minLength));
     if (maxLength !== undefined) this.setAttr('maxlength', String(maxLength));
   }

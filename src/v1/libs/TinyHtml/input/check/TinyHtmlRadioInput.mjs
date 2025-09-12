@@ -1,14 +1,12 @@
-import TinyHtmlTemplate from '../../TinyHtmlTemplate.mjs';
+import TinyHtmlInput from '../../TinyHtmlInput.mjs';
 
 /**
  * TinyRadio is a lightweight helper class for managing <input type="radio">.
  *
  * @example
  * const radio = new TinyRadio({ name: 'gender', value: 'female', checked: true });
- *
- * @extends TinyHtmlTemplate<HTMLInputElement>
  */
-class TinyHtmlRadioInput extends TinyHtmlTemplate {
+class TinyHtmlRadioInput extends TinyHtmlInput {
   /**
    * Creates a new TinyRadio instance.
    * @param {Object} config - Configuration object.
@@ -19,18 +17,7 @@ class TinyHtmlRadioInput extends TinyHtmlTemplate {
    * @param {string} [config.mainClass='']
    */
   constructor({ name, value, checked = false, tags = [], mainClass = '' }) {
-    super(document.createElement('input'), tags, mainClass);
-
-    if (typeof name !== 'string' || !name.trim()) {
-      throw new TypeError('TinyRadio: "name" is required and must be a string.');
-    }
-    if (typeof value !== 'string') {
-      throw new TypeError('TinyRadio: "value" must be a string.');
-    }
-
-    this.setAttr('type', 'radio');
-    this.setAttr('name', name);
-    this.setAttr('value', value);
+    super({ tags, mainClass, type: 'radio', name, value });
     if (checked) this.addProp('checked');
   }
 

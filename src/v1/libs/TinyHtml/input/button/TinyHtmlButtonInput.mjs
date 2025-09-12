@@ -12,8 +12,7 @@ class TinyHtmlButtonInput extends TinyHtmlInput {
    * @param {string} [config.mainClass=''] - Main CSS class applied.
    */
   constructor({ value = 'Button', tags = [], mainClass = '' }) {
-    super({ type: 'button', tags, mainClass });
-    this.setAttr('value', value);
+    super({ value, type: 'button', tags, mainClass });
   }
 }
 

@@ -13,8 +13,7 @@ class TinyHtmlWeekInput extends TinyHtmlInput {
    * @param {string} [config.mainClass='']
    */
   constructor({ value, min, max, tags = [], mainClass = '' }) {
-    super({ type: 'week', tags, mainClass });
-    if (value) this.setAttr('value', value);
+    super({ value, type: 'week', tags, mainClass });
     if (min) this.setAttr('min', min);
     if (max) this.setAttr('max', max);
   }

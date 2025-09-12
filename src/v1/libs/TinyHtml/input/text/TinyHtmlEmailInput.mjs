@@ -14,9 +14,7 @@ class TinyHtmlEmailInput extends TinyHtmlInput {
    * @param {string} [config.mainClass='']
    */
   constructor({ value, placeholder, minLength, maxLength, tags = [], mainClass = '' }) {
-    super({ type: 'email', tags, mainClass });
-    if (value) this.setAttr('value', value);
-    if (placeholder) this.setAttr('placeholder', placeholder);
+    super({ value, placeholder, type: 'email', tags, mainClass });
     if (minLength !== undefined) this.setAttr('minlength', String(minLength));
     if (maxLength !== undefined) this.setAttr('maxlength', String(maxLength));
   }

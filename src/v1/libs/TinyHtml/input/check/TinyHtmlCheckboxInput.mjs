@@ -1,29 +1,23 @@
-import TinyHtmlTemplate from '../../TinyHtmlTemplate.mjs';
+import TinyHtmlInput from '../../TinyHtmlInput.mjs';
 
 /**
  * TinyCheckbox is a lightweight helper class for managing <input type="checkbox">.
  *
  * @example
  * const checkbox = new TinyCheckbox({ checked: true });
- *
- * @extends TinyHtmlTemplate<HTMLInputElement>
  */
-class TinyHtmlCheckboxInput extends TinyHtmlTemplate {
+class TinyHtmlCheckboxInput extends TinyHtmlInput {
   /**
    * Creates a new TinyCheckbox instance.
    * @param {Object} config - Configuration object.
    * @param {boolean} [config.checked=false] - Whether the checkbox is checked.
-   * @param {string} [config.name] - Input name attribute.
+   * @param {string} config.name - Input name attribute.
    * @param {string} [config.value="on"] - Input value when checked.
    * @param {string|string[]|Set<string>} [config.tags=[]] - Initial CSS classes.
    * @param {string} [config.mainClass='']
    */
   constructor({ checked = false, name, value = 'on', tags = [], mainClass = '' }) {
-    super(document.createElement('input'), tags, mainClass);
-
-    this.setAttr('type', 'checkbox');
-    this.setAttr('value', value);
-    if (name) this.setAttr('name', name);
+    super({ type: 'checkbox', name, value, tags, mainClass });
     if (checked) this.addProp('checked');
   }
 

@@ -12,8 +12,7 @@ class TinyHtmlHiddenInput extends TinyHtmlInput {
    * @param {string} [config.mainClass='']
    */
   constructor({ name, value, tags = [], mainClass = '' }) {
-    super({ type: 'hidden', name, tags, mainClass });
-    if (value) this.setAttr('value', value);
+    super({ value, type: 'hidden', name, tags, mainClass });
   }
 }
 
