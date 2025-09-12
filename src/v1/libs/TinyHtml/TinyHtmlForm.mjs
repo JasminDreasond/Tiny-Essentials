@@ -19,7 +19,7 @@ class TinyHtmlForm extends TinyHtmlTemplate {
    * @param {string|string[]|Set<string>} [config.tags=[]] - Initial CSS classes.
    * @param {string} [config.mainClass='']
    */
-  constructor({ action = '', method = 'get', enctype, tags = [], mainClass = '' } = {}) {
+  constructor({ action = '', method = 'get', enctype, tags = [], mainClass = '' }) {
     super(document.createElement('form'), tags, mainClass);
 
     this.setAttr('method', method.toLowerCase());

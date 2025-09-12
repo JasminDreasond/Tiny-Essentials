@@ -18,7 +18,7 @@ class TinyHtmlIcon extends TinyHtmlTemplate {
 
   /** @param {string} value */
   set defaultTag(value) {
-    if (typeof value !== 'string') throw new TypeError('');
+    if (typeof value !== 'string') throw new TypeError('defaultTag must be a string');
     TinyHtmlIcon.#defaultTag = value;
   }
 

@@ -15,7 +15,7 @@ class TinyHtmlCanvas extends TinyHtmlTemplate {
    * @param {string|string[]|Set<string>} [config.tags=[]]
    * @param {string} [config.mainClass=""]
    */
-  constructor({ width = 300, height = 150, tags = [], mainClass = '' }) {
+  constructor({ width, height, tags = [], mainClass = '' } = {}) {
     super(document.createElement('canvas'), tags, mainClass);
     this.setAttr('width', width);
     this.setAttr('height', height);

@@ -142,10 +142,10 @@ import TinySimpleDice from './libs/TinySimpleDice.mjs';
 import TinyElementObserver from './libs/TinyElementObserver.mjs';
 import TinyLoadingScreen from './libs/TinyLoadingScreen.mjs';
 import TinyColorValidator from './libs/TinyColorValidator.mjs';
-import TinyHtmlElems from './libs/TinyHtml/index.mjs';
+// import TinyHtmlElems from './libs/TinyHtml/index.mjs';
 
 export {
-  TinyHtmlElems,
+  // TinyHtmlElems,
   TinyColorValidator,
   TinyLoadingScreen,
   TinyElementObserver,

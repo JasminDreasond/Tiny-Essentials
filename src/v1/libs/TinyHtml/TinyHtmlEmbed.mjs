@@ -15,7 +15,7 @@ class TinyHtmlEmbed extends TinyHtmlTemplate {
    * @param {string|string[]|Set<string>} [config.tags=[]]
    * @param {string} [config.mainClass=""]
    */
-  constructor({ src = '', type = '', tags = [], mainClass = '' } = {}) {
+  constructor({ src = '', type = '', tags = [], mainClass = '' }) {
     super(document.createElement('embed'), tags, mainClass);
     if (src) this.setAttr('src', src);
     if (type) this.setAttr('type', type);
