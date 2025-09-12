@@ -7,11 +7,13 @@ class TinyHtmlSubmitInput extends TinyHtmlInput {
   /**
    * @param {Object} config
    * @param {string} [config.value]
+   * @param {string} [config.name]
+   * @param {string} [config.placeholder]
    * @param {string|string[]|Set<string>} [config.tags=[]]
    * @param {string} [config.mainClass='']
    */
-  constructor({ value = 'Submit', tags = [], mainClass = '' }) {
-    super({ value, type: 'submit', tags, mainClass });
+  constructor({ value = 'Submit', tags = [], name, placeholder, mainClass = '' }) {
+    super({ value, name, placeholder, type: 'submit', tags, mainClass });
   }
 }
 

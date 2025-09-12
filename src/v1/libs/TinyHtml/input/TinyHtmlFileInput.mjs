@@ -11,13 +11,14 @@ class TinyHtmlFileInput extends TinyHtmlInput {
    * Creates a new TinyFileInput instance.
    * @param {Object} config
    * @param {string} [config.name]
+   * @param {string} [config.placeholder]
    * @param {boolean} [config.multiple=false] - Allow selecting multiple files.
    * @param {string} [config.accept] - Accepted file types (e.g., ".jpg,.png" or "image/*").
    * @param {string|string[]|Set<string>} [config.tags=[]]
    * @param {string} [config.mainClass='']
    */
-  constructor({ name, multiple = false, accept, tags = [], mainClass = '' }) {
-    super({ type: 'file', name, tags, mainClass });
+  constructor({ name, multiple = false, accept, placeholder, tags = [], mainClass = '' }) {
+    super({ type: 'file', name, placeholder, tags, mainClass });
 
     if (multiple) this.setAttr('multiple', 'multiple');
     if (accept) this.setAttr('accept', accept);

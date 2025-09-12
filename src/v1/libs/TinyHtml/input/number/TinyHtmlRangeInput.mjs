@@ -10,11 +10,22 @@ class TinyHtmlRangeInput extends TinyHtmlInput {
    * @param {number} [config.max=100]
    * @param {number} [config.step=1]
    * @param {number} [config.value]
+   * @param {string} [config.name]
+   * @param {string} [config.placeholder]
    * @param {string|string[]|Set<string>} [config.tags=[]]
    * @param {string} [config.mainClass='']
    */
-  constructor({ min = 0, max = 100, step = 1, value, tags = [], mainClass = '' }) {
-    super({ value, type: 'range', tags, mainClass });
+  constructor({
+    min = 0,
+    max = 100,
+    step = 1,
+    value,
+    name,
+    placeholder,
+    tags = [],
+    mainClass = '',
+  }) {
+    super({ value, name, placeholder, type: 'range', tags, mainClass });
     this.setAttr('min', String(min));
     this.setAttr('max', String(max));
     this.setAttr('step', String(step));

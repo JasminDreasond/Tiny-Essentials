@@ -9,12 +9,13 @@ class TinyHtmlSearchInput extends TinyHtmlInput {
    * @param {string} [config.value]
    * @param {number} [config.minLength]
    * @param {number} [config.maxLength]
+   * @param {string} [config.name]
    * @param {string} [config.placeholder]
    * @param {string|string[]|Set<string>} [config.tags=[]]
    * @param {string} [config.mainClass='']
    */
-  constructor({ value, placeholder, minLength, maxLength, tags = [], mainClass = '' }) {
-    super({ value, placeholder, type: 'search', tags, mainClass });
+  constructor({ value, placeholder, minLength, maxLength, name, tags = [], mainClass = '' }) {
+    super({ value, name, placeholder, type: 'search', tags, mainClass });
     if (minLength !== undefined) this.setAttr('minlength', String(minLength));
     if (maxLength !== undefined) this.setAttr('maxlength', String(maxLength));
   }

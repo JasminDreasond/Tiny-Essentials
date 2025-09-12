@@ -10,11 +10,13 @@ class TinyHtmlTimeInput extends TinyHtmlInput {
    * @param {string} [config.min]
    * @param {string} [config.max]
    * @param {string} [config.step]
+   * @param {string} [config.name]
+   * @param {string} [config.placeholder]
    * @param {string|string[]|Set<string>} [config.tags=[]]
    * @param {string} [config.mainClass='']
    */
-  constructor({ value, min, max, step, tags = [], mainClass = '' }) {
-    super({ value, type: 'time', tags, mainClass });
+  constructor({ value, min, max, step, name, placeholder, tags = [], mainClass = '' }) {
+    super({ value, name, placeholder, type: 'time', tags, mainClass });
     if (min) this.setAttr('min', min);
     if (max) this.setAttr('max', max);
     if (step !== undefined) this.setAttr('step', String(step));
