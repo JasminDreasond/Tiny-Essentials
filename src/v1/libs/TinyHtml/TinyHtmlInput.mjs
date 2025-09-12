@@ -33,10 +33,17 @@ class TinyHtmlInput extends TinyHtmlTemplate {
     super(document.createElement('input'), tags, mainClass);
     if (typeof type !== 'string' || !type.trim())
       throw new TypeError(`TinyHtmlInput: 'type' must be a non-empty string. Got: ${type}`);
-
     this.setAttr('type', type);
+    if (name !== undefined && typeof name !== 'string')
+      throw new TypeError('TinyHtmlInput: "name" must be a string.');
     if (name) this.setAttr('name', name);
-    if (typeof value !== 'undefined') this.setAttr('value', value);
+
+    if (value !== undefined && typeof value !== 'string' && typeof value !== 'number')
+      throw new TypeError('TinyHtmlInput: "value" must be a string or number.');
+    if (value !== undefined) this.setAttr('value', value);
+
+    if (placeholder !== undefined && typeof placeholder !== 'string')
+      throw new TypeError('TinyHtmlInput: "placeholder" must be a string.');
     if (placeholder) this.setAttr('placeholder', placeholder);
   }
 }

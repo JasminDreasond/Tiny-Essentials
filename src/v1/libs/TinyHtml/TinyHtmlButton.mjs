@@ -14,13 +14,14 @@ class TinyHtmlButton extends TinyHtmlTemplate {
    * @param {Object} config - Configuration object for the button.
    * @param {string} config.label - The text to display inside the button.
    * @param {string|string[]|Set<string>} [config.tags=[]] - Initial CSS classes to apply.
+   * @param {boolean} [config.allowHtml=false] - Whether to allow HTML inside the button.
    * @param {string} [config.type="button"] - The button type (e.g., "button", "submit", "reset").
    * @param {string} [config.mainClass='']
    */
-  constructor({ label, tags = [], type = 'button', mainClass = '' }) {
+  constructor({ label, tags = [], type = 'button', allowHtml = false, mainClass = '' }) {
     super(document.createElement('button'), tags, mainClass);
     this.setAttr('type', type);
-    this.setText(label);
+    this.setLabel(label, allowHtml);
   }
 
   /**

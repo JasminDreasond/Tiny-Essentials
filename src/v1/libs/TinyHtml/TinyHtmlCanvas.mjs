@@ -17,6 +17,12 @@ class TinyHtmlCanvas extends TinyHtmlTemplate {
    */
   constructor({ width, height, tags = [], mainClass = '' } = {}) {
     super(document.createElement('canvas'), tags, mainClass);
+
+    if (typeof width !== 'number')
+      throw new TypeError(`TinyCanvas: 'width' must be a number. Got: ${typeof width}`);
+    if (typeof height !== 'number')
+      throw new TypeError(`TinyCanvas: 'height' must be a number. Got: ${typeof height}`);
+
     this.setAttr('width', width);
     this.setAttr('height', height);
   }
@@ -28,6 +34,9 @@ class TinyHtmlCanvas extends TinyHtmlTemplate {
    * @returns {RenderingContext|null}
    */
   getContext(type = '2d', options = {}) {
+    if (typeof type !== 'string')
+      throw new TypeError(`getContext: 'type' must be a string. Got: ${typeof type}`);
+
     const el = this.get(0);
     if (!(el instanceof HTMLCanvasElement)) return null;
     return el.getContext(type, options);

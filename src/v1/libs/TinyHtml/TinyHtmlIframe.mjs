@@ -33,6 +33,15 @@ class TinyHtmlIframe extends TinyHtmlTemplate {
   }) {
     super(document.createElement('iframe'), tags, mainClass);
 
+    if (width !== undefined && typeof width !== 'number' && typeof width !== 'string')
+      throw new TypeError('TinyIframe: "width" must be a number or string.');
+    if (height !== undefined && typeof height !== 'number' && typeof height !== 'string')
+      throw new TypeError('TinyIframe: "height" must be a number or string.');
+    if (typeof allowFullScreen !== 'boolean')
+      throw new TypeError('TinyIframe: "allowFullScreen" must be a boolean.');
+    if (loading !== 'lazy' && loading !== 'eager')
+      throw new TypeError('TinyIframe: "loading" must be "lazy" or "eager".');
+
     if (src) this.setAttr('src', src);
     if (width) this.setAttr('width', width);
     if (height) this.setAttr('height', height);
@@ -47,6 +56,7 @@ class TinyHtmlIframe extends TinyHtmlTemplate {
    * @returns {this}
    */
   setSrc(src) {
+    if (typeof src !== 'string') throw new TypeError('TinyIframe.setSrc: "src" must be a string.');
     this.setAttr('src', src);
     return this;
   }
@@ -63,6 +73,8 @@ class TinyHtmlIframe extends TinyHtmlTemplate {
    * @param {string} name
    */
   setName(name) {
+    if (typeof name !== 'string')
+      throw new TypeError('TinyIframe.setName: "name" must be a string.');
     this.setAttr('name', name);
     return this;
   }
@@ -75,6 +87,8 @@ class TinyHtmlIframe extends TinyHtmlTemplate {
    * @param {string} value
    */
   setSandbox(value) {
+    if (typeof value !== 'string')
+      throw new TypeError('TinyIframe.setSandbox: "value" must be a string.');
     this.setAttr('sandbox', value);
     return this;
   }
@@ -87,6 +101,8 @@ class TinyHtmlIframe extends TinyHtmlTemplate {
    * @param {string} value
    */
   setAllow(value) {
+    if (typeof value !== 'string')
+      throw new TypeError('TinyIframe.setAllow: "value" must be a string.');
     this.setAttr('allow', value);
     return this;
   }
@@ -99,6 +115,8 @@ class TinyHtmlIframe extends TinyHtmlTemplate {
    * @param {boolean} enable
    */
   enableFullscreen(enable = true) {
+    if (typeof enable !== 'boolean')
+      throw new TypeError('TinyIframe.enableFullscreen: "enable" must be a boolean.');
     if (enable) this.setAttr('allowfullscreen', 'true');
     else this.removeAttr('allowfullscreen');
     return this;

@@ -22,10 +22,24 @@ class TinyHtmlTextarea extends TinyHtmlTemplate {
   constructor({ value = '', rows, cols, placeholder, tags = [], mainClass = '' } = {}) {
     super(document.createElement('textarea'), tags, mainClass);
 
-    if (value) this.setText(value);
-    if (rows) this.setAttr('rows', rows);
-    if (cols) this.setAttr('cols', cols);
-    if (placeholder) this.setAttr('placeholder', placeholder);
+    if (typeof value !== 'string') throw new TypeError('TinyTextarea: "value" must be a string.');
+    this.setText(value);
+
+    if (rows !== undefined) {
+      if (!Number.isInteger(rows)) throw new TypeError('TinyTextarea: "rows" must be an integer.');
+      this.setAttr('rows', rows);
+    }
+
+    if (cols !== undefined) {
+      if (!Number.isInteger(cols)) throw new TypeError('TinyTextarea: "cols" must be an integer.');
+      this.setAttr('cols', cols);
+    }
+
+    if (placeholder !== undefined) {
+      if (typeof placeholder !== 'string')
+        throw new TypeError('TinyTextarea: "placeholder" must be a string.');
+      this.setAttr('placeholder', placeholder);
+    }
   }
 }
 

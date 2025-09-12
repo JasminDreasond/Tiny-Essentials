@@ -16,6 +16,10 @@ class TinyHtmlPasswordInput extends TinyHtmlInput {
    */
   constructor({ value, placeholder, minLength, maxLength, name, tags = [], mainClass = '' }) {
     super({ name, placeholder, value, type: 'password', tags, mainClass });
+    if (minLength !== undefined && typeof minLength !== 'number')
+      throw new TypeError("TinyHtmlPasswordInput: 'minLength' must be a number.");
+    if (maxLength !== undefined && typeof maxLength !== 'number')
+      throw new TypeError("TinyHtmlPasswordInput: 'maxLength' must be a number.");
     if (minLength !== undefined) this.setAttr('minlength', String(minLength));
     if (maxLength !== undefined) this.setAttr('maxlength', String(maxLength));
   }

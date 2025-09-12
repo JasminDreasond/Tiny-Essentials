@@ -14,7 +14,7 @@ class TinyHtmlForm extends TinyHtmlTemplate {
    * Creates a new TinyForm instance.
    * @param {Object} config - Configuration object.
    * @param {string} [config.action=""] - The form submission URL.
-   * @param {string} [config.method="get"] - HTTP method ("get" or "post").
+   * @param {'get'|'post'} [config.method="get"] - HTTP method ("get" or "post").
    * @param {string} [config.enctype] - Form encoding type.
    * @param {string|string[]|Set<string>} [config.tags=[]] - Initial CSS classes.
    * @param {string} [config.mainClass='']
@@ -22,7 +22,11 @@ class TinyHtmlForm extends TinyHtmlTemplate {
   constructor({ action = '', method = 'get', enctype, tags = [], mainClass = '' }) {
     super(document.createElement('form'), tags, mainClass);
 
-    this.setAttr('method', method.toLowerCase());
+    const normalized = method.toLowerCase();
+    if (normalized !== 'get' && normalized !== 'post')
+      throw new TypeError('TinyForm: "method" must be "get" or "post".');
+
+    this.setAttr('method', normalized);
     if (action) this.setAttr('action', action);
     if (enctype) this.setAttr('enctype', enctype);
   }

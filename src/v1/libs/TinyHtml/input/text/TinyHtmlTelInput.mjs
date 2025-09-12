@@ -27,6 +27,10 @@ class TinyHtmlTelInput extends TinyHtmlInput {
   }) {
     super({ name, placeholder, value, type: 'tel', tags, mainClass });
     if (pattern) this.setAttr('pattern', pattern);
+    if (minLength !== undefined && typeof minLength !== 'number')
+      throw new TypeError("TinyHtmlTelInput: 'minLength' must be a number.");
+    if (maxLength !== undefined && typeof maxLength !== 'number')
+      throw new TypeError("TinyHtmlTelInput: 'maxLength' must be a number.");
     if (minLength !== undefined) this.setAttr('minlength', String(minLength));
     if (maxLength !== undefined) this.setAttr('maxlength', String(maxLength));
   }

@@ -20,6 +20,10 @@ class TinyHtmlFileInput extends TinyHtmlInput {
   constructor({ name, multiple = false, accept, placeholder, tags = [], mainClass = '' }) {
     super({ type: 'file', name, placeholder, tags, mainClass });
 
+    if (typeof multiple !== 'boolean')
+      throw new TypeError("TinyHtmlFileInput: 'multiple' must be a boolean.");
+    if (accept !== undefined && typeof accept !== 'string')
+      throw new TypeError("TinyHtmlFileInput: 'accept' must be a string.");
     if (multiple) this.setAttr('multiple', 'multiple');
     if (accept) this.setAttr('accept', accept);
   }

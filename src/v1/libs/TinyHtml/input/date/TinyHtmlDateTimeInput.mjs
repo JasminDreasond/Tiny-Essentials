@@ -17,6 +17,12 @@ class TinyHtmlDateTimeInput extends TinyHtmlInput {
    */
   constructor({ value, min, max, name, placeholder, step, tags = [], mainClass = '' }) {
     super({ value, name, placeholder, type: 'datetime-local', tags, mainClass });
+    if (typeof min !== 'number')
+      throw new TypeError("TinyHtmlDateTimeInput: 'min' must be a number.");
+    if (typeof max !== 'number')
+      throw new TypeError("TinyHtmlDateTimeInput: 'max' must be a number.");
+    if (typeof step !== 'number')
+      throw new TypeError("TinyHtmlDateTimeInput: 'step' must be a number.");
     if (min) this.setAttr('min', min);
     if (max) this.setAttr('max', max);
     if (step !== undefined) this.setAttr('step', String(step));

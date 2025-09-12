@@ -16,6 +16,10 @@ class TinyHtmlSearchInput extends TinyHtmlInput {
    */
   constructor({ value, placeholder, minLength, maxLength, name, tags = [], mainClass = '' }) {
     super({ value, name, placeholder, type: 'search', tags, mainClass });
+    if (minLength !== undefined && typeof minLength !== 'number')
+      throw new TypeError("TinyHtmlSearchInput: 'minLength' must be a number.");
+    if (maxLength !== undefined && typeof maxLength !== 'number')
+      throw new TypeError("TinyHtmlSearchInput: 'maxLength' must be a number.");
     if (minLength !== undefined) this.setAttr('minlength', String(minLength));
     if (maxLength !== undefined) this.setAttr('maxlength', String(maxLength));
   }

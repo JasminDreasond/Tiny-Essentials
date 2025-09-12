@@ -17,6 +17,11 @@ class TinyHtmlEmbed extends TinyHtmlTemplate {
    */
   constructor({ src = '', type = '', tags = [], mainClass = '' }) {
     super(document.createElement('embed'), tags, mainClass);
+    if (typeof src !== 'string')
+      throw new TypeError(`TinyEmbed: 'src' must be a string. Got: ${typeof src}`);
+    if (typeof type !== 'string')
+      throw new TypeError(`TinyEmbed: 'type' must be a string. Got: ${typeof type}`);
+
     if (src) this.setAttr('src', src);
     if (type) this.setAttr('type', type);
   }
@@ -43,6 +48,8 @@ class TinyHtmlEmbed extends TinyHtmlTemplate {
    * @returns {this}
    */
   setSrc(url) {
+    if (typeof url !== 'string')
+      throw new TypeError(`setSrc: 'url' must be a string. Got: ${typeof url}`);
     this.setAttr('src', url);
     return this;
   }
@@ -53,6 +60,8 @@ class TinyHtmlEmbed extends TinyHtmlTemplate {
    * @returns {this}
    */
   setType(type) {
+    if (typeof type !== 'string')
+      throw new TypeError(`setType: 'type' must be a string. Got: ${typeof type}`);
     this.setAttr('type', type);
     return this;
   }

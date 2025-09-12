@@ -21,7 +21,8 @@ class TinyHtmlSelect extends TinyHtmlTemplate {
    */
   constructor({ options = [], multiple = false, tags = [], mainClass = '' } = {}) {
     super(document.createElement('select'), tags, mainClass);
-
+    if (typeof multiple !== 'boolean')
+      throw new TypeError('TinySelect: "multiple" must be a boolean.');
     if (multiple) this.setAttr('multiple', 'multiple');
 
     for (const opt of options) {
@@ -35,8 +36,10 @@ class TinyHtmlSelect extends TinyHtmlTemplate {
    * @returns {this}
    */
   addOption({ value, label, selected = false }) {
-    if (typeof value !== 'string' || typeof label !== 'string')
-      throw new TypeError('TinySelect.addOption: "value" and "label" must be strings.');
+    if (typeof value !== 'string')
+      throw new TypeError('TinySelect.addOption: "value" must be a string.');
+    if (typeof label !== 'string')
+      throw new TypeError('TinySelect.addOption: "label" must be a string.');
     if (typeof selected !== 'boolean')
       throw new TypeError('TinySelect.addOption: "selected" must be a boolean.');
     const opt = document.createElement('option');
@@ -52,7 +55,8 @@ class TinyHtmlSelect extends TinyHtmlTemplate {
    * @returns {string}
    */
   getValue() {
-    if (!this.hasProp('multiple')) throw new Error('');
+    if (this.hasProp('multiple'))
+      throw new Error('TinySelect.getValue: Use getValues() for multiple selects.');
     return this.valTxt();
   }
 
@@ -61,6 +65,8 @@ class TinyHtmlSelect extends TinyHtmlTemplate {
    * @returns {string[]}
    */
   getValues() {
+    if (!this.hasProp('multiple'))
+      throw new Error('TinySelect.getValue: Use getValue() for single selects.');
     return Array.from(this.prop('selectedOptions')).map((o) => o.value);
   }
 
@@ -71,6 +77,8 @@ class TinyHtmlSelect extends TinyHtmlTemplate {
    */
   setValue(value) {
     const values = Array.isArray(value) ? value : [value];
+    if (!values.every((v) => typeof v === 'string'))
+      throw new TypeError('TinySelect.setValue: "value" must be a string or array of strings.');
     for (const opt of this.prop('options')) {
       opt.selected = values.includes(opt.value);
     }

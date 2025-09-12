@@ -18,6 +18,8 @@ class TinyHtmlRadioInput extends TinyHtmlInput {
    */
   constructor({ name, value, checked = false, tags = [], mainClass = '' }) {
     super({ tags, mainClass, type: 'radio', name, value });
+    if (typeof checked !== 'boolean')
+      throw new TypeError("TinyHtmlRadioInput: 'checked' must be a boolean.");
     if (checked) this.addProp('checked');
   }
 

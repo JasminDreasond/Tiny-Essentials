@@ -28,6 +28,7 @@ class TinyHtmlIcon extends TinyHtmlTemplate {
    * @param {string} [tagName=TinyHtmlIcon.#defaultTag] - The HTML tag to use for the element (e.g., `i`, `span`).
    */
   constructor(tags, tagName = TinyHtmlIcon.#defaultTag) {
+    if (typeof tagName !== 'string') throw new TypeError('TinyIcon: "tagName" must be a string.');
     super(document.createElement(tagName), tags);
   }
 }
