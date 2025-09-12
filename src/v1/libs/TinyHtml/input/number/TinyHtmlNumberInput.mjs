@@ -17,11 +17,11 @@ class TinyHtmlNumberInput extends TinyHtmlInput {
    */
   constructor({ value, min, max, step, name, placeholder, tags = [], mainClass = '' }) {
     super({ value, name, placeholder, type: 'number', tags, mainClass });
-    if (typeof min !== 'number')
+    if (min !== undefined && typeof min !== 'number')
       throw new TypeError("TinyHtmlNumberInput: 'min' must be a number.");
-    if (typeof max !== 'number')
+    if (max !== undefined && typeof max !== 'number')
       throw new TypeError("TinyHtmlNumberInput: 'max' must be a number.");
-    if (typeof step !== 'number')
+    if (step !== undefined && typeof step !== 'number')
       throw new TypeError("TinyHtmlNumberInput: 'step' must be a number.");
     if (min !== undefined) this.setAttr('min', String(min));
     if (max !== undefined) this.setAttr('max', String(max));

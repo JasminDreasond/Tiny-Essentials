@@ -16,9 +16,9 @@ class TinyHtmlEmailInput extends TinyHtmlInput {
    */
   constructor({ value, placeholder, minLength, maxLength, name, tags = [], mainClass = '' }) {
     super({ value, name, placeholder, type: 'email', tags, mainClass });
-    if (minLength !== undefined && typeof minLength !== 'number')
+    if (minLength !== undefined && minLength !== undefined && typeof minLength !== 'number')
       throw new TypeError("TinyHtmlEmailInput: 'minLength' must be a number.");
-    if (maxLength !== undefined && typeof maxLength !== 'number')
+    if (maxLength !== undefined && maxLength !== undefined && typeof maxLength !== 'number')
       throw new TypeError("TinyHtmlEmailInput: 'maxLength' must be a number.");
     if (minLength !== undefined) this.setAttr('minlength', String(minLength));
     if (maxLength !== undefined) this.setAttr('maxlength', String(maxLength));

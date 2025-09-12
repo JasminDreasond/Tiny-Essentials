@@ -26,9 +26,9 @@ class TinyHtmlRangeInput extends TinyHtmlInput {
     mainClass = '',
   }) {
     super({ value, name, placeholder, type: 'range', tags, mainClass });
-    if (typeof min !== 'number') throw new TypeError("TinyHtmlRangeInput: 'min' must be a number.");
-    if (typeof max !== 'number') throw new TypeError("TinyHtmlRangeInput: 'max' must be a number.");
-    if (typeof step !== 'number')
+    if (min !== undefined && typeof min !== 'number') throw new TypeError("TinyHtmlRangeInput: 'min' must be a number.");
+    if (max !== undefined && typeof max !== 'number') throw new TypeError("TinyHtmlRangeInput: 'max' must be a number.");
+    if (step !== undefined && typeof step !== 'number')
       throw new TypeError("TinyHtmlRangeInput: 'step' must be a number.");
     this.setAttr('min', String(min));
     this.setAttr('max', String(max));

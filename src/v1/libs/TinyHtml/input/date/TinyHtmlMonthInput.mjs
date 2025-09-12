@@ -16,8 +16,8 @@ class TinyHtmlMonthInput extends TinyHtmlInput {
    */
   constructor({ value, min, max, name, placeholder, tags = [], mainClass = '' }) {
     super({ value, name, placeholder, type: 'month', tags, mainClass });
-    if (typeof min !== 'number') throw new TypeError("TinyHtmlMonthInput: 'min' must be a number.");
-    if (typeof max !== 'number') throw new TypeError("TinyHtmlMonthInput: 'max' must be a number.");
+    if (min !== undefined && typeof min !== 'number') throw new TypeError("TinyHtmlMonthInput: 'min' must be a number.");
+    if (max !== undefined && typeof max !== 'number') throw new TypeError("TinyHtmlMonthInput: 'max' must be a number.");
     if (min) this.setAttr('min', min);
     if (max) this.setAttr('max', max);
   }

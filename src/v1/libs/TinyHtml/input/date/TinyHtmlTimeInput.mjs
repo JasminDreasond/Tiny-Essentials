@@ -17,8 +17,9 @@ class TinyHtmlTimeInput extends TinyHtmlInput {
    */
   constructor({ value, min, max, step, name, placeholder, tags = [], mainClass = '' }) {
     super({ value, name, placeholder, type: 'time', tags, mainClass });
-    if (typeof min !== 'number') throw new TypeError("TinyHtmlTimeInput: 'min' must be a number.");
-    if (typeof max !== 'number') throw new TypeError("TinyHtmlTimeInput: 'max' must be a number.");
+    if (min !== undefined && typeof min !== 'number') throw new TypeError("TinyHtmlTimeInput: 'min' must be a number.");
+    if (max !== undefined && typeof max !== 'number') throw new TypeError("TinyHtmlTimeInput: 'max' must be a number.");
+    if (step !== undefined && typeof step !== 'number') throw new TypeError("TinyHtmlTimeInput: 'step' must be a number.");
     if (min) this.setAttr('min', min);
     if (max) this.setAttr('max', max);
     if (step !== undefined) this.setAttr('step', String(step));
