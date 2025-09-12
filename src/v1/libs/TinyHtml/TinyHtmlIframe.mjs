@@ -27,7 +27,7 @@ class TinyHtmlIframe extends TinyHtmlTemplate {
     height,
     title,
     allowFullScreen = false,
-    loading = 'lazy',
+    loading,
     tags = [],
     mainClass = '',
   }) {
@@ -39,7 +39,7 @@ class TinyHtmlIframe extends TinyHtmlTemplate {
       throw new TypeError('TinyIframe: "height" must be a number or string.');
     if (typeof allowFullScreen !== 'boolean')
       throw new TypeError('TinyIframe: "allowFullScreen" must be a boolean.');
-    if (loading !== 'lazy' && loading !== 'eager')
+    if (loading !== undefined && loading !== 'lazy' && loading !== 'eager')
       throw new TypeError('TinyIframe: "loading" must be "lazy" or "eager".');
 
     if (src) this.setAttr('src', src);

@@ -20,6 +20,8 @@ class TinyHtmlButton extends TinyHtmlTemplate {
    */
   constructor({ label, tags = [], type = 'button', allowHtml = false, mainClass = '' }) {
     super(document.createElement('button'), tags, mainClass);
+    if (type !== undefined && typeof type !== 'string')
+      throw new TypeError(`TinyHtmlButton: 'type' must be a string.`);
     this.setAttr('type', type);
     this.setLabel(label, allowHtml);
   }

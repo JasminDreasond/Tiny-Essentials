@@ -38,7 +38,8 @@ class TinyHtmlImage extends TinyHtmlTemplate {
   }) {
     super(document.createElement('img'), tags, mainClass);
     if (typeof src !== 'string') throw new TypeError('TinyImage: "src" must be a string.');
-    if (typeof alt !== 'string') throw new TypeError('TinyImage: "alt" must be a string.');
+    if (alt !== undefined && typeof alt !== 'string')
+      throw new TypeError('TinyImage: "alt" must be a string.');
     if (width !== undefined && typeof width !== 'number')
       throw new TypeError('TinyImage: "width" must be a number.');
     if (height !== undefined && typeof height !== 'number')

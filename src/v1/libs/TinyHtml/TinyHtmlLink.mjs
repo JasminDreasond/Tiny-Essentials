@@ -13,12 +13,12 @@ class TinyHtmlLink extends TinyHtmlTemplate {
    * @param {Object} config - Configuration object.
    * @param {string} config.href - Link URL.
    * @param {string|Element|TinyHtml<any>} [config.label] - Link text or HTML.
-   * @param {string} [config.target="_self"] - Target attribute.
+   * @param {string} [config.target=""] - Target attribute.
    * @param {boolean} [config.allowHtml=false] - Whether to allow HTML inside the link.
    * @param {string|string[]|Set<string>} [config.tags=[]] - Initial CSS classes.
    * @param {string} [config.mainClass='']
    */
-  constructor({ href, label, target = '_self', allowHtml = false, tags = [], mainClass = '' }) {
+  constructor({ href, label, target = '', allowHtml = false, tags = [], mainClass = '' }) {
     super(document.createElement('a'), tags, mainClass);
     if (typeof href !== 'string' || !href.trim())
       throw new TypeError('TinyLink: "href" must be a non-empty string.');
@@ -29,7 +29,7 @@ class TinyHtmlLink extends TinyHtmlTemplate {
       throw new TypeError('TinyLink: "allowHtml" must be a boolean.');
 
     this.setAttr('href', href);
-    this.setAttr('target', target);
+    if (target) this.setAttr('target', target);
     if (label) this.setLabel(label, allowHtml);
   }
 

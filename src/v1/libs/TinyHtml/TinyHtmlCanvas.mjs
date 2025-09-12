@@ -10,17 +10,17 @@ class TinyHtmlCanvas extends TinyHtmlTemplate {
   /**
    * Creates a new TinyCanvas instance.
    * @param {Object} config
-   * @param {number} [config.width=300] - Canvas width in pixels.
-   * @param {number} [config.height=150] - Canvas height in pixels.
+   * @param {number} [config.width] - Canvas width in pixels.
+   * @param {number} [config.height] - Canvas height in pixels.
    * @param {string|string[]|Set<string>} [config.tags=[]]
    * @param {string} [config.mainClass=""]
    */
   constructor({ width, height, tags = [], mainClass = '' } = {}) {
     super(document.createElement('canvas'), tags, mainClass);
 
-    if (typeof width !== 'number')
+    if (width !== undefined && typeof width !== 'number')
       throw new TypeError(`TinyCanvas: 'width' must be a number. Got: ${typeof width}`);
-    if (typeof height !== 'number')
+    if (height !== undefined && typeof height !== 'number')
       throw new TypeError(`TinyCanvas: 'height' must be a number. Got: ${typeof height}`);
 
     this.setAttr('width', width);

@@ -27,6 +27,10 @@ class TinyHtmlForm extends TinyHtmlTemplate {
       throw new TypeError('TinyForm: "method" must be "get" or "post".');
 
     this.setAttr('method', normalized);
+
+    if (typeof action !== 'string') throw new TypeError('TinyForm: "action" must be a string.');
+    if (enctype !== undefined && typeof enctype !== 'string')
+      throw new TypeError('TinyForm: "enctype" must be a string.');
     if (action) this.setAttr('action', action);
     if (enctype) this.setAttr('enctype', enctype);
   }
