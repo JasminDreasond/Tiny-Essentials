@@ -12,12 +12,12 @@ class TinyHtmlIcon extends TinyHtmlTemplate {
   static #defaultTag = 'i';
 
   /** @returns {string} */
-  get defaultTag() {
+  static get defaultTag() {
     return TinyHtmlIcon.#defaultTag;
   }
 
   /** @param {string} value */
-  set defaultTag(value) {
+  static set defaultTag(value) {
     if (typeof value !== 'string') throw new TypeError('defaultTag must be a string');
     TinyHtmlIcon.#defaultTag = value;
   }

@@ -14,44 +14,123 @@ class TinyHtmlLink extends TinyHtmlTemplate {
    * @param {string} config.href - Link URL.
    * @param {string|Element|TinyHtml<any>} [config.label] - Link text or HTML.
    * @param {string} [config.target=""] - Target attribute.
+   * @param {string} [config.rel] - Relationship of the linked resource.
+   * @param {string} [config.hreflang] - Language of the linked resource.
+   * @param {string|string[]} [config.ping] - URLs to send pings to.
+   * @param {'no-referrer'|'no-referrer-when-downgrade'|'origin'|'origin-when-cross-origin'|'same-origin'|'strict-origin'|'strict-origin-when-cross-origin'|'unsafe-url'} [config.referrerpolicy] - Referrer policy.
+   * @param {string} [config.type] - MIME type of the linked resource.
+   * @param {boolean|string|string[]} [config.attributionsrc] - Enables Attribution Reporting.
+   * @param {string|boolean} [config.download] - Download filename (or empty string to just enable).
    * @param {boolean} [config.allowHtml=false] - Whether to allow HTML inside the link.
    * @param {string|string[]|Set<string>} [config.tags=[]] - Initial CSS classes.
    * @param {string} [config.mainClass='']
    */
-  constructor({ href, label, target = '', allowHtml = false, tags = [], mainClass = '' }) {
+  constructor({
+    href,
+    label,
+    target = '',
+    rel,
+    hreflang,
+    ping,
+    referrerpolicy,
+    type,
+    attributionsrc,
+    download,
+    allowHtml = false,
+    tags = [],
+    mainClass = '',
+  }) {
     super(document.createElement('a'), tags, mainClass);
+
+    // href
     if (typeof href !== 'string' || !href.trim())
       throw new TypeError('TinyLink: "href" must be a non-empty string.');
+    this.setAttr('href', href);
 
+    // target
     if (typeof target !== 'string') throw new TypeError('TinyLink: "target" must be a string.');
+    if (target) this.setAttr('target', target);
 
+    // rel
+    if (rel !== undefined) {
+      if (typeof rel !== 'string') throw new TypeError('TinyLink: "rel" must be a string.');
+      this.setAttr('rel', rel);
+    }
+
+    // hreflang
+    if (hreflang !== undefined) {
+      if (typeof hreflang !== 'string')
+        throw new TypeError('TinyLink: "hreflang" must be a string.');
+      this.setAttr('hreflang', hreflang);
+    }
+
+    // ping
+    if (ping !== undefined) {
+      if (Array.isArray(ping)) ping = ping.join(' ');
+      if (typeof ping !== 'string')
+        throw new TypeError('TinyLink: "ping" must be a string or string[].');
+      this.setAttr('ping', ping);
+    }
+
+    // referrerpolicy
+    if (referrerpolicy !== undefined) {
+      const valid = [
+        'no-referrer',
+        'no-referrer-when-downgrade',
+        'origin',
+        'origin-when-cross-origin',
+        'same-origin',
+        'strict-origin',
+        'strict-origin-when-cross-origin',
+        'unsafe-url',
+      ];
+      if (!valid.includes(referrerpolicy))
+        throw new TypeError(`TinyLink: "referrerpolicy" must be one of: ${valid.join(', ')}`);
+      this.setAttr('referrerpolicy', referrerpolicy);
+    }
+
+    // type
+    if (type !== undefined) {
+      if (typeof type !== 'string')
+        throw new TypeError('TinyLink: "type" must be a string (MIME type).');
+      this.setAttr('type', type);
+    }
+
+    // attributionsrc
+    if (attributionsrc !== undefined) {
+      if (attributionsrc === true) {
+        this.setAttr('attributionsrc', '');
+      } else if (typeof attributionsrc === 'string') {
+        this.setAttr('attributionsrc', attributionsrc);
+      } else if (Array.isArray(attributionsrc)) {
+        this.setAttr('attributionsrc', attributionsrc.join(' '));
+      } else {
+        throw new TypeError('TinyLink: "attributionsrc" must be a boolean, string, or string[].');
+      }
+    }
+
+    // download
+    if (download !== undefined) {
+      if (typeof download !== 'string' && typeof download !== 'boolean')
+        throw new TypeError('TinyLink: "download" must be a string or boolean.');
+      if (typeof download === 'string') this.setAttr('download', download);
+      else if (download) this.addProp('download');
+    }
+
+    // allowHtml
     if (typeof allowHtml !== 'boolean')
       throw new TypeError('TinyLink: "allowHtml" must be a boolean.');
 
-    this.setAttr('href', href);
-    if (target) this.setAttr('target', target);
+    // label
     if (label) this.setLabel(label, allowHtml);
   }
 
   /**
-   * Updates the button label with text, HTML, or an element.
+   * Updates the link label with text, HTML, or an element.
    *
    * @param {string|Element|TinyHtml<any>} label - The new label to set.
-   * - If a string is provided:
-   *   - By default, the string is set as plain text.
-   *   - If `allowHtml` is true, the string is interpreted as raw HTML.
-   * - If an Element or TinyHtml is provided:
-   *   - It is appended as a child, but only if `allowHtml` is true.
-   *   - Otherwise, an error is thrown.
    * @param {boolean} [allowHtml=false] - Whether to allow raw HTML or DOM elements instead of plain text.
-   * @returns {this} Returns the current instance for chaining.
-   * @throws {TypeError} If `label` is not a string, Element, or TinyHtml.
-   * @throws {Error} If an Element/TinyHtml is passed but `allowHtml` is false.
-   *
-   * @example
-   * btn.setLabel("Save"); // plain text
-   * btn.setLabel("<b>Save</b>", true); // raw HTML
-   * btn.setLabel(document.createElement("span"), true); // DOM element
+   * @returns {this}
    */
   setLabel(label, allowHtml = false) {
     if (typeof label === 'string') {

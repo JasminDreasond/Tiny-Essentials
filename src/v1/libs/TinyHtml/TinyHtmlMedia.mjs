@@ -9,8 +9,6 @@ import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
  *
  * @template {HTMLMediaElement} TinyHtmlT
  * @extends TinyHtmlTemplate<TinyHtmlT>
- *
- * @beta
  */
 class TinyHtmlMedia extends TinyHtmlTemplate {
   /**

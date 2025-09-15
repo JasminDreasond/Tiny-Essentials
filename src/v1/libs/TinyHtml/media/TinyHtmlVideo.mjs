@@ -5,7 +5,6 @@ import TinyHtmlMedia from '../TinyHtmlMedia.mjs';
  * attributes like autoplay, controls, controlslist, crossorigin, loop, muted,
  * playsinline, poster, preload, disablepictureinpicture, and disableremoteplayback.
  * It also provides methods for controlling playback and volume.
- * @beta
  *
  * @extends TinyHtmlMedia<HTMLVideoElement>
  */

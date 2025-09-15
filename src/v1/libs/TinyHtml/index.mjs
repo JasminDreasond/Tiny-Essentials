@@ -48,6 +48,10 @@ import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
 
 ///////////////////////////////////////////////////
 
+/**
+ * @class
+ * @beta
+ */
 class TinyHtmlElems {
   static #list = [
     TinyHtmlButtonInput,
