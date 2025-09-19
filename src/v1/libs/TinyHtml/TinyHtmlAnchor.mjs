@@ -7,7 +7,7 @@ import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
  *
  * @extends TinyHtmlTemplate<HTMLAnchorElement>
  */
-class TinyHtmlLink extends TinyHtmlTemplate {
+class TinyHtmlAnchor extends TinyHtmlTemplate {
   /**
    * Creates a new TinyLink instance.
    * @param {Object} config - Configuration object.
@@ -146,4 +146,4 @@ class TinyHtmlLink extends TinyHtmlTemplate {
   }
 }
 
-export default TinyHtmlLink;
+export default TinyHtmlAnchor;

@@ -35,7 +35,7 @@ import TinyHtmlIcon from './TinyHtmlIcon.mjs';
 import TinyHtmlIframe from './TinyHtmlIframe.mjs';
 import TinyHtmlImage from './TinyHtmlImage.mjs';
 import TinyHtmlInput from './TinyHtmlInput.mjs';
-import TinyHtmlLink from './TinyHtmlLink.mjs';
+import TinyHtmlAnchor from './TinyHtmlAnchor.mjs';
 import TinyHtmlObject from './media/TinyHtmlObject.mjs';
 import TinyHtmlSelect from './TinyHtmlSelect.mjs';
 import TinyHtmlTextarea from './TinyHtmlTextarea.mjs';
@@ -81,7 +81,7 @@ class TinyHtmlElems {
     TinyHtmlIframe,
     TinyHtmlImage,
     TinyHtmlInput,
-    TinyHtmlLink,
+    TinyHtmlAnchor,
     TinyHtmlObject,
     TinyHtmlSelect,
     TinyHtmlTextarea,
@@ -129,7 +129,7 @@ class TinyHtmlElems {
   static Iframe = TinyHtmlIframe;
   static Img = TinyHtmlImage;
   static Input = TinyHtmlInput;
-  static Link = TinyHtmlLink;
+  static Anchor = TinyHtmlAnchor;
   static Object = TinyHtmlObject;
   static Select = TinyHtmlSelect;
   static Textarea = TinyHtmlTextarea;
@@ -179,7 +179,7 @@ export {
   TinyHtmlIframe,
   TinyHtmlImage,
   TinyHtmlInput,
-  TinyHtmlLink,
+  TinyHtmlAnchor,
   TinyHtmlObject,
   TinyHtmlSelect,
   TinyHtmlTextarea,
