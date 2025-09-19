@@ -15,6 +15,10 @@ class TinyHtmlInput extends TinyHtmlTemplate {
   /**
    * Creates a new TinyHtmlInput instance.
    * @param {Object} config - Configuration object.
+   * @param {string} [config.form] - ID of a form element.
+   * @param {boolean} [config.disabled] - Whether input is disabled.
+   * @param {boolean} [config.readonly] - Whether input is readonly.
+   * @param {boolean} [config.required] - Whether input is required.
    * @param {string} [config.type="text"] - Input type (e.g., "text", "password", "email").
    * @param {string|number} [config.value=""] - Initial value.
    * @param {string} [config.placeholder=""] - Placeholder text.
@@ -29,6 +33,10 @@ class TinyHtmlInput extends TinyHtmlTemplate {
     name = '',
     tags = [],
     mainClass = '',
+    disabled,
+    readonly,
+    required,
+    form,
   } = {}) {
     super(document.createElement('input'), tags, mainClass);
     if (typeof type !== 'string' || !type.trim())
@@ -45,6 +53,30 @@ class TinyHtmlInput extends TinyHtmlTemplate {
     if (placeholder !== undefined && typeof placeholder !== 'string')
       throw new TypeError('TinyHtmlInput: "placeholder" must be a string.');
     if (placeholder) this.setAttr('placeholder', placeholder);
+
+    // --- readonly ---
+    if (readonly !== undefined) {
+      if (typeof readonly !== 'boolean') throw new TypeError('"readonly" must be a boolean.');
+      if (readonly) this.addProp('readonly');
+    }
+
+    // --- required ---
+    if (required !== undefined) {
+      if (typeof required !== 'boolean') throw new TypeError('"required" must be a boolean.');
+      if (required) this.addProp('required');
+    }
+
+    // --- disabled ---
+    if (disabled !== undefined) {
+      if (typeof disabled !== 'boolean') throw new TypeError('"disabled" must be a boolean.');
+      if (disabled) this.addProp('disabled');
+    }
+
+    // --- form ---
+    if (form !== undefined) {
+      if (typeof form !== 'string') throw new TypeError('"form" must be a string (form id).');
+      this.setAttr('form', form);
+    }
   }
 }
 
