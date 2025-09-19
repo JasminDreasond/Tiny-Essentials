@@ -42,6 +42,12 @@ import TinyHtmlTextarea from './TinyHtmlTextarea.mjs';
 import TinyHtmlVideo from './media/TinyHtmlVideo.mjs';
 import TinyHtmlMedia from './TinyHtmlMedia.mjs';
 
+import TinyHtmlSource from './media/TinyHtmlSource.mjs';
+import TinyHtmlDatalist from './TinyHtmlDatalist.mjs';
+import TinyHtmlLink from './TinyHtmlLink.mjs';
+import TinyHtmlScript from './TinyHtmlScript.mjs';
+import TinyHtmlStyle from './TinyHtmlStyle.mjs';
+
 ///////////////////////////////////////////////////
 
 import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
@@ -87,6 +93,11 @@ class TinyHtmlElems {
     TinyHtmlTextarea,
     TinyHtmlVideo,
     TinyHtmlMedia,
+    TinyHtmlSource,
+    TinyHtmlDatalist,
+    TinyHtmlLink,
+    TinyHtmlScript,
+    TinyHtmlStyle,
     ////////////////////////////////////////////////////
     TinyHtmlTemplate,
   ];
@@ -135,6 +146,12 @@ class TinyHtmlElems {
   static Textarea = TinyHtmlTextarea;
   static Video = TinyHtmlVideo;
   static Media = TinyHtmlMedia;
+
+  static Source = TinyHtmlSource;
+  static Datalist = TinyHtmlDatalist;
+  static Link = TinyHtmlLink;
+  static Script = TinyHtmlScript;
+  static Style = TinyHtmlStyle;
 
   ////////////////////////////////////////////////////
 
@@ -185,5 +202,10 @@ export {
   TinyHtmlTextarea,
   TinyHtmlVideo,
   TinyHtmlMedia,
+  TinyHtmlSource,
+  TinyHtmlDatalist,
+  TinyHtmlLink,
+  TinyHtmlScript,
+  TinyHtmlStyle,
 };
  */
