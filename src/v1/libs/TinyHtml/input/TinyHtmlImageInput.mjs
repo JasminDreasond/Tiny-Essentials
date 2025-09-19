@@ -30,6 +30,7 @@ class TinyHtmlImageInput extends TinyHtmlInput {
     width,
     formtarget,
     formaction,
+    placeholder,
     name,
     readonly,
     required,
@@ -82,13 +83,11 @@ class TinyHtmlImageInput extends TinyHtmlInput {
 
     // --- height / width ---
     if (height !== undefined) {
-      if (type !== 'image') throw new Error('"height" is only valid for type="image".');
       if (!Number.isInteger(height) || height <= 0)
         throw new TypeError('"height" must be a positive integer.');
       this.setAttr('height', String(height));
     }
     if (width !== undefined) {
-      if (type !== 'image') throw new Error('"width" is only valid for type="image".');
       if (!Number.isInteger(width) || width <= 0)
         throw new TypeError('"width" must be a positive integer.');
       this.setAttr('width', String(width));
@@ -102,4 +101,4 @@ class TinyHtmlImageInput extends TinyHtmlInput {
   }
 }
 
-export default TinyHtmlFileInput;
+export default TinyHtmlImageInput;

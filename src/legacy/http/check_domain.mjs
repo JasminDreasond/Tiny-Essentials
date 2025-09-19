@@ -27,7 +27,7 @@ const check_domain = {
        */
       callback: function (
         /** @type {import('express').Request} */ req,
-        /** @type {string} */ the_domain,
+        /** @type {string|null} */ the_domain,
       ) {
         const isString = typeof req.headers['x-forwarded-host'] === 'string';
         if (the_domain) return isString && req.headers['x-forwarded-host'] === the_domain;
@@ -42,7 +42,7 @@ const check_domain = {
        */
       callback: function (
         /** @type {import('express').Request} */ req,
-        /** @type {string} */ the_domain,
+        /** @type {string|null} */ the_domain,
       ) {
         const isString = typeof req.hostname === 'string';
         if (the_domain) return isString && req.hostname === the_domain;
@@ -57,7 +57,7 @@ const check_domain = {
        */
       callback: function (
         /** @type {import('express').Request} */ req,
-        /** @type {string} */ the_domain,
+        /** @type {string|null} */ the_domain,
       ) {
         const isString = typeof req.headers.host === 'string';
         if (the_domain) return isString && req.headers.host === the_domain;
@@ -91,7 +91,7 @@ const check_domain = {
    */
   get: function (req) {
     for (const item in check_domain.validators) {
-      const result = check_domain.validators[item].callback(req);
+      const result = check_domain.validators[item].callback(req, null);
       if (result) return result;
     }
     return null;
