@@ -1163,6 +1163,20 @@ class TinyHtml {
   }
 
   /**
+   * Prepares and validates multiple elements against allowed types.
+   *
+   * @param {string} where - The method name or context calling this.
+   * @param {any[]} TheTinyElements - The list of allowed constructors (e.g., Element, Document).
+   * @param {string[]} elemName - The list of expected element names for error reporting.
+   * @returns {any[]} - A flat array of validated elements.
+   * @throws {Error} - If any element is not an instance of one of the allowed types.
+   * @readonly
+   */
+  _preElemsTemplate(where, TheTinyElements, elemName) {
+    return TinyHtml._preElemsTemplate(this, where, TheTinyElements, elemName);
+  }
+
+  /**
    * Prepares and validates a single element against allowed types.
    *
    * @param {TinyElement | EventTarget | null | (TinyElement | EventTarget | null)[]} elems - The input element or list to validate.
@@ -1218,6 +1232,21 @@ class TinyHtml {
   }
 
   /**
+   * Prepares and validates a single element against allowed types.
+   *
+   * @param {string} where - The method name or context calling this.
+   * @param {any[]} TheTinyElements - The list of allowed constructors (e.g., Element, Document).
+   * @param {string[]} elemName - The list of expected element names for error reporting.
+   * @param {boolean} [canNull=false] - Whether `null` is allowed as a valid value.
+   * @returns {any} - The validated element or `null` if allowed.
+   * @throws {Error} - If the element is not valid or if multiple elements are provided.
+   * @readonly
+   */
+  _preElemTemplate(where, TheTinyElements, elemName, canNull = false) {
+    return TinyHtml._preElemTemplate(this, where, TheTinyElements, elemName, canNull);
+  }
+
+  /**
    * Ensures the input is returned as an array.
    * Useful to normalize operations across multiple or single elements.
    *
@@ -1228,6 +1257,18 @@ class TinyHtml {
    */
   static _preElems(elems, where) {
     return TinyHtml._preElemsTemplate(elems, where, [Element], ['Element']);
+  }
+
+  /**
+   * Ensures the input is returned as an array.
+   * Useful to normalize operations across multiple or single elements.
+   *
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {Element[]} - Always returns an array of elements.
+   * @readonly
+   */
+  _preElems(where) {
+    return TinyHtml._preElems(this, where);
   }
 
   /**
@@ -1244,6 +1285,18 @@ class TinyHtml {
   }
 
   /**
+   * Ensures the input is returned as an single element.
+   * Useful to normalize operations across multiple or single elements.
+   *
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {Element} - Always returns an single element.
+   * @readonly
+   */
+  _preElem(where) {
+    return TinyHtml._preElem(this, where);
+  }
+
+  /**
    * Ensures the input is returned as an array.
    * Useful to normalize operations across multiple or single nodes.
    *
@@ -1254,6 +1307,18 @@ class TinyHtml {
    */
   static _preNodeElems(elems, where) {
     return TinyHtml._preElemsTemplate(elems, where, [Node], ['Node']);
+  }
+
+  /**
+   * Ensures the input is returned as an array.
+   * Useful to normalize operations across multiple or single nodes.
+   *
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {Node[]} - Always returns an array of nodes.
+   * @readonly
+   */
+  _preNodeElems(where) {
+    return TinyHtml._preNodeElems(this, where);
   }
 
   /**
@@ -1273,6 +1338,18 @@ class TinyHtml {
    * Ensures the input is returned as an single node.
    * Useful to normalize operations across multiple or single nodes.
    *
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {Node} - Always returns an single node.
+   * @readonly
+   */
+  _preNodeElem(where) {
+    return TinyHtml._preNodeElem(this, where);
+  }
+
+  /**
+   * Ensures the input is returned as an single node.
+   * Useful to normalize operations across multiple or single nodes.
+   *
    * @param {TinyNode|TinyNode[]} elems - A single node or array of nodes.
    * @param {string} where - The method or context name where validation is being called.
    * @returns {Node|null} - Always returns an single node or null.
@@ -1280,6 +1357,18 @@ class TinyHtml {
    */
   static _preNodeElemWithNull(elems, where) {
     return TinyHtml._preElemTemplate(elems, where, [Node], ['Node'], true);
+  }
+
+  /**
+   * Ensures the input is returned as an single node.
+   * Useful to normalize operations across multiple or single nodes.
+   *
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {Node|null} - Always returns an single node or null.
+   * @readonly
+   */
+  _preNodeElemWithNull(where) {
+    return TinyHtml._preNodeElemWithNull(this, where);
   }
 
   /**
@@ -1296,6 +1385,18 @@ class TinyHtml {
   }
 
   /**
+   * Ensures the input is returned as an array.
+   * Useful to normalize operations across multiple or single html elements.
+   *
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {HTMLElement[]} - Always returns an array of html elements.
+   * @readonly
+   */
+  _preHtmlElems(where) {
+    return TinyHtml._preHtmlElems(this, where);
+  }
+
+  /**
    * Ensures the input is returned as an single html element.
    * Useful to normalize operations across multiple or single html elements.
    *
@@ -1306,6 +1407,18 @@ class TinyHtml {
    */
   static _preHtmlElem(elems, where) {
     return TinyHtml._preElemTemplate(elems, where, [HTMLElement], ['HTMLElement']);
+  }
+
+  /**
+   * Ensures the input is returned as an single html element.
+   * Useful to normalize operations across multiple or single html elements.
+   *
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {HTMLElement} - Always returns an single html element.
+   * @readonly
+   */
+  _preHtmlElem(where) {
+    return TinyHtml._preHtmlElem(this, where);
   }
 
   /**
@@ -1327,6 +1440,18 @@ class TinyHtml {
   }
 
   /**
+   * Ensures the input is returned as an array.
+   * Useful to normalize operations across multiple or single event target elements.
+   *
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {InputElement[]} - Always returns an array of event target elements.
+   * @readonly
+   */
+  _preInputElems(where) {
+    return TinyHtml._preInputElems(this, where);
+  }
+
+  /**
    * Ensures the input is returned as an single event target element.
    * Useful to normalize operations across multiple or single event target elements.
    *
@@ -1345,6 +1470,18 @@ class TinyHtml {
   }
 
   /**
+   * Ensures the input is returned as an single event target element.
+   * Useful to normalize operations across multiple or single event target elements.
+   *
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {InputElement} - Always returns an single event target element.
+   * @readonly
+   */
+  _preInputElem(where) {
+    return TinyHtml._preInputElem(this, where);
+  }
+
+  /**
    * Ensures the input is returned as an array.
    * Useful to normalize operations across multiple or single event target elements.
    *
@@ -1355,6 +1492,18 @@ class TinyHtml {
    */
   static _preEventTargetElems(elems, where) {
     return TinyHtml._preElemsTemplate(elems, where, [EventTarget], ['EventTarget']);
+  }
+
+  /**
+   * Ensures the input is returned as an array.
+   * Useful to normalize operations across multiple or single event target elements.
+   *
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {EventTarget[]} - Always returns an array of event target elements.
+   * @readonly
+   */
+  _preEventTargetElems(where) {
+    return TinyHtml._preEventTargetElems(this, where);
   }
 
   /**
@@ -1371,6 +1520,18 @@ class TinyHtml {
   }
 
   /**
+   * Ensures the input is returned as an single event target element.
+   * Useful to normalize operations across multiple or single event target elements.
+   *
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {EventTarget} - Always returns an single event target element.
+   * @readonly
+   */
+  _preEventTargetElem(where) {
+    return TinyHtml._preEventTargetElem(this, where);
+  }
+
+  /**
    * Ensures the input is returned as an array.
    * Useful to normalize operations across multiple or single element/window elements.
    *
@@ -1384,6 +1545,18 @@ class TinyHtml {
   }
 
   /**
+   * Ensures the input is returned as an array.
+   * Useful to normalize operations across multiple or single element/window elements.
+   *
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {ElementAndWindow[]} - Always returns an array of element/window elements.
+   * @readonly
+   */
+  _preElemsAndWindow(where) {
+    return TinyHtml._preElemsAndWindow(this, where);
+  }
+
+  /**
    * Ensures the input is returned as an single element/window element.
    * Useful to normalize operations across multiple or single element/window elements.
    *
@@ -1394,6 +1567,18 @@ class TinyHtml {
    */
   static _preElemAndWindow(elems, where) {
     return TinyHtml._preElemTemplate(elems, where, [Element, Window], ['Element', 'Window']);
+  }
+
+  /**
+   * Ensures the input is returned as an single element/window element.
+   * Useful to normalize operations across multiple or single element/window elements.
+   *
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {ElementAndWindow} - Always returns an single element/window element.
+   * @readonly
+   */
+  _preElemAndWindow(where) {
+    return TinyHtml._preElemAndWindow(this, where);
   }
 
   /**
@@ -1413,6 +1598,18 @@ class TinyHtml {
       ['Element', 'Window', 'Document'],
     );
     return result.map((elem) => (!(elem instanceof Document) ? elem : elem.documentElement));
+  }
+
+  /**
+   * Ensures the input is returned as an array.
+   * Useful to normalize operations across multiple or single element/window/document elements.
+   *
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {ElementAndWindow[]} - Always returns an array of element/document/window elements.
+   * @readonly
+   */
+  _preElemsAndWinAndDoc(where) {
+    return TinyHtml._preElemsAndWinAndDoc(this, where);
   }
 
   /**
@@ -1436,6 +1633,18 @@ class TinyHtml {
   }
 
   /**
+   * Ensures the input is returned as an single element/window/document element.
+   * Useful to normalize operations across multiple or single element/window/document elements.
+   *
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {ElementAndWindow} - Always returns an single element/document/window element.
+   * @readonly
+   */
+  _preElemAndWinAndDoc(where) {
+    return TinyHtml._preElemAndWinAndDoc(this, where);
+  }
+
+  /**
    * Ensures the input is returned as an array.
    * Useful to normalize operations across multiple or single element with document elements.
    *
@@ -1449,6 +1658,18 @@ class TinyHtml {
   }
 
   /**
+   * Ensures the input is returned as an array.
+   * Useful to normalize operations across multiple or single element with document elements.
+   *
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {ElementWithDoc[]} - Always returns an array of element with document elements.
+   * @readonly
+   */
+  _preElemsWithDoc(where) {
+    return TinyHtml._preElemsWithDoc(this, where);
+  }
+
+  /**
    * Ensures the input is returned as an single element with document element.
    * Useful to normalize operations across multiple or single element with document elements.
    *
@@ -1459,6 +1680,18 @@ class TinyHtml {
    */
   static _preElemWithDoc(elems, where) {
     return TinyHtml._preElemTemplate(elems, where, [Element, Document], ['Element', 'Document']);
+  }
+
+  /**
+   * Ensures the input is returned as an single element with document element.
+   * Useful to normalize operations across multiple or single element with document elements.
+   *
+   * @param {string} where - The method or context name where validation is being called.
+   * @returns {ElementWithDoc} - Always returns an single element/window element.
+   * @readonly
+   */
+  _preElemWithDoc(where) {
+    return TinyHtml._preElemWithDoc(this, where);
   }
 
   //////////////////////////////////////////////////////
