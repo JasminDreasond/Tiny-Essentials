@@ -14,6 +14,7 @@ class TinyHtmlColorInput extends TinyHtmlInput {
    * @param {string} [config.list] - ID of a <datalist>.
    * @param {boolean} [config.readonly] - Whether input is readonly.
    * @param {boolean} [config.required] - Whether input is required.
+   * @param {string} [config.colorspace] - Colorspace for image inputs (e.g. "sRGB") — only valid for type="image".
    * @param {string|string[]|Set<string>} [config.tags=[]]
    * @param {string} [config.mainClass='']
    */
@@ -26,6 +27,7 @@ class TinyHtmlColorInput extends TinyHtmlInput {
     readonly,
     required,
     placeholder,
+    colorspace,
     tags = [],
     mainClass = '',
   }) {
@@ -45,6 +47,13 @@ class TinyHtmlColorInput extends TinyHtmlInput {
     if (autocomplete !== undefined) {
       if (typeof autocomplete !== 'string') throw new TypeError('"autocomplete" must be a string.');
       this.setAttr('autocomplete', autocomplete);
+    }
+
+    // --- colorspace ---
+    if (colorspace !== undefined) {
+      if (typeof colorspace !== 'string')
+        throw new TypeError('"colorspace" must be a string (e.g. "sRGB").');
+      this.setAttr('colorspace', colorspace);
     }
   }
 }
