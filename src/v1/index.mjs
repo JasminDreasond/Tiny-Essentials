@@ -1,7 +1,5 @@
-import asyncReplace from '../legacy/libs/replaceAsync.mjs';
-import TinyLevelUp from '../legacy/libs/userLevel.mjs';
-import arraySortPositions from '../legacy/libs/arraySortPositions.mjs';
-import { diffArrayList, shuffleArray } from './basics/array.mjs';
+import TinyLevelUp from './libs/TinyLevelUp.mjs';
+import { diffArrayList, shuffleArray, arraySortPositions } from './basics/array.mjs';
 import {
   breakdownDuration,
   formatCustomTimer,
@@ -42,6 +40,7 @@ import {
   safeTextTrim,
   toTitleCase,
   toTitleCaseLowerFirst,
+  asyncReplace,
 } from './basics/text.mjs';
 import ColorSafeStringify from './libs/ColorSafeStringify.mjs';
 import TinyPromiseQueue from './libs/TinyPromiseQueue.mjs';
