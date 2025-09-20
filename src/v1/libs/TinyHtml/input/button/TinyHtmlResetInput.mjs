@@ -15,7 +15,11 @@ class TinyHtmlResetInput extends TinyHtmlInput {
    * @param {string} [config.mainClass='']
    */
   constructor({ value, tags = [], readonly, required, name, placeholder, mainClass = '' }) {
-    super({ value, name, placeholder, type: 'reset', tags, mainClass, readonly, required });
+    super({ name, placeholder, type: 'reset', tags, mainClass, readonly, required });
+
+    if (value !== undefined && typeof value !== 'string' && typeof value !== 'number')
+      throw new TypeError('TinyHtmlInput: "value" must be a string or number.');
+    if (value !== undefined) this.setAttr('value', value);
   }
 }
 

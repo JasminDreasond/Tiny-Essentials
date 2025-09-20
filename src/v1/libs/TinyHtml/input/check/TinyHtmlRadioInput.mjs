@@ -19,7 +19,11 @@ class TinyHtmlRadioInput extends TinyHtmlInput {
    * @param {string} [config.mainClass='']
    */
   constructor({ name, value, checked = false, readonly, required, tags = [], mainClass = '' }) {
-    super({ tags, mainClass, type: 'radio', name, value, readonly, required });
+    super({ tags, mainClass, type: 'radio', name, readonly, required });
+
+    if (value !== undefined && typeof value !== 'string' && typeof value !== 'number')
+      throw new TypeError('TinyHtmlInput: "value" must be a string or number.');
+    if (value !== undefined) this.setAttr('value', value);
     if (typeof checked !== 'boolean')
       throw new TypeError("TinyHtmlRadioInput: 'checked' must be a boolean.");
     if (checked) this.addProp('checked');

@@ -33,7 +33,11 @@ class TinyHtmlWeekInput extends TinyHtmlInput {
     tags = [],
     mainClass = '',
   }) {
-    super({ value, name, placeholder, type: 'week', tags, mainClass, readonly, required });
+    super({ name, placeholder, type: 'week', tags, mainClass, readonly, required });
+
+    if (value !== undefined && typeof value !== 'string' && typeof value !== 'number')
+      throw new TypeError('TinyHtmlInput: "value" must be a string or number.');
+    if (value !== undefined) this.setAttr('value', value);
     if (min !== undefined && typeof min !== 'number')
       throw new TypeError("TinyHtmlWeekInput: 'min' must be a number.");
     if (max !== undefined && typeof max !== 'number')

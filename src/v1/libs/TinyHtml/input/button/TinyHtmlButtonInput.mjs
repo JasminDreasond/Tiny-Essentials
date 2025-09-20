@@ -28,7 +28,11 @@ class TinyHtmlButtonInput extends TinyHtmlInput {
     name,
     mainClass = '',
   }) {
-    super({ value, name, placeholder, type: 'button', tags, mainClass, readonly, required });
+    super({ name, placeholder, type: 'button', tags, mainClass, readonly, required });
+
+    if (value !== undefined && typeof value !== 'string' && typeof value !== 'number')
+      throw new TypeError('TinyHtmlInput: "value" must be a string or number.');
+    if (value !== undefined) this.setAttr('value', value);
 
     // --- popovertarget / popovertargetaction ---
     if (popovertarget !== undefined) {

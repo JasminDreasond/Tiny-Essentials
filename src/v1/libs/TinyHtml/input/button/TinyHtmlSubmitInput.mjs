@@ -33,7 +33,11 @@ class TinyHtmlSubmitInput extends TinyHtmlInput {
     placeholder,
     mainClass = '',
   }) {
-    super({ value, name, placeholder, type: 'submit', tags, mainClass, readonly, required });
+    super({ name, placeholder, type: 'submit', tags, mainClass, readonly, required });
+
+    if (value !== undefined && typeof value !== 'string' && typeof value !== 'number')
+      throw new TypeError('TinyHtmlInput: "value" must be a string or number.');
+    if (value !== undefined) this.setAttr('value', value);
 
     // --- formaction, formenctype, formmethod, formnovalidate, formtarget ---
     if (formaction !== undefined) {

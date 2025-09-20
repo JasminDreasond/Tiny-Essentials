@@ -25,7 +25,11 @@ class TinyHtmlHiddenInput extends TinyHtmlInput {
     tags = [],
     mainClass = '',
   }) {
-    super({ value, type: 'hidden', name, tags, mainClass, readonly, required });
+    super({ type: 'hidden', name, tags, mainClass, readonly, required });
+
+    if (value !== undefined && typeof value !== 'string' && typeof value !== 'number')
+      throw new TypeError('TinyHtmlInput: "value" must be a string or number.');
+    if (value !== undefined) this.setAttr('value', value);
 
     // --- autocomplete ---
     if (autocomplete !== undefined) {

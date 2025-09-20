@@ -20,7 +20,6 @@ class TinyHtmlInput extends TinyHtmlTemplate {
    * @param {boolean} [config.readonly] - Whether input is readonly.
    * @param {boolean} [config.required] - Whether input is required.
    * @param {string} [config.type="text"] - Input type (e.g., "text", "password", "email").
-   * @param {string|number} [config.value=""] - Initial value.
    * @param {string} [config.placeholder=""] - Placeholder text.
    * @param {string} [config.name=""] - Input name.
    * @param {string|string[]|Set<string>} [config.tags=[]] - Initial CSS classes.
@@ -28,7 +27,6 @@ class TinyHtmlInput extends TinyHtmlTemplate {
    */
   constructor({
     type = 'text',
-    value = '',
     placeholder = '',
     name = '',
     tags = [],
@@ -45,10 +43,6 @@ class TinyHtmlInput extends TinyHtmlTemplate {
     if (name !== undefined && typeof name !== 'string')
       throw new TypeError('TinyHtmlInput: "name" must be a string.');
     if (name) this.setAttr('name', name);
-
-    if (value !== undefined && typeof value !== 'string' && typeof value !== 'number')
-      throw new TypeError('TinyHtmlInput: "value" must be a string or number.');
-    if (value !== undefined) this.setAttr('value', value);
 
     if (placeholder !== undefined && typeof placeholder !== 'string')
       throw new TypeError('TinyHtmlInput: "placeholder" must be a string.');

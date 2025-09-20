@@ -31,7 +31,11 @@ class TinyHtmlColorInput extends TinyHtmlInput {
     tags = [],
     mainClass = '',
   }) {
-    super({ type: 'color', value, name, placeholder, tags, mainClass, readonly, required });
+    super({ type: 'color', name, placeholder, tags, mainClass, readonly, required });
+
+    if (value !== undefined && typeof value !== 'string' && typeof value !== 'number')
+      throw new TypeError('TinyHtmlInput: "value" must be a string or number.');
+    if (value !== undefined) this.setAttr('value', value);
 
     if (alpha !== undefined && typeof alpha !== 'string' && typeof alpha !== 'number')
       throw new TypeError('TinyHtmlInput: "alpha" must be a string or number.');

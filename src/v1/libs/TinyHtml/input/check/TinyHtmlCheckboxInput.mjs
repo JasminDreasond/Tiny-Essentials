@@ -19,7 +19,11 @@ class TinyHtmlCheckboxInput extends TinyHtmlInput {
    * @param {string} [config.mainClass='']
    */
   constructor({ checked = false, name, value, readonly, required, tags = [], mainClass = '' }) {
-    super({ type: 'checkbox', name, value, tags, mainClass, readonly, required });
+    super({ type: 'checkbox', name, tags, mainClass, readonly, required });
+
+    if (value !== undefined && typeof value !== 'string' && typeof value !== 'number')
+      throw new TypeError('TinyHtmlInput: "value" must be a string or number.');
+    if (value !== undefined) this.setAttr('value', value);
     if (typeof checked !== 'boolean')
       throw new TypeError("TinyHtmlCheckboxInput: 'checked' must be a boolean.");
     if (checked) this.addProp('checked');
