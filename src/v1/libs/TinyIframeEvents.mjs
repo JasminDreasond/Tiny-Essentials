@@ -51,7 +51,7 @@ class TinyIframeEvents {
   /**
    * Adds a listener to the beginning of the listeners array for the specified event.
    *
-   * @param {string} event - Event name.
+   * @param {string|string[]} event - Event name.
    * @param {handler} handler - The callback function.
    */
   prependListener(event, handler) {
@@ -61,9 +61,9 @@ class TinyIframeEvents {
   /**
    * Adds a one-time listener to the beginning of the listeners array for the specified event.
    *
-   * @param {string} event - Event name.
+   * @param {string|string[]} event - Event name.
    * @param {handler} handler - The callback function.
-   * @returns {handler} - The wrapped handler used internally.
+   * @returns {handler[]} - The wrapped handler used internally.
    */
   prependListenerOnce(event, handler) {
     return this.#events.prependListenerOnce(event, handler);
@@ -74,7 +74,7 @@ class TinyIframeEvents {
   /**
    * Adds a event listener.
    *
-   * @param {string} event - Event name, such as 'onScrollBoundary' or 'onAutoScroll'.
+   * @param {string|string[]} event - Event name, such as 'onScrollBoundary' or 'onAutoScroll'.
    * @param {handler} handler - Callback function to be called when event fires.
    */
   appendListener(event, handler) {
@@ -84,9 +84,9 @@ class TinyIframeEvents {
   /**
    * Registers an event listener that runs only once, then is removed.
    *
-   * @param {string} event - Event name, such as 'onScrollBoundary' or 'onAutoScroll'.
+   * @param {string|string[]} event - Event name, such as 'onScrollBoundary' or 'onAutoScroll'.
    * @param {handler} handler - The callback function to run on event.
-   * @returns {handler} - The wrapped version of the handler.
+   * @returns {handler[]} - The wrapped version of the handler.
    */
   appendListenerOnce(event, handler) {
     return this.#events.appendListenerOnce(event, handler);
@@ -95,7 +95,7 @@ class TinyIframeEvents {
   /**
    * Adds a event listener.
    *
-   * @param {string} event - Event name, such as 'onScrollBoundary' or 'onAutoScroll'.
+   * @param {string|string[]} event - Event name, such as 'onScrollBoundary' or 'onAutoScroll'.
    * @param {handler} handler - Callback function to be called when event fires.
    */
   on(event, handler) {
@@ -105,9 +105,9 @@ class TinyIframeEvents {
   /**
    * Registers an event listener that runs only once, then is removed.
    *
-   * @param {string} event - Event name, such as 'onScrollBoundary' or 'onAutoScroll'.
+   * @param {string|string[]} event - Event name, such as 'onScrollBoundary' or 'onAutoScroll'.
    * @param {handler} handler - The callback function to run on event.
-   * @returns {handler} - The wrapped version of the handler.
+   * @returns {handler[]} - The wrapped version of the handler.
    */
   once(event, handler) {
     return this.#events.once(event, handler);
@@ -118,7 +118,7 @@ class TinyIframeEvents {
   /**
    * Removes a previously registered event listener.
    *
-   * @param {string} event - The name of the event to remove the handler from.
+   * @param {string|string[]} event - The name of the event to remove the handler from.
    * @param {handler} handler - The specific callback function to remove.
    */
   off(event, handler) {
@@ -128,7 +128,7 @@ class TinyIframeEvents {
   /**
    * Removes all event listeners of a specific type from the element.
    *
-   * @param {string} event - The event type to remove (e.g. 'onScrollBoundary').
+   * @param {string|string[]} event - The event type to remove (e.g. 'onScrollBoundary').
    */
   offAll(event) {
     return this.#events.offAll(event);
