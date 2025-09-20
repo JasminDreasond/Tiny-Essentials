@@ -188,6 +188,10 @@
       "require": "./dist/v1/libs/TinyHtml.cjs",
       "import": "./dist/v1/libs/TinyHtml.mjs"
     },
+    "./libs/TinyLevelUp": {
+      "require": "./dist/v1/libs/TinyLevelUp.cjs",
+      "import": "./dist/v1/libs/TinyLevelUp.mjs"
+    },
     "./libs/TinyGamepad": {
       "require": "./dist/v1/libs/TinyGamepad.cjs",
       "import": "./dist/v1/libs/TinyGamepad.mjs"
