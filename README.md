@@ -72,16 +72,19 @@ Although not part of Tiny Essentials, we recommend using [**JsStore**](https://w
 
 ## 🗃️ Legacy Code
 
-Some scripts in this repository have been preserved for backwards compatibility. These include modules like:
+The scripts previously maintained in this repository have been migrated to the following location:
+
+👉 https://github.com/JasminDreasond/Tiny-Essentials-Legacy
+
+This includes modules such as:
 
 - `@tinypudding/firebase-lib`
 - `@tinypudding/discord-oauth2`
 - `@tinypudding/mysql-connector`
 - `@tinypudding/puddy-lib`
 
-These modules have been updated to work with modern environments but may not be actively developed further.
+These modules are preserved for backwards compatibility and may not receive further active development.
 
-https://github.com/JasminDreasond/Tiny-Essentials-Legacy
 
 ---
 
