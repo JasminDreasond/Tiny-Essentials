@@ -151,11 +151,17 @@ class TinyHtmlTextarea extends TinyHtmlTemplate {
       this.setAttr('name', name);
     }
 
-    // readonly
-    if (readonly) this.addProp('readonly');
+    // --- readonly ---
+    if (readonly !== undefined) {
+      if (typeof readonly !== 'boolean') throw new TypeError('"readonly" must be a boolean.');
+      if (readonly) this.addProp('readonly');
+    }
 
-    // required
-    if (required) this.addProp('required');
+    // --- required ---
+    if (required !== undefined) {
+      if (typeof required !== 'boolean') throw new TypeError('"required" must be a boolean.');
+      if (required) this.addProp('required');
+    }
 
     // spellcheck
     if (spellcheck !== undefined) {
