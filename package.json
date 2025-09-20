@@ -308,7 +308,7 @@
     "compare-versions": "^6.1.1",
     "esbuild": "^0.25.5",
     "express": "^5.1.0",
-    "firebase": "^11.7.1",
+    "firebase": "^12.3.0",
     "firebase-functions": "^6.3.2",
     "jquery": "^3.7.1",
     "jquery-ui": "^1.14.1",
