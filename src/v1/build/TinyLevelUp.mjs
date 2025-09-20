@@ -1,3 +1,3 @@
-import TinyLevelUp from '../../legacy/libs/userLevel.mjs';
+import TinyLevelUp from '../libs/TinyLevelUp.mjs';
 
 export { TinyLevelUp };

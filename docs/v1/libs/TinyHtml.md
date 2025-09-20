@@ -19,6 +19,7 @@ This design keeps your code concise while maintaining clarity and control over t
 ## 📑 Table of Contents
 
 - [🧩 Type Definitions – Core Building Blocks](#-type-definitions--core-building-blocks)
+- [🔍 Element Debugging System](#-element-debugging-system)
 - [🔨 Element Creation](#-element-creation)
 - [🔎 Static DOM Selectors](#-static-dom-selectors)
 - [🔍 Element Observer](#-element-observer)
@@ -525,6 +526,110 @@ const __elementCurrentAnimation = new WeakMap();
 
 ---
 
+## 🔍 Element Debugging System
+
+TinyHtml includes a built-in **element debugging system** to help developers identify issues with elements during validation, construction, or event handling.
+
+This feature is **disabled by default** and can be toggled on or off.
+
+---
+
+### ⚙️ Enabling Debug Mode
+
+```js
+TinyHtml.elemDebug = true;  // Enable
+TinyHtml.elemDebug = false; // Disable
+```
+
+#### API
+
+* **`TinyHtml.elemDebug` (boolean)**
+  Controls whether TinyHtml emits detailed debug output to the console.
+
+* **Getter**
+
+  ```js
+  TinyHtml.elemDebug; // Returns true or false
+  ```
+
+* **Setter**
+
+  ```js
+  TinyHtml.elemDebug = true;  // Enable debug logs
+  TinyHtml.elemDebug = false; // Disable debug logs
+  ```
+
+  🚨 Throws `TypeError` if the value is not a boolean.
+
+---
+
+### 🛠 Debugging Invalid Elements
+
+When debug mode is enabled, TinyHtml will log structured information whenever an invalid or unexpected element is passed to its internal operations.
+
+This is done through the internal method:
+
+```js
+TinyHtml._debugElemError(elems, elem);
+```
+
+#### Parameters
+
+* **`elems`** → An array of elements (`ConstructorElValues | EventTarget | TinyElement | null`) involved in the operation.
+* **`elem`** *(optional)* → The specific element that triggered the error.
+
+#### Output Includes
+
+* ❌ **Error header** in the console
+* 🧭 **Stack trace** (with `console.trace` or captured stack)
+* 📊 **`console.table`** showing:
+
+  * Index
+  * `typeof`
+  * Constructor name
+  * Summary (DOM tag, ID, class, or nodeType)
+  * The raw value
+* 🎯 **Problematic element** highlighted separately via `console.dir`
+
+---
+
+### 📋 Example Output
+
+When debug mode is enabled and an invalid element is detected, you may see something like this:
+
+```
+[TinyHtml Debug] Element validation error
+Error: [TinyHtml Debug] Element validation error
+    at TinyHtml._debugElemError (...)
+    at ...
+```
+
+Followed by a **console.table**:
+
+| index | typeOf | constructor | summary            | value         |
+| ----- | ------ | ----------- | ------------------ | ------------- |
+| 0     | object | TinyElement | div#main.container | TinyElement{} |
+| 1     | string | primitive   |                    | "invalid"     |
+| 2     | null   | null        |                    | null          |
+
+And a detailed log of the problematic element:
+
+```
+[TinyHtml Debug] Problematic element:
+<div id="main" class="container">...</div>
+```
+
+---
+
+### ✅ Summary
+
+* 🔧 Enable debug with `TinyHtml.elemDebug = true;`
+* 🐞 Detailed errors are shown only when debug mode is on
+* 📊 Uses `console.table`, `console.error`, and `console.dir` for clarity
+* 🚀 Zero runtime overhead when disabled
+
+---
+
 ## 🔨 Element Creation
 
 ### `TinyHtml.createFrom(tagName, attrs?)`
@@ -597,16 +702,16 @@ This method is useful when you want to insert raw text content into the DOM with
 
 ---
 
-### `TinyHtml.createElementFromHTML(htmlString)`
+### `TinyHtml.createFromHTML(htmlString)`
 
-Creates an `HTMLElement` or `TextNode` from an HTML string.
+Creates an `HTMLElement` from an HTML string.
 Supports both elements and plain text.
 
 * **Parameters**:
 
   * `htmlString` *(string)* — The HTML string to convert.
 
-* **Returns**: `TinyHtml` — A `TinyHtml` instance wrapping the resulting `HTMLElement` or `TextNode`.
+* **Returns**: `TinyHtml` — A `TinyHtml` instance wrapping the resulting `HTMLElement`.
 
 * **Throws**:
 
@@ -896,6 +1001,31 @@ static jsonToTinyElems(jsonArray: HtmlParsed[]): TinyHtml[]
 
 ## 🧩 Internal Element Access
 
+### `_elCheck(els)`
+
+Validates if all provided items are acceptable constructor values.
+
+* **Parameters**:
+
+  * `els` (`ConstructorElValues[]`) — The elements to validate.
+* **Throws**:
+
+  * `Error` — If any element is not a valid target.
+* **Returns**: `void`
+
+---
+
+### `add(...el)`
+
+Adds elements to the end of the internal collection.
+
+* **Parameters**:
+
+  * `...el` (`ConstructorElValues`) — The elements to add.
+* **Returns**: `TinyHtml` — A new TinyHtml object containing the combined elements.
+
+---
+
 ### `exists(index)`
 Checks whether the element exists at the given index.
 
@@ -935,7 +1065,7 @@ Extracts a single DOM element from the internal list at the specified index.
 
 ---
 
-### `getAll()`
+### `get elements`
 Returns the current targets held by this instance.
 
 - **Returns**: `ConstructorElValues[]`
@@ -1109,6 +1239,14 @@ Gets data from the element.
 
 Sets a value on the element’s data store.
 
+#### `TinyHtml.hasData(el, key, isPrivate?)`
+
+Checks if a specific key exists in the data store of a DOM element.
+
+#### `TinyHtml.removeData(el, key, isPrivate?)`
+
+Removes a value associated with a specific key from the data store of a DOM element.
+
 ---
 
 ### 📌 Instance Methods
@@ -1120,6 +1258,14 @@ Shortcut for getting data from the current instance’s element.
 #### `.setData(key, value, isPrivate?)`
 
 Shortcut for setting data on the current element.
+
+#### `.hasData(key, isPrivate?)`
+
+Checks if a specific key exists in the data store of this element.
+
+#### `.removeData(key, isPrivate?)`
+
+Removes a value associated with a specific key from the data store of this element.
 
 ---
 
@@ -2076,16 +2222,54 @@ element.removeAttr("data-test");       // Remove
 element.hasAttr("id");                 // Check
 ```
 
+```js
+element.attrBigInt("example");             // Get
+element.setAttrBigInt("example", 10n);     // Set
+element.setAttrBigInt({ "example": 10n }); // Set
+```
+
+```js
+element.attrDate("example");                    // Get
+element.setAttrDate("example", new Date());     // Set
+element.setAttrDate({ "example": new Date() }); // Set
+```
+
+```js
+element.attrJson("example");                           // Get
+element.setAttrJson("example", { pudding: true });     // Set
+element.setAttrJson({ "example": { pudding: true } }); // Set
+```
+
+```js
+element.attrNumber("example");           // Get
+element.setAttrNumber("example", 1);     // Set
+element.setAttrNumber({ "example": 1 }); // Set
+```
+
+```js
+element.attrBoolean("example");              // Get
+element.setAttrBoolean("example", true);     // Set
+element.setAttrBoolean({ "example": true }); // Set
+```
+
+```js
+element.attrString("example");                   // Get
+element.setAttrString("example", "pudding");     // Set
+element.setAttrString({ "example": "pudding" }); // Set
+```
+
 Works on both single and multiple elements (static or instance).
 Safe and type-checked — throws if misuse is detected.
 
 ---
 
-### 🧲 `.hasProp()` / `.addProp()` / `.removeProp()` / `.toggleProp()`
+### 🧲 `.hasProp()` / `.addProp()` / `.removeProp()` / `.toggleProp()` / `.prop()` / `.setProp()`
 
 Properties
 
 ```js
+element.prop('scrollHeight');           // get scrollHeight value
+element.setProp('disabled', true);      // set true
 element.hasProp("disabled");            // true/false
 element.addProp("checked");             // set true
 element.removeProp("checked");          // set false
@@ -3138,6 +3322,32 @@ Determines visibility and plays `fadeIn` or `fadeOut`.
 ### `fadeToggle(ops?): StyleFxResult`
 
 Instance method version.
+
+---
+
+### `static fadeTo(el, opacity, ops?): StyleFxResult`
+
+Animate the opacity of elements to a target value.
+If the element is hidden (`display: none`), it will first be made visible before applying the fade animation.
+
+```js
+TinyHtml.fadeTo(el, 0.5, 400);     // Fade element to 50% opacity in 400ms
+TinyHtml.fadeTo(el, 1, "fast");    // Fade element to full opacity using predefined speed
+```
+
+* `el`: The target element(s) to animate.
+* `opacity`: The final opacity value (between `0` and `1`).
+* `ops`: Optional duration, animation options, or a predefined speed name.
+
+Returns a `StyleFxResult` mapping each element to its animation instance.
+
+### `fadeTo(opacity, ops?): StyleFxResult`
+
+Instance method version.
+
+```js
+element.fadeTo(0.3, { duration: 800, easing: "ease-in" });
+```
 
 ---
 
