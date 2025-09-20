@@ -246,10 +246,6 @@
     "url": "git+https://github.com/JasminDreasond/Tiny-Essentials.git"
   },
   "keywords": [
-    "@tinypudding/firebase-lib",
-    "@tinypudding/discord-oauth2",
-    "@tinypudding/mysql-connector",
-    "@tinypudding/puddy-lib",
     "tiny-essentials",
     "timeout",
     "storage",

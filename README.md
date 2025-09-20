@@ -81,6 +81,8 @@ Some scripts in this repository have been preserved for backwards compatibility.
 
 These modules have been updated to work with modern environments but may not be actively developed further.
 
+https://github.com/JasminDreasond/Tiny-Essentials-Legacy
+
 ---
 
 ## 🤝 Contributions
