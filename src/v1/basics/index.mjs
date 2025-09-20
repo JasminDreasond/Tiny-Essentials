@@ -1,6 +1,4 @@
-import arraySortPositions from '../../legacy/libs/arraySortPositions.mjs';
-import asyncReplace from '../../legacy/libs/replaceAsync.mjs';
-import { diffArrayList, shuffleArray } from './array.mjs';
+import { diffArrayList, shuffleArray, arraySortPositions } from './array.mjs';
 import {
   breakdownDuration,
   formatCustomTimer,
@@ -38,7 +36,14 @@ import {
   getSimplePerc,
   ruleOfThree,
 } from './simpleMath.mjs';
-import { addAiMarkerShortcut, diffStrings, safeTextTrim, toTitleCase, toTitleCaseLowerFirst } from './text.mjs';
+import {
+  addAiMarkerShortcut,
+  diffStrings,
+  safeTextTrim,
+  toTitleCase,
+  toTitleCaseLowerFirst,
+  asyncReplace,
+} from './text.mjs';
 import {
   areElsCollTop,
   areElsCollBottom,

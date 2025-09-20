@@ -1,7 +1,5 @@
-import asyncReplace from '../legacy/libs/replaceAsync.mjs';
-import TinyLevelUp from '../legacy/libs/userLevel.mjs';
-import arraySortPositions from '../legacy/libs/arraySortPositions.mjs';
-import { diffArrayList, shuffleArray } from './basics/array.mjs';
+import TinyLevelUp from './libs/TinyLevelUp.mjs';
+import { diffArrayList, shuffleArray, arraySortPositions } from './basics/array.mjs';
 import {
   breakdownDuration,
   formatCustomTimer,
@@ -42,6 +40,7 @@ import {
   safeTextTrim,
   toTitleCase,
   toTitleCaseLowerFirst,
+  asyncReplace,
 } from './basics/text.mjs';
 import ColorSafeStringify from './libs/ColorSafeStringify.mjs';
 import TinyPromiseQueue from './libs/TinyPromiseQueue.mjs';
@@ -140,8 +139,14 @@ import TinyI18 from './libs/TinyI18.mjs';
 import TinyNeedBar from './libs/TinyNeedBar.mjs';
 import TinySimpleDice from './libs/TinySimpleDice.mjs';
 import TinyElementObserver from './libs/TinyElementObserver.mjs';
+import TinyLoadingScreen from './libs/TinyLoadingScreen.mjs';
+import TinyColorValidator from './libs/TinyColorValidator.mjs';
+// import TinyHtmlElems from './libs/TinyHtml/index.mjs';
 
 export {
+  // TinyHtmlElems,
+  TinyColorValidator,
+  TinyLoadingScreen,
   TinyElementObserver,
   TinySimpleDice,
   TinyNeedBar,

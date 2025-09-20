@@ -1,0 +1,64 @@
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: absolute;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+
+  .loading-container {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  .loading-content {
+    text-align: center;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    margin: auto;
+  }
+
+  .loading-spinner {
+    position: relative;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid #fff;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 15px;
+    animation: loading-spin 1s linear infinite;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px; /* tamanho do “buraco” */
+      height: 20px; /* tamanho do “buraco” */
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background: transparent; /* vazio, mas depois pode receber ícone */
+      pointer-events: none; /* não interfere no spinner */
+    }
+  }
+
+  .loading-message {
+    font-size: 1.2em;
+    user-select: none !important;
+  }
+
+  @keyframes loading-spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+}
