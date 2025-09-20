@@ -265,6 +265,9 @@ class TinyLoadingScreen {
       this.#overlay.classList.add('loading-overlay');
       this.#overlay.style.zIndex = String(this.#options.zIndex);
 
+      const contentBase = document.createElement('div');
+      contentBase.classList.add('loading-container');
+
       const content = document.createElement('div');
       content.classList.add('loading-content');
 
@@ -276,7 +279,8 @@ class TinyLoadingScreen {
 
       content.appendChild(spinner);
       content.appendChild(this.#messageElement);
-      this.#overlay.appendChild(content);
+      contentBase.appendChild(content);
+      this.#overlay.appendChild(contentBase);
       this.#container.appendChild(this.#overlay);
 
       // trigger fade in

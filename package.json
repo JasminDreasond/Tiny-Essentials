@@ -1,6 +1,6 @@
 {
   "name": "tiny-essentials",
-  "version": "1.23.0",
+  "version": "1.24.0",
   "description": "Collection of small, essential scripts designed to be used across various projects. These simple utilities are crafted for speed, ease of use, and versatility.",
   "scripts": {
     "test": "npm run test:mjs && npm run test:cjs && npm run test:js",
@@ -59,6 +59,190 @@
     "./fileManager": {
       "require": "./dist/v1/fileManager/index.cjs",
       "import": "./dist/v1/fileManager/index.mjs"
+    },
+    "./basics/array": {
+      "require": "./dist/v1/libs/array.cjs",
+      "import": "./dist/v1/libs/array.mjs"
+    },
+    "./basics/clock": {
+      "require": "./dist/v1/libs/clock.cjs",
+      "import": "./dist/v1/libs/clock.mjs"
+    },
+    "./basics/collision": {
+      "require": "./dist/v1/libs/collision.cjs",
+      "import": "./dist/v1/libs/collision.mjs"
+    },
+    "./basics/fullScreen": {
+      "require": "./dist/v1/libs/fullScreen.cjs",
+      "import": "./dist/v1/libs/fullScreen.mjs"
+    },
+    "./basics/html": {
+      "require": "./dist/v1/libs/html.cjs",
+      "import": "./dist/v1/libs/html.mjs"
+    },
+    "./basics/objChecker": {
+      "require": "./dist/v1/libs/objChecker.cjs",
+      "import": "./dist/v1/libs/objChecker.mjs"
+    },
+    "./basics/objFilter": {
+      "require": "./dist/v1/libs/objFilter.cjs",
+      "import": "./dist/v1/libs/objFilter.mjs"
+    },
+    "./basics/simpleMath": {
+      "require": "./dist/v1/libs/simpleMath.cjs",
+      "import": "./dist/v1/libs/simpleMath.mjs"
+    },
+    "./basics/text": {
+      "require": "./dist/v1/libs/text.cjs",
+      "import": "./dist/v1/libs/text.mjs"
+    },
+    "./libs/ColorSafeStringify": {
+      "require": "./dist/v1/libs/ColorSafeStringify.cjs",
+      "import": "./dist/v1/libs/ColorSafeStringify.mjs"
+    },
+    "./libs/UltraRandomMsgGen": {
+      "require": "./dist/v1/libs/UltraRandomMsgGen.cjs",
+      "import": "./dist/v1/libs/UltraRandomMsgGen.mjs"
+    },
+    "./libs/TinyUploadClicker": {
+      "require": "./dist/v1/libs/TinyUploadClicker.cjs",
+      "import": "./dist/v1/libs/TinyUploadClicker.mjs"
+    },
+    "./libs/TinyToastNotify": {
+      "require": "./dist/v1/libs/TinyToastNotify.cjs",
+      "import": "./dist/v1/libs/TinyToastNotify.mjs"
+    },
+    "./libs/TinyTimeout": {
+      "require": "./dist/v1/libs/TinyTimeout.cjs",
+      "import": "./dist/v1/libs/TinyTimeout.mjs"
+    },
+    "./libs/TinyTextRangeEditor": {
+      "require": "./dist/v1/libs/TinyTextRangeEditor.cjs",
+      "import": "./dist/v1/libs/TinyTextRangeEditor.mjs"
+    },
+    "./libs/TinyTextarea": {
+      "require": "./dist/v1/libs/TinyTextarea.cjs",
+      "import": "./dist/v1/libs/TinyTextarea.mjs"
+    },
+    "./libs/TinySmartScroller": {
+      "require": "./dist/v1/libs/TinySmartScroller.cjs",
+      "import": "./dist/v1/libs/TinySmartScroller.mjs"
+    },
+    "./libs/TinySimpleDice": {
+      "require": "./dist/v1/libs/TinySimpleDice.cjs",
+      "import": "./dist/v1/libs/TinySimpleDice.mjs"
+    },
+    "./libs/TinyRateLimiter": {
+      "require": "./dist/v1/libs/TinyRateLimiter.cjs",
+      "import": "./dist/v1/libs/TinyRateLimiter.mjs"
+    },
+    "./libs/TinyPromiseQueue": {
+      "require": "./dist/v1/libs/TinyPromiseQueue.cjs",
+      "import": "./dist/v1/libs/TinyPromiseQueue.mjs"
+    },
+    "./libs/TinyNotifyCenter": {
+      "require": "./dist/v1/libs/TinyNotifyCenter.cjs",
+      "import": "./dist/v1/libs/TinyNotifyCenter.mjs"
+    },
+    "./libs/TinyNotifications": {
+      "require": "./dist/v1/libs/TinyNotifications.cjs",
+      "import": "./dist/v1/libs/TinyNotifications.mjs"
+    },
+    "./libs/TinyNewWinEvents": {
+      "require": "./dist/v1/libs/TinyNewWinEvents.cjs",
+      "import": "./dist/v1/libs/TinyNewWinEvents.mjs"
+    },
+    "./libs/TinyNeedBar": {
+      "require": "./dist/v1/libs/TinyNeedBar.cjs",
+      "import": "./dist/v1/libs/TinyNeedBar.mjs"
+    },
+    "./libs/TinyLocalStorage": {
+      "require": "./dist/v1/libs/TinyLocalStorage.cjs",
+      "import": "./dist/v1/libs/TinyLocalStorage.mjs"
+    },
+    "./libs/TinyLoadingScreen": {
+      "require": "./dist/v1/libs/TinyLoadingScreen.cjs",
+      "import": "./dist/v1/libs/TinyLoadingScreen.mjs"
+    },
+    "./libs/TinyColorValidator": {
+      "require": "./dist/v1/libs/TinyColorValidator.cjs",
+      "import": "./dist/v1/libs/TinyColorValidator.mjs"
+    },
+    "./libs/TinyInventoryTrader": {
+      "require": "./dist/v1/libs/TinyInventoryTrader.cjs",
+      "import": "./dist/v1/libs/TinyInventoryTrader.mjs"
+    },
+    "./libs/TinyInventory": {
+      "require": "./dist/v1/libs/TinyInventory.cjs",
+      "import": "./dist/v1/libs/TinyInventory.mjs"
+    },
+    "./libs/TinyIframeEvents": {
+      "require": "./dist/v1/libs/TinyIframeEvents.cjs",
+      "import": "./dist/v1/libs/TinyIframeEvents.mjs"
+    },
+    "./libs/TinyI18": {
+      "require": "./dist/v1/libs/TinyI18.cjs",
+      "import": "./dist/v1/libs/TinyI18.mjs"
+    },
+    "./libs/TinyHtml": {
+      "require": "./dist/v1/libs/TinyHtml.cjs",
+      "import": "./dist/v1/libs/TinyHtml.mjs"
+    },
+    "./libs/TinyLevelUp": {
+      "require": "./dist/v1/libs/TinyLevelUp.cjs",
+      "import": "./dist/v1/libs/TinyLevelUp.mjs"
+    },
+    "./libs/TinyGamepad": {
+      "require": "./dist/v1/libs/TinyGamepad.cjs",
+      "import": "./dist/v1/libs/TinyGamepad.mjs"
+    },
+    "./libs/TinyEvents": {
+      "require": "./dist/v1/libs/TinyEvents.cjs",
+      "import": "./dist/v1/libs/TinyEvents.mjs"
+    },
+    "./libs/TinyElementObserver": {
+      "require": "./dist/v1/libs/TinyElementObserver.cjs",
+      "import": "./dist/v1/libs/TinyElementObserver.mjs"
+    },
+    "./libs/TinyDragger": {
+      "require": "./dist/v1/libs/TinyDragger.cjs",
+      "import": "./dist/v1/libs/TinyDragger.mjs"
+    },
+    "./libs/TinyDragDropDetector": {
+      "require": "./dist/v1/libs/TinyDragDropDetector.cjs",
+      "import": "./dist/v1/libs/TinyDragDropDetector.mjs"
+    },
+    "./libs/TinyDomReadyManager": {
+      "require": "./dist/v1/libs/TinyDomReadyManager.cjs",
+      "import": "./dist/v1/libs/TinyDomReadyManager.mjs"
+    },
+    "./libs/TinyDayNightCycle": {
+      "require": "./dist/v1/libs/TinyDayNightCycle.cjs",
+      "import": "./dist/v1/libs/TinyDayNightCycle.mjs"
+    },
+    "./libs/TinyCookieConsent": {
+      "require": "./dist/v1/libs/TinyCookieConsent.cjs",
+      "import": "./dist/v1/libs/TinyCookieConsent.mjs"
+    },
+    "./libs/TinyColorConverter": {
+      "require": "./dist/v1/libs/TinyColorConverter.cjs",
+      "import": "./dist/v1/libs/TinyColorConverter.mjs"
+    },
+    "./libs/TinyClipboard": {
+      "require": "./dist/v1/libs/TinyClipboard.cjs",
+      "import": "./dist/v1/libs/TinyClipboard.mjs"
+    },
+    "./libs/TinyArrayPaginator": {
+      "require": "./dist/v1/libs/TinyArrayPaginator.cjs",
+      "import": "./dist/v1/libs/TinyArrayPaginator.mjs"
+    },
+    "./libs/TinyAfterScrollWatcher": {
+      "require": "./dist/v1/libs/TinyAfterScrollWatcher.cjs",
+      "import": "./dist/v1/libs/TinyAfterScrollWatcher.mjs"
+    },
+    "./libs/TinyAdvancedRaffle": {
+      "require": "./dist/v1/libs/TinyAdvancedRaffle.cjs",
+      "import": "./dist/v1/libs/TinyAdvancedRaffle.mjs"
     }
   },
   "repository": {
@@ -66,10 +250,6 @@
     "url": "git+https://github.com/JasminDreasond/Tiny-Essentials.git"
   },
   "keywords": [
-    "@tinypudding/firebase-lib",
-    "@tinypudding/discord-oauth2",
-    "@tinypudding/mysql-connector",
-    "@tinypudding/puddy-lib",
     "tiny-essentials",
     "timeout",
     "storage",
@@ -121,37 +301,20 @@
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-typescript": "^12.1.2",
-    "@types/jquery": "^3.5.32",
     "@types/lodash": "^4.17.16",
     "@types/md5": "^2.3.5",
     "@types/node-fetch": "^2.6.12",
-    "@types/tinycolor2": "^1.4.6",
     "babel-preset-es2015": "^6.24.1",
-    "byte-length": "^1.0.2",
-    "clone": "^2.1.2",
-    "compare-versions": "^6.1.1",
     "esbuild": "^0.25.5",
     "express": "^5.1.0",
-    "firebase": "^11.7.1",
-    "firebase-functions": "^6.3.2",
-    "jquery": "^3.7.1",
-    "jquery-ui": "^1.14.1",
-    "latest-version": "^9.0.0",
     "lodash": "^4.17.21",
     "marked": "^16.0.0",
-    "md5": "^2.3.0",
-    "moment": "^2.30.1",
-    "moment-timezone": "^0.5.48",
-    "mysql": "^2.18.1",
-    "node-fetch": "^2.7.0",
     "node-polyfill-webpack-plugin": "^4.1.0",
-    "object-hash": "^3.0.0",
     "prettier": "3.5.3",
     "rollup": "^4.40.0",
     "rollup-preserve-directives": "^1.1.3",
     "safe-stable-stringify": "^2.5.0",
     "sass": "^1.89.2",
-    "tinycolor2": "^1.6.0",
     "tslib": "^2.8.1",
     "type-fest": "^4.40.0",
     "typescript": "^5.8.3",
