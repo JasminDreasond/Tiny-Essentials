@@ -65,6 +65,7 @@
       window.TinyHtml = TinyHtml;
       window.box = box;
       window.jBox = jBox;
+      TinyHtml.elemDebug = true;
 
       window.box.on('tinyhtml.stylechanged', (event) => console.log(event.detail));
       window.box.on('tinyhtml.classchanged', (event) => console.log(event.detail));

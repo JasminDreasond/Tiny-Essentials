@@ -96,5 +96,7 @@ addModule(1, './src/v1/build/TinyI18.mjs', 'TinyI18', true);
 addModule(1, './src/v1/build/TinyNeedBar.mjs', 'TinyNeedBar', true);
 addModule(1, './src/v1/build/TinySimpleDice.mjs', 'TinySimpleDice', true);
 addModule(1, './src/v1/build/TinyElementObserver.mjs', 'TinyElementObserver', true);
+addModule(1, './src/v1/build/TinyLoadingScreen.mjs', 'TinyLoadingScreen', true);
+addModule(1, './src/v1/build/TinyColorValidator.mjs', 'TinyColorValidator', true);
 
 export default modules;
