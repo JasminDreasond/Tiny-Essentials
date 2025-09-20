@@ -10,6 +10,24 @@
  */
 
 /**
+ * Represents the type of a CSS color.
+ *
+ * - `'hex'` → HEX color (`#RGB` / `#RRGGBB`)
+ * - `'hexa'` → HEX with alpha (`#RRGGBBAA`)
+ * - `'rgb'` → RGB color (`rgb(r, g, b)`)
+ * - `'rgba'` → RGB with alpha (`rgba(r, g, b, a)`)
+ * - `'hsl'` → HSL color (`hsl(h, s%, l%)`)
+ * - `'hsla'` → HSL with alpha (`hsla(h, s%, l%, a)`)
+ * - `'hwb'` → HWB color (`hwb(hue, whiteness%, blackness%)`)
+ * - `'lab'` → CIELAB color (`lab(L a b)`)
+ * - `'lch'` → LCH color (`lch(L C H)`)
+ * - `'name'` → Standard HTML color name (e.g., `red`, `blue`)
+ * - `'specialName'` → CSS special keywords (`transparent`, `currentColor`)
+ *
+ * @typedef {'hex'|'hexa'|'rgb'|'rgba'|'hsl'|'hsla'|'hwb'|'lab'|'lch'|'name'|'specialName'} ColorTypes
+ */
+
+/**
  * Utility class for validating and parsing CSS color values.
  *
  * Supports multiple CSS color syntaxes:
@@ -337,11 +355,26 @@ class TinyColorValidator {
   }
 
   /**
+   * Internal storage for the code type.
+   * @type {ColorTypes|null}
+   */
+  #type;
+
+  /**
+   * Gets the current code.
+   * @returns {ColorTypes|null} The stored code type.
+   */
+  get type() {
+    return this.#type;
+  }
+
+  /**
    * Creates a new instance of Example.
    * @param {TinyColorValidatorT} code - The code to be stored.
    */
   constructor(code) {
     this.#code = code;
+    this.#type = TinyColorValidator.isColor(this.#code);
   }
 
   /**
@@ -567,33 +600,55 @@ class TinyColorValidator {
   /**
    * Validates if a string is any valid CSS color (HEX, RGB, HSL, HWB, Lab, LCH, name, or special name).
    * @param {string} input - The input string to validate.
-   * @returns {boolean} True if the input is a valid CSS color.
+   * @returns {ColorTypes|null} if the input is a valid CSS color.
    * @throws {TypeError} If input is not a string.
    */
   static isColor(input) {
     if (typeof input !== 'string') throw new TypeError('isColor: input must be a string.');
-    return (
-      TinyColorValidator.isHex(input) ||
-      TinyColorValidator.isHexa(input) ||
-      TinyColorValidator.isRgb(input) ||
-      TinyColorValidator.isRgba(input) ||
-      TinyColorValidator.isHsl(input) ||
-      TinyColorValidator.isHsla(input) ||
-      TinyColorValidator.isHwb(input) ||
-      TinyColorValidator.isLab(input) ||
-      TinyColorValidator.isLch(input) ||
-      TinyColorValidator.isName(input) ||
-      TinyColorValidator.isSpecialName(input)
-    );
+    if (TinyColorValidator.isHex(input)) return 'hex';
+    else if (TinyColorValidator.isHexa(input)) return 'hexa';
+    else if (TinyColorValidator.isRgb(input)) return 'rgb';
+    else if (TinyColorValidator.isRgba(input)) return 'rgba';
+    else if (TinyColorValidator.isHsl(input)) return 'hsl';
+    else if (TinyColorValidator.isHsla(input)) return 'hsla';
+    else if (TinyColorValidator.isHwb(input)) return 'hwb';
+    else if (TinyColorValidator.isLab(input)) return 'lab';
+    else if (TinyColorValidator.isLch(input)) return 'lch';
+    else if (TinyColorValidator.isName(input)) return 'name';
+    else if (TinyColorValidator.isSpecialName(input)) return 'specialName';
+    return null;
   }
 
   /**
-   * Validates if a string is any valid CSS color (HEX, RGB, HSL, HWB, Lab, LCH, name, or special name).
-   * @returns {boolean} True if the input is a valid CSS color.
-   * @throws {TypeError} If input is not a string.
+   * Automatically parses the stored code based on its detected type.
+   * @returns {any[]|string|null} Parsed color components according to type, or null if invalid.
    */
-  isColor() {
-    return TinyColorValidator.isColor(this.#code);
+  parse() {
+    switch (this.#type) {
+      case 'hex':
+        return TinyColorValidator.parseHex(this.code);
+      case 'hexa':
+        return TinyColorValidator.parseHexa(this.code);
+      case 'rgb':
+        return TinyColorValidator.parseRgb(this.code);
+      case 'rgba':
+        return TinyColorValidator.parseRgba(this.code);
+      case 'hsl':
+        return TinyColorValidator.parseHsl(this.code);
+      case 'hsla':
+        return TinyColorValidator.parseHsla(this.code);
+      case 'hwb':
+        return TinyColorValidator.parseHwb(this.code);
+      case 'lab':
+        return TinyColorValidator.parseLab(this.code);
+      case 'lch':
+        return TinyColorValidator.parseLch(this.code);
+      case 'name':
+      case 'specialName':
+        return this.#code.trim().toLowerCase();
+      default:
+        return null;
+    }
   }
 
   // --- HEX / HEXA ---
