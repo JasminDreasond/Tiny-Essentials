@@ -188,7 +188,7 @@ class TinyHtmlTextarea extends TinyHtmlTemplate {
 
   /** @returns {boolean|null} */
   get autocorrect() {
-    const autocorrect = this.attrString('autocomplete');
+    const autocorrect = this.attrString('autocorrect');
     if (autocorrect === 'on') return true;
     else if (autocorrect === 'off') return false;
     return null;
@@ -198,6 +198,7 @@ class TinyHtmlTextarea extends TinyHtmlTemplate {
   set autofocus(autofocus) {
     if (typeof autofocus !== 'boolean') throw new TypeError('"autofocus" must be a boolean.');
     if (autofocus) this.addProp('autofocus');
+    else this.removeProp('autofocus');
   }
 
   /** @returns {boolean} */
@@ -221,6 +222,7 @@ class TinyHtmlTextarea extends TinyHtmlTemplate {
   set disabled(disabled) {
     if (typeof disabled !== 'boolean') throw new TypeError('"disabled" must be a boolean.');
     if (disabled) this.addProp('disabled');
+    else this.removeProp('disabled');
   }
 
   /** @returns {boolean} */
@@ -278,6 +280,7 @@ class TinyHtmlTextarea extends TinyHtmlTemplate {
   set readonly(readonly) {
     if (typeof readonly !== 'boolean') throw new TypeError('"readonly" must be a boolean.');
     if (readonly) this.addProp('readonly');
+    else this.removeProp('readonly');
   }
 
   /** @returns {boolean} */
@@ -289,6 +292,7 @@ class TinyHtmlTextarea extends TinyHtmlTemplate {
   set required(required) {
     if (typeof required !== 'boolean') throw new TypeError('"required" must be a boolean.');
     if (required) this.addProp('required');
+    else this.removeProp('required');
   }
 
   /** @returns {boolean} */

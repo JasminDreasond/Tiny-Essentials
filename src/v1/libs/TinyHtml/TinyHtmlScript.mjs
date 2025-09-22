@@ -18,8 +18,8 @@ class TinyHtmlScript extends TinyHtmlTemplate {
    * @param {string} [config.mainClass=""] - Main CSS class.
    * @param {string} [config.content=""] - Inline script content (ignored if src is provided).
    * @param {string|string[]} [config.blocking] - Space-separated list of blocking tokens (currently only "render").
-   * @param {string} [config.crossorigin] - CORS setting ("anonymous" or "use-credentials").
-   * @param {string} [config.fetchpriority="auto"] - Fetch priority ("auto", "high", "low").
+   * @param {"anonymous" | "use-credentials"} [config.crossorigin] - CORS setting ("anonymous" or "use-credentials").
+   * @param {"auto"|"high"|"low"} [config.fetchpriority="auto"] - Fetch priority.
    * @param {string} [config.integrity] - Subresource integrity hash (only valid with src).
    * @param {boolean} [config.nomodule=false] - Whether to prevent execution in browsers supporting modules.
    * @param {string} [config.nonce] - Cryptographic nonce for CSP.
@@ -45,127 +45,179 @@ class TinyHtmlScript extends TinyHtmlTemplate {
   } = {}) {
     super(document.createElement('script'), tags, mainClass);
 
-    // src
-    if (src !== undefined) {
-      if (typeof src !== 'string') throw new TypeError('TinyHtmlScript: "src" must be a string.');
-      this.setAttr('src', src);
-    }
+    if (src !== undefined) this.src = src;
+    if (type !== undefined) this.type = type;
+    this.async = async;
+    this.defer = defer;
+    if (blocking !== undefined) this.blocking = blocking;
+    if (crossorigin !== undefined) this.crossorigin = crossorigin;
+    this.fetchpriority = fetchpriority;
+    if (integrity !== undefined) this.integrity = integrity;
+    this.nomodule = nomodule;
+    if (nonce !== undefined) this.nonce = nonce;
+    if (referrerpolicy !== undefined) this.referrerpolicy = referrerpolicy;
+    if (attributionsrc !== undefined) this.attributionsrc = attributionsrc;
 
-    // type
-    if (type !== undefined) {
-      if (typeof type !== 'string') throw new TypeError('TinyHtmlScript: "type" must be a string.');
-      this.setAttr('type', type);
-    }
-
-    // async / defer (only valid with src)
-    if (async !== undefined) {
-      if (typeof async !== 'boolean')
-        throw new TypeError('TinyHtmlScript: "async" must be a boolean.');
-      if (async) {
-        if (!src) throw new Error('TinyHtmlScript: "async" requires a "src" attribute.');
-        this.addProp('async');
-      }
-    }
-
-    if (defer !== undefined) {
-      if (typeof defer !== 'boolean')
-        throw new TypeError('TinyHtmlScript: "defer" must be a boolean.');
-      if (defer) {
-        if (!src) throw new Error('TinyHtmlScript: "defer" requires a "src" attribute.');
-        this.addProp('defer');
-      }
-    }
-
-    // blocking
-    if (blocking !== undefined) {
-      const values = Array.isArray(blocking) ? blocking : String(blocking).trim().split(/\s+/);
-      for (const v of values) {
-        if (v !== 'render') throw new Error(`TinyHtmlScript: invalid blocking token "${v}".`);
-      }
-      this.setAttr('blocking', values.join(' '));
-    }
-
-    // crossorigin
-    if (crossorigin !== undefined) {
-      if (!['anonymous', 'use-credentials'].includes(crossorigin)) {
-        throw new Error('TinyHtmlScript: "crossorigin" must be "anonymous" or "use-credentials".');
-      }
-      this.setAttr('crossorigin', crossorigin);
-    }
-
-    // fetchpriority
-    if (!['auto', 'high', 'low'].includes(fetchpriority)) {
-      throw new Error('TinyHtmlScript: "fetchpriority" must be "auto", "high", or "low".');
-    }
-    this.setAttr('fetchpriority', fetchpriority);
-
-    // integrity (only with src)
-    if (integrity !== undefined) {
-      if (!src) throw new Error('TinyHtmlScript: "integrity" requires "src".');
-      if (typeof integrity !== 'string')
-        throw new TypeError('TinyHtmlScript: "integrity" must be a string.');
-      this.setAttr('integrity', integrity);
-    }
-
-    // nomodule
-    if (typeof nomodule !== 'boolean')
-      throw new TypeError('TinyHtmlScript: "nomodule" must be a boolean.');
-    if (nomodule) this.addProp('nomodule');
-
-    // nonce
-    if (nonce !== undefined) {
-      if (typeof nonce !== 'string')
-        throw new TypeError('TinyHtmlScript: "nonce" must be a string.');
-      this.setAttr('nonce', nonce);
-    }
-
-    // referrerpolicy
-    if (referrerpolicy !== undefined) {
-      if (typeof referrerpolicy !== 'string')
-        throw new TypeError('TinyHtmlScript: "referrerpolicy" must be a string.');
-      this.setAttr('referrerpolicy', referrerpolicy);
-    }
-
-    // attributionsrc
-    if (attributionsrc !== undefined) {
-      if (attributionsrc === true) {
-        this.addProp('attributionsrc');
-      } else if (typeof attributionsrc === 'string') {
-        this.setAttr('attributionsrc', attributionsrc);
-      } else if (
-        Array.isArray(attributionsrc) &&
-        attributionsrc.every((v) => typeof v === 'string')
-      ) {
-        this.setAttr('attributionsrc', attributionsrc.join(' '));
-      } else {
-        throw new TypeError(
-          'TinyHtmlScript: "attributionsrc" must be boolean, string, or string[].',
-        );
-      }
-    }
-
-    // inline content (only if no src)
-    if (!src && content) {
-      if (typeof content !== 'string')
-        throw new TypeError('TinyHtmlScript: "content" must be a string.');
-      this._preHtmlElem('TinyHtmlScript').textContent = content;
-    }
+    if (!src && content) this.content = content;
   }
 
-  /**
-   * Updates inline script content.
-   * @param {string} code - JavaScript code to set inside the script element.
-   * @returns {this}
-   */
-  setContent(code) {
+  /** @param {string} src */
+  set src(src) {
+    if (typeof src !== 'string') throw new TypeError('TinyHtmlScript: "src" must be a string.');
+    this.setAttr('src', src);
+  }
+  /** @returns {string|null} */
+  get src() {
+    return this.attrString('src');
+  }
+
+  /** @param {string} type */
+  set type(type) {
+    if (typeof type !== 'string') throw new TypeError('TinyHtmlScript: "type" must be a string.');
+    this.setAttr('type', type);
+  }
+  /** @returns {string|null} */
+  get type() {
+    return this.attrString('type');
+  }
+
+  /** @param {boolean} async */
+  set async(async) {
+    if (typeof async !== 'boolean')
+      throw new TypeError('TinyHtmlScript: "async" must be a boolean.');
+    if (async && !this.src) throw new Error('TinyHtmlScript: "async" requires a "src" attribute.');
+    this.toggleProp('async', async);
+  }
+  /** @returns {boolean} */
+  get async() {
+    return this.hasProp('async');
+  }
+
+  /** @param {boolean} defer */
+  set defer(defer) {
+    if (typeof defer !== 'boolean')
+      throw new TypeError('TinyHtmlScript: "defer" must be a boolean.');
+    if (defer && !this.src) throw new Error('TinyHtmlScript: "defer" requires a "src" attribute.');
+    this.toggleProp('defer', defer);
+  }
+  /** @returns {boolean} */
+  get defer() {
+    return this.hasProp('defer');
+  }
+
+  /** @param {string|string[]} blocking */
+  set blocking(blocking) {
+    const values = Array.isArray(blocking) ? blocking : String(blocking).trim().split(/\s+/);
+    for (const v of values) {
+      if (v !== 'render') throw new Error(`TinyHtmlScript: invalid blocking token "${v}".`);
+    }
+    this.setAttr('blocking', values.join(' '));
+  }
+  /** @returns {string[]|null} */
+  get blocking() {
+    const val = this.attrString('blocking');
+    return val ? val.split(/\s+/) : null;
+  }
+
+  /** @param {"anonymous"|"use-credentials"} crossorigin */
+  set crossorigin(crossorigin) {
+    if (!['anonymous', 'use-credentials'].includes(crossorigin))
+      throw new Error('TinyHtmlScript: "crossorigin" must be "anonymous" or "use-credentials".');
+    this.setAttr('crossorigin', crossorigin);
+  }
+  /** @returns {string|null} */
+  get crossorigin() {
+    return this.attrString('crossorigin');
+  }
+
+  /** @param {"auto"|"high"|"low"} fetchpriority */
+  set fetchpriority(fetchpriority) {
+    if (!['auto', 'high', 'low'].includes(fetchpriority))
+      throw new Error('TinyHtmlScript: "fetchpriority" must be "auto", "high", or "low".');
+    this.setAttr('fetchpriority', fetchpriority);
+  }
+  /** @returns {string|null} */
+  get fetchpriority() {
+    return this.attrString('fetchpriority');
+  }
+
+  /** @param {string} integrity */
+  set integrity(integrity) {
+    if (!this.src) throw new Error('TinyHtmlScript: "integrity" requires "src".');
+    if (typeof integrity !== 'string')
+      throw new TypeError('TinyHtmlScript: "integrity" must be a string.');
+    this.setAttr('integrity', integrity);
+  }
+  /** @returns {string|null} */
+  get integrity() {
+    return this.attrString('integrity');
+  }
+
+  /** @param {boolean} nomodule */
+  set nomodule(nomodule) {
+    if (typeof nomodule !== 'boolean')
+      throw new TypeError('TinyHtmlScript: "nomodule" must be a boolean.');
+    this.toggleProp('nomodule', nomodule);
+  }
+  /** @returns {boolean} */
+  get nomodule() {
+    return this.hasProp('nomodule');
+  }
+
+  /** @param {string} nonce */
+  set nonce(nonce) {
+    if (typeof nonce !== 'string') throw new TypeError('TinyHtmlScript: "nonce" must be a string.');
+    this.setAttr('nonce', nonce);
+  }
+  /** @returns {string|null} */
+  get nonce() {
+    return this.attrString('nonce');
+  }
+
+  /** @param {string} referrerpolicy */
+  set referrerpolicy(referrerpolicy) {
+    if (typeof referrerpolicy !== 'string')
+      throw new TypeError('TinyHtmlScript: "referrerpolicy" must be a string.');
+    this.setAttr('referrerpolicy', referrerpolicy);
+  }
+  /** @returns {string|null} */
+  get referrerpolicy() {
+    return this.attrString('referrerpolicy');
+  }
+
+  /** @param {boolean|string|string[]} attributionsrc */
+  set attributionsrc(attributionsrc) {
+    if (attributionsrc === true) {
+      this.addProp('attributionsrc');
+    } else if (typeof attributionsrc === 'string') {
+      this.setAttr('attributionsrc', attributionsrc);
+    } else if (
+      Array.isArray(attributionsrc) &&
+      attributionsrc.every((v) => typeof v === 'string')
+    ) {
+      this.setAttr('attributionsrc', attributionsrc.join(' '));
+    } else {
+      throw new TypeError('TinyHtmlScript: "attributionsrc" must be boolean, string, or string[].');
+    }
+  }
+  /** @returns {boolean|string[]|null} */
+  get attributionsrc() {
+    if (this.hasProp('attributionsrc')) return true;
+    const val = this.attrString('attributionsrc');
+    return val ? val.split(/\s+/) : null;
+  }
+
+  /** @param {string} code */
+  set content(code) {
     if (typeof code !== 'string')
-      throw new TypeError('TinyHtmlScript.setContent: "code" must be a string.');
-    if (this.attr('src'))
-      throw new Error(
-        'TinyHtmlScript.setContent: Cannot set inline content when "src" is defined.',
-      );
-    this._preHtmlElem('setContent').textContent = code;
-    return this;
+      throw new TypeError('TinyHtmlScript: "content" must be a string.');
+    if (this.src)
+      throw new Error('TinyHtmlScript: Cannot set inline content when "src" is defined.');
+    this._preHtmlElem('content').textContent = code;
+  }
+  /** @returns {string|null} */
+  get content() {
+    return this._preHtmlElem('content').textContent || null;
   }
 }
 

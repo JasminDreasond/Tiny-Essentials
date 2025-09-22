@@ -1538,10 +1538,10 @@ TinyHtml provides methods to **read** and **set** an element's dimensions, simil
 
 ### 🔍 Reading Dimensions
 
-#### `.width()` / `TinyHtml.width(el)`
+#### `.width` / `TinyHtml.width(el)`
 Returns the **content box width** (excluding padding, border, and margin).
 
-#### `.height()` / `TinyHtml.height(el)`
+#### `.height` / `TinyHtml.height(el)`
 Returns the **content box height**.
 
 ---
@@ -1777,12 +1777,12 @@ element.tagName(); // → "DIV", "SPAN", etc.
 
 ---
 
-### 🆔 `.id()` / `TinyHtml.id(el)`
+### 🆔 `.id` / `TinyHtml.id(el)`
 
 Returns the ID attribute value of the element.
 
 ```js
-element.id(); // → "my-element-id"
+element.id; // → "my-element-id"
 ```
 
 ---

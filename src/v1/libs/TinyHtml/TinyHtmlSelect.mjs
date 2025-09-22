@@ -2,12 +2,12 @@ import TinyHtml from '../TinyHtml.mjs';
 import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
 
 /**
- * TinySelect is a lightweight helper class for managing <select> elements.
- * It provides an easy way to add <option> elements dynamically and supports
- * all standard <select> attributes like autocomplete, autofocus, disabled, etc.
+ * TinyHtmlSelect is a helper class for managing <select> elements.
+ * It supports all standard attributes (multiple, autocomplete, autofocus, disabled, etc.)
+ * and provides helpers for managing <option> elements.
  *
  * @example
- * const select = new TinySelect({
+ * const select = new TinyHtmlSelect({
  *   options: [
  *     { value: '1', label: 'One' },
  *     { value: '2', label: 'Two', selected: true }
@@ -22,8 +22,7 @@ import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
  */
 class TinyHtmlSelect extends TinyHtmlTemplate {
   /**
-   * Creates a new TinySelect instance.
-   * @param {Object} config - Configuration object.
+   * @param {Object} config
    * @param {{ value: string, label: string|Element|TinyHtml<any>, selected?: boolean, allowHtml?: boolean }[]} [config.options=[]]
    * @param {boolean} [config.multiple=false]
    * @param {string} [config.autocomplete]
@@ -51,72 +50,124 @@ class TinyHtmlSelect extends TinyHtmlTemplate {
   } = {}) {
     super(document.createElement('select'), tags, mainClass);
 
-    // multiple
-    if (typeof multiple !== 'boolean')
-      throw new TypeError('TinySelect: "multiple" must be a boolean.');
-    if (multiple) this.setAttr('multiple', 'multiple');
+    this.multiple = multiple;
+    if (autocomplete !== undefined) this.autocomplete = autocomplete;
+    this.autofocus = autofocus;
+    this.disabled = disabled;
+    if (form !== undefined) this.form = form;
+    if (name !== undefined) this.name = name;
+    this.required = required;
+    if (size !== undefined) this.size = size;
 
-    // autocomplete
-    if (autocomplete !== undefined) {
-      if (typeof autocomplete !== 'string')
-        throw new TypeError('TinySelect: "autocomplete" must be a string.');
-      this.setAttr('autocomplete', autocomplete);
-    }
-
-    // autofocus
-    if (typeof autofocus !== 'boolean')
-      throw new TypeError('TinySelect: "autofocus" must be a boolean.');
-    if (autofocus) this.setAttr('autofocus', 'autofocus');
-
-    // disabled
-    if (typeof disabled !== 'boolean')
-      throw new TypeError('TinySelect: "disabled" must be a boolean.');
-    if (disabled) this.addProp('disabled');
-
-    // form
-    if (form !== undefined) {
-      if (typeof form !== 'string')
-        throw new TypeError('TinySelect: "form" must be a string (form id).');
-      this.setAttr('form', form);
-    }
-
-    // name
-    if (name !== undefined) {
-      if (typeof name !== 'string') throw new TypeError('TinySelect: "name" must be a string.');
-      this.setAttr('name', name);
-    }
-
-    // required
-    if (typeof required !== 'boolean')
-      throw new TypeError('TinySelect: "required" must be a boolean.');
-    if (required) this.addProp('required');
-
-    // size
-    if (size !== undefined) {
-      if (!Number.isInteger(size) || size < 0)
-        throw new TypeError('TinySelect: "size" must be a non-negative integer.');
-      this.setAttr('size', String(size));
-    }
-
-    // options
     for (const opt of options) {
       this.addOption(opt);
     }
   }
 
+  /** @param {boolean} multiple */
+  set multiple(multiple) {
+    if (typeof multiple !== 'boolean') throw new TypeError('"multiple" must be a boolean.');
+    if (multiple) this.addProp('multiple');
+    else this.removeProp('multiple');
+  }
+
+  /** @returns {boolean} */
+  get multiple() {
+    return this.hasProp('multiple');
+  }
+
+  /** @param {string} autocomplete */
+  set autocomplete(autocomplete) {
+    if (typeof autocomplete !== 'string') throw new TypeError('"autocomplete" must be a string.');
+    this.setAttr('autocomplete', autocomplete);
+  }
+
+  /** @returns {string|null} */
+  get autocomplete() {
+    return this.attrString('autocomplete');
+  }
+
+  /** @param {boolean} autofocus */
+  set autofocus(autofocus) {
+    if (typeof autofocus !== 'boolean') throw new TypeError('"autofocus" must be a boolean.');
+    if (autofocus) this.addProp('autofocus');
+    else this.removeProp('autofocus');
+  }
+
+  /** @returns {boolean} */
+  get autofocus() {
+    return this.hasProp('autofocus');
+  }
+
+  /** @param {boolean} disabled */
+  set disabled(disabled) {
+    if (typeof disabled !== 'boolean') throw new TypeError('"disabled" must be a boolean.');
+    if (disabled) this.addProp('disabled');
+    else this.removeProp('disabled');
+  }
+
+  /** @returns {boolean} */
+  get disabled() {
+    return this.hasProp('disabled');
+  }
+
+  /** @param {string} form */
+  set form(form) {
+    if (typeof form !== 'string') throw new TypeError('"form" must be a string (form id).');
+    this.setAttr('form', form);
+  }
+
+  /** @returns {string|null} */
+  get form() {
+    return this.attrString('form');
+  }
+
+  /** @param {string} name */
+  set name(name) {
+    if (typeof name !== 'string') throw new TypeError('"name" must be a string.');
+    this.setAttr('name', name);
+  }
+
+  /** @returns {string|null} */
+  get name() {
+    return this.attrString('name');
+  }
+
+  /** @param {boolean} required */
+  set required(required) {
+    if (typeof required !== 'boolean') throw new TypeError('"required" must be a boolean.');
+    if (required) this.addProp('required');
+    else this.removeProp('required');
+  }
+
+  /** @returns {boolean} */
+  get required() {
+    return this.hasProp('required');
+  }
+
+  /** @param {number} size */
+  set elSize(size) {
+    if (!Number.isInteger(size) || size < 0)
+      throw new TypeError('"size" must be a non-negative integer.');
+    this.setAttr('size', size);
+  }
+
+  /** @returns {number|null} */
+  get elSize() {
+    return this.attrNumber('size');
+  }
+
   /**
-   * Adds an option to the select element.
+   * Adds an option element.
    * @param {{ value: string, label: string|Element|TinyHtml<any>, selected?: boolean, allowHtml?: boolean }} option
    * @returns {this}
    */
   addOption({ value, label, allowHtml = false, selected = false }) {
-    if (typeof value !== 'string')
-      throw new TypeError('TinySelect.addOption: "value" must be a string.');
-    if (typeof selected !== 'boolean')
-      throw new TypeError('TinySelect.addOption: "selected" must be a boolean.');
+    if (typeof value !== 'string') throw new TypeError('"value" must be a string.');
+    if (typeof selected !== 'boolean') throw new TypeError('"selected" must be a boolean.');
 
     const opt = new TinyHtml(document.createElement('option'));
-    opt.setVal(value);
+    opt.setAttr('value', value);
 
     if (typeof label === 'string') {
       if (!allowHtml) opt.setText(label);
@@ -125,44 +176,53 @@ class TinyHtmlSelect extends TinyHtmlTemplate {
       if (!allowHtml)
         throw new Error('addOption: Passing an Element/TinyHtml requires allowHtml=true.');
       opt.append(label);
-    } else
-      throw new TypeError("addOption: 'label' must be a string, Element, or TinyHtml instance.");
+    } else {
+      throw new TypeError('"label" must be a string, Element, or TinyHtml instance.');
+    }
 
     if (selected) opt.addProp('selected');
     this.append(opt);
     return this;
   }
 
-  /**
-   * Gets the currently selected value.
-   * @returns {string}
-   */
-  getValue() {
-    if (this.hasProp('multiple'))
-      throw new Error('TinySelect.getValue: Use getValues() for multiple selects.');
+  /** @returns {string} */
+  get value() {
+    if (this.multiple)
+      throw new Error('TinyHtmlSelect.value: Use "values" getter for multiple selects.');
     return this.valTxt();
   }
 
-  /**
-   * Gets the currently selected values.
-   * @returns {string[]}
-   */
-  getValues() {
-    if (!this.hasProp('multiple'))
-      throw new Error('TinySelect.getValues: Use getValue() for single selects.');
+  /** @param {string} val */
+  set value(val) {
+    if (this.multiple)
+      throw new Error('TinyHtmlSelect.value: Use "values" setter for multiple selects.');
+    if (typeof val !== 'string') throw new TypeError('"value" must be a string.');
+    this.setValue(val);
+  }
+
+  /** @returns {string[]} */
+  get values() {
+    if (!this.multiple)
+      throw new Error('TinyHtmlSelect.values: Use "value" getter for single select.');
     return Array.from(this.prop('selectedOptions')).map((o) => o.value);
   }
 
+  /** @param {string[]} vals */
+  set values(vals) {
+    if (!this.multiple)
+      throw new Error('TinyHtmlSelect.values: Use "value" setter for single select.');
+    if (!Array.isArray(vals) || !vals.every((v) => typeof v === 'string'))
+      throw new TypeError('"values" must be an array of strings.');
+    this.setValue(vals);
+  }
+
   /**
-   * Sets the selected value(s).
+   * Internal: apply selection to options.
    * @param {string|string[]} value
    * @returns {this}
    */
   setValue(value) {
     const values = Array.isArray(value) ? value : [value];
-    if (!values.every((v) => typeof v === 'string'))
-      throw new TypeError('TinySelect.setValue: "value" must be a string or array of strings.');
-
     for (const opt of this.prop('options')) {
       opt.selected = values.includes(opt.value);
     }

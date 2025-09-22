@@ -161,8 +161,8 @@
       };
 
       const syncInputs = () => {
-        controls.width.value = tinyEl.width();
-        controls.height.value = tinyEl.height();
+        controls.width.value = tinyEl.width;
+        controls.height.value = tinyEl.height;
         controls.scrollTop.value = tinyEl.scrollTop();
         controls.scrollLeft.value = tinyEl.scrollLeft();
         controls.padding.value = tinyEl.padding().left;
@@ -216,11 +216,11 @@
           'TinyHtml.cssFloats([marginTop, marginBottom])': JSON.stringify(
             tinyEl.cssFloats(['marginTop', 'marginBottom']),
           ),
-          'TinyHtml.height': tinyEl.height() + 'px',
+          'TinyHtml.height': tinyEl.height + 'px',
           'TinyHtml.innerHeight': tinyEl.innerHeight() + 'px',
           'TinyHtml.outerHeight': tinyEl.outerHeight() + 'px',
           'TinyHtml.outerHeight (with margin)': tinyEl.outerHeight(true) + 'px',
-          'TinyHtml.width': tinyEl.width() + 'px',
+          'TinyHtml.width': tinyEl.width + 'px',
           'TinyHtml.innerWidth': tinyEl.innerWidth() + 'px',
           'TinyHtml.outerWidth': tinyEl.outerWidth() + 'px',
           'TinyHtml.outerWidth (with margin)': tinyEl.outerWidth(true) + 'px',

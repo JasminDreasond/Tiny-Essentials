@@ -28,20 +28,30 @@ class TinyHtmlDatalist extends TinyHtmlTemplate {
   constructor({ id, tags = [], mainClass = '', options = [] } = {}) {
     super(document.createElement('datalist'), tags, mainClass);
 
-    if (id !== undefined) {
-      if (typeof id !== 'string') {
-        throw new TypeError('TinyHtmlDatalist: "id" must be a string.');
-      }
-      this.setAttr('id', id);
-    }
+    if (id !== undefined) this.id = id;
+    if (options !== undefined) this.options = options;
+  }
 
+  /** @param {Array<{value: string, label?: string}>} options */
+  set options(options) {
     if (!Array.isArray(options)) {
       throw new TypeError('TinyHtmlDatalist: "options" must be an array.');
     }
-
+    // limpa opções anteriores
+    this.el.innerHTML = '';
     for (const opt of options) {
       this.addOption(opt);
     }
+  }
+
+  /** @returns {Array<{value: string, label: string|null}>} */
+  get options() {
+    return Array.from(this.el.children)
+      .filter((child) => child instanceof HTMLOptionElement)
+      .map((opt) => ({
+        value: opt.value,
+        label: opt.label || null,
+      }));
   }
 
   /**
@@ -62,7 +72,7 @@ class TinyHtmlDatalist extends TinyHtmlTemplate {
     const option = document.createElement('option');
     option.value = value;
     if (label) option.label = label;
-    this._preHtmlElem('addOption').appendChild(option);
+    this.el.appendChild(option);
     return option;
   }
 
@@ -75,30 +85,15 @@ class TinyHtmlDatalist extends TinyHtmlTemplate {
     if (typeof value !== 'string')
       throw new TypeError('TinyHtmlDatalist.removeOption: "value" must be a string.');
 
-    const elem = this._preHtmlElem('removeOption');
-    const elems = Array.from(elem.children);
-    const option = elems.find(
+    const option = Array.from(this.el.children).find(
       (child) => child instanceof HTMLOptionElement && child.value === value,
     );
+
     if (option) {
       option.remove();
       return true;
     }
     return false;
-  }
-
-  /**
-   * Returns all options as an array of objects.
-   * @returns {Array<{value: string, label: string|null}>}
-   */
-  getOptions() {
-    const first = this._preHtmlElem('getOptions');
-    return Array.from(first.children)
-      .filter((child) => child instanceof HTMLOptionElement)
-      .map((opt) => ({
-        value: opt.value,
-        label: opt.label || null,
-      }));
   }
 }
 

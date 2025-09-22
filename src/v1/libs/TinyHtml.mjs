@@ -3822,6 +3822,14 @@ class TinyHtml {
   }
 
   /**
+   * Sets the height of the element.
+   * @param {string|number} value - Height value.
+   */
+  set height(value) {
+    TinyHtml.setHeight(this, value);
+  }
+
+  /**
    * Sets the width of the element.
    * @template {TinyHtmlElement} T
    * @param {T} el - Target element.
@@ -3847,6 +3855,14 @@ class TinyHtml {
   }
 
   /**
+   * Sets the width of the element.
+   * @param {string|number} value - Width value.
+   */
+  set width(value) {
+    TinyHtml.setWidth(this, value);
+  }
+
+  /**
    * Returns content box height.
    * @param {TinyElementAndWinAndDoc} el - Target element.
    * @returns {number}
@@ -3860,7 +3876,7 @@ class TinyHtml {
    * Returns content box height.
    * @returns {number}
    */
-  height() {
+  get height() {
     return TinyHtml.height(this);
   }
 
@@ -3878,7 +3894,7 @@ class TinyHtml {
    * Returns content box width.
    * @returns {number}
    */
-  width() {
+  get width() {
     return TinyHtml.width(this);
   }
 
@@ -5774,8 +5790,16 @@ class TinyHtml {
    * Returns the ID of the element.
    * @returns {string} The element's ID.
    */
-  id() {
+  get id() {
     return TinyHtml.id(this);
+  }
+
+  /**
+   * Set the id on an element.
+   * @param {string} value - Id name.
+   */
+  set id(value) {
+    TinyHtml.setAttr(this, 'id', value);
   }
 
   //////////////////////////////////////////////////////////////

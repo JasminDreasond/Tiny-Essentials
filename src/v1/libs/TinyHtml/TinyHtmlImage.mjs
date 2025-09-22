@@ -49,7 +49,7 @@ class TinyHtmlImage extends TinyHtmlTemplate {
    * @param {number} [config.width] - Width in pixels.
    * @param {number} [config.height] - Height in pixels.
    * @param {string|string[]|Set<string>} [config.tags=[]] - Initial CSS classes.
-   * @param {boolean} [config.fetchMode=TinyHtmlImage.#fetchMode]
+   * @param {boolean} [config.fetchMode=TinyHtmlImage.#defaultFetchMode]
    * @param {string} [config.mainClass='']
    * @param {string|string[]|boolean} [config.attributionsrc]
    * @param {'anonymous'|'use-credentials'} [config.crossorigin]
@@ -86,106 +86,192 @@ class TinyHtmlImage extends TinyHtmlTemplate {
     super(document.createElement('img'), tags, mainClass);
 
     // required
-    if (typeof src !== 'string') throw new TypeError('TinyImage: "src" must be a string.');
-    this.setAttr('src', src);
+    this.src = src;
 
-    // alt
-    if (alt !== undefined) {
-      if (typeof alt !== 'string') throw new TypeError('TinyImage: "alt" must be a string.');
-      this.setAttr('alt', alt);
-    }
+    if (alt !== undefined) this.alt = alt;
+    if (width !== undefined) this.setWidth(width);
+    if (height !== undefined) this.setHeight(height);
+    if (attributionsrc !== undefined) this.attributionsrc = attributionsrc;
+    if (crossorigin !== undefined) this.crossorigin = crossorigin;
+    if (decoding !== undefined) this.decoding = decoding;
+    if (elementtiming !== undefined) this.elementtiming = elementtiming;
+    if (fetchpriority !== undefined) this.fetchpriority = fetchpriority;
+    this.ismap = ismap;
+    if (loading !== undefined) this.loading = loading;
+    if (referrerpolicy !== undefined) this.referrerpolicy = referrerpolicy;
+    if (sizes !== undefined) this.sizes = sizes;
+    if (srcset !== undefined) this.srcset = srcset;
+    if (usemap !== undefined) this.usemap = usemap;
 
-    // width/height
-    if (width !== undefined) {
-      if (!Number.isInteger(width)) throw new TypeError('TinyImage: "width" must be an integer.');
-      this.setAttr('width', String(width));
-    }
-    if (height !== undefined) {
-      if (!Number.isInteger(height)) throw new TypeError('TinyImage: "height" must be an integer.');
-      this.setAttr('height', String(height));
-    }
-
-    // attributionsrc
-    if (attributionsrc !== undefined) {
-      if (typeof attributionsrc === 'boolean') {
-        if (attributionsrc) this.addProp('attributionsrc');
-      } else if (typeof attributionsrc === 'string' || Array.isArray(attributionsrc)) {
-        const value = Array.isArray(attributionsrc) ? attributionsrc.join(',') : attributionsrc;
-        this.setAttr('attributionsrc', value);
-      } else
-        throw new TypeError(
-          'TinyImage: "attributionsrc" must be a boolean, string, or array of strings.',
-        );
-    }
-
-    // crossorigin
-    if (crossorigin !== undefined) {
-      if (!['anonymous', 'use-credentials'].includes(crossorigin))
-        throw new TypeError('TinyImage: "crossorigin" must be "anonymous" or "use-credentials".');
-      this.setAttr('crossorigin', crossorigin);
-    }
-
-    // decoding
-    if (decoding !== undefined) {
-      if (!['sync', 'async', 'auto'].includes(decoding))
-        throw new TypeError('TinyImage: "decoding" must be "sync", "async" or "auto".');
-      this.setAttr('decoding', decoding);
-    }
-
-    // elementtiming
-    if (elementtiming !== undefined) {
-      if (typeof elementtiming !== 'string')
-        throw new TypeError('TinyImage: "elementtiming" must be a string.');
-      this.setAttr('elementtiming', elementtiming);
-    }
-
-    // fetchpriority
-    if (fetchpriority !== undefined) {
-      if (!['high', 'low', 'auto'].includes(fetchpriority))
-        throw new TypeError('TinyImage: "fetchpriority" must be "high", "low" or "auto".');
-      this.setAttr('fetchpriority', fetchpriority);
-    }
-
-    // ismap
-    if (typeof ismap !== 'boolean') throw new TypeError('TinyImage: "ismap" must be a boolean.');
-    if (ismap) this.addProp('ismap');
-
-    // loading
-    if (loading !== undefined) {
-      if (!['eager', 'lazy'].includes(loading))
-        throw new TypeError('TinyImage: "loading" must be "eager" or "lazy".');
-      this.setAttr('loading', loading);
-    }
-
-    // referrerpolicy
-    if (referrerpolicy !== undefined) {
-      if (typeof referrerpolicy !== 'string')
-        throw new TypeError('TinyImage: "referrerpolicy" must be a string.');
-      this.setAttr('referrerpolicy', referrerpolicy);
-    }
-
-    // sizes
-    if (sizes !== undefined) {
-      if (typeof sizes !== 'string') throw new TypeError('TinyImage: "sizes" must be a string.');
-      this.setAttr('sizes', sizes);
-    }
-
-    // srcset
-    if (srcset !== undefined) {
-      if (typeof srcset !== 'string') throw new TypeError('TinyImage: "srcset" must be a string.');
-      this.setAttr('srcset', srcset);
-    }
-
-    // usemap
-    if (usemap !== undefined) {
-      if (typeof usemap !== 'string') throw new TypeError('TinyImage: "usemap" must be a string.');
-      this.setAttr('usemap', usemap);
-    }
-
-    // fetchMode (custom internal flag)
     if (typeof fetchMode !== 'boolean')
       throw new TypeError('TinyImage: "fetchMode" must be a boolean.');
     this.#fetchMode = fetchMode;
+  }
+
+  // --- Attributes ---
+
+  /** @param {string} value */
+  set src(value) {
+    if (typeof value !== 'string') throw new TypeError('TinyImage: "src" must be a string.');
+    this.setAttr('src', value);
+  }
+
+  /** @returns {string|null} */
+  get src() {
+    return this.attrString('src');
+  }
+
+  /** @param {string} value */
+  set alt(value) {
+    if (typeof value !== 'string') throw new TypeError('TinyImage: "alt" must be a string.');
+    this.setAttr('alt', value);
+  }
+
+  /** @returns {string|null} */
+  get alt() {
+    return this.attrString('alt');
+  }
+
+  /** @param {string|string[]|boolean} value */
+  set attributionsrc(value) {
+    if (typeof value === 'boolean') {
+      if (value) this.addProp('attributionsrc');
+      else this.removeProp('attributionsrc');
+      return;
+    }
+    if (typeof value === 'string') {
+      this.setAttr('attributionsrc', value);
+      return;
+    }
+    if (Array.isArray(value)) {
+      this.setAttr('attributionsrc', value.join(','));
+      return;
+    }
+    throw new TypeError(
+      'TinyImage: "attributionsrc" must be a boolean, string, or array of strings.',
+    );
+  }
+
+  /** @returns {string|null} */
+  get attributionsrc() {
+    return this.attrString('attributionsrc');
+  }
+
+  /** @param {'anonymous'|'use-credentials'} value */
+  set crossorigin(value) {
+    if (!['anonymous', 'use-credentials'].includes(value))
+      throw new TypeError('TinyImage: "crossorigin" must be "anonymous" or "use-credentials".');
+    this.setAttr('crossorigin', value);
+  }
+
+  /** @returns {string|null} */
+  get crossorigin() {
+    return this.attrString('crossorigin');
+  }
+
+  /** @param {'sync'|'async'|'auto'} value */
+  set decoding(value) {
+    if (!['sync', 'async', 'auto'].includes(value))
+      throw new TypeError('TinyImage: "decoding" must be "sync", "async" or "auto".');
+    this.setAttr('decoding', value);
+  }
+
+  /** @returns {string|null} */
+  get decoding() {
+    return this.attrString('decoding');
+  }
+
+  /** @param {string} value */
+  set elementtiming(value) {
+    if (typeof value !== 'string')
+      throw new TypeError('TinyImage: "elementtiming" must be a string.');
+    this.setAttr('elementtiming', value);
+  }
+
+  /** @returns {string|null} */
+  get elementtiming() {
+    return this.attrString('elementtiming');
+  }
+
+  /** @param {'high'|'low'|'auto'} value */
+  set fetchpriority(value) {
+    if (!['high', 'low', 'auto'].includes(value))
+      throw new TypeError('TinyImage: "fetchpriority" must be "high", "low" or "auto".');
+    this.setAttr('fetchpriority', value);
+  }
+
+  /** @returns {string|null} */
+  get fetchpriority() {
+    return this.attrString('fetchpriority');
+  }
+
+  /** @param {boolean} value */
+  set ismap(value) {
+    if (typeof value !== 'boolean') throw new TypeError('TinyImage: "ismap" must be a boolean.');
+    if (value) this.addProp('ismap');
+    else this.removeProp('ismap');
+  }
+
+  /** @returns {boolean} */
+  get ismap() {
+    return this.hasProp('ismap');
+  }
+
+  /** @param {'eager'|'lazy'} value */
+  set loading(value) {
+    if (!['eager', 'lazy'].includes(value))
+      throw new TypeError('TinyImage: "loading" must be "eager" or "lazy".');
+    this.setAttr('loading', value);
+  }
+
+  /** @returns {string|null} */
+  get loading() {
+    return this.attrString('loading');
+  }
+
+  /** @param {string} value */
+  set referrerpolicy(value) {
+    if (typeof value !== 'string')
+      throw new TypeError('TinyImage: "referrerpolicy" must be a string.');
+    this.setAttr('referrerpolicy', value);
+  }
+
+  /** @returns {string|null} */
+  get referrerpolicy() {
+    return this.attrString('referrerpolicy');
+  }
+
+  /** @param {string} value */
+  set sizes(value) {
+    if (typeof value !== 'string') throw new TypeError('TinyImage: "sizes" must be a string.');
+    this.setAttr('sizes', value);
+  }
+
+  /** @returns {string|null} */
+  get sizes() {
+    return this.attrString('sizes');
+  }
+
+  /** @param {string} value */
+  set srcset(value) {
+    if (typeof value !== 'string') throw new TypeError('TinyImage: "srcset" must be a string.');
+    this.setAttr('srcset', value);
+  }
+
+  /** @returns {string|null} */
+  get srcset() {
+    return this.attrString('srcset');
+  }
+
+  /** @param {string} value */
+  set usemap(value) {
+    if (typeof value !== 'string') throw new TypeError('TinyImage: "usemap" must be a string.');
+    this.setAttr('usemap', value);
+  }
+
+  /** @returns {string|null} */
+  get usemap() {
+    return this.attrString('usemap');
   }
 }
 

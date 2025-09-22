@@ -77,84 +77,147 @@ class TinyHtmlForm extends TinyHtmlTemplate {
   } = {}) {
     super(document.createElement('form'), tags, mainClass);
 
-    // --- action ---
+    // action
+    this.action = action;
+    // method
+    this.method = method;
+    // enctype
+    if (enctype !== undefined) this.enctype = enctype;
+    // accept-charset
+    if (acceptCharset !== undefined) this.acceptCharset = acceptCharset;
+    // autocapitalize
+    if (autocapitalize !== undefined) this.autocapitalize = autocapitalize;
+    // autocomplete
+    if (autocomplete !== undefined) this.autocomplete = autocomplete;
+    // name
+    if (name !== undefined) this.name = name;
+    // rel
+    if (rel !== undefined) this.rel = rel;
+    // novalidate
+    this.novalidate = novalidate;
+    // target
+    if (target !== undefined) this.target = target;
+  }
+
+  /** @param {string} action */
+  set action(action) {
     if (typeof action !== 'string') throw new TypeError('TinyForm: "action" must be a string.');
     if (action) this.setAttr('action', action);
+  }
+  /** @returns {string|null} */
+  get action() {
+    return this.attrString('action');
+  }
 
-    // --- method ---
+  /** @param {'get'|'post'|'dialog'} method */
+  set method(method) {
     if (typeof method !== 'string') throw new TypeError('TinyForm: "method" must be a string.');
-    const normalized = method.toLowerCase();
-    const validMethods = ['get', 'post', 'dialog'];
-    if (!validMethods.includes(normalized))
-      throw new TypeError(`TinyForm: "method" must be one of: ${validMethods.join(', ')}.`);
-    this.setAttr('method', normalized);
+    const valid = ['get', 'post', 'dialog'];
+    const norm = method.toLowerCase();
+    if (!valid.includes(norm))
+      throw new TypeError(`TinyForm: "method" must be one of ${valid.join(', ')}.`);
+    this.setAttr('method', norm);
+  }
+  /** @returns {string|null} */
+  get method() {
+    return this.attrString('method');
+  }
 
-    // --- enctype ---
-    if (enctype !== undefined) {
-      const validEnctypes = [
-        'application/x-www-form-urlencoded',
-        'multipart/form-data',
-        'text/plain',
-      ];
-      if (!validEnctypes.includes(enctype))
-        throw new TypeError(`TinyForm: "enctype" must be one of: ${validEnctypes.join(', ')}.`);
-      this.setAttr('enctype', enctype);
-    }
+  /** @param {'application/x-www-form-urlencoded'|'multipart/form-data'|'text/plain'} enctype */
+  set enctype(enctype) {
+    const valid = ['application/x-www-form-urlencoded', 'multipart/form-data', 'text/plain'];
+    if (!valid.includes(enctype))
+      throw new TypeError(`TinyForm: "enctype" must be one of ${valid.join(', ')}.`);
+    this.setAttr('enctype', enctype);
+  }
+  /** @returns {string|null} */
+  get enctype() {
+    return this.attrString('enctype');
+  }
 
-    // --- accept-charset ---
-    if (acceptCharset !== undefined) {
-      if (typeof acceptCharset !== 'string')
-        throw new TypeError('TinyForm: "acceptCharset" must be a string.');
-      if (acceptCharset.toUpperCase() !== 'UTF-8')
-        console.warn('TinyForm: Only "UTF-8" is recommended for accept-charset.');
-      this.setAttr('accept-charset', acceptCharset);
-    }
+  /** @param {string} charset */
+  set acceptCharset(charset) {
+    if (typeof charset !== 'string')
+      throw new TypeError('TinyForm: "acceptCharset" must be a string.');
+    if (charset.toUpperCase() !== 'UTF-8')
+      console.warn('TinyForm: Only "UTF-8" is recommended for accept-charset.');
+    this.setAttr('accept-charset', charset);
+  }
+  /** @returns {string|null} */
+  get acceptCharset() {
+    return this.attrString('accept-charset');
+  }
 
-    // --- autocapitalize ---
-    if (autocapitalize !== undefined) {
-      const validAuto = ['none', 'off', 'sentences', 'on', 'words', 'characters'];
-      if (!validAuto.includes(autocapitalize))
-        throw new TypeError(`TinyForm: "autocapitalize" must be one of: ${validAuto.join(', ')}.`);
-      this.setAttr('autocapitalize', autocapitalize);
-    }
+  /** @param {'none'|'off'|'sentences'|'on'|'words'|'characters'} value */
+  set autocapitalize(value) {
+    const valid = ['none', 'off', 'sentences', 'on', 'words', 'characters'];
+    if (!valid.includes(value))
+      throw new TypeError(`TinyForm: "autocapitalize" must be one of ${valid.join(', ')}.`);
+    this.setAttr('autocapitalize', value);
+  }
+  /** @returns {string|null} */
+  get autocapitalize() {
+    return this.attrString('autocapitalize');
+  }
 
-    // --- autocomplete ---
-    if (autocomplete !== undefined) {
-      if (!['on', 'off'].includes(autocomplete))
-        throw new TypeError('TinyForm: "autocomplete" must be "on" or "off".');
-      this.setAttr('autocomplete', autocomplete);
-    }
+  /** @param {'on'|'off'} value */
+  set autocomplete(value) {
+    if (!['on', 'off'].includes(value))
+      throw new TypeError('TinyForm: "autocomplete" must be "on" or "off".');
+    this.setAttr('autocomplete', value);
+  }
+  /** @returns {string|null} */
+  get autocomplete() {
+    return this.attrString('autocomplete');
+  }
 
-    // --- name ---
-    if (name !== undefined) {
-      if (typeof name !== 'string') throw new TypeError('TinyForm: "name" must be a string.');
-      if (name.trim() === '') throw new TypeError('TinyForm: "name" cannot be an empty string.');
-      this.setAttr('name', name);
-    }
+  /** @param {string} name */
+  set name(name) {
+    if (typeof name !== 'string') throw new TypeError('TinyForm: "name" must be a string.');
+    if (name.trim() === '') throw new TypeError('TinyForm: "name" cannot be empty.');
+    this.setAttr('name', name);
+  }
+  /** @returns {string|null} */
+  get name() {
+    return this.attrString('name');
+  }
 
-    // --- rel ---
-    if (rel !== undefined) {
-      if (typeof rel !== 'string') throw new TypeError('TinyForm: "rel" must be a string.');
-      this.setAttr('rel', rel);
-    }
+  /** @param {string} rel */
+  set rel(rel) {
+    if (typeof rel !== 'string') throw new TypeError('TinyForm: "rel" must be a string.');
+    this.setAttr('rel', rel);
+  }
+  /** @returns {string|null} */
+  get rel() {
+    return this.attrString('rel');
+  }
 
-    // --- novalidate ---
+  /** @param {boolean} novalidate */
+  set novalidate(novalidate) {
     if (typeof novalidate !== 'boolean')
       throw new TypeError('TinyForm: "novalidate" must be a boolean.');
     if (novalidate) this.addProp('novalidate');
+    else this.removeProp('novalidate');
+  }
+  /** @returns {boolean} */
+  get novalidate() {
+    return this.hasProp('novalidate');
+  }
 
-    // --- target ---
-    if (target !== undefined) {
-      if (typeof target !== 'string') throw new TypeError('TinyForm: "target" must be a string.');
-      const validTargets = ['_self', '_blank', '_parent', '_top', '_unfencedTop'];
-      // valid name pattern: start with letter/underscore, then letters/digits/underscore/hyphen
-      const validName = /^[a-zA-Z_][\w-]*$/;
-      if (!validTargets.includes(target) && !validName.test(target))
-        throw new TypeError(
-          `TinyForm: "target" must be a valid browsing context name or one of: ${validTargets.join(', ')}.`,
-        );
-      this.setAttr('target', target);
-    }
+  /** @param {string} target */
+  set target(target) {
+    if (typeof target !== 'string') throw new TypeError('TinyForm: "target" must be a string.');
+    const validTargets = ['_self', '_blank', '_parent', '_top', '_unfencedTop'];
+    const validName = /^[a-zA-Z_][\w-]*$/;
+    if (!validTargets.includes(target) && !validName.test(target))
+      throw new TypeError(
+        `TinyForm: "target" must be a valid context name or one of ${validTargets.join(', ')}.`,
+      );
+    this.setAttr('target', target);
+  }
+  /** @returns {string|null} */
+  get target() {
+    return this.attrString('target');
   }
 
   /**
@@ -162,9 +225,7 @@ class TinyHtmlForm extends TinyHtmlTemplate {
    * @returns {this}
    */
   submit() {
-    this.elements.forEach((element) =>
-      element instanceof HTMLFormElement ? element.submit() : null,
-    );
+    this.elements.forEach((el) => (el instanceof HTMLFormElement ? el.submit() : null));
     return this;
   }
 
@@ -173,9 +234,7 @@ class TinyHtmlForm extends TinyHtmlTemplate {
    * @returns {this}
    */
   reset() {
-    this.elements.forEach((element) =>
-      element instanceof HTMLFormElement ? element.reset() : null,
-    );
+    this.elements.forEach((el) => (el instanceof HTMLFormElement ? el.reset() : null));
     return this;
   }
 }

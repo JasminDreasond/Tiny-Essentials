@@ -30,6 +30,12 @@ class TinyHtmlTemplate extends TinyHtml {
   /** @type {Set<string>} */
   #mainClass = new Set();
 
+  /** @returns {TinyHtmlT} */
+  get el() {
+    // @ts-ignore
+    return this.get(0);
+  }
+
   /**
    * Updates the element's `className` attribute by combining
    * the current set of classes with the main class.
