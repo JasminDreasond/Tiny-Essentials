@@ -27,13 +27,10 @@ class TinyHtmlMedia extends TinyHtmlTemplate {
 
   /**
    * Plays all attached media elements.
-   * @returns {Promise<void[]>} Resolves when all play calls complete.
+   * @returns {Promise<void>} Resolves when all play calls complete.
    */
   playMedia() {
-    /** @type {Promise<void>[]} */
-    const plays = [];
-    this.elements.forEach((el) => (el instanceof HTMLMediaElement ? plays.push(el.play()) : null));
-    return Promise.all(plays);
+    return this.el.play();
   }
 
   /**
@@ -41,7 +38,7 @@ class TinyHtmlMedia extends TinyHtmlTemplate {
    * @returns {this}
    */
   pauseMedia() {
-    this.elements.forEach((el) => (el instanceof HTMLMediaElement ? el.pause() : null));
+    this.el.pause();
     return this;
   }
 
@@ -50,11 +47,8 @@ class TinyHtmlMedia extends TinyHtmlTemplate {
    * @returns {this}
    */
   togglePlayMedia() {
-    this.elements.forEach((el) => {
-      if (el instanceof HTMLMediaElement) {
-        el.paused ? el.play() : el.pause();
-      }
-    });
+    const el = this.el;
+    el.paused ? el.play() : el.pause();
     return this;
   }
 
@@ -73,7 +67,7 @@ class TinyHtmlMedia extends TinyHtmlTemplate {
    * @returns {this}
    */
   loadMedia() {
-    this.elements.forEach((el) => (el instanceof HTMLMediaElement ? el.load() : null));
+    this.el.load();
     return this;
   }
 
@@ -89,10 +83,7 @@ class TinyHtmlMedia extends TinyHtmlTemplate {
    * @returns {TextTrack}
    */
   addTextTrack(kind, label, language) {
-    const first = this.elements[0];
-    if (!(first instanceof HTMLMediaElement))
-      throw new Error('No HTMLMediaElement found to add a text track');
-    return first.addTextTrack(kind, label, language);
+    return this.el.addTextTrack(kind, label, language);
   }
 
   /**
@@ -101,8 +92,7 @@ class TinyHtmlMedia extends TinyHtmlTemplate {
    * @returns {CanPlayTypeResult} Either "", "probably", or "maybe".
    */
   canPlayType(type) {
-    const first = this.elements[0];
-    return first instanceof HTMLMediaElement ? first.canPlayType(type) : '';
+    return this.el.canPlayType(type);
   }
 
   /**
@@ -111,7 +101,7 @@ class TinyHtmlMedia extends TinyHtmlTemplate {
    * @returns {this}
    */
   fastSeek(time) {
-    this.elements.forEach((el) => (el instanceof HTMLMediaElement ? el.fastSeek(time) : null));
+    this.el.fastSeek(time);
     return this;
   }
 
@@ -121,8 +111,7 @@ class TinyHtmlMedia extends TinyHtmlTemplate {
    * @returns {Promise<void>}
    */
   setMediaKeys(keys) {
-    const first = this.elements[0];
-    return first instanceof HTMLMediaElement ? first.setMediaKeys(keys) : Promise.reject();
+    return this.el.setMediaKeys(keys);
   }
 
   /**
@@ -131,8 +120,7 @@ class TinyHtmlMedia extends TinyHtmlTemplate {
    * @returns {Promise<void>}
    */
   setSinkId(id) {
-    const first = this.elements[0];
-    return first instanceof HTMLMediaElement ? first.setSinkId(id) : Promise.reject();
+    return this.el.setSinkId(id);
   }
 
   // ------------------------
@@ -141,8 +129,7 @@ class TinyHtmlMedia extends TinyHtmlTemplate {
 
   /** @type {boolean} Autoplay state of the media. */
   get autoplay() {
-    const first = this.elements[0];
-    return first instanceof HTMLMediaElement ? first.autoplay : false;
+    return this.el.autoplay;
   }
   set autoplay(v) {
     this.setProp('autoplay', v);
@@ -150,16 +137,12 @@ class TinyHtmlMedia extends TinyHtmlTemplate {
 
   /** @returns {TimeRanges} The buffered time ranges. */
   get buffered() {
-    const first = this.elements[0];
-    if (!(first instanceof HTMLMediaElement))
-      throw new Error('No HTMLMediaElement found to access buffered ranges');
-    return first.buffered;
+    return this.el.buffered;
   }
 
   /** @type {boolean} Whether default controls are visible. */
   get controls() {
-    const first = this.elements[0];
-    return first instanceof HTMLMediaElement ? first.controls : false;
+    return this.el.controls;
   }
   set controls(v) {
     this.setProp('controls', v);
@@ -183,23 +166,20 @@ class TinyHtmlMedia extends TinyHtmlTemplate {
 
   /** @returns {string} The resolved source URL currently playing. */
   get currentSrc() {
-    const first = this.elements[0];
-    return first instanceof HTMLMediaElement ? first.currentSrc : '';
+    return this.el.currentSrc;
   }
 
   /** @type {number} The current playback position in seconds. */
   get currentTime() {
-    const first = this.elements[0];
-    return first instanceof HTMLMediaElement ? first.currentTime : 0;
+    return this.el.currentTime;
   }
   set currentTime(t) {
-    this.elements.forEach((el) => (el instanceof HTMLMediaElement ? (el.currentTime = t) : null));
+    this.el.currentTime = t;
   }
 
   /** @type {boolean} Whether media is muted by default. */
   get defaultMuted() {
-    const first = this.elements[0];
-    return first instanceof HTMLMediaElement ? first.defaultMuted : false;
+    return this.el.defaultMuted;
   }
   set defaultMuted(v) {
     this.setProp('defaultMuted', v);
@@ -207,19 +187,15 @@ class TinyHtmlMedia extends TinyHtmlTemplate {
 
   /** @type {number} Default playback rate (1 = normal speed). */
   get defaultPlaybackRate() {
-    const first = this.elements[0];
-    return first instanceof HTMLMediaElement ? first.defaultPlaybackRate : 1;
+    return this.el.defaultPlaybackRate;
   }
   set defaultPlaybackRate(v) {
-    this.elements.forEach((el) =>
-      el instanceof HTMLMediaElement ? (el.defaultPlaybackRate = v) : null,
-    );
+    this.el.defaultPlaybackRate = v;
   }
 
   /** @type {boolean} Whether remote playback is disabled. */
   get disableRemotePlayback() {
-    const first = this.elements[0];
-    return first instanceof HTMLMediaElement ? first.disableRemotePlayback : false;
+    return this.el.disableRemotePlayback;
   }
   set disableRemotePlayback(v) {
     this.setProp('disableRemotePlayback', v);
@@ -227,26 +203,22 @@ class TinyHtmlMedia extends TinyHtmlTemplate {
 
   /** @returns {number} The duration of the media in seconds. */
   get duration() {
-    const first = this.elements[0];
-    return first instanceof HTMLMediaElement ? first.duration : 0;
+    return this.el.duration;
   }
 
   /** @returns {boolean} Whether the media has ended. */
   get ended() {
-    const first = this.elements[0];
-    return first instanceof HTMLMediaElement ? first.ended : false;
+    return this.el.ended;
   }
 
   /** @returns {MediaError|null} Error state if media failed to load. */
   get error() {
-    const first = this.elements[0];
-    return first instanceof HTMLMediaElement ? first.error : null;
+    return this.el.error;
   }
 
   /** @type {boolean} Whether the media should loop. */
   get loop() {
-    const first = this.elements[0];
-    return first instanceof HTMLMediaElement ? first.loop : false;
+    return this.el.loop;
   }
   set loop(v) {
     this.setProp('loop', v);
@@ -262,63 +234,54 @@ class TinyHtmlMedia extends TinyHtmlTemplate {
 
   /** @returns {MediaKeys|null} The associated MediaKeys object. */
   get mediaKeys() {
-    const first = this.elements[0];
-    return first instanceof HTMLMediaElement ? first.mediaKeys : null;
+    return this.el.mediaKeys;
   }
 
   /** @type {boolean} Whether the media is muted. */
   get muted() {
-    const first = this.elements[0];
-    return first instanceof HTMLMediaElement ? first.muted : false;
+    return this.el.muted;
   }
   set muted(state) {
-    this.elements.forEach((el) => (el instanceof HTMLMediaElement ? (el.muted = state) : null));
+    this.el.muted = state;
   }
 
   /** @returns {number} Network state (see `HTMLMediaElement.networkState`). */
   get networkState() {
-    const first = this.elements[0];
-    return first instanceof HTMLMediaElement ? first.networkState : 0;
+    return this.el.networkState;
   }
 
   /** @returns {boolean} Whether the media is currently paused. */
   get paused() {
-    const first = this.elements[0];
-    return first instanceof HTMLMediaElement ? first.paused : true;
+    return this.el.paused;
   }
 
   /** @type {number} Current playback rate (1 = normal speed). */
   get playbackRate() {
-    const first = this.elements[0];
-    return first instanceof HTMLMediaElement ? first.playbackRate : 1;
+    return this.el.playbackRate;
   }
   set playbackRate(rate) {
-    this.elements.forEach((el) =>
-      el instanceof HTMLMediaElement ? (el.playbackRate = rate) : null,
-    );
+    this.el.playbackRate = rate;
   }
 
   /** @returns {TimeRanges} Played time ranges. */
   get played() {
-    const first = this.elements[0];
-    if (!(first instanceof HTMLMediaElement))
-      throw new Error('No HTMLMediaElement found to access played ranges');
-    return first.played;
+    return this.el.played;
   }
 
   /** @type {"" | "metadata" | "none" | "auto"} Preload strategy ('none', 'metadata', 'auto'). */
   get preload() {
-    const first = this.elements[0];
-    return first instanceof HTMLMediaElement ? first.preload : '';
+    return this.el.preload;
   }
   set preload(v) {
+    const valid = ['auto', 'metadata', 'none'];
+    if (!valid.includes(v))
+      throw new TypeError(`TinyVideo: "preload" must be one of ${valid.join(', ')}.`);
     this.setAttr('preload', v);
   }
 
   /** @type {boolean} Whether pitch is preserved when rate changes. */
   get preservesPitch() {
-    const first = this.elements[0];
-    return first instanceof HTMLMediaElement ? first.preservesPitch : false;
+    return this.el.preservesPitch;
   }
   set preservesPitch(v) {
     this.setProp('preservesPitch', v);
@@ -326,34 +289,27 @@ class TinyHtmlMedia extends TinyHtmlTemplate {
 
   /** @returns {number} Ready state of the media. */
   get readyState() {
-    const first = this.elements[0];
-    return first instanceof HTMLMediaElement ? first.readyState : 0;
+    return this.el.readyState;
   }
 
   /** @returns {RemotePlayback|null} Remote playback interface. */
   get remote() {
-    const first = this.elements[0];
-    return first instanceof HTMLMediaElement ? first.remote : null;
+    return this.el.remote;
   }
 
   /** @returns {TimeRanges} Seekable time ranges. */
   get seekable() {
-    const first = this.elements[0];
-    if (!(first instanceof HTMLMediaElement))
-      throw new Error('No HTMLMediaElement found to access seekable ranges');
-    return first.seekable;
+    return this.el.seekable;
   }
 
   /** @returns {boolean} Whether the media is currently seeking. */
   get seeking() {
-    const first = this.elements[0];
-    return first instanceof HTMLMediaElement ? first.seeking : false;
+    return this.el.seeking;
   }
 
   /** @returns {string} Current sink ID (output device). */
   get sinkId() {
-    const first = this.elements[0];
-    return first instanceof HTMLMediaElement ? first.sinkId : '';
+    return this.el.sinkId;
   }
 
   /** @type {string|null} Source URL of the media. */
@@ -366,19 +322,15 @@ class TinyHtmlMedia extends TinyHtmlTemplate {
 
   /** @type {MediaProvider|null} Current `srcObject` (e.g., MediaStream). */
   get srcObject() {
-    const first = this.elements[0];
-    return first instanceof HTMLMediaElement ? first.srcObject : null;
+    return this.el.srcObject;
   }
   set srcObject(v) {
-    this.elements.forEach((el) => (el instanceof HTMLMediaElement ? (el.srcObject = v) : null));
+    this.el.srcObject = v;
   }
 
   /** @returns {TextTrackList} Available text tracks. */
   get textTracks() {
-    const first = this.elements[0];
-    if (!(first instanceof HTMLMediaElement))
-      throw new Error('No HTMLMediaElement found to access text tracks');
-    return first.textTracks;
+    return this.el.textTracks;
   }
 
   /**
@@ -386,8 +338,7 @@ class TinyHtmlMedia extends TinyHtmlTemplate {
    * @returns {number} Value between 0.0 and 1.0.
    */
   get volume() {
-    const first = this.elements[0];
-    return first instanceof HTMLMediaElement ? first.volume : 1;
+    return this.el.volume;
   }
   /**
    * Sets the volume level.
@@ -395,9 +346,10 @@ class TinyHtmlMedia extends TinyHtmlTemplate {
    * @throws {TypeError} If not a number.
    */
   set volume(level) {
-    if (typeof level !== 'number') throw new TypeError('Volume must be a number between 0 and 1');
-    const safe = Math.min(1, Math.max(0, level));
-    this.elements.forEach((el) => (el instanceof HTMLMediaElement ? (el.volume = safe) : null));
+    if (typeof level !== 'number' || level < 0 || level > 1) {
+      throw new TypeError('TinyVideo: "volume" must be a number between 0.0 and 1.0.');
+    }
+    this.el.volume = level;
   }
 }
 

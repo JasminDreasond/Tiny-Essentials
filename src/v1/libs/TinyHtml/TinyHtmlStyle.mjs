@@ -96,15 +96,12 @@ class TinyHtmlStyle extends TinyHtmlTemplate {
   set content(cssText) {
     if (typeof cssText !== 'string')
       throw new TypeError('TinyHtmlStyle: "content" must be a string.');
-    this.elements.forEach((el) => {
-      if (el instanceof HTMLStyleElement) el.textContent = cssText;
-    });
+    this.el.textContent = cssText;
   }
 
   /** @returns {string} */
   get content() {
-    const first = this.elements[0];
-    return first instanceof HTMLStyleElement ? (first.textContent ?? '') : '';
+    return this.el.textContent ?? '';
   }
 }
 

@@ -53,9 +53,7 @@ class TinyHtmlFileInput extends TinyHtmlInput {
    * @returns {FileList|null}
    */
   getFiles() {
-    const element = this.elements[0];
-    if (!(element instanceof HTMLInputElement)) throw new Error('');
-    return element.files;
+    return this.el.files;
   }
 }
 

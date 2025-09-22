@@ -9,13 +9,18 @@ import TinyHtmlTemplate from '../TinyHtmlTemplate.mjs';
  *
  * @example
  * // For <video>
- * const sourceVideo = new TinyHtmlSource({ src: 'movie.mp4', type: 'video/mp4' });
+ * const sourceVideo = new TinyHtmlSource({
+ *   src: 'movie.mp4',
+ *   type: 'video/mp4',
+ *   context: 'video'
+ * });
  *
  * // For <picture>
  * const sourcePicture = new TinyHtmlSource({
  *   srcset: 'image-200.jpg 200w, image-400.jpg 400w',
  *   sizes: '(max-width: 600px) 200px, 400px',
  *   type: 'image/jpeg',
+ *   context: 'picture'
  * });
  *
  * @extends TinyHtmlTemplate<HTMLSourceElement>
@@ -34,6 +39,7 @@ class TinyHtmlSource extends TinyHtmlTemplate {
    * @param {string|string[]|Set<string>} [config.tags=[]] - Initial CSS classes.
    * @param {string} [config.mainClass=""] - Main CSS class.
    * @param {"audio"|"video"|"picture"} [config.context] - Parent context type (used for validation).
+   * @throws {TypeError|Error} If attributes are invalid or violate context rules.
    */
   constructor({
     type,
@@ -49,22 +55,14 @@ class TinyHtmlSource extends TinyHtmlTemplate {
   } = {}) {
     super(document.createElement('source'), tags, mainClass);
 
-    // --- type ---
-    if (type !== undefined) {
-      if (typeof type !== 'string') {
-        throw new TypeError('TinyHtmlSource: "type" must be a string.');
-      }
-      this.setAttr('type', type);
-    }
-
-    // --- context validation ---
+    // Validate context
     if (context !== undefined && !['audio', 'video', 'picture'].includes(context)) {
       throw new Error(
         `TinyHtmlSource: "context" must be "audio", "video", or "picture". Got: ${context}`,
       );
     }
 
-    // --- src / srcset rules ---
+    // Context rules
     if (context === 'audio' || context === 'video') {
       if (!src) {
         throw new Error(`TinyHtmlSource: "src" is required for <${context}> context.`);
@@ -80,7 +78,6 @@ class TinyHtmlSource extends TinyHtmlTemplate {
         );
       }
     }
-
     if (context === 'picture') {
       if (!srcset) {
         throw new Error('TinyHtmlSource: "srcset" is required for <picture> context.');
@@ -90,95 +87,70 @@ class TinyHtmlSource extends TinyHtmlTemplate {
       }
     }
 
-    // --- src ---
-    if (src !== undefined) {
-      if (typeof src !== 'string') {
-        throw new TypeError('TinyHtmlSource: "src" must be a string.');
-      }
-      this.setAttr('src', src);
-    }
-
-    // --- srcset ---
-    if (srcset !== undefined) {
-      if (typeof srcset !== 'string') {
-        throw new TypeError('TinyHtmlSource: "srcset" must be a string.');
-      }
-      this.setAttr('srcset', srcset);
-    }
-
-    // --- sizes ---
-    if (sizes !== undefined) {
-      if (typeof sizes !== 'string') {
-        throw new TypeError('TinyHtmlSource: "sizes" must be a string.');
-      }
-      this.setAttr('sizes', sizes);
-    }
-
-    // --- media ---
-    if (media !== undefined) {
-      if (typeof media !== 'string') {
-        throw new TypeError('TinyHtmlSource: "media" must be a string.');
-      }
-      this.setAttr('media', media);
-    }
-
-    // --- height ---
-    if (height !== undefined) {
-      if (!Number.isInteger(height) || height < 0) {
-        throw new TypeError('TinyHtmlSource: "height" must be a non-negative integer.');
-      }
-      this.setAttr('height', String(height));
-    }
-
-    // --- width ---
-    if (width !== undefined) {
-      if (!Number.isInteger(width) || width < 0) {
-        throw new TypeError('TinyHtmlSource: "width" must be a non-negative integer.');
-      }
-      this.setAttr('width', String(width));
-    }
+    // Assign attributes
+    if (type !== undefined) this.type = type;
+    if (src !== undefined) this.src = src;
+    if (srcset !== undefined) this.srcset = srcset;
+    if (sizes !== undefined) this.sizes = sizes;
+    if (media !== undefined) this.media = media;
+    if (height !== undefined) this.height = height;
+    if (width !== undefined) this.width = width;
   }
 
-  /**
-   * Gets the resource URL (if any).
-   * @returns {string|null}
-   */
-  getSrc() {
-    return this.attr('src');
+  /** @param {string} type */
+  set type(type) {
+    if (typeof type !== 'string') throw new TypeError('TinyHtmlSource: "type" must be a string.');
+    this.setAttr('type', type);
   }
 
-  /**
-   * Sets the resource URL.
-   * @param {string} url
-   * @returns {this}
-   */
-  setSrc(url) {
-    if (typeof url !== 'string') {
-      throw new TypeError('TinyHtmlSource.setSrc: "url" must be a string.');
-    }
-    this.setAttr('src', url);
-    return this;
+  /** @returns {string|null} */
+  get type() {
+    return this.attrString('type');
   }
 
-  /**
-   * Gets the srcset value (if any).
-   * @returns {string|null}
-   */
-  getSrcset() {
-    return this.attr('srcset');
+  /** @param {string} src */
+  set src(src) {
+    if (typeof src !== 'string') throw new TypeError('TinyHtmlSource: "src" must be a string.');
+    this.setAttr('src', src);
   }
 
-  /**
-   * Sets the srcset.
-   * @param {string} srcset
-   * @returns {this}
-   */
-  setSrcset(srcset) {
-    if (typeof srcset !== 'string') {
-      throw new TypeError('TinyHtmlSource.setSrcset: "srcset" must be a string.');
-    }
+  /** @returns {string|null} */
+  get src() {
+    return this.attrString('src');
+  }
+
+  /** @param {string} srcset */
+  set srcset(srcset) {
+    if (typeof srcset !== 'string')
+      throw new TypeError('TinyHtmlSource: "srcset" must be a string.');
     this.setAttr('srcset', srcset);
-    return this;
+  }
+
+  /** @returns {string|null} */
+  get srcset() {
+    return this.attrString('srcset');
+  }
+
+  /** @param {string} sizes */
+  set sizes(sizes) {
+    if (typeof sizes !== 'string') throw new TypeError('TinyHtmlSource: "sizes" must be a string.');
+    this.setAttr('sizes', sizes);
+  }
+
+  /** @returns {string|null} */
+  get sizes() {
+    return this.attrString('sizes');
+  }
+
+  /** @param {string} media */
+  set media(media) {
+    if (typeof media !== 'string') throw new TypeError('TinyHtmlSource: "media" must be a string.');
+    this.setAttr('media', media);
+  }
+
+  /** @returns {string|null} */
+  get media() {
+    return this.attrString('media');
   }
 }
 

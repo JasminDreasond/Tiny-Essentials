@@ -1,16 +1,17 @@
 import TinyHtmlTemplate from '../TinyHtmlTemplate.mjs';
 
 /**
- * TinyHtmlObject is a lightweight helper class for managing <object> elements,
- * commonly used to embed external resources like PDFs, HTML, or SVGs.
+ * TinyHtmlObject is a lightweight helper class for managing <object> elements.
+ * It allows configuring attributes such as `data`, `type`, `form`, `height`, `width`, and `name`
+ * with built-in validation.
  *
- * Supported attributes:
- * - data: URL of the resource (string). At least one of `data` or `type` must be defined.
- * - type: MIME type of the resource (string). At least one of `data` or `type` must be defined.
- * - form: ID of the associated <form> element (string).
- * - height: Displayed height of the resource in CSS pixels (positive integer).
- * - width: Displayed width of the resource in CSS pixels (positive integer).
- * - name: Name of the browsing context (string).
+ * @example
+ * const object = new TinyHtmlObject({
+ *   data: 'document.pdf',
+ *   type: 'application/pdf',
+ *   width: 800,
+ *   height: 600
+ * });
  *
  * @extends TinyHtmlTemplate<HTMLObjectElement>
  */
@@ -26,160 +27,71 @@ class TinyHtmlObject extends TinyHtmlTemplate {
    * @param {number} [config.width] - Width of the displayed resource, in CSS pixels (positive integer).
    * @param {string} [config.name] - Name of the browsing context or control.
    * @param {string|string[]|Set<string>} [config.tags=[]] - Initial CSS classes.
-   * @param {string} [config.mainClass=""]
+   * @param {string} [config.mainClass=""] - Main CSS class.
    *
-   * @throws {TypeError} If `data` or `type` are not strings.
    * @throws {Error} If neither `data` nor `type` is provided.
-   * @throws {TypeError} If `form` is not a non-empty string.
-   * @throws {TypeError} If `height` or `width` are not positive integers.
-   * @throws {TypeError} If `name` is not a non-empty string.
+   * @throws {TypeError} If any attribute is of the wrong type.
    */
   constructor({ data = '', type = '', form, height, width, name, tags = [], mainClass = '' } = {}) {
     super(document.createElement('object'), tags, mainClass);
 
-    // At least one of data or type must be defined
+    // At least one of "data" or "type" must be provided
     if (!data && !type)
       throw new Error('TinyHtmlObject: At least one of "data" or "type" must be provided.');
 
-    // data
-    if (data !== '') {
-      if (typeof data !== 'string')
-        throw new TypeError(`TinyHtmlObject: "data" must be a string. Got: ${typeof data}`);
-      this.setAttr('data', data);
-    }
-
-    // type
-    if (type !== '') {
-      if (typeof type !== 'string')
-        throw new TypeError(`TinyHtmlObject: "type" must be a string. Got: ${typeof type}`);
-      this.setAttr('type', type);
-    }
-
-    // form
-    if (form !== undefined) {
-      if (typeof form !== 'string' || !form.trim())
-        throw new TypeError('TinyHtmlObject: "form" must be a non-empty string (form id).');
-      this.setAttr('form', form);
-    }
-
-    // height
-    if (height !== undefined) {
-      if (!Number.isInteger(height) || height <= 0)
-        throw new TypeError('TinyHtmlObject: "height" must be a positive integer (CSS pixels).');
-      this.setAttr('height', String(height));
-    }
-
-    // width
-    if (width !== undefined) {
-      if (!Number.isInteger(width) || width <= 0)
-        throw new TypeError('TinyHtmlObject: "width" must be a positive integer (CSS pixels).');
-      this.setAttr('width', String(width));
-    }
-
-    // name
-    if (name !== undefined) {
-      if (typeof name !== 'string' || !name.trim())
-        throw new TypeError('TinyHtmlObject: "name" must be a non-empty string.');
-      this.setAttr('name', name);
-    }
+    // --- Apply attributes if defined ---
+    if (data) this.elData = data;
+    if (type) this.type = type;
+    if (form !== undefined) this.form = form;
+    if (height !== undefined) this.height = height;
+    if (width !== undefined) this.width = width;
+    if (name !== undefined) this.name = name;
   }
 
-  // === Getters ===
-  /** @returns {string|null} */
-  getData() {
-    return this.attr('data');
+  /** @param {string} data */
+  set elData(data) {
+    if (typeof data !== 'string') throw new TypeError('TinyHtmlObject: "data" must be a string.');
+    this.setAttr('data', data);
   }
 
   /** @returns {string|null} */
-  getType() {
-    return this.attr('type');
+  get elData() {
+    return this.attrString('data');
   }
 
-  /** @returns {string|null} */
-  getForm() {
-    return this.attr('form');
-  }
-
-  /** @returns {number|null} */
-  getHeight() {
-    const val = this.attr('height');
-    return val ? parseInt(val, 10) : null;
-  }
-
-  /** @returns {number|null} */
-  getWidth() {
-    const val = this.attr('width');
-    return val ? parseInt(val, 10) : null;
-  }
-
-  /** @returns {string|null} */
-  getName() {
-    return this.attr('name');
-  }
-
-  // === Setters ===
-  /**
-   * @param {string} url
-   * @returns {this}
-   */
-  setData(url) {
-    if (typeof url !== 'string') throw new TypeError('setData: "url" must be a string.');
-    this.setAttr('data', url);
-    return this;
-  }
-
-  /**
-   * @param {string} type
-   * @returns {this}
-   */
-  setType(type) {
-    if (typeof type !== 'string') throw new TypeError('setType: "type" must be a string.');
+  /** @param {string} type */
+  set type(type) {
+    if (typeof type !== 'string') throw new TypeError('TinyHtmlObject: "type" must be a string.');
     this.setAttr('type', type);
-    return this;
   }
 
-  /**
-   * @param {string} formId
-   * @returns {this}
-   */
-  setForm(formId) {
-    if (typeof formId !== 'string' || !formId.trim())
-      throw new TypeError('setForm: "formId" must be a non-empty string.');
-    this.setAttr('form', formId);
-    return this;
+  /** @returns {string|null} */
+  get type() {
+    return this.attrString('type');
   }
 
-  /**
-   * @param {number} h
-   * @returns {this}
-   */
-  setHeight(h) {
-    if (!Number.isInteger(h) || h <= 0)
-      throw new TypeError('setHeight: "h" must be a positive integer.');
-    this.setAttr('height', String(h));
-    return this;
+  /** @param {string} form */
+  set form(form) {
+    if (typeof form !== 'string' || !form.trim())
+      throw new TypeError('TinyHtmlObject: "form" must be a non-empty string.');
+    this.setAttr('form', form);
   }
 
-  /**
-   * @param {number} w
-   * @returns {this}
-   */
-  setWidth(w) {
-    if (!Number.isInteger(w) || w <= 0)
-      throw new TypeError('setWidth: "w" must be a positive integer.');
-    this.setAttr('width', String(w));
-    return this;
+  /** @returns {string|null} */
+  get form() {
+    return this.attrString('form');
   }
 
-  /**
-   * @param {string} n
-   * @returns {this}
-   */
-  setName(n) {
-    if (typeof n !== 'string' || !n.trim())
-      throw new TypeError('setName: "n" must be a non-empty string.');
-    this.setAttr('name', n);
-    return this;
+  /** @param {string} name */
+  set name(name) {
+    if (typeof name !== 'string' || !name.trim())
+      throw new TypeError('TinyHtmlObject: "name" must be a non-empty string.');
+    this.setAttr('name', name);
+  }
+
+  /** @returns {string|null} */
+  get name() {
+    return this.attrString('name');
   }
 }
 

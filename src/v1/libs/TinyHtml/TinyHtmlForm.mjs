@@ -225,7 +225,7 @@ class TinyHtmlForm extends TinyHtmlTemplate {
    * @returns {this}
    */
   submit() {
-    this.elements.forEach((el) => (el instanceof HTMLFormElement ? el.submit() : null));
+    this.el.submit();
     return this;
   }
 
@@ -234,7 +234,7 @@ class TinyHtmlForm extends TinyHtmlTemplate {
    * @returns {this}
    */
   reset() {
-    this.elements.forEach((el) => (el instanceof HTMLFormElement ? el.reset() : null));
+    this.el.reset();
     return this;
   }
 }
