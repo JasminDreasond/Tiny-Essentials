@@ -144,8 +144,7 @@ class TinyHtmlButton extends TinyHtmlTemplate {
   }
   /** @param {boolean} state */
   set disabled(state) {
-    if (typeof state !== 'boolean')
-      throw new TypeError('TinyHtmlButton.disabled must be boolean.');
+    if (typeof state !== 'boolean') throw new TypeError('TinyHtmlButton.disabled must be boolean.');
     if (state) this.addProp('disabled');
     else this.removeProp('disabled');
   }
@@ -190,7 +189,7 @@ class TinyHtmlButton extends TinyHtmlTemplate {
     ];
     if (typeof cmd !== 'string' || (!builtins.includes(cmd) && !cmd.startsWith('--')))
       throw new TypeError(
-        'TinyHtmlButton.command must be a built-in or custom string starting with "--".'
+        'TinyHtmlButton.command must be a built-in or custom string starting with "--".',
       );
     this.setAttr('command', cmd);
   }
@@ -262,7 +261,7 @@ class TinyHtmlButton extends TinyHtmlTemplate {
     const validName = /^[a-zA-Z_][\w-]*$/;
     if (typeof val !== 'string' || (!validTargets.includes(val) && !validName.test(val)))
       throw new TypeError(
-        `TinyHtmlButton.formtarget must be a keyword (${validTargets.join(', ')}) or valid name.`
+        `TinyHtmlButton.formtarget must be a keyword (${validTargets.join(', ')}) or valid name.`,
       );
     this.setAttr('formtarget', val);
   }
@@ -298,7 +297,7 @@ class TinyHtmlButton extends TinyHtmlTemplate {
     const allowed = ['show', 'hide', 'toggle'];
     if (typeof val !== 'string' || !allowed.includes(val))
       throw new TypeError(
-        `TinyHtmlButton.popovertargetaction must be one of: ${allowed.join(', ')}`
+        `TinyHtmlButton.popovertargetaction must be one of: ${allowed.join(', ')}`,
       );
     this.setAttr('popovertargetaction', val);
   }
@@ -308,8 +307,7 @@ class TinyHtmlButton extends TinyHtmlTemplate {
     return this.attr('value');
   }
   set value(val) {
-    if (typeof val !== 'string')
-      throw new TypeError('TinyHtmlButton.value must be a string.');
+    if (typeof val !== 'string') throw new TypeError('TinyHtmlButton.value must be a string.');
     this.setAttr('value', val);
   }
 }

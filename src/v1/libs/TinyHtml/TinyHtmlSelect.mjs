@@ -22,18 +22,50 @@ import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
  */
 class TinyHtmlSelect extends TinyHtmlTemplate {
   /**
-   * @param {Object} config
-   * @param {{ value: string, label: string|Element|TinyHtml<any>, selected?: boolean, allowHtml?: boolean }[]} [config.options=[]]
+   * Creates a new custom <select> element with configurable options and attributes.
+   *
+   * @param {Object} [config={}] Configuration object for the select element.
+   * @param {Array<{
+   *   value: string,
+   *   label: string | Element | TinyHtml<any>,
+   *   selected?: boolean,
+   *   allowHtml?: boolean
+   * }>} [config.options=[]]
+   *   An array of option definitions. Each option must provide a `value` and a `label`.
+   *   The `label` can be a string, a DOM element, or a TinyHtml instance.
+   *   The `selected` flag sets the option as initially selected.
+   *   If `allowHtml` is true, the label will be interpreted as HTML instead of plain text.
+   *
    * @param {boolean} [config.multiple=false]
+   *   If true, allows selecting multiple options.
+   *
    * @param {string} [config.autocomplete]
+   *   Provides autocomplete hints for the control.
+   *   Possible values include `"on"` or `"off"`.
+   *
    * @param {boolean} [config.autofocus=false]
+   *   If true, the element will automatically receive focus when the page loads.
+   *
    * @param {boolean} [config.disabled=false]
+   *   If true, disables the select element so it cannot be interacted with.
+   *
    * @param {string} [config.form]
+   *   Associates the select element with the `id` of a form element.
+   *
    * @param {string} [config.name]
+   *   The name of the select control, used when submitting forms.
+   *
    * @param {boolean} [config.required=false]
+   *   If true, the control must be selected before submitting the form.
+   *
    * @param {number} [config.size]
-   * @param {string|string[]|Set<string>} [config.tags=[]]
+   *   Defines the number of visible options in the dropdown (without scrolling).
+   *
+   * @param {string | string[] | Set<string>} [config.tags=[]]
+   *   A set of tags or CSS classes that can be used for styling or categorization.
+   *
    * @param {string} [config.mainClass='']
+   *   A primary CSS class name to be applied to the select element.
    */
   constructor({
     options = [],

@@ -18,24 +18,25 @@ import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
  */
 class TinyHtmlIframe extends TinyHtmlTemplate {
   /**
-   * @param {Object} config
-   * @param {string} [config.src]
-   * @param {string} [config.srcdoc]
-   * @param {string} [config.name]
-   * @param {string} [config.allow]
-   * @param {boolean} [config.allowFullScreen=false]
-   * @param {boolean} [config.allowpaymentrequest] - Deprecated
-   * @param {boolean} [config.browsingtopics]
-   * @param {boolean} [config.credentialless]
-   * @param {string} [config.csp]
-   * @param {string} [config.sandbox]
-   * @param {'no-referrer'|'no-referrer-when-downgrade'|'origin'|'origin-when-cross-origin'|'same-origin'|'strict-origin'|'strict-origin-when-cross-origin'|'unsafe-url'} [config.referrerpolicy]
-   * @param {number|string} [config.width]
-   * @param {number|string} [config.height]
-   * @param {string} [config.title]
-   * @param {'lazy'|'eager'} [config.loading]
-   * @param {string|string[]|Set<string>} [config.tags=[]]
-   * @param {string} [config.mainClass='']
+   * Creates a new TinyHtmlIframe instance with the specified configuration options.
+   *
+   * @param {Object} [config={}] - Configuration object for the iframe element.
+   * @param {string} [config.src] - The URL of the page to embed inside the iframe.
+   * @param {string} [config.srcdoc] - Inline HTML content to display inside the iframe (overrides `src` if provided).
+   * @param {string} [config.name] - A name for the browsing context (used as the target for links or forms).
+   * @param {string} [config.allow] - Permissions policy for the iframe (e.g., `"fullscreen; autoplay"`).
+   * @param {boolean} [config.allowFullScreen=false] - Whether the iframe is allowed to display content in fullscreen mode.
+   * @param {boolean} [config.browsingtopics] - Enables the Browsing Topics API.
+   * @param {boolean} [config.credentialless] - Enables credentialless mode for cross-origin iframes.
+   * @param {string} [config.csp] - Content Security Policy applied specifically to the iframe's content.
+   * @param {string} [config.sandbox] - A space-separated list of sandboxing flags that restrict iframe capabilities.
+   * @param {'no-referrer'|'no-referrer-when-downgrade'|'origin'|'origin-when-cross-origin'|'same-origin'|'strict-origin'|'strict-origin-when-cross-origin'|'unsafe-url'} [config.referrerpolicy] - Referrer policy to control the amount of referrer information sent.
+   * @param {number|string} [config.width] - Width of the iframe in pixels or as a CSS dimension string (e.g., `"100%"`).
+   * @param {number|string} [config.height] - Height of the iframe in pixels or as a CSS dimension string (e.g., `"500px"`).
+   * @param {string} [config.title] - Accessible title for the iframe content.
+   * @param {'lazy'|'eager'} [config.loading] - Loading strategy for the iframe. `"lazy"` defers loading until visible in the viewport.
+   * @param {string|string[]|Set<string>} [config.tags=[]] - Additional tags or identifiers for this instance.
+   * @param {string} [config.mainClass=''] - A main CSS class applied to the iframe element.
    */
   constructor({
     src,
@@ -43,7 +44,6 @@ class TinyHtmlIframe extends TinyHtmlTemplate {
     name,
     allow,
     allowFullScreen = false,
-    allowpaymentrequest,
     browsingtopics,
     credentialless,
     csp,
@@ -63,7 +63,6 @@ class TinyHtmlIframe extends TinyHtmlTemplate {
     if (name !== undefined) this.name = name;
     if (allow !== undefined) this.allow = allow;
     this.allowFullScreen = allowFullScreen;
-    if (allowpaymentrequest !== undefined) this.allowpaymentrequest = allowpaymentrequest;
     if (browsingtopics !== undefined) this.browsingtopics = browsingtopics;
     if (credentialless !== undefined) this.credentialless = credentialless;
     if (csp !== undefined) this.csp = csp;
@@ -127,19 +126,6 @@ class TinyHtmlIframe extends TinyHtmlTemplate {
   /** @returns {boolean} */
   get allowFullScreen() {
     return this.hasProp('allowfullscreen');
-  }
-
-  /** @param {boolean} allowpaymentrequest */
-  set allowpaymentrequest(allowpaymentrequest) {
-    console.warn('TinyIframe: "allowpaymentrequest" is deprecated. Use allow="payment" instead.');
-    if (typeof allowpaymentrequest !== 'boolean')
-      throw new TypeError('TinyIframe: "allowpaymentrequest" must be a boolean.');
-    if (allowpaymentrequest) this.addProp('allowpaymentrequest');
-    else this.removeProp('allowpaymentrequest');
-  }
-  /** @returns {boolean} */
-  get allowpaymentrequest() {
-    return this.hasProp('allowpaymentrequest');
   }
 
   /** @param {boolean} browsingtopics */

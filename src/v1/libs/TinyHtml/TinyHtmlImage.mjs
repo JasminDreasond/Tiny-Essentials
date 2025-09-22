@@ -42,26 +42,29 @@ class TinyHtmlImage extends TinyHtmlTemplate {
   }
 
   /**
-   * Creates a new TinyImage instance.
-   * @param {Object} config - Configuration object.
-   * @param {string} config.src - Image source URL (required).
-   * @param {string} [config.alt=""] - Alternate text for the image.
-   * @param {number} [config.width] - Width in pixels.
-   * @param {number} [config.height] - Height in pixels.
-   * @param {string|string[]|Set<string>} [config.tags=[]] - Initial CSS classes.
-   * @param {boolean} [config.fetchMode=TinyHtmlImage.#defaultFetchMode]
-   * @param {string} [config.mainClass='']
-   * @param {string|string[]|boolean} [config.attributionsrc]
-   * @param {'anonymous'|'use-credentials'} [config.crossorigin]
-   * @param {'sync'|'async'|'auto'} [config.decoding]
-   * @param {string} [config.elementtiming]
-   * @param {'high'|'low'|'auto'} [config.fetchpriority]
-   * @param {boolean} [config.ismap=false]
-   * @param {'eager'|'lazy'} [config.loading]
-   * @param {string} [config.referrerpolicy]
-   * @param {string} [config.sizes]
-   * @param {string} [config.srcset]
-   * @param {string} [config.usemap]
+   * Creates a new TinyHtmlImage instance wrapping an <img> element.
+   * This class simplifies working with images by providing a structured API
+   * for common attributes and configuration options.
+   *
+   * @param {Object} config - Image configuration object.
+   * @param {string} config.src - Image source URL (**required**).
+   * @param {string} [config.alt=""] - Alternate text for the image. Defaults to an empty string.
+   * @param {number} [config.width] - Width of the image in pixels.
+   * @param {number} [config.height] - Height of the image in pixels.
+   * @param {string|string[]|Set<string>} [config.tags=[]] - Initial CSS classes to apply.
+   * @param {boolean} [config.fetchMode=TinyHtmlImage.#defaultFetchMode] - Whether to enable or disable fetch mode. Must be a boolean.
+   * @param {string} [config.mainClass=""] - Main CSS class applied to the element.
+   * @param {string|string[]|boolean} [config.attributionsrc] - Attribution source; may be a string, array of strings, or `true/false`.
+   * @param {"anonymous"|"use-credentials"} [config.crossorigin] - Cross-origin policy for loading the image.
+   * @param {"sync"|"async"|"auto"} [config.decoding] - Decoding mode for the image.
+   * @param {string} [config.elementtiming] - Name used for performance timing attribution.
+   * @param {"high"|"low"|"auto"} [config.fetchpriority] - Fetch priority for the image resource.
+   * @param {boolean} [config.ismap=false] - Whether the image is part of a server-side image map.
+   * @param {"eager"|"lazy"} [config.loading] - Loading behavior hint (`"lazy"` defers off-screen images).
+   * @param {string} [config.referrerpolicy] - Referrer policy when fetching the image.
+   * @param {string} [config.sizes] - Sizes attribute, used with `srcset` for responsive images.
+   * @param {string} [config.srcset] - List of image sources for responsive loading.
+   * @param {string} [config.usemap] - Name of an associated image map to use.
    */
   constructor({
     src,

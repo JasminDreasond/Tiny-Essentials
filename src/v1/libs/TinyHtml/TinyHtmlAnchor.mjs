@@ -95,8 +95,7 @@ class TinyHtmlAnchor extends TinyHtmlTemplate {
 
   /** @param {string} rel */
   set rel(rel) {
-    if (typeof rel !== 'string')
-      throw new TypeError('TinyHtmlAnchor: "rel" must be a string.');
+    if (typeof rel !== 'string') throw new TypeError('TinyHtmlAnchor: "rel" must be a string.');
     this.setAttr('rel', rel);
   }
   /** @returns {string|null} */
@@ -140,9 +139,7 @@ class TinyHtmlAnchor extends TinyHtmlTemplate {
       'unsafe-url',
     ];
     if (!valid.includes(referrerpolicy))
-      throw new TypeError(
-        `TinyHtmlAnchor: "referrerpolicy" must be one of: ${valid.join(', ')}`
-      );
+      throw new TypeError(`TinyHtmlAnchor: "referrerpolicy" must be one of: ${valid.join(', ')}`);
     this.setAttr('referrerpolicy', referrerpolicy);
   }
   /** @returns {string|null} */
@@ -171,7 +168,7 @@ class TinyHtmlAnchor extends TinyHtmlTemplate {
       this.setAttr('attributionsrc', attributionsrc.join(' '));
     } else {
       throw new TypeError(
-        'TinyHtmlAnchor: "attributionsrc" must be a boolean, string, or string[].'
+        'TinyHtmlAnchor: "attributionsrc" must be a boolean, string, or string[].',
       );
     }
   }
@@ -212,9 +209,7 @@ class TinyHtmlAnchor extends TinyHtmlTemplate {
         throw new Error('setLabel: Passing an Element/TinyHtml requires allowHtml=true.');
       this.empty().append(label);
     } else {
-      throw new TypeError(
-        "setLabel: 'label' must be a string, Element, or TinyHtml instance."
-      );
+      throw new TypeError("setLabel: 'label' must be a string, Element, or TinyHtml instance.");
     }
     return this;
   }
