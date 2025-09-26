@@ -89,7 +89,7 @@ class TinyHtmlSelect extends TinyHtmlTemplate {
     if (form !== undefined) this.form = form;
     if (name !== undefined) this.name = name;
     this.required = required;
-    if (size !== undefined) this.size = size;
+    if (size !== undefined) this.sizeEl = size;
 
     for (const opt of options) {
       this.addOption(opt);
@@ -178,14 +178,14 @@ class TinyHtmlSelect extends TinyHtmlTemplate {
   }
 
   /** @param {number} size */
-  set elSize(size) {
+  set sizeEl(size) {
     if (!Number.isInteger(size) || size < 0)
       throw new TypeError('"size" must be a non-negative integer.');
     this.setAttr('size', size);
   }
 
   /** @returns {number|null} */
-  get elSize() {
+  get sizeEl() {
     return this.attrNumber('size');
   }
 

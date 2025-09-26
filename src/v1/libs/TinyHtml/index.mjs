@@ -23,6 +23,7 @@ import TinyHtmlUrlInput from './input/text/TinyHtmlUrlInput.mjs';
 import TinyHtmlColorInput from './input/TinyHtmlColorInput.mjs';
 import TinyHtmlFileInput from './input/TinyHtmlFileInput.mjs';
 import TinyHtmlHiddenInput from './input/TinyHtmlHiddenInput.mjs';
+import TinyHtmlImageInput from './input/TinyHtmlImageInput.mjs';
 
 ////////////////////////////////////////////////////
 
@@ -77,6 +78,7 @@ class TinyHtmlElems {
     TinyHtmlColorInput,
     TinyHtmlFileInput,
     TinyHtmlHiddenInput,
+    TinyHtmlImageInput,
     ////////////////////////////////////////////////////
     TinyHtmlAudio,
     TinyHtmlButton,
@@ -128,6 +130,7 @@ class TinyHtmlElems {
   static ColorInput = TinyHtmlColorInput;
   static FileInput = TinyHtmlFileInput;
   static HiddenInput = TinyHtmlHiddenInput;
+  static ImgInput = TinyHtmlImageInput;
 
   ////////////////////////////////////////////////////
 
@@ -185,6 +188,7 @@ export {
   TinyHtmlColorInput,
   TinyHtmlFileInput,
   TinyHtmlHiddenInput,
+  TinyHtmlImageInput,
   ////////////////////////////////////////////////////
   TinyHtmlAudio,
   TinyHtmlButton,

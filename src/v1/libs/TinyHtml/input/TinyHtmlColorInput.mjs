@@ -1,64 +1,118 @@
 import TinyHtmlInput from '../TinyHtmlInput.mjs';
 
 /**
- * TinyColorInput is a helper for managing <input type="color"> elements.
+ * TinyHtmlColorInput is a helper class for managing `<input type="color">` elements.
+ * It provides strict validation for attributes such as `value`, `alpha`, `autocomplete`,
+ * `list`, `readonly`, `required`, and `colorspace`.
+ *
+ * @example
+ * const colorInput = new TinyHtmlColorInput({
+ *   value: '#ff0000',
+ *   alpha: 0.8,
+ *   autocomplete: 'on',
+ *   required: true
+ * });
  */
 class TinyHtmlColorInput extends TinyHtmlInput {
   /**
-   * @param {Object} config
-   * @param {string} [config.value="#000000"]
-   * @param {number|string} [config.alpha]
-   * @param {string} [config.placeholder]
-   * @param {string} [config.name]
+   * Creates a new TinyHtmlColorInput instance.
+   * @param {Object} config - Configuration object.
+   * @param {string|number} [config.value="#000000"] - Initial color value.
+   * @param {string|number} [config.alpha] - Alpha (transparency) value.
+   * @param {string} [config.placeholder] - Placeholder text.
+   * @param {string} [config.name] - Name of the input.
    * @param {string} [config.autocomplete] - Autocomplete hint (e.g., "on", "off", "email").
-   * @param {string} [config.list] - ID of a <datalist>.
-   * @param {boolean} [config.readonly] - Whether input is readonly.
-   * @param {boolean} [config.required] - Whether input is required.
-   * @param {string} [config.colorspace] - Colorspace for image inputs (e.g. "sRGB") — only valid for type="image".
-   * @param {string|string[]|Set<string>} [config.tags=[]]
-   * @param {string} [config.mainClass='']
+   * @param {string} [config.list] - ID of a `<datalist>`.
+   * @param {boolean} [config.readonly=false] - Whether the input is read-only.
+   * @param {boolean} [config.required=false] - Whether the input is required.
+   * @param {string} [config.colorspace] - Colorspace for image inputs (e.g., "sRGB").
+   * @param {string|string[]|Set<string>} [config.tags=[]] - Initial CSS classes.
+   * @param {string} [config.mainClass=''] - Main CSS class.
+   * @throws {TypeError} If any attribute is of the wrong type.
    */
   constructor({
     list,
     value = '#000000',
-    name = '',
+    name,
     autocomplete,
     alpha,
-    readonly,
-    required,
+    readonly = false,
+    required = false,
     placeholder,
     colorspace,
     tags = [],
     mainClass = '',
-  }) {
-    super({ type: 'color', name, placeholder, tags, mainClass, readonly, required });
+  } = {}) {
+    super({ type: 'color', name, placeholder, tags, mainClass });
 
-    if (value !== undefined && typeof value !== 'string' && typeof value !== 'number')
-      throw new TypeError('TinyHtmlInput: "value" must be a string or number.');
-    if (value !== undefined) this.setAttr('value', value);
+    // Assign attributes via setters to ensure validation
+    if (value !== undefined) this.value = value;
+    if (alpha !== undefined) this.alpha = alpha;
+    if (list !== undefined) this.list = list;
+    if (autocomplete !== undefined) this.autocomplete = autocomplete;
+    if (colorspace !== undefined) this.colorspace = colorspace;
+    this.readonly = readonly;
+    this.required = required;
+  }
 
-    if (alpha !== undefined && typeof alpha !== 'string' && typeof alpha !== 'number')
-      throw new TypeError('TinyHtmlInput: "alpha" must be a string or number.');
-    if (alpha !== undefined) this.setAttr('alpha', alpha);
+  /** @param {string|number} value */
+  set value(value) {
+    if (typeof value !== 'string' && typeof value !== 'number')
+      throw new TypeError('TinyHtmlColorInput: "value" must be a string or number.');
+    this.setAttr('value', String(value));
+  }
 
-    // --- list ---
-    if (list !== undefined) {
-      if (typeof list !== 'string') throw new TypeError('"list" must be a string (datalist id).');
-      this.setAttr('list', list);
-    }
+  /** @returns {string|null} */
+  get value() {
+    return this.attrString('value');
+  }
 
-    // --- autocomplete ---
-    if (autocomplete !== undefined) {
-      if (typeof autocomplete !== 'string') throw new TypeError('"autocomplete" must be a string.');
-      this.setAttr('autocomplete', autocomplete);
-    }
+  /** @param {string|number} alpha */
+  set alpha(alpha) {
+    if (typeof alpha !== 'string' && typeof alpha !== 'number')
+      throw new TypeError('TinyHtmlColorInput: "alpha" must be a string or number.');
+    this.setAttr('alpha', String(alpha));
+  }
 
-    // --- colorspace ---
-    if (colorspace !== undefined) {
-      if (typeof colorspace !== 'string')
-        throw new TypeError('"colorspace" must be a string (e.g. "sRGB").');
-      this.setAttr('colorspace', colorspace);
-    }
+  /** @returns {string|null} */
+  get alpha() {
+    return this.attrString('alpha');
+  }
+
+  /** @param {string} list */
+  set list(list) {
+    if (typeof list !== 'string')
+      throw new TypeError('TinyHtmlColorInput: "list" must be a string (datalist id).');
+    this.setAttr('list', list);
+  }
+
+  /** @returns {string|null} */
+  get list() {
+    return this.attrString('list');
+  }
+
+  /** @param {string} autocomplete */
+  set autocomplete(autocomplete) {
+    if (typeof autocomplete !== 'string')
+      throw new TypeError('TinyHtmlColorInput: "autocomplete" must be a string.');
+    this.setAttr('autocomplete', autocomplete);
+  }
+
+  /** @returns {string|null} */
+  get autocomplete() {
+    return this.attrString('autocomplete');
+  }
+
+  /** @param {string} colorspace */
+  set colorspace(colorspace) {
+    if (typeof colorspace !== 'string')
+      throw new TypeError('TinyHtmlColorInput: "colorspace" must be a string (e.g., "sRGB").');
+    this.setAttr('colorspace', colorspace);
+  }
+
+  /** @returns {string|null} */
+  get colorspace() {
+    return this.attrString('colorspace');
   }
 }
 

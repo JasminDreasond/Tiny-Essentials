@@ -243,6 +243,10 @@
     "./libs/TinyAdvancedRaffle": {
       "require": "./dist/v1/libs/TinyAdvancedRaffle.cjs",
       "import": "./dist/v1/libs/TinyAdvancedRaffle.mjs"
+    },
+    "./libs/TinyHtmlElems": {
+      "require": "./dist/v1/libs/TinyHtml/index.cjs",
+      "import": "./dist/v1/libs/TinyHtml/index.mjs"
     }
   },
   "repository": {

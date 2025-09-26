@@ -219,7 +219,7 @@
             results[id] =
               type === 'number' || type === 'range'
                 ? inst.valNb()
-                : type === 'date'
+                : type === 'date' || type === 'datetime-local'
                   ? inst.valDate()
                   : inst.val();
             console.log(`${id}:`, results[id]);

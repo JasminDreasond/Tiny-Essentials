@@ -1,32 +1,73 @@
 import TinyHtmlInput from '../../TinyHtmlInput.mjs';
 
 /**
- * TinyCheckbox is a lightweight helper class for managing <input type="checkbox">.
+ * TinyHtmlCheckboxInput is a helper class for managing <input type="checkbox"> elements.
+ * It allows configuring standard attributes such as name, value, checked, readonly, and required,
+ * with validation and getter/setter consistency.
  *
  * @example
- * const checkbox = new TinyCheckbox({ checked: true });
+ * const checkbox = new TinyHtmlCheckboxInput({
+ *   name: 'acceptTerms',
+ *   checked: true,
+ *   value: 'yes'
+ * });
  */
 class TinyHtmlCheckboxInput extends TinyHtmlInput {
   /**
-   * Creates a new TinyCheckbox instance.
+   * Creates a new TinyHtmlCheckboxInput instance.
    * @param {Object} config - Configuration object.
    * @param {boolean} [config.checked=false] - Whether the checkbox is checked.
    * @param {string} config.name - Input name attribute.
-   * @param {string} [config.value] - Input value when checked.
-   * @param {boolean} [config.readonly] - Whether input is readonly.
-   * @param {boolean} [config.required] - Whether input is required.
+   * @param {string|number} [config.value] - Input value when checked.
+   * @param {boolean} [config.readonly=false] - Whether the checkbox is readonly.
+   * @param {boolean} [config.required=false] - Whether the checkbox is required.
    * @param {string|string[]|Set<string>} [config.tags=[]] - Initial CSS classes.
-   * @param {string} [config.mainClass='']
+   * @param {string} [config.mainClass=''] - Main CSS class.
+   * @throws {TypeError} If an attribute is of the wrong type.
    */
-  constructor({ checked = false, name, value, readonly, required, tags = [], mainClass = '' }) {
+  constructor({
+    checked = false,
+    name,
+    value,
+    readonly = false,
+    required = false,
+    tags = [],
+    mainClass = ''
+  }) {
     super({ type: 'checkbox', name, tags, mainClass, readonly, required });
 
-    if (value !== undefined && typeof value !== 'string' && typeof value !== 'number')
-      throw new TypeError('TinyHtmlInput: "value" must be a string or number.');
-    if (value !== undefined) this.setAttr('value', value);
-    if (typeof checked !== 'boolean')
-      throw new TypeError("TinyHtmlCheckboxInput: 'checked' must be a boolean.");
+    // checked
+    this.checked = checked;
+
+    // value
+    if (value !== undefined) this.value = value;
+  }
+
+  /** @param {boolean} checked */
+  set checked(checked) {
+    if (typeof checked !== 'boolean') {
+      throw new TypeError('TinyHtmlCheckboxInput: "checked" must be a boolean.');
+    }
     if (checked) this.addProp('checked');
+    else this.removeProp('checked');
+  }
+
+  /** @returns {boolean} */
+  get checked() {
+    return this.hasProp('checked');
+  }
+
+  /** @param {string|number} value */
+  set value(value) {
+    if (typeof value !== 'string' && typeof value !== 'number') {
+      throw new TypeError('TinyHtmlCheckboxInput: "value" must be a string or number.');
+    }
+    this.setAttr('value', value);
+  }
+
+  /** @returns {string|null} */
+  get value() {
+    return this.attrString('value');
   }
 
   /**
@@ -34,7 +75,7 @@ class TinyHtmlCheckboxInput extends TinyHtmlInput {
    * @returns {this}
    */
   check() {
-    this.addProp('checked');
+    this.checked = true;
     return this;
   }
 
@@ -43,7 +84,7 @@ class TinyHtmlCheckboxInput extends TinyHtmlInput {
    * @returns {this}
    */
   uncheck() {
-    this.removeProp('checked');
+    this.checked = false;
     return this;
   }
 
@@ -52,16 +93,8 @@ class TinyHtmlCheckboxInput extends TinyHtmlInput {
    * @returns {this}
    */
   toggle() {
-    this.toggleProp('checked', !this.hasProp('checked'));
+    this.checked = !this.checked;
     return this;
-  }
-
-  /**
-   * Returns whether the checkbox is checked.
-   * @returns {boolean}
-   */
-  isChecked() {
-    return this.hasProp('checked');
   }
 }
 

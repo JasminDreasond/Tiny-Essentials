@@ -1,34 +1,46 @@
 import TinyHtmlInput from '../../TinyHtmlInput.mjs';
 
 /**
- * TinyEmailInput is a helper for managing <input type="email"> elements.
+ * TinyHtmlEmailInput is a helper class for managing <input type="email"> elements.
+ * It provides strongly typed getters and setters for common attributes such as
+ * minlength, maxlength, pattern, autocomplete, multiple, and more.
+ *
+ * @example
+ * const emailInput = new TinyHtmlEmailInput({
+ *   placeholder: 'Enter your email',
+ *   required: true,
+ *   maxlength: 100,
+ *   autocomplete: 'email'
+ * });
  */
 class TinyHtmlEmailInput extends TinyHtmlInput {
   /**
-   * @param {Object} config
-   * @param {string} [config.value]
-   * @param {number} [config.minLength]
-   * @param {number} [config.maxLength]
-   * @param {string} [config.pattern] - Regex pattern.
+   * Creates a new TinyHtmlEmailInput instance.
+   * @param {Object} config - Configuration object.
+   * @param {string} [config.value] - Initial value.
+   * @param {number} [config.minLength] - Minimum number of characters allowed.
+   * @param {number} [config.maxLength] - Maximum number of characters allowed.
+   * @param {string} [config.pattern] - Regex pattern for validation.
    * @param {string} [config.autocomplete] - Autocomplete hint (e.g., "on", "off", "email").
-   * @param {string} [config.dirname] - Name for directionality field (text-based inputs).
-   * @param {string} [config.list] - ID of a <datalist>.
-   * @param {boolean} [config.multiple] - Allow multiple values (email, file).
-   * @param {number} [config.size] - Size of text input.
-   * @param {boolean} [config.readonly] - Whether input is readonly.
-   * @param {boolean} [config.required] - Whether input is required.
-   * @param {string} [config.placeholder]
-   * @param {string} [config.name]
-   * @param {string|string[]|Set<string>} [config.tags=[]]
-   * @param {string} [config.mainClass='']
+   * @param {string} [config.dirname] - Name of the directionality field (text-based inputs).
+   * @param {string} [config.list] - ID of a <datalist> element.
+   * @param {boolean} [config.multiple=false] - Whether multiple values are allowed.
+   * @param {number} [config.size] - Size of the input box in characters.
+   * @param {boolean} [config.readonly=false] - Whether the input is readonly.
+   * @param {boolean} [config.required=false] - Whether the input is required.
+   * @param {string} [config.placeholder] - Placeholder text.
+   * @param {string} [config.name] - Name of the control.
+   * @param {string|string[]|Set<string>} [config.tags=[]] - Initial CSS classes.
+   * @param {string} [config.mainClass=''] - Main CSS class.
+   * @throws {TypeError} If any attribute is of the wrong type.
    */
   constructor({
     value,
     list,
     placeholder,
-    readonly,
-    required,
-    multiple,
+    readonly = false,
+    required = false,
+    multiple = false,
     minLength,
     autocomplete,
     size,
@@ -38,51 +50,127 @@ class TinyHtmlEmailInput extends TinyHtmlInput {
     name,
     tags = [],
     mainClass = '',
-  }) {
-    super({ value, name, placeholder, type: 'email', tags, mainClass, readonly, required });
-    if (minLength !== undefined && minLength !== undefined && typeof minLength !== 'number')
-      throw new TypeError("TinyHtmlEmailInput: 'minLength' must be a number.");
-    if (maxLength !== undefined && maxLength !== undefined && typeof maxLength !== 'number')
-      throw new TypeError("TinyHtmlEmailInput: 'maxLength' must be a number.");
-    if (minLength !== undefined) this.setAttr('minlength', String(minLength));
-    if (maxLength !== undefined) this.setAttr('maxlength', String(maxLength));
+  } = {}) {
+    super({ type: 'email', name, placeholder, readonly, required, tags, mainClass });
 
-    // --- pattern ---
-    if (pattern !== undefined) {
-      if (typeof pattern !== 'string') throw new TypeError('"pattern" must be a string.');
-      this.setAttr('pattern', pattern);
-    }
+    if (minLength !== undefined) this.minLength = minLength;
+    if (maxLength !== undefined) this.maxLength = maxLength;
+    if (pattern !== undefined) this.pattern = pattern;
+    if (multiple !== undefined) this.multiple = multiple;
+    if (list !== undefined) this.list = list;
+    if (autocomplete !== undefined) this.autocomplete = autocomplete;
+    if (dirname !== undefined) this.dirname = dirname;
+    if (size !== undefined) this.sizeEl = size;
+    if (value !== undefined) this.value = value;
+  }
 
-    // --- multiple ---
-    if (multiple === true) {
-      if (typeof multiple !== 'boolean') throw new TypeError('"multiple" must be a boolean.');
-      this.addProp('multiple');
-    }
+  /** @param {string} value */
+  set value(value) {
+    if (typeof value !== 'string')
+      throw new TypeError('TinyHtmlEmailInput: "value" must be a string.');
+    this.setVal(value);
+  }
 
-    // --- list ---
-    if (list !== undefined) {
-      if (typeof list !== 'string') throw new TypeError('"list" must be a string (datalist id).');
-      this.setAttr('list', list);
-    }
+  /** @returns {string} */
+  get value() {
+    return this.valTxt();
+  }
 
-    // --- autocomplete ---
-    if (autocomplete !== undefined) {
-      if (typeof autocomplete !== 'string') throw new TypeError('"autocomplete" must be a string.');
-      this.setAttr('autocomplete', autocomplete);
-    }
+  /** @param {number} minLength */
+  set minLength(minLength) {
+    if (!Number.isInteger(minLength) || minLength < 0)
+      throw new TypeError('TinyHtmlEmailInput: "minLength" must be a non-negative integer.');
+    this.setAttr('minlength', minLength);
+  }
 
-    // --- dirname ---
-    if (dirname !== undefined) {
-      if (typeof dirname !== 'string') throw new TypeError('"dirname" must be a string.');
-      this.setAttr('dirname', dirname);
-    }
+  /** @returns {number|null} */
+  get minLength() {
+    return this.attrNumber('minlength');
+  }
 
-    // --- size ---
-    if (size !== undefined) {
-      if (!Number.isInteger(size) || size < 1)
-        throw new TypeError('"size" must be a positive integer.');
-      this.setAttr('size', String(size));
-    }
+  /** @param {number} maxLength */
+  set maxLength(maxLength) {
+    if (!Number.isInteger(maxLength) || maxLength < 1)
+      throw new TypeError('TinyHtmlEmailInput: "maxLength" must be a positive integer.');
+    this.setAttr('maxlength', maxLength);
+  }
+
+  /** @returns {number|null} */
+  get maxLength() {
+    return this.attrNumber('maxlength');
+  }
+
+  /** @param {string} pattern */
+  set pattern(pattern) {
+    if (typeof pattern !== 'string')
+      throw new TypeError('TinyHtmlEmailInput: "pattern" must be a string.');
+    this.setAttr('pattern', pattern);
+  }
+
+  /** @returns {string|null} */
+  get pattern() {
+    return this.attrString('pattern');
+  }
+
+  /** @param {boolean} multiple */
+  set multiple(multiple) {
+    if (typeof multiple !== 'boolean')
+      throw new TypeError('TinyHtmlEmailInput: "multiple" must be a boolean.');
+    if (multiple) this.addProp('multiple');
+    else this.removeProp('multiple');
+  }
+
+  /** @returns {boolean} */
+  get multiple() {
+    return this.hasProp('multiple');
+  }
+
+  /** @param {string} list */
+  set list(list) {
+    if (typeof list !== 'string')
+      throw new TypeError('TinyHtmlEmailInput: "list" must be a string (datalist id).');
+    this.setAttr('list', list);
+  }
+
+  /** @returns {string|null} */
+  get list() {
+    return this.attrString('list');
+  }
+
+  /** @param {string} autocomplete */
+  set autocomplete(autocomplete) {
+    if (typeof autocomplete !== 'string')
+      throw new TypeError('TinyHtmlEmailInput: "autocomplete" must be a string.');
+    this.setAttr('autocomplete', autocomplete);
+  }
+
+  /** @returns {string|null} */
+  get autocomplete() {
+    return this.attrString('autocomplete');
+  }
+
+  /** @param {string} dirname */
+  set dirname(dirname) {
+    if (typeof dirname !== 'string')
+      throw new TypeError('TinyHtmlEmailInput: "dirname" must be a string.');
+    this.setAttr('dirname', dirname);
+  }
+
+  /** @returns {string|null} */
+  get dirname() {
+    return this.attrString('dirname');
+  }
+
+  /** @param {number} size */
+  set sizeEl(size) {
+    if (!Number.isInteger(size) || size < 1)
+      throw new TypeError('TinyHtmlEmailInput: "size" must be a positive integer.');
+    this.setAttr('size', size);
+  }
+
+  /** @returns {number|null} */
+  get sizeEl() {
+    return this.attrNumber('size');
   }
 }
 

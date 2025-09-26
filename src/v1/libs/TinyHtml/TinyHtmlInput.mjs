@@ -135,6 +135,18 @@ class TinyHtmlInput extends TinyHtmlTemplate {
   get form() {
     return this.attrString('form');
   }
+
+  /** @param {number} size */
+  set sizeEl(size) {
+    if (!Number.isInteger(size) || size < 1)
+      throw new TypeError('TinyHtmlUrlInput: "size" must be a positive integer.');
+    this.setAttr('size', size);
+  }
+
+  /** @returns {number|null} */
+  get sizeEl() {
+    return this.attrNumber('size');
+  }
 }
 
 export default TinyHtmlInput;
