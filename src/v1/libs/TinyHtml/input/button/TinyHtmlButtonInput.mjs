@@ -74,7 +74,7 @@ class TinyHtmlButtonInput extends TinyHtmlInput {
     const allowed = ['show', 'hide', 'toggle'];
     if (!allowed.includes(action))
       throw new TypeError(
-        `TinyHtmlButtonInput: "popovertargetaction" must be one of ${allowed.join(', ')}.`
+        `TinyHtmlButtonInput: "popovertargetaction" must be one of ${allowed.join(', ')}.`,
       );
     this.setAttr('popovertargetaction', action);
   }

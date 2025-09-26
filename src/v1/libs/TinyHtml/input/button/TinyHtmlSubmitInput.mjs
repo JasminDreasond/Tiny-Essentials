@@ -84,7 +84,9 @@ class TinyHtmlSubmitInput extends TinyHtmlInput {
   set formenctype(formenctype) {
     const allowed = ['application/x-www-form-urlencoded', 'multipart/form-data', 'text/plain'];
     if (!allowed.includes(formenctype))
-      throw new TypeError(`TinyHtmlSubmitInput: "formenctype" must be one of ${allowed.join(', ')}.`);
+      throw new TypeError(
+        `TinyHtmlSubmitInput: "formenctype" must be one of ${allowed.join(', ')}.`,
+      );
     this.setAttr('formenctype', formenctype);
   }
 
@@ -97,7 +99,9 @@ class TinyHtmlSubmitInput extends TinyHtmlInput {
   set formmethod(formmethod) {
     const allowed = ['get', 'post', 'dialog'];
     if (!allowed.includes(formmethod))
-      throw new TypeError(`TinyHtmlSubmitInput: "formmethod" must be one of ${allowed.join(', ')}.`);
+      throw new TypeError(
+        `TinyHtmlSubmitInput: "formmethod" must be one of ${allowed.join(', ')}.`,
+      );
     this.setAttr('formmethod', formmethod);
   }
 

@@ -1,6 +1,10 @@
 import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
 
 /**
+ * {boolean} [config.fetchMode=TinyHtmlImage.#defaultFetchMode] - Whether to enable or disable fetch mode. Must be a boolean.
+ */
+
+/**
  * TinyImage is a helper class for managing <img> elements.
  * It supports modern attributes like srcset, sizes, decoding, fetchpriority,
  * as well as width, height, alt, crossorigin, loading, and more.
@@ -19,27 +23,27 @@ import TinyHtmlTemplate from './TinyHtmlTemplate.mjs';
  */
 class TinyHtmlImage extends TinyHtmlTemplate {
   /** @type {boolean} */
-  static #defaultFetchMode = false;
+  // static #defaultFetchMode = false;
 
   /** @returns {boolean} */
-  static get defaultFetchMode() {
-    return TinyHtmlImage.#defaultFetchMode;
-  }
+  // static get defaultFetchMode() {
+  //   return TinyHtmlImage.#defaultFetchMode;
+  // }
 
   /** @param {boolean} value */
-  static set defaultFetchMode(value) {
-    if (typeof value !== 'boolean')
-      throw new TypeError('Expected a boolean value for defaultFetchMode');
-    TinyHtmlImage.#defaultFetchMode = value;
-  }
+  // static set defaultFetchMode(value) {
+  //   if (typeof value !== 'boolean')
+  //     throw new TypeError('Expected a boolean value for defaultFetchMode');
+  //   TinyHtmlImage.#defaultFetchMode = value;
+  // }
 
   /** @type {boolean} */
-  #fetchMode;
+  // #fetchMode;
 
   /** @returns {boolean} */
-  get fetchMode() {
-    return this.#fetchMode;
-  }
+  // get fetchMode() {
+  //   return this.#fetchMode;
+  // }
 
   /**
    * Creates a new TinyHtmlImage instance wrapping an <img> element.
@@ -52,7 +56,6 @@ class TinyHtmlImage extends TinyHtmlTemplate {
    * @param {number} [config.width] - Width of the image in pixels.
    * @param {number} [config.height] - Height of the image in pixels.
    * @param {string|string[]|Set<string>} [config.tags=[]] - Initial CSS classes to apply.
-   * @param {boolean} [config.fetchMode=TinyHtmlImage.#defaultFetchMode] - Whether to enable or disable fetch mode. Must be a boolean.
    * @param {string} [config.mainClass=""] - Main CSS class applied to the element.
    * @param {string|string[]|boolean} [config.attributionsrc] - Attribution source; may be a string, array of strings, or `true/false`.
    * @param {"anonymous"|"use-credentials"} [config.crossorigin] - Cross-origin policy for loading the image.
@@ -73,7 +76,7 @@ class TinyHtmlImage extends TinyHtmlTemplate {
     height,
     tags = [],
     mainClass = '',
-    fetchMode = TinyHtmlImage.#defaultFetchMode,
+    // fetchMode = TinyHtmlImage.#defaultFetchMode,
     attributionsrc,
     crossorigin,
     decoding,
@@ -106,9 +109,9 @@ class TinyHtmlImage extends TinyHtmlTemplate {
     if (srcset !== undefined) this.srcset = srcset;
     if (usemap !== undefined) this.usemap = usemap;
 
-    if (typeof fetchMode !== 'boolean')
-      throw new TypeError('TinyImage: "fetchMode" must be a boolean.');
-    this.#fetchMode = fetchMode;
+    // if (typeof fetchMode !== 'boolean')
+    //   throw new TypeError('TinyImage: "fetchMode" must be a boolean.');
+    // this.#fetchMode = fetchMode;
   }
 
   // --- Attributes ---

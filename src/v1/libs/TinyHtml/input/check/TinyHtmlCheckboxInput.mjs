@@ -32,7 +32,7 @@ class TinyHtmlCheckboxInput extends TinyHtmlInput {
     readonly = false,
     required = false,
     tags = [],
-    mainClass = ''
+    mainClass = '',
   }) {
     super({ type: 'checkbox', name, tags, mainClass, readonly, required });
 

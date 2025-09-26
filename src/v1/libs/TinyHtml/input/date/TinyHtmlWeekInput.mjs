@@ -70,7 +70,9 @@ class TinyHtmlWeekInput extends TinyHtmlInput {
       temp.setDate(temp.getDate() + 3 - ((temp.getDay() + 6) % 7));
       const weekYear = temp.getFullYear();
       const week1 = new Date(weekYear, 0, 4);
-      const weekNo = Math.ceil(((temp.valueOf() - week1.valueOf()) / 86400000 + ((week1.getDay() + 6) % 7) + 1) / 7);
+      const weekNo = Math.ceil(
+        ((temp.valueOf() - week1.valueOf()) / 86400000 + ((week1.getDay() + 6) % 7) + 1) / 7,
+      );
       this.setVal(`${weekYear}-W${String(weekNo).padStart(2, '0')}`);
       return;
     }
