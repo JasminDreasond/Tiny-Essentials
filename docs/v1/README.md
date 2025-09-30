@@ -78,7 +78,7 @@ This folder contains the core scripts we have worked on so far. Each file is a m
 
 To get started, navigate to the appropriate directory and explore the files listed. Each script includes detailed documentation on how to use the respective functionality.
 
-👉 For a complete overview of all available entry points and modules, please check out the [**exports**](./exports.md) file. It provides a detailed map of the package’s `exports` and helps you import exactly what you need.
+👉 For a complete overview of all available entry points and modules, please check out the [**exports**](./Exports.md) file. It provides a detailed map of the package’s `exports` and helps you import exactly what you need.
 
 ---
 
