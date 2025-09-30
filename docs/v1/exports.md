@@ -91,7 +91,6 @@ Each library can be imported separately:
   * `libs/TinyInventory`
   * `libs/TinyIframeEvents`
   * `libs/TinyI18`
-  * `libs/TinyHtml`
   * `libs/TinyLevelUp`
   * `libs/TinyGamepad`
   * `libs/TinyEvents`
@@ -109,6 +108,7 @@ Each library can be imported separately:
 
 * **HTML Helpers** 🧩
 
+  * `libs/TinyHtml`
   * `libs/TinyHtmlElems`
 
 ---
