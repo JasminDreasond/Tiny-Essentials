@@ -1,6 +1,6 @@
 {
   "name": "tiny-essentials",
-  "version": "1.24.1",
+  "version": "1.24.2",
   "description": "Collection of small, essential scripts designed to be used across various projects. These simple utilities are crafted for speed, ease of use, and versatility.",
   "scripts": {
     "test": "npm run test:mjs && npm run test:cjs && npm run test:js",
@@ -56,45 +56,53 @@
       "require": "./dist/v1/basics/index.cjs",
       "import": "./dist/v1/basics/index.mjs"
     },
+    "./basics/array": {
+      "require": "./dist/v1/basics/array.cjs",
+      "import": "./dist/v1/basics/array.mjs"
+    },
+    "./basics/clock": {
+      "require": "./dist/v1/basics/clock.cjs",
+      "import": "./dist/v1/basics/clock.mjs"
+    },
+    "./basics/collision": {
+      "require": "./dist/v1/basics/collision.cjs",
+      "import": "./dist/v1/basics/collision.mjs"
+    },
+    "./basics/fullScreen": {
+      "require": "./dist/v1/basics/fullScreen.cjs",
+      "import": "./dist/v1/basics/fullScreen.mjs"
+    },
+    "./basics/html": {
+      "require": "./dist/v1/basics/html.cjs",
+      "import": "./dist/v1/basics/html.mjs"
+    },
+    "./basics/objChecker": {
+      "require": "./dist/v1/basics/objChecker.cjs",
+      "import": "./dist/v1/basics/objChecker.mjs"
+    },
+    "./basics/objFilter": {
+      "require": "./dist/v1/basics/objFilter.cjs",
+      "import": "./dist/v1/basics/objFilter.mjs"
+    },
+    "./basics/simpleMath": {
+      "require": "./dist/v1/basics/simpleMath.cjs",
+      "import": "./dist/v1/basics/simpleMath.mjs"
+    },
+    "./basics/text": {
+      "require": "./dist/v1/basics/text.cjs",
+      "import": "./dist/v1/basics/text.mjs"
+    },
     "./fileManager": {
       "require": "./dist/v1/fileManager/index.cjs",
       "import": "./dist/v1/fileManager/index.mjs"
     },
-    "./basics/array": {
-      "require": "./dist/v1/libs/array.cjs",
-      "import": "./dist/v1/libs/array.mjs"
+    "./fileManager/async": {
+      "require": "./dist/v1/fileManager/asyncFuncs.cjs",
+      "import": "./dist/v1/fileManager/asyncFuncs.mjs"
     },
-    "./basics/clock": {
-      "require": "./dist/v1/libs/clock.cjs",
-      "import": "./dist/v1/libs/clock.mjs"
-    },
-    "./basics/collision": {
-      "require": "./dist/v1/libs/collision.cjs",
-      "import": "./dist/v1/libs/collision.mjs"
-    },
-    "./basics/fullScreen": {
-      "require": "./dist/v1/libs/fullScreen.cjs",
-      "import": "./dist/v1/libs/fullScreen.mjs"
-    },
-    "./basics/html": {
-      "require": "./dist/v1/libs/html.cjs",
-      "import": "./dist/v1/libs/html.mjs"
-    },
-    "./basics/objChecker": {
-      "require": "./dist/v1/libs/objChecker.cjs",
-      "import": "./dist/v1/libs/objChecker.mjs"
-    },
-    "./basics/objFilter": {
-      "require": "./dist/v1/libs/objFilter.cjs",
-      "import": "./dist/v1/libs/objFilter.mjs"
-    },
-    "./basics/simpleMath": {
-      "require": "./dist/v1/libs/simpleMath.cjs",
-      "import": "./dist/v1/libs/simpleMath.mjs"
-    },
-    "./basics/text": {
-      "require": "./dist/v1/libs/text.cjs",
-      "import": "./dist/v1/libs/text.mjs"
+    "./fileManager/normal": {
+      "require": "./dist/v1/fileManager/normalFuncs.cjs",
+      "import": "./dist/v1/fileManager/normalFuncs.mjs"
     },
     "./libs/ColorSafeStringify": {
       "require": "./dist/v1/libs/ColorSafeStringify.cjs",

@@ -61,6 +61,11 @@ Direct access to smaller utilities:
 * `basics/simpleMath`
 * `basics/text`
 
+Direct access to file utilities:
+
+* `fileManager/async`
+* `fileManager/normal`
+
 ---
 
 ## 📚 Libs Modules
