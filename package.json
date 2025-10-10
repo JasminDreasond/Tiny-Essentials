@@ -1,6 +1,6 @@
 {
   "name": "tiny-essentials",
-  "version": "1.24.2",
+  "version": "1.24.3",
   "description": "Collection of small, essential scripts designed to be used across various projects. These simple utilities are crafted for speed, ease of use, and versatility.",
   "scripts": {
     "test": "npm run test:mjs && npm run test:cjs && npm run test:js",
@@ -255,6 +255,178 @@
     "./libs/TinyHtmlElems": {
       "require": "./dist/v1/libs/TinyHtml/index.cjs",
       "import": "./dist/v1/libs/TinyHtml/index.mjs"
+    },
+    "./libs/TinyHtmlElems/Anchor": {
+      "require": "./dist/v1/libs/TinyHtml/TinyHtmlAnchor.cjs",
+      "import": "./dist/v1/libs/TinyHtml/TinyHtmlAnchor.mjs"
+    },
+    "./libs/TinyHtmlElems/Button": {
+      "require": "./dist/v1/libs/TinyHtml/TinyHtmlButton.cjs",
+      "import": "./dist/v1/libs/TinyHtml/TinyHtmlButton.mjs"
+    },
+    "./libs/TinyHtmlElems/Canvas": {
+      "require": "./dist/v1/libs/TinyHtml/TinyHtmlCanvas.cjs",
+      "import": "./dist/v1/libs/TinyHtml/TinyHtmlCanvas.mjs"
+    },
+    "./libs/TinyHtmlElems/Datalist": {
+      "require": "./dist/v1/libs/TinyHtml/TinyHtmlDatalist.cjs",
+      "import": "./dist/v1/libs/TinyHtml/TinyHtmlDatalist.mjs"
+    },
+    "./libs/TinyHtmlElems/Form": {
+      "require": "./dist/v1/libs/TinyHtml/TinyHtmlForm.cjs",
+      "import": "./dist/v1/libs/TinyHtml/TinyHtmlForm.mjs"
+    },
+    "./libs/TinyHtmlElems/Embed": {
+      "require": "./dist/v1/libs/TinyHtml/TinyHtmlEmbed.cjs",
+      "import": "./dist/v1/libs/TinyHtml/TinyHtmlEmbed.mjs"
+    },
+    "./libs/TinyHtmlElems/Icon": {
+      "require": "./dist/v1/libs/TinyHtml/TinyHtmlIcon.cjs",
+      "import": "./dist/v1/libs/TinyHtml/TinyHtmlIcon.mjs"
+    },
+    "./libs/TinyHtmlElems/Iframe": {
+      "require": "./dist/v1/libs/TinyHtml/TinyHtmlIframe.cjs",
+      "import": "./dist/v1/libs/TinyHtml/TinyHtmlIframe.mjs"
+    },
+    "./libs/TinyHtmlElems/Image": {
+      "require": "./dist/v1/libs/TinyHtml/TinyHtmlImage.cjs",
+      "import": "./dist/v1/libs/TinyHtml/TinyHtmlImage.mjs"
+    },
+    "./libs/TinyHtmlElems/Link": {
+      "require": "./dist/v1/libs/TinyHtml/TinyHtmlLink.cjs",
+      "import": "./dist/v1/libs/TinyHtml/TinyHtmlLink.mjs"
+    },
+    "./libs/TinyHtmlElems/Script": {
+      "require": "./dist/v1/libs/TinyHtml/TinyHtmlScript.cjs",
+      "import": "./dist/v1/libs/TinyHtml/TinyHtmlScript.mjs"
+    },
+    "./libs/TinyHtmlElems/Select": {
+      "require": "./dist/v1/libs/TinyHtml/TinyHtmlSelect.cjs",
+      "import": "./dist/v1/libs/TinyHtml/TinyHtmlSelect.mjs"
+    },
+    "./libs/TinyHtmlElems/Style": {
+      "require": "./dist/v1/libs/TinyHtml/TinyHtmlStyle.cjs",
+      "import": "./dist/v1/libs/TinyHtml/TinyHtmlStyle.mjs"
+    },
+    "./libs/TinyHtmlElems/Template": {
+      "require": "./dist/v1/libs/TinyHtml/TinyHtmlTemplate.cjs",
+      "import": "./dist/v1/libs/TinyHtml/TinyHtmlTemplate.mjs"
+    },
+    "./libs/TinyHtmlElems/Textarea": {
+      "require": "./dist/v1/libs/TinyHtml/TinyHtmlTextarea.cjs",
+      "import": "./dist/v1/libs/TinyHtml/TinyHtmlTextarea.mjs"
+    },
+    "./libs/TinyHtmlElems/Media": {
+      "require": "./dist/v1/libs/TinyHtml/TinyHtmlMedia.cjs",
+      "import": "./dist/v1/libs/TinyHtml/TinyHtmlMedia.mjs"
+    },
+    "./libs/TinyHtmlElems/Media/Audio": {
+      "require": "./dist/v1/libs/TinyHtml/Media/TinyHtmlAudio.cjs",
+      "import": "./dist/v1/libs/TinyHtml/Media/TinyHtmlAudio.mjs"
+    },
+    "./libs/TinyHtmlElems/Media/Object": {
+      "require": "./dist/v1/libs/TinyHtml/Media/TinyHtmlObject.cjs",
+      "import": "./dist/v1/libs/TinyHtml/Media/TinyHtmlObject.mjs"
+    },
+    "./libs/TinyHtmlElems/Media/Source": {
+      "require": "./dist/v1/libs/TinyHtml/Media/TinyHtmlSource.cjs",
+      "import": "./dist/v1/libs/TinyHtml/Media/TinyHtmlSource.mjs"
+    },
+    "./libs/TinyHtmlElems/Media/Video": {
+      "require": "./dist/v1/libs/TinyHtml/Media/TinyHtmlVideo.cjs",
+      "import": "./dist/v1/libs/TinyHtml/Media/TinyHtmlVideo.mjs"
+    },
+    "./libs/TinyHtmlElems/Input": {
+      "require": "./dist/v1/libs/TinyHtml/TinyHtmlInput.cjs",
+      "import": "./dist/v1/libs/TinyHtml/TinyHtmlInput.mjs"
+    },
+    "./libs/TinyHtmlElems/Input/Color": {
+      "require": "./dist/v1/libs/TinyHtml/input/TinyHtmlColorInput.cjs",
+      "import": "./dist/v1/libs/TinyHtml/input/TinyHtmlColorInput.mjs"
+    },
+    "./libs/TinyHtmlElems/Input/File": {
+      "require": "./dist/v1/libs/TinyHtml/input/TinyHtmlFileInput.cjs",
+      "import": "./dist/v1/libs/TinyHtml/input/TinyHtmlFileInput.mjs"
+    },
+    "./libs/TinyHtmlElems/Input/Hidden": {
+      "require": "./dist/v1/libs/TinyHtml/input/TinyHtmlHiddenInput.cjs",
+      "import": "./dist/v1/libs/TinyHtml/input/TinyHtmlHiddenInput.mjs"
+    },
+    "./libs/TinyHtmlElems/Input/Image": {
+      "require": "./dist/v1/libs/TinyHtml/input/TinyHtmlImageInput.cjs",
+      "import": "./dist/v1/libs/TinyHtml/input/TinyHtmlImageInput.mjs"
+    },
+    "./libs/TinyHtmlElems/Input/Button": {
+      "require": "./dist/v1/libs/TinyHtml/input/button/TinyHtmlButtonInput.cjs",
+      "import": "./dist/v1/libs/TinyHtml/input/button/TinyHtmlButtonInput.mjs"
+    },
+    "./libs/TinyHtmlElems/Input/Reset": {
+      "require": "./dist/v1/libs/TinyHtml/input/button/TinyHtmlResetInput.cjs",
+      "import": "./dist/v1/libs/TinyHtml/input/button/TinyHtmlResetInput.mjs"
+    },
+    "./libs/TinyHtmlElems/Input/Submit": {
+      "require": "./dist/v1/libs/TinyHtml/input/button/TinyHtmlSubmitInput.cjs",
+      "import": "./dist/v1/libs/TinyHtml/input/button/TinyHtmlSubmitInput.mjs"
+    },
+    "./libs/TinyHtmlElems/Input/Checkbox": {
+      "require": "./dist/v1/libs/TinyHtml/input/check/TinyHtmlCheckboxInput.cjs",
+      "import": "./dist/v1/libs/TinyHtml/input/check/TinyHtmlCheckboxInput.mjs"
+    },
+    "./libs/TinyHtmlElems/Input/Radio": {
+      "require": "./dist/v1/libs/TinyHtml/input/check/TinyHtmlRadioInput.cjs",
+      "import": "./dist/v1/libs/TinyHtml/input/check/TinyHtmlRadioInput.mjs"
+    },
+    "./libs/TinyHtmlElems/Input/Date": {
+      "require": "./dist/v1/libs/TinyHtml/input/date/TinyHtmlDateInput.cjs",
+      "import": "./dist/v1/libs/TinyHtml/input/date/TinyHtmlDateInput.mjs"
+    },
+    "./libs/TinyHtmlElems/Input/DateTime": {
+      "require": "./dist/v1/libs/TinyHtml/input/date/TinyHtmlDateTimeInput.cjs",
+      "import": "./dist/v1/libs/TinyHtml/input/date/TinyHtmlDateTimeInput.mjs"
+    },
+    "./libs/TinyHtmlElems/Input/Month": {
+      "require": "./dist/v1/libs/TinyHtml/input/date/TinyHtmlMonthInput.cjs",
+      "import": "./dist/v1/libs/TinyHtml/input/date/TinyHtmlMonthInput.mjs"
+    },
+    "./libs/TinyHtmlElems/Input/Time": {
+      "require": "./dist/v1/libs/TinyHtml/input/date/TinyHtmlTimeInput.cjs",
+      "import": "./dist/v1/libs/TinyHtml/input/date/TinyHtmlTimeInput.mjs"
+    },
+    "./libs/TinyHtmlElems/Input/Week": {
+      "require": "./dist/v1/libs/TinyHtml/input/date/TinyHtmlWeekInput.cjs",
+      "import": "./dist/v1/libs/TinyHtml/input/date/TinyHtmlWeekInput.mjs"
+    },
+    "./libs/TinyHtmlElems/Input/Number": {
+      "require": "./dist/v1/libs/TinyHtml/input/number/TinyHtmlNumberInput.cjs",
+      "import": "./dist/v1/libs/TinyHtml/input/number/TinyHtmlNumberInput.mjs"
+    },
+    "./libs/TinyHtmlElems/Input/Range": {
+      "require": "./dist/v1/libs/TinyHtml/input/number/TinyHtmlRangeInput.cjs",
+      "import": "./dist/v1/libs/TinyHtml/input/number/TinyHtmlRangeInput.mjs"
+    },
+    "./libs/TinyHtmlElems/Input/Email": {
+      "require": "./dist/v1/libs/TinyHtml/input/text/TinyHtmlEmailInput.cjs",
+      "import": "./dist/v1/libs/TinyHtml/input/text/TinyHtmlEmailInput.mjs"
+    },
+    "./libs/TinyHtmlElems/Input/Password": {
+      "require": "./dist/v1/libs/TinyHtml/input/text/TinyHtmlPasswordInput.cjs",
+      "import": "./dist/v1/libs/TinyHtml/input/text/TinyHtmlPasswordInput.mjs"
+    },
+    "./libs/TinyHtmlElems/Input/Search": {
+      "require": "./dist/v1/libs/TinyHtml/input/text/TinyHtmlSearchInput.cjs",
+      "import": "./dist/v1/libs/TinyHtml/input/text/TinyHtmlSearchInput.mjs"
+    },
+    "./libs/TinyHtmlElems/Input/Tel": {
+      "require": "./dist/v1/libs/TinyHtml/input/text/TinyHtmlTelInput.cjs",
+      "import": "./dist/v1/libs/TinyHtml/input/text/TinyHtmlTelInput.mjs"
+    },
+    "./libs/TinyHtmlElems/Input/Text": {
+      "require": "./dist/v1/libs/TinyHtml/input/text/TinyHtmlTextInput.cjs",
+      "import": "./dist/v1/libs/TinyHtml/input/text/TinyHtmlTextInput.mjs"
+    },
+    "./libs/TinyHtmlElems/Input/Url": {
+      "require": "./dist/v1/libs/TinyHtml/input/text/TinyHtmlUrlInput.cjs",
+      "import": "./dist/v1/libs/TinyHtml/input/text/TinyHtmlUrlInput.mjs"
     }
   },
   "repository": {
