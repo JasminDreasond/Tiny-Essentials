@@ -1087,7 +1087,6 @@ class TinyHtml {
    * @param {string} where - The method name or context calling this.
    * @param {number} index - The index of the element to retrieve.
    * @returns {ConstructorElValues} - The instance's element.
-   * @private
    */
   _getElement(where, index) {
     if (
@@ -1107,7 +1106,6 @@ class TinyHtml {
    *
    * @param {string} where - The method name or context calling this.
    * @returns {ConstructorElValues[]} - The instance's elements.
-   * @private
    */
   _getElements(where) {
     if (
@@ -1138,7 +1136,6 @@ class TinyHtml {
    * @param {string[]} elemName - The list of expected element names for error reporting.
    * @returns {any[]} - A flat array of validated elements.
    * @throws {Error} - If any element is not an instance of one of the allowed types.
-   * @private
    */
   static _preElemsTemplate(elems, where, TheTinyElements, elemName) {
     /** @param {(TinyElement|EventTarget|null)[]} item */
@@ -1178,7 +1175,6 @@ class TinyHtml {
    * @param {string[]} elemName - The list of expected element names for error reporting.
    * @returns {any[]} - A flat array of validated elements.
    * @throws {Error} - If any element is not an instance of one of the allowed types.
-   * @private
    */
   _preElemsTemplate(where, TheTinyElements, elemName) {
     return TinyHtml._preElemsTemplate(this, where, TheTinyElements, elemName);
@@ -1194,7 +1190,6 @@ class TinyHtml {
    * @param {boolean} [canNull=false] - Whether `null` is allowed as a valid value.
    * @returns {any} - The validated element or `null` if allowed.
    * @throws {Error} - If the element is not valid or if multiple elements are provided.
-   * @private
    */
   static _preElemTemplate(elems, where, TheTinyElements, elemName, canNull = false) {
     /** @param {(TinyElement|EventTarget|null)[]} item */
@@ -1248,7 +1243,6 @@ class TinyHtml {
    * @param {boolean} [canNull=false] - Whether `null` is allowed as a valid value.
    * @returns {any} - The validated element or `null` if allowed.
    * @throws {Error} - If the element is not valid or if multiple elements are provided.
-   * @private
    */
   _preElemTemplate(where, TheTinyElements, elemName, canNull = false) {
     return TinyHtml._preElemTemplate(this, where, TheTinyElements, elemName, canNull);
@@ -1261,7 +1255,6 @@ class TinyHtml {
    * @param {TinyElement|TinyElement[]} elems - A single element or array of elements.
    * @param {string} where - The method or context name where validation is being called.
    * @returns {Element[]} - Always returns an array of elements.
-   * @private
    */
   static _preElems(elems, where) {
     return TinyHtml._preElemsTemplate(elems, where, [Element], ['Element']);
@@ -1273,7 +1266,6 @@ class TinyHtml {
    *
    * @param {string} where - The method or context name where validation is being called.
    * @returns {Element[]} - Always returns an array of elements.
-   * @private
    */
   _preElems(where) {
     return TinyHtml._preElems(this, where);
@@ -1286,7 +1278,6 @@ class TinyHtml {
    * @param {TinyElement|TinyElement[]} elems - A single element or array of elements.
    * @param {string} where - The method or context name where validation is being called.
    * @returns {Element} - Always returns an single element.
-   * @private
    */
   static _preElem(elems, where) {
     return TinyHtml._preElemTemplate(elems, where, [Element], ['Element']);
@@ -1298,7 +1289,6 @@ class TinyHtml {
    *
    * @param {string} where - The method or context name where validation is being called.
    * @returns {Element} - Always returns an single element.
-   * @private
    */
   _preElem(where) {
     return TinyHtml._preElem(this, where);
@@ -1311,7 +1301,6 @@ class TinyHtml {
    * @param {TinyNode|TinyNode[]} elems - A single node or array of nodes.
    * @param {string} where - The method or context name where validation is being called.
    * @returns {Node[]} - Always returns an array of nodes.
-   * @private
    */
   static _preNodeElems(elems, where) {
     return TinyHtml._preElemsTemplate(elems, where, [Node], ['Node']);
@@ -1323,7 +1312,6 @@ class TinyHtml {
    *
    * @param {string} where - The method or context name where validation is being called.
    * @returns {Node[]} - Always returns an array of nodes.
-   * @private
    */
   _preNodeElems(where) {
     return TinyHtml._preNodeElems(this, where);
@@ -1336,7 +1324,6 @@ class TinyHtml {
    * @param {TinyNode|TinyNode[]} elems - A single node or array of nodes.
    * @param {string} where - The method or context name where validation is being called.
    * @returns {Node} - Always returns an single node.
-   * @private
    */
   static _preNodeElem(elems, where) {
     return TinyHtml._preElemTemplate(elems, where, [Node], ['Node']);
@@ -1348,7 +1335,6 @@ class TinyHtml {
    *
    * @param {string} where - The method or context name where validation is being called.
    * @returns {Node} - Always returns an single node.
-   * @private
    */
   _preNodeElem(where) {
     return TinyHtml._preNodeElem(this, where);
@@ -1361,7 +1347,6 @@ class TinyHtml {
    * @param {TinyNode|TinyNode[]} elems - A single node or array of nodes.
    * @param {string} where - The method or context name where validation is being called.
    * @returns {Node|null} - Always returns an single node or null.
-   * @private
    */
   static _preNodeElemWithNull(elems, where) {
     return TinyHtml._preElemTemplate(elems, where, [Node], ['Node'], true);
@@ -1373,7 +1358,6 @@ class TinyHtml {
    *
    * @param {string} where - The method or context name where validation is being called.
    * @returns {Node|null} - Always returns an single node or null.
-   * @private
    */
   _preNodeElemWithNull(where) {
     return TinyHtml._preNodeElemWithNull(this, where);
@@ -1386,7 +1370,6 @@ class TinyHtml {
    * @param {TinyElement|TinyElement[]} elems - A single html element or array of html elements.
    * @param {string} where - The method or context name where validation is being called.
    * @returns {HTMLElement[]} - Always returns an array of html elements.
-   * @private
    */
   static _preHtmlElems(elems, where) {
     return TinyHtml._preElemsTemplate(elems, where, [HTMLElement], ['HTMLElement']);
@@ -1398,7 +1381,6 @@ class TinyHtml {
    *
    * @param {string} where - The method or context name where validation is being called.
    * @returns {HTMLElement[]} - Always returns an array of html elements.
-   * @private
    */
   _preHtmlElems(where) {
     return TinyHtml._preHtmlElems(this, where);
@@ -1411,7 +1393,6 @@ class TinyHtml {
    * @param {TinyElement|TinyElement[]} elems - A single html element or array of html elements.
    * @param {string} where - The method or context name where validation is being called.
    * @returns {HTMLElement} - Always returns an single html element.
-   * @private
    */
   static _preHtmlElem(elems, where) {
     return TinyHtml._preElemTemplate(elems, where, [HTMLElement], ['HTMLElement']);
@@ -1423,7 +1404,6 @@ class TinyHtml {
    *
    * @param {string} where - The method or context name where validation is being called.
    * @returns {HTMLElement} - Always returns an single html element.
-   * @private
    */
   _preHtmlElem(where) {
     return TinyHtml._preHtmlElem(this, where);
@@ -1436,7 +1416,6 @@ class TinyHtml {
    * @param {TinyInputElement|TinyInputElement[]} elems - A single event target element or array of html elements.
    * @param {string} where - The method or context name where validation is being called.
    * @returns {InputElement[]} - Always returns an array of event target elements.
-   * @private
    */
   static _preInputElems(elems, where) {
     return TinyHtml._preElemsTemplate(
@@ -1453,7 +1432,6 @@ class TinyHtml {
    *
    * @param {string} where - The method or context name where validation is being called.
    * @returns {InputElement[]} - Always returns an array of event target elements.
-   * @private
    */
   _preInputElems(where) {
     return TinyHtml._preInputElems(this, where);
@@ -1466,7 +1444,6 @@ class TinyHtml {
    * @param {TinyInputElement|TinyInputElement[]} elems - A single event target element or array of html elements.
    * @param {string} where - The method or context name where validation is being called.
    * @returns {InputElement} - Always returns an single event target element.
-   * @private
    */
   static _preInputElem(elems, where) {
     return TinyHtml._preElemTemplate(
@@ -1483,7 +1460,6 @@ class TinyHtml {
    *
    * @param {string} where - The method or context name where validation is being called.
    * @returns {InputElement} - Always returns an single event target element.
-   * @private
    */
   _preInputElem(where) {
     return TinyHtml._preInputElem(this, where);
@@ -1496,7 +1472,6 @@ class TinyHtml {
    * @param {TinyEventTarget|TinyEventTarget[]} elems - A single event target element or array of html elements.
    * @param {string} where - The method or context name where validation is being called.
    * @returns {EventTarget[]} - Always returns an array of event target elements.
-   * @private
    */
   static _preEventTargetElems(elems, where) {
     return TinyHtml._preElemsTemplate(elems, where, [EventTarget], ['EventTarget']);
@@ -1508,7 +1483,6 @@ class TinyHtml {
    *
    * @param {string} where - The method or context name where validation is being called.
    * @returns {EventTarget[]} - Always returns an array of event target elements.
-   * @private
    */
   _preEventTargetElems(where) {
     return TinyHtml._preEventTargetElems(this, where);
@@ -1521,7 +1495,6 @@ class TinyHtml {
    * @param {TinyEventTarget|TinyEventTarget[]} elems - A single event target element or array of html elements.
    * @param {string} where - The method or context name where validation is being called.
    * @returns {EventTarget} - Always returns an single event target element.
-   * @private
    */
   static _preEventTargetElem(elems, where) {
     return TinyHtml._preElemTemplate(elems, where, [EventTarget], ['EventTarget']);
@@ -1533,7 +1506,6 @@ class TinyHtml {
    *
    * @param {string} where - The method or context name where validation is being called.
    * @returns {EventTarget} - Always returns an single event target element.
-   * @private
    */
   _preEventTargetElem(where) {
     return TinyHtml._preEventTargetElem(this, where);
@@ -1546,7 +1518,6 @@ class TinyHtml {
    * @param {TinyElementAndWindow|TinyElementAndWindow[]} elems - A single element/window element or array of html elements.
    * @param {string} where - The method or context name where validation is being called.
    * @returns {ElementAndWindow[]} - Always returns an array of element/window elements.
-   * @private
    */
   static _preElemsAndWindow(elems, where) {
     return TinyHtml._preElemsTemplate(elems, where, [Element, Window], ['Element', 'Window']);
@@ -1558,7 +1529,6 @@ class TinyHtml {
    *
    * @param {string} where - The method or context name where validation is being called.
    * @returns {ElementAndWindow[]} - Always returns an array of element/window elements.
-   * @private
    */
   _preElemsAndWindow(where) {
     return TinyHtml._preElemsAndWindow(this, where);
@@ -1571,7 +1541,6 @@ class TinyHtml {
    * @param {TinyElementAndWindow|TinyElementAndWindow[]} elems - A single element/window element or array of html elements.
    * @param {string} where - The method or context name where validation is being called.
    * @returns {ElementAndWindow} - Always returns an single element/window element.
-   * @private
    */
   static _preElemAndWindow(elems, where) {
     return TinyHtml._preElemTemplate(elems, where, [Element, Window], ['Element', 'Window']);
@@ -1583,7 +1552,6 @@ class TinyHtml {
    *
    * @param {string} where - The method or context name where validation is being called.
    * @returns {ElementAndWindow} - Always returns an single element/window element.
-   * @private
    */
   _preElemAndWindow(where) {
     return TinyHtml._preElemAndWindow(this, where);
@@ -1596,7 +1564,6 @@ class TinyHtml {
    * @param {TinyElementAndWinAndDoc|TinyElementAndWinAndDoc[]} elems - A single element/document/window element or array of html elements.
    * @param {string} where - The method or context name where validation is being called.
    * @returns {ElementAndWindow[]} - Always returns an array of element/document/window elements.
-   * @private
    */
   static _preElemsAndWinAndDoc(elems, where) {
     const result = TinyHtml._preElemsTemplate(
@@ -1614,7 +1581,6 @@ class TinyHtml {
    *
    * @param {string} where - The method or context name where validation is being called.
    * @returns {ElementAndWindow[]} - Always returns an array of element/document/window elements.
-   * @private
    */
   _preElemsAndWinAndDoc(where) {
     return TinyHtml._preElemsAndWinAndDoc(this, where);
@@ -1627,7 +1593,6 @@ class TinyHtml {
    * @param {TinyElementAndWinAndDoc|TinyElementAndWinAndDoc[]} elems - A single element/document/window element or array of html elements.
    * @param {string} where - The method or context name where validation is being called.
    * @returns {ElementAndWindow} - Always returns an single element/document/window element.
-   * @private
    */
   static _preElemAndWinAndDoc(elems, where) {
     const result = TinyHtml._preElemTemplate(
@@ -1646,7 +1611,6 @@ class TinyHtml {
    *
    * @param {string} where - The method or context name where validation is being called.
    * @returns {ElementAndWindow} - Always returns an single element/document/window element.
-   * @private
    */
   _preElemAndWinAndDoc(where) {
     return TinyHtml._preElemAndWinAndDoc(this, where);
@@ -1659,7 +1623,6 @@ class TinyHtml {
    * @param {TinyElementWithDoc|TinyElementWithDoc[]} elems - A single element with document element or array of html elements.
    * @param {string} where - The method or context name where validation is being called.
    * @returns {ElementWithDoc[]} - Always returns an array of element with document elements.
-   * @private
    */
   static _preElemsWithDoc(elems, where) {
     return TinyHtml._preElemsTemplate(elems, where, [Element, Document], ['Element', 'Document']);
@@ -1671,7 +1634,6 @@ class TinyHtml {
    *
    * @param {string} where - The method or context name where validation is being called.
    * @returns {ElementWithDoc[]} - Always returns an array of element with document elements.
-   * @private
    */
   _preElemsWithDoc(where) {
     return TinyHtml._preElemsWithDoc(this, where);
@@ -1684,7 +1646,6 @@ class TinyHtml {
    * @param {TinyElementWithDoc|TinyElementWithDoc[]} elems - A single element/window element or array of html elements.
    * @param {string} where - The method or context name where validation is being called.
    * @returns {ElementWithDoc} - Always returns an single element/window element.
-   * @private
    */
   static _preElemWithDoc(elems, where) {
     return TinyHtml._preElemTemplate(elems, where, [Element, Document], ['Element', 'Document']);
@@ -1696,7 +1657,6 @@ class TinyHtml {
    *
    * @param {string} where - The method or context name where validation is being called.
    * @returns {ElementWithDoc} - Always returns an single element/window element.
-   * @private
    */
   _preElemWithDoc(where) {
     return TinyHtml._preElemWithDoc(this, where);
@@ -2020,7 +1980,6 @@ class TinyHtml {
    * Internal data selectors for accessing public or private data stores.
    *
    * @type {Record<string, (where: string, elem: TinyElement) => ElementDataStore>}
-   * @private
    */
   static _dataSelector = {
     public: (where, el) => {
@@ -2168,7 +2127,6 @@ class TinyHtml {
    * @param {"previousSibling"|"nextSibling"} direction
    * @param {string} where
    * @returns {ChildNode|null}
-   * @private
    */
   static _getSibling(el, direction, where) {
     /** @type {Node|null} */
@@ -2184,7 +2142,6 @@ class TinyHtml {
    * @param {Node|null} start
    * @param {Node|null} [exclude]
    * @returns {ChildNode[]}
-   * @private
    */
   static _getSiblings(start, exclude) {
     /** @type {Node|null} */
@@ -2492,7 +2449,6 @@ class TinyHtml {
    * Normalize and validate nodes before DOM insertion.
    * Converts TinyNode-like structures or strings into DOM-compatible nodes.
    * @type {(where: string, ...nodes: (AppendCheckerValues|Record<string, AppendCheckerValues>)[]) => (Node | string)[]}
-   * @private
    */
   static _appendChecker(where, ...nodes) {
     /** @type {(string | Node)[]} */
@@ -6190,7 +6146,6 @@ class TinyHtml {
 
   // TITLE: Value Stuff
 
-  /** @private */
   static _valHooks = {
     option: {
       /**
@@ -6377,7 +6332,6 @@ class TinyHtml {
   /**
    * Maps value types to their corresponding getter functions.
    * Each function extracts a value of a specific type from a compatible HTMLInputElement.
-   * @private
    */
   static _valTypes = {
     /**
@@ -6411,7 +6365,6 @@ class TinyHtml {
    * @param {string} where - The context/method name using this validation.
    * @returns {any} The extracted value, depending on the type.
    * @throws {Error} If the element is not an HTMLInputElement or if the type handler is invalid.
-   * @private
    */
   static _getValByType(elem, type, where) {
     if (typeof type !== 'string') throw new TypeError('The "type" must be a string.');
@@ -6432,7 +6385,6 @@ class TinyHtml {
    * @param {GetValueTypes} type - The type of value to retrieve ("string", "date", or "number").
    * @param {string} where - The context/method name using this validation.
    * @returns {any} The raw value retrieved from the element or hook.
-   * @private
    */
   static _val(el, where, type) {
     const elem = TinyHtml._preInputElem(el, where);
@@ -6453,7 +6405,6 @@ class TinyHtml {
    * @param {GetValueTypes} type - The type of value to retrieve ("string", "date", or "number").
    * @param {string} where - The context/method name using this validation.
    * @returns {any} The raw value retrieved from the element or hook.
-   * @private
    */
   _val(where, type) {
     return TinyHtml._val(this, where, type);
@@ -6510,7 +6461,6 @@ class TinyHtml {
    * @param {GetValueTypes} type - The type of value to retrieve ("string", "date", or "number").
    * @returns {SetValueBase[]} - The validated value as an array.
    * @throws {Error} If the returned value is not an array.
-   * @private
    */
   static _valArr(el, where, type) {
     /** @type {SetValueBase[]} */
@@ -6526,7 +6476,6 @@ class TinyHtml {
    * @param {GetValueTypes} type - The type of value to retrieve ("string", "date", or "number").
    * @returns {SetValueBase[]} - The validated value as an array.
    * @throws {Error} If the returned value is not an array.
-   * @private
    */
   _valArr(where, type) {
     return TinyHtml._valArr(this, where, type);
@@ -7745,7 +7694,6 @@ class TinyHtml {
    * @param {DOMRect} rect - The base rectangle to be cloned and extended.
    * @param {Partial<DOMRect>} extraRect - Additional dimensions to apply to the base rect (e.g., extra padding or offset).
    * @returns {DOMRect} - A new DOMRect object with the combined dimensions.
-   * @private
    */
   static _getCustomRect(rect, extraRect) {
     /** @type {DOMRect} */
@@ -7866,7 +7814,6 @@ class TinyHtml {
    * @param {Element} elem1 - The element to track collision state for.
    * @param {CollisionDirLock} lockDirection - The direction from which the collision was first detected.
    * @returns {boolean} Returns `true` if the element is still considered colliding (locked), otherwise `false`.
-   * @private
    */
   static _isCollWithLock(isColliding, rect1, rect2, elem1, lockDirection) {
     const lockMap = __elemCollision[lockDirection];
