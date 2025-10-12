@@ -114,7 +114,77 @@ Each library can be imported separately:
 * **HTML Helpers** 🧩
 
   * `libs/TinyHtml`
-  * `libs/TinyHtmlElems`
+  * `libs/TinyHtmlElems` (BETA)
+
+  * **General Elements (BETA)**
+
+    * `libs/TinyHtmlElems/Anchor`
+    * `libs/TinyHtmlElems/Button`
+    * `libs/TinyHtmlElems/Canvas`
+    * `libs/TinyHtmlElems/Datalist`
+    * `libs/TinyHtmlElems/Form`
+    * `libs/TinyHtmlElems/Embed`
+    * `libs/TinyHtmlElems/Icon`
+    * `libs/TinyHtmlElems/Iframe`
+    * `libs/TinyHtmlElems/Image`
+    * `libs/TinyHtmlElems/Link`
+    * `libs/TinyHtmlElems/Script`
+    * `libs/TinyHtmlElems/Select`
+    * `libs/TinyHtmlElems/Style`
+    * `libs/TinyHtmlElems/Template`
+    * `libs/TinyHtmlElems/Textarea`
+
+  * **Media Elements (BETA)** 🎬
+
+    * `libs/TinyHtmlElems/Media`
+    * `libs/TinyHtmlElems/Media/Audio`
+    * `libs/TinyHtmlElems/Media/Object`
+    * `libs/TinyHtmlElems/Media/Source`
+    * `libs/TinyHtmlElems/Media/Video`
+
+  * **Input Elements (BETA)** ⌨️
+
+    * `libs/TinyHtmlElems/Input`
+
+    * **Button Inputs (BETA)**
+
+      * `libs/TinyHtmlElems/Input/Button`
+      * `libs/TinyHtmlElems/Input/Reset`
+      * `libs/TinyHtmlElems/Input/Submit`
+
+    * **Check Inputs (BETA)**
+
+      * `libs/TinyHtmlElems/Input/Checkbox`
+      * `libs/TinyHtmlElems/Input/Radio`
+
+    * **Color & File Inputs (BETA)**
+
+      * `libs/TinyHtmlElems/Input/Color`
+      * `libs/TinyHtmlElems/Input/File`
+      * `libs/TinyHtmlElems/Input/Hidden`
+      * `libs/TinyHtmlElems/Input/Image`
+
+    * **Date & Time Inputs (BETA)** 🕒
+
+      * `libs/TinyHtmlElems/Input/Date`
+      * `libs/TinyHtmlElems/Input/DateTime`
+      * `libs/TinyHtmlElems/Input/Month`
+      * `libs/TinyHtmlElems/Input/Time`
+      * `libs/TinyHtmlElems/Input/Week`
+
+    * **Number Inputs (BETA)** 🔢
+
+      * `libs/TinyHtmlElems/Input/Number`
+      * `libs/TinyHtmlElems/Input/Range`
+
+    * **Text Inputs (BETA)** ✏️
+
+      * `libs/TinyHtmlElems/Input/Email`
+      * `libs/TinyHtmlElems/Input/Password`
+      * `libs/TinyHtmlElems/Input/Search`
+      * `libs/TinyHtmlElems/Input/Tel`
+      * `libs/TinyHtmlElems/Input/Text`
+      * `libs/TinyHtmlElems/Input/Url`
 
 ---
 
