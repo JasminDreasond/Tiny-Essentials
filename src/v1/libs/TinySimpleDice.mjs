@@ -134,18 +134,18 @@ class TinySimpleDice {
    *
    * @param {string} input - The input string containing dice expressions.
    * @param {number[]} values - Sequential numbers used to replace each dice roll.
-   * @returns {(string|number)[]} A tokenized list where dice expressions become numbers.
+   * @returns {{ tokens: (string|number)[], text: string }} A tokenized list where dice expressions become numbers.
    *
    * @example
-   * tokenizeDiceExpression("You deal d6 + 2", [4]);
+   * tokenizeValues("You deal d6 + 2", [4]);
    * // → [4, "+", 2]
    *
    * @example
-   * tokenizeDiceExpression("3d6 + d4", [3, 5, 2, 1]);
+   * tokenizeValues("3d6 + d4", [3, 5, 2, 1]);
    * // → [10, "+", 1]
    *
    * @example
-   * tokenizeDiceExpression("2d4 - 1d8 + 7", [1, 3, 7]);
+   * tokenizeValues("2d4 - 1d8 + 7", [1, 3, 7]);
    * // → [4, "-", 7, "+", 7]
    */
   static tokenizeValues(input, values) {
@@ -163,7 +163,7 @@ class TinySimpleDice {
       }
     }
 
-    return tokens;
+    return { tokens, text: replaced };
   }
 
   /**
