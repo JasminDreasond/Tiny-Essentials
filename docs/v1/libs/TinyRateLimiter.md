@@ -30,6 +30,9 @@ new TinyRateLimiter(options)
 
 Registers a hit for the given `userId`.
 
+⚠️ **Important usage notice**
+  * This method **must be called before** `isRateLimited(userId)` in order for rate limit checks to work correctly.
+
 ```js
 rateLimiter.hit("user123");
 ```
