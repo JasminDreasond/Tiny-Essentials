@@ -228,7 +228,7 @@ class TinyRateLimiter {
    * At least one of `maxHits` or `interval` must be provided.
    *
    * @param {Object} options
-   * @param {number|null} [options.maxMemory]
+   * @param {number|null} [options.maxMemory=100000]
    *   Maximum timestamps stored per group (memory cap).
    * @param {number} [options.maxHits]
    *   Maximum number of allowed hits.
