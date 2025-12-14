@@ -93,6 +93,14 @@ Returns the configured `maxHits` value, or throws if invalid.
 
 Returns the configured `interval` value, or throws if invalid.
 
+#### Sliding Window Rate Limiting
+
+TinyRateLimiter uses a sliding window strategy.
+
+Hits are tracked as timestamps, and only those that occurred within the
+last `interval` milliseconds are counted. The window moves continuously
+with time, ensuring fair and predictable rate limiting without fixed resets.
+
 ---
 
 ### 👀 `getLastHit(userId: string): number|null`
