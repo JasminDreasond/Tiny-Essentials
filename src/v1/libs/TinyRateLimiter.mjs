@@ -395,6 +395,10 @@ class TinyRateLimiter {
   /**
    * Registers a hit for a user and applies the sliding window logic.
    *
+   * ⚠️ **Important usage notice**
+   * This method **must be called before** `isRateLimited(userId)`
+   * in order for rate limit checks to work correctly.
+   *
    * ### Sliding window cleanup
    * When `interval` is configured:
    * - The current timestamp is added to the group's history.
@@ -443,26 +447,26 @@ class TinyRateLimiter {
     }
   }
 
-/**
- * Checks whether a user is currently rate limited.
- *
- * ### Evaluation process
- * When `interval` is defined:
- * 1. The cutoff time is calculated as:
- *
- *    `Date.now() - interval`
- *
- * 2. Only hits newer than this cutoff are counted.
- * 3. If `maxHits` is defined:
- *    - The group is limited when the count exceeds `maxHits`.
- * 4. If `maxHits` is not defined:
- *    - Any hit within the window causes a limited state.
- *
- * This guarantees consistent behavior regardless of when hits occur.
- *
- * @param {string} userId
- * @returns {boolean}
- */
+  /**
+   * Checks whether a user is currently rate limited.
+   *
+   * ### Evaluation process
+   * When `interval` is defined:
+   * 1. The cutoff time is calculated as:
+   *
+   *    `Date.now() - interval`
+   *
+   * 2. Only hits newer than this cutoff are counted.
+   * 3. If `maxHits` is defined:
+   *    - The group is limited when the count exceeds `maxHits`.
+   * 4. If `maxHits` is not defined:
+   *    - Any hit within the window causes a limited state.
+   *
+   * This guarantees consistent behavior regardless of when hits occur.
+   *
+   * @param {string} userId
+   * @returns {boolean}
+   */
   isRateLimited(userId) {
     const groupId = this.getGroupId(userId);
     if (!this.groupData.has(groupId)) return false;
@@ -604,14 +608,14 @@ class TinyRateLimiter {
     return Object.fromEntries(this.userToGroup);
   }
 
-/**
- * Returns the configured sliding window size in milliseconds.
- *
- * This value represents how far back in time hits are considered
- * valid for rate limiting decisions.
- *
- * @returns {number}
- */
+  /**
+   * Returns the configured sliding window size in milliseconds.
+   *
+   * This value represents how far back in time hits are considered
+   * valid for rate limiting decisions.
+   *
+   * @returns {number}
+   */
   getInterval() {
     if (typeof this.#interval !== 'number' || !Number.isFinite(this.#interval)) {
       throw new Error("'interval' is not a valid finite number.");
