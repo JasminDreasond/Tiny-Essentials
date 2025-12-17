@@ -54,12 +54,12 @@ Check out the full documentation here:
 
 ## 📦 More Tiny Essentials Modules
 
-- 🤖 [**tiny-ai-api**](https://github.com/JasminDreasond/Tiny-AI-API) — Minimal AI API wrapper.
-- 🎲 [**tiny-dices**](https://github.com/JasminDreasond/Tiny-Dices) — Simple dice and randomness utilities.
-- 🔐 [**tiny-crypto-suite**](https://github.com/JasminDreasond/Tiny-Crypto-Suite) — Lightweight cryptography toolkit.
-- 🖥️ [**tiny-server-essentials**](https://github.com/JasminDreasond/Tiny-Server-Essentials) — Node.js server utilities.
-- 🪟 [**tiny-electron-essentials**](https://github.com/JasminDreasond/Tiny-Electron-Essentials) — Essential tools for Electron apps.
-- 🗃️ [**puddysql**](https://github.com/JasminDreasond/PuddySQL) — Smart SQL engine for structured data, tags, and advanced queries.
+- 🤖 [**tiny-ai-api**](https://github.com/Tiny-Essentials/Tiny-AI-API) — Minimal AI API wrapper.
+- 🎲 [**tiny-dices**](https://github.com/Tiny-Essentials/Tiny-Dices) — Simple dice and randomness utilities.
+- 🔐 [**tiny-crypto-suite**](https://github.com/Tiny-Essentials/Tiny-Crypto-Suite) — Lightweight cryptography toolkit.
+- 🖥️ [**tiny-server-essentials**](https://github.com/Tiny-Essentials/Tiny-Server-Essentials) — Node.js server utilities.
+- 🪟 [**tiny-electron-essentials**](https://github.com/Tiny-Essentials/Tiny-Electron-Essentials) — Essential tools for Electron apps.
+- 🗃️ [**puddysql**](https://github.com/Tiny-Essentials/PuddySQL) — Smart SQL engine for structured data, tags, and advanced queries.
 
 ---
 
@@ -75,7 +75,7 @@ Although not part of Tiny Essentials, we recommend using [**JsStore**](https://w
 
 The scripts previously maintained in this repository have been migrated to the following location:
 
-👉 https://github.com/JasminDreasond/Tiny-Essentials-Legacy
+👉 https://github.com/Tiny-Essentials/Tiny-Essentials-Legacy
 
 This includes modules such as:
 
