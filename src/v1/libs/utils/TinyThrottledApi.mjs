@@ -35,6 +35,8 @@ class TinyThrottledApi extends EventEmitter {
   #timeoutLimit = 5000;
   /** @type {boolean} Indicates whether the instance has been destroyed. */
   #isDestroyed = false;
+  /** @type {boolean} Indicates whether the first execution should be delayed by the timeout. */
+  #timeoutFirst = false;
 
   /**
    * Initializes a new instance of the TinyThrottledApi class.
@@ -91,22 +93,32 @@ class TinyThrottledApi extends EventEmitter {
       async () => {
         this.emit('WaitingTask', id);
         // The task in the queue waits until a slot is available via polling.
-        await waitForTrue(() => this.#activeCount < this.#concurrencyLimit);
+        const waitCounter = () => waitForTrue(() => this.#activeCount < this.#concurrencyLimit);
 
         // If a TinyTimeout instance is provided, we wait for its next scheduled "tick".
         // This introduces a dynamic delay that increases as more tasks are processed.
-        if (this.#timeoutInstance) {
-          await new Promise((resolve) => {
-            // We use a constant ID so the frequency is tracked across all calls to this instance.
-            if (this.#timeoutInstance)
-              this.#timeoutInstance.set(
-                'api_throttle',
-                resolve,
-                this.#timeoutValue,
-                this.#timeoutLimit,
-              );
-            else resolve(undefined);
-          });
+        const waitTimeout = async () => {
+          if (this.#timeoutInstance) {
+            await new Promise((resolve) => {
+              // We use a constant ID so the frequency is tracked across all calls to this instance.
+              if (this.#timeoutInstance)
+                this.#timeoutInstance.set(
+                  'api_throttle',
+                  resolve,
+                  this.#timeoutValue,
+                  this.#timeoutLimit,
+                );
+              else resolve(undefined);
+            });
+          }
+        };
+
+        if (this.#timeoutFirst) {
+          await waitTimeout();
+          await waitCounter();
+        } else {
+          await waitCounter();
+          await waitTimeout();
         }
 
         // Once available and the throttle allows, we reserve the slot.
@@ -240,6 +252,26 @@ class TinyThrottledApi extends EventEmitter {
   get timeoutLimit() {
     checkDestroy(this.#isDestroyed);
     return this.#timeoutLimit;
+  }
+
+  /**
+   * Gets whether the first execution should be delayed by the timeout.
+   * @returns {boolean}
+   */
+  get timeoutFirst() {
+    return this.#timeoutFirst;
+  }
+
+  /**
+   * Sets whether the first execution should be delayed by the timeout.
+   * @param {boolean} value - The new boolean value.
+   * @throws {TypeError} If the value is not a boolean.
+   */
+  set timeoutFirst(value) {
+    if (typeof value !== 'boolean') {
+      throw new TypeError('timeoutFirst must be a boolean.');
+    }
+    this.#timeoutFirst = value;
   }
 
   /**
