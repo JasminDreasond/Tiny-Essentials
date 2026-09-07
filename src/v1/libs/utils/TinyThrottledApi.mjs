@@ -53,13 +53,13 @@ class TinyThrottledApi extends EventEmitter {
     if (typeof api !== 'function') {
       throw new TypeError('API must be a function.');
     }
-    if (typeof timeoutInstance !== 'undefined' && !(timeoutInstance instanceof TinyTimeout)) {
+    if (typeof timeoutInstance !== 'undefined' && timeoutInstance !== null && !(timeoutInstance instanceof TinyTimeout)) {
       throw new TypeError('timeoutInstance must be a TinyTimeout instance.');
     }
 
     this.#concurrencyLimit = concurrencyLimit;
     this.#api = api;
-    this.#timeoutInstance = timeoutInstance;
+    this.#timeoutInstance = timeoutInstance ?? null;
   }
 
   /**

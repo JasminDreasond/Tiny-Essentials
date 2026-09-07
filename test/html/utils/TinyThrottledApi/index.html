@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TinyThrottledApi | Test Environment</title>
+    <script type="importmap">
+      {
+        "imports": {
+          "events": "https://esm.sh/events@3.3.0"
+        }
+      }
+    </script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>TinyThrottledApi <span class="badge">QA Tester</span></h1>
+    </header>
+
+    <main class="dashboard-grid">
+      <!-- Sidebar: Configuration -->
+      <aside class="config-panel">
+        <section class="card">
+          <h3>Throttler Configuration</h3>
+          <div class="input-group">
+            <label for="concurrency-limit">Concurrency Limit</label>
+            <input type="number" id="concurrency-limit" value="2" min="1" />
+          </div>
+          <div class="input-group">
+            <label for="timeout-value">Base Timeout (ms)</label>
+            <input type="number" id="timeout-value" value="100" />
+          </div>
+          <div class="input-group">
+            <label for="timeout-limit">Timeout Limit (ms)</label>
+            <input type="number" id="timeout-limit" value="5000" />
+          </div>
+          <button id="btn-init" class="btn-primary">Initialize / Reset API</button>
+        </section>
+
+        <section class="card">
+          <h3>Mock API Simulation</h3>
+          <p class="help-text">Simulates the behavior of the target API.</p>
+          <div class="input-group">
+            <label for="mock-delay">Response Delay (ms)</label>
+            <input type="number" id="mock-delay" value="1000" />
+          </div>
+          <div class="input-group checkbox-group">
+            <input type="checkbox" id="mock-fail" />
+            <label for="mock-fail">Force API Failure</label>
+          </div>
+        </section>
+      </aside>
+
+      <!-- Main Content: Execution and Monitoring -->
+      <section class="main-content">
+        <div class="stats-row">
+          <div class="stat-card">
+            <span class="stat-label">Active Requests</span>
+            <span id="stat-active" class="stat-value">0</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Queued Tasks</span>
+            <span id="stat-queued" class="stat-value">0</span>
+          </div>
+        </div>
+
+        <section class="card execution-panel">
+          <h3>Execute Request</h3>
+          <div class="input-group">
+            <label for="api-args">Arguments (JSON Array)</label>
+            <textarea id="api-args" rows="3">[ "param1", 123, { "key": "value" } ]</textarea>
+          </div>
+          <button id="btn-execute" class="btn-success" disabled>Run Test Execution</button>
+        </section>
+
+        <section class="card console-panel">
+          <div class="console-header">
+            <h3>Output Console</h3>
+            <button id="btn-clear-console" class="btn-ghost">Clear</button>
+          </div>
+          <div id="console-output" class="console-output">
+            <div class="log-entry system">System: Waiting for API initialization...</div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script type="module" src="ui-test.js"></script>
+  </body>
+</html>
