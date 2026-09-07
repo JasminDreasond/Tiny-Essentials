@@ -216,7 +216,7 @@ import TinyHtmlTagRegexBuilder from './libs/tools/TinyHtmlTagRegexBuilder.mjs';
 import TinyUriParser from './libs/tools/TinyUriParser.mjs';
 import TinyBrowserMonitor from './libs/tools/TinyBrowserMonitor.mjs';
 import TinyThrottledApi from './libs/utils/TinyThrottledApi.mjs';
-import { compileGlob, compileGlobRegExp, decompileGlob } from './regexp/Glob.mjs';
+import { compileGlob, compileGlobRegExp, decompileGlob, isValidGlob } from './regexp/Glob.mjs';
 // import TinyHtmlElems from './libs/TinyHtml/index.mjs';
 
 export {
@@ -276,6 +276,7 @@ export {
   ColorSafeStringify,
   TinyPromiseQueue,
   TinyLevelUp,
+  isValidGlob,
   compileGlob,
   compileGlobRegExp,
   decompileGlob,

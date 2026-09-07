@@ -254,3 +254,16 @@ export const decompileGlob = (regexp) => {
 
   return globPattern;
 };
+
+/**
+ * Validates the integrity of a GLOB pattern by compiling it into a regular expression
+ * and then decompiling it back to its original form to ensure a perfect match.
+ *
+ * @param {string|string[]} globPattern
+ * @returns {boolean}
+ */
+export const isValidGlob = (globPattern) => {
+  const compiled = compileGlob(globPattern);
+  const decompiled = decompileGlob(compiled);
+  return (Array.isArray(globPattern) ? globPattern.join('') : globPattern) === decompiled.join('');
+};
