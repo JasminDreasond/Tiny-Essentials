@@ -10,7 +10,8 @@ window.TinyThrottledApi = TinyThrottledApi;
 window.TinyTimeout = TinyTimeout;
 
 const tm = new TinyTimeout();
-window.throotledFetch = new TinyThrottledApi(2, fetch, tm);
+const tFetch = new TinyThrottledApi(2, fetch, tm);
+window.tFetch = tFetch;
 
 /**
  * @typedef {Object} UIState

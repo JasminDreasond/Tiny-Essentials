@@ -53,7 +53,11 @@ class TinyThrottledApi extends EventEmitter {
     if (typeof api !== 'function') {
       throw new TypeError('API must be a function.');
     }
-    if (typeof timeoutInstance !== 'undefined' && timeoutInstance !== null && !(timeoutInstance instanceof TinyTimeout)) {
+    if (
+      typeof timeoutInstance !== 'undefined' &&
+      timeoutInstance !== null &&
+      !(timeoutInstance instanceof TinyTimeout)
+    ) {
       throw new TypeError('timeoutInstance must be a TinyTimeout instance.');
     }
 
@@ -136,7 +140,8 @@ class TinyThrottledApi extends EventEmitter {
    */
   async #performRequest(...args) {
     try {
-      return await this.#api(...args);
+      const apiFunction = this.#api;
+      return await apiFunction(...args);
     } finally {
       // The decrement happens here, ensuring the slot is released even on failure.
       this.#activeCount--;
