@@ -112,7 +112,7 @@ class TinyThrottledApi extends EventEmitter {
         this.emit('TaskEnded', id);
         return final;
       },
-      null,
+      undefined,
       id,
     );
   }

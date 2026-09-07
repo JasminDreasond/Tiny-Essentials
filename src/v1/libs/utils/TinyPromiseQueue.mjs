@@ -207,7 +207,7 @@ class TinyPromiseQueue {
    *
    * @template {any} PromiseResult
    * @param {(...args: any[]) => Promise<PromiseResult>} task A function that returns a Promise to be executed sequentially.
-   * @param {number|null} [delay] Optional delay (in ms) before the task is executed.
+   * @param {number} [delay] Optional delay (in ms) before the task is executed.
    * @param {string} [id] Optional ID to identify the task in the queue.
    * @returns {Promise<PromiseResult>} A Promise that resolves or rejects with the result of the task once it's processed.
    * @throws {Error} Throws if param is invalid.
