@@ -96,6 +96,14 @@
       "require": "./dist/v1/regexp/Ipv6.cjs",
       "import": "./dist/v1/regexp/Ipv6.mjs"
     },
+    "./regexp/Email": {
+      "require": "./dist/v1/regexp/Email.cjs",
+      "import": "./dist/v1/regexp/Email.mjs"
+    },
+    "./regexp/Glob": {
+      "require": "./dist/v1/regexp/Glob.cjs",
+      "import": "./dist/v1/regexp/Glob.mjs"
+    },
     "./regexp/Username": {
       "require": "./dist/v1/regexp/Username/index.cjs",
       "import": "./dist/v1/regexp/Username/index.mjs"

@@ -22,8 +22,12 @@ import {
   findEmailRegex,
   extractEmails,
 } from './Email.mjs';
+import { compileGlob, compileGlobRegExp, decompileGlob } from './Glob.mjs';
 
 export {
+  compileGlob,
+  compileGlobRegExp,
+  decompileGlob,
   emailStringRegexBuilder,
   emailRegex,
   isValidEmail,
