@@ -4,6 +4,13 @@
  */
 
 import { TinyThrottledApi } from '/src/v1/libs/utils/TinyThrottledApi.mjs';
+import { TinyTimeout } from '/src/v1/libs/math/TinyTimeout.mjs';
+
+window.TinyThrottledApi = TinyThrottledApi;
+window.TinyTimeout = TinyTimeout;
+
+const tm = new TinyTimeout();
+window.throotledFetch = new TinyThrottledApi(2, fetch, tm);
 
 /**
  * @typedef {Object} UIState
@@ -103,7 +110,7 @@ function initializeApi() {
     };
 
     // Create instance
-    state.apiInstance = new TinyThrottledApi(limit, state.mockApi);
+    state.apiInstance = new TinyThrottledApi(limit, state.mockApi, tm);
 
     // Apply optional timeout settings if user provided them
     state.apiInstance.timeoutValue = tValue;
