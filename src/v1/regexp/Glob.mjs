@@ -15,7 +15,7 @@
  * @throws {SyntaxError} If the pattern has unmatched groups and strict mode is enabled.
  */
 export const compileGlob = (globData, strict = true) => {
-  if (typeof globData !== 'string' || !Array.isArray(globData)) {
+  if (typeof globData !== 'string' && !Array.isArray(globData)) {
     throw new TypeError('GLOB pattern must be a string.');
   }
   if (typeof strict !== 'boolean') {
