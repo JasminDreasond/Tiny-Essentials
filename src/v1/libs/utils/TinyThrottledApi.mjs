@@ -1,3 +1,4 @@
+import { EventEmitter } from 'events';
 import TinyPromiseQueue from './TinyPromiseQueue.mjs';
 import { waitForTrue } from '../../basics/promiseUtils.mjs';
 import TinyTimeout from '../math/TinyTimeout.mjs';
@@ -13,7 +14,7 @@ import TinyTimeout from '../math/TinyTimeout.mjs';
  * It uses TinyPromiseQueue to manage waiting tasks and waitForTrue to poll for availability.
  * @template {(...args: any) => Promise<any>} API
  */
-class TinyThrottledApi {
+class TinyThrottledApi extends EventEmitter {
   static TinyTimeout = TinyTimeout;
   /** @type {number} The current number of active asynchronous operations. */
   #activeCount = 0;
@@ -40,6 +41,7 @@ class TinyThrottledApi {
    * @throws {TypeError} If API is not a function.
    */
   constructor(concurrencyLimit, api, timeoutInstance = null) {
+    super();
     if (typeof concurrencyLimit !== 'number' || concurrencyLimit <= 0) {
       throw new TypeError('Concurrency limit must be a positive number.');
     }
@@ -68,12 +70,16 @@ class TinyThrottledApi {
     // If we are under the limit, reserve the slot SYNCHRONOUSLY to prevent race conditions.
     if (this.#activeCount < this.#concurrencyLimit) {
       this.#activeCount++;
-      return this.#performRequest(...args);
+      this.emit('ExecTask', id);
+      const final = await this.#performRequest(...args);
+      this.emit('TaskEnded', id);
+      return final;
     }
 
     // If we reached the limit, queue a task that waits for a slot.
     return this.#queue.enqueue(
       async () => {
+        this.emit('WaitingTask', id);
         // The task in the queue waits until a slot is available via polling.
         await waitForTrue(() => this.#activeCount < this.#concurrencyLimit);
 
@@ -95,7 +101,10 @@ class TinyThrottledApi {
 
         // Once available and the throttle allows, we reserve the slot.
         this.#activeCount++;
-        return this.#performRequest(...args);
+        this.emit('ExecTask', id);
+        const final = await this.#performRequest(...args);
+        this.emit('TaskEnded', id);
+        return final;
       },
       null,
       id,
@@ -151,6 +160,7 @@ class TinyThrottledApi {
       throw new TypeError('Concurrency limit must be a positive number.');
     }
     this.#concurrencyLimit = value;
+    this.emit('SetConcurrencyLimit', value);
   }
 
   /**
@@ -183,6 +193,7 @@ class TinyThrottledApi {
       throw new RangeError('Timeout value cannot be negative.');
     }
     this.#timeoutValue = value;
+    this.emit('SetTimeoutValue', value);
   }
 
   /**
@@ -207,6 +218,7 @@ class TinyThrottledApi {
       throw new RangeError('Timeout limit cannot be negative.');
     }
     this.#timeoutLimit = value;
+    this.emit('SetTimeoutLimit', value);
   }
 
   /**
