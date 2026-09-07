@@ -1,5 +1,6 @@
 import TinyPromiseQueue from './TinyPromiseQueue.mjs';
 import { waitForTrue } from '../../basics/promiseUtils.mjs';
+import TinyTimeout from '../math/TinyTimeout.mjs';
 
 /**
  * @template T
@@ -13,6 +14,7 @@ import { waitForTrue } from '../../basics/promiseUtils.mjs';
  * @template {(...args: any) => Promise<any>} API
  */
 class TinyThrottledApi {
+  static TinyTimeout = TinyTimeout;
   /** @type {number} The current number of active asynchronous operations. */
   #activeCount = 0;
   /** @type {number} The maximum number of concurrent operations allowed. */
@@ -21,29 +23,40 @@ class TinyThrottledApi {
   #queue = new TinyPromiseQueue();
   /** @type {API} The target API function to be executed. */
   #api;
+  /** @type {TinyTimeout|null} The optional timeout instance to regulate execution frequency. */
+  #timeoutInstance;
+  /** @type {number} - Base delay multiplier in milliseconds. */
+  #timeoutValue = 100;
+  /** @type {number|null} - Optional maximum delay cap. */
+  #timeoutLimit = 5000;
 
   /**
    * Initializes a new instance of the TinyThrottledApi class.
    *
    * @param {number} concurrencyLimit - The maximum number of simultaneous requests.
    * @param {API} api - The API implementation.
+   * @param {TinyTimeout|null} [timeoutInstance=null] - Optional TinyTimeout instance to regulate execution frequency.
    * @throws {TypeError} If concurrencyLimit is not a positive number.
    * @throws {TypeError} If API is not a function.
    */
-  constructor(concurrencyLimit, api) {
+  constructor(concurrencyLimit, api, timeoutInstance = null) {
     if (typeof concurrencyLimit !== 'number' || concurrencyLimit <= 0) {
       throw new TypeError('Concurrency limit must be a positive number.');
     }
     if (typeof api !== 'function') {
       throw new TypeError('API must be a function.');
     }
+    if (typeof timeoutInstance !== 'undefined' && !(timeoutInstance instanceof TinyTimeout)) {
+      throw new TypeError('timeoutInstance must be a TinyTimeout instance.');
+    }
 
     this.#concurrencyLimit = concurrencyLimit;
     this.#api = api;
+    this.#timeoutInstance = timeoutInstance;
   }
 
   /**
-   * Executes an API request, respecting the concurrency limit.
+   * Executes an API request, respecting the concurrency limit and optional rate limiting.
    *
    * @param {Parameters<API>} args
    * @returns {QueueResult<ReturnType<API>>} A promise that resolves with the API result.
@@ -63,8 +76,19 @@ class TinyThrottledApi {
       async () => {
         // The task in the queue waits until a slot is available via polling.
         await waitForTrue(() => this.#activeCount < this.#concurrencyLimit);
-        // Once available, we must reserve the slot before proceeding to #performRequest
-        // to prevent other tasks from jumping in during the microtask gap.
+
+        // If a TinyTimeout instance is provided, we wait for its next scheduled "tick".
+        // This introduces a dynamic delay that increases as more tasks are processed.
+        if (this.#timeoutInstance) {
+          await new Promise((resolve) => {
+            // We use a constant ID so the frequency is tracked across all calls to this instance.
+            if (this.#timeoutInstance)
+              this.#timeoutInstance.set('api_throttle', resolve, this.#timeoutValue, this.#timeoutLimit);
+            else resolve(undefined);
+          });
+        }
+
+        // Once available and the throttle allows, we reserve the slot.
         this.#activeCount++;
         return this.#performRequest(...args);
       },
