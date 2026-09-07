@@ -4,6 +4,7 @@ import { waitForTrue } from '../../basics/promiseUtils.mjs';
 /**
  * @template T
  * @typedef {Promise<T>} QueueResult
+ * Represents the eventual result of a queued operation.
  */
 
 /**
@@ -12,16 +13,18 @@ import { waitForTrue } from '../../basics/promiseUtils.mjs';
  * @template {(...args: any) => Promise<any>} API
  */
 class TinyThrottledApi {
-  /** @type {number} */
+  /** @type {number} The current number of active asynchronous operations. */
   #activeCount = 0;
-  /** @type {number} */
+  /** @type {number} The maximum number of concurrent operations allowed. */
   #concurrencyLimit;
-  /** @type {TinyPromiseQueue} */
+  /** @type {TinyPromiseQueue} The internal queue used to manage pending tasks. */
   #queue = new TinyPromiseQueue();
-  /** @type {API} */
+  /** @type {API} The target API function to be executed. */
   #api;
 
   /**
+   * Initializes a new instance of the TinyThrottledApi class.
+   *
    * @param {number} concurrencyLimit - The maximum number of simultaneous requests.
    * @param {API} api - The API implementation.
    * @throws {TypeError} If concurrencyLimit is not a positive number.
@@ -45,7 +48,7 @@ class TinyThrottledApi {
    * @returns {QueueResult<ReturnType<API>>} A promise that resolves with the API result.
    * @throws {TypeError} If url is not a string.
    */
-  async request(...args) {
+  async exec(...args) {
     const id = 'yay';
     // If we are under the limit, execute immediately.
     if (this.#activeCount < this.#concurrencyLimit) {
@@ -81,18 +84,34 @@ class TinyThrottledApi {
     }
   }
 
+  /**
+   * Gets the internal task queue.
+   * @returns {TinyPromiseQueue} The internal task queue.
+   */
   get queue() {
     return this.#queue;
   }
 
+  /**
+   * Gets the original API function.
+   * @returns {API} The original API function.
+   */
   get api() {
     return this.#api;
   }
 
+  /**
+   * Gets the current concurrency limit.
+   * @returns {number} The current concurrency limit.
+   */
   get concurrencyLimit() {
     return this.#concurrencyLimit;
   }
 
+  /**
+   * Sets a new concurrency limit.
+   * @param {number} value - The new maximum number of simultaneous requests.
+   */
   set concurrencyLimit(value) {
     this.#concurrencyLimit = value;
   }
