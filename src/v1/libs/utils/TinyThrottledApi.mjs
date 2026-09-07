@@ -172,8 +172,16 @@ class TinyThrottledApi {
   /**
    * Sets a new base delay multiplier in milliseconds.
    * @param {number} value - The new base delay multiplier.
+   * @throws {TypeError} If the value is not a number.
+   * @throws {RangeError} If the value is a negative number.
    */
   set timeoutValue(value) {
+    if (typeof value !== 'number') {
+      throw new TypeError('Timeout value must be a number.');
+    }
+    if (value < 0) {
+      throw new RangeError('Timeout value cannot be negative.');
+    }
     this.#timeoutValue = value;
   }
 
@@ -188,8 +196,16 @@ class TinyThrottledApi {
   /**
    * Sets a new maximum delay cap.
    * @param {number} value - The new maximum delay cap.
+   * @throws {TypeError} If the value is not a number.
+   * @throws {RangeError} If the value is a negative number.
    */
   set timeoutLimit(value) {
+    if (typeof value !== 'number') {
+      throw new TypeError('Timeout limit must be a number.');
+    }
+    if (value < 0) {
+      throw new RangeError('Timeout limit cannot be negative.');
+    }
     this.#timeoutLimit = value;
   }
 
