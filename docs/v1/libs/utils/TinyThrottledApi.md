@@ -9,6 +9,7 @@
     * [Constructor](#constructorconcurrencylimit-api-timeoutinstance)
     * [Methods](#methods)
     * [Getters](#getters)
+    * [Setters](#setters)
     * [Events](#events)
 4. [Practical Examples](#practical-examples)
 5. [Monitoring & Debugging](#monitoring--debugging)
@@ -78,6 +79,12 @@ The primary method to execute your API calls.
   3. If no, adds the task to the `TinyPromiseQueue` and waits for a slot to become free.
 * **Task Tracking:** Each task is assigned a unique `UUID` used in emitted events for precise tracking.
 
+### Methods
+| Method | Description |
+| :--- | :--- |
+| `exec(...args)` | Executes the API function respecting concurrency and throttling. |
+| `destroy()` | Cleans up the instance, removing all listeners and stopping pending tasks. |
+
 ### Getters
 | Getter | Type | Description |
 | :--- | :--- | :--- |
@@ -89,6 +96,16 @@ The primary method to execute your API calls.
 | `timeoutLimit` | `number \| null` | The current maximum delay cap. |
 | `activeCount` | `number` | The number of requests currently running. |
 | `queuedCount` | `number` | The number of tasks currently waiting in the queue. |
+| `isDestroyed` | `boolean` | Indicates whether the instance has been destroyed. |
+| `timeoutFirst` | `boolean` | Indicates if the delay is applied *before* the first request in a cycle. |
+
+### Setters
+| Setter | Parameter | Description |
+| :--- | :--- | :--- |
+| `concurrencyLimit` | `number` | Sets a new maximum number of simultaneous requests. |
+| `timeoutValue` | `number` | Sets a new base delay multiplier in milliseconds. |
+| `timeoutLimit` | `number` | Sets a new maximum delay cap. |
+| `timeoutFirst` | `boolean` | If `true`, delay is applied before waiting for a slot. If `false`, delay is applied after. |
 
 ### Events
 The `TinyThrottledApi` extends `EventEmitter` and emits the following events:
@@ -179,6 +196,8 @@ const throttledApi = new TinyThrottledApi(2, fetchData, timeout);
 throttledApi.timeoutValue = 1000; 
 // Maximum delay cap of 5000ms
 throttledApi.timeoutLimit = 5000;
+// Apply delay BEFORE the first request in the cycle
+throttledApi.timeoutFirst = true; 
 
 async function runPoliteBatch() {
   const ids = [1, 2, 3, 4, 5];
