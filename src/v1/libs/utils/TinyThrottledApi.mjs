@@ -148,6 +148,26 @@ class TinyThrottledApi {
     this.#concurrencyLimit = value;
   }
 
+  get timeoutInstance() {
+    return this.#timeoutInstance;
+  }
+
+  get timeoutValue() {
+    return this.#timeoutValue;
+  }
+
+  set timeoutValue(value) {
+    this.#timeoutValue = value;
+  }
+
+  get timeoutLimit() {
+    return this.#timeoutLimit;
+  }
+
+  set timeoutLimit(value) {
+    this.#timeoutLimit = value;
+  }
+
   /**
    * Returns the number of currently active requests.
    *
