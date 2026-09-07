@@ -6,6 +6,10 @@
 1. [Core Concepts](#core-concepts)
 2. [Getting Started](#getting-started)
 3. [API Reference](#api-reference)
+    * [Constructor](#constructorconcurrencylimit-api-timeoutinstance)
+    * [Methods](#methods)
+    * [Getters](#getters)
+    * [Events](#events)
 4. [Practical Examples](#practical-examples)
 5. [Monitoring & Debugging](#monitoring--debugging)
 
@@ -62,6 +66,7 @@ Initializes the throttled controller.
 
 **Throws:**
 * `TypeError`: If `concurrencyLimit` is not a positive number or `api` is not a function.
+* `TypeError`: If `timeoutInstance` is provided but is not a `TinyTimeout` instance.
 
 ### `exec(...args)`
 The primary method to execute your API calls.
@@ -71,12 +76,36 @@ The primary method to execute your API calls.
   1. Checks if a slot is available.
   2. If yes, executes immediately.
   3. If no, adds the task to the `TinyPromiseQueue` and waits for a slot to become free.
+* **Task Tracking:** Each task is assigned a unique `UUID` used in emitted events for precise tracking.
 
-### Getters (For Monitoring)
-* `activeCount`: Returns the number of requests currently running.
-* `queuedCount`: Returns the number of requests waiting in the queue.
-* `concurrencyLimit`: Returns the current limit.
-* `timeoutValue`: Returns the base delay in milliseconds.
+### Getters
+| Getter | Type | Description |
+| :--- | :--- | :--- |
+| `api` | `Function` | The original API function provided during initialization. |
+| `queue` | `TinyPromiseQueue` | Returns the internal queue instance managing pending tasks. |
+| `concurrencyLimit` | `number` | The current maximum number of simultaneous requests. |
+| `timeoutInstance` | `TinyTimeout \| null` | The current `TinyTimeout` instance used for rate limiting. |
+| `timeoutValue` | `number` | The current base delay multiplier in milliseconds. |
+| `timeoutLimit` | `number \| null` | The current maximum delay cap. |
+| `activeCount` | `number` | The number of requests currently running. |
+| `queuedCount` | `number` | The number of tasks currently waiting in the queue. |
+
+### Events
+The `TinyThrottledApi` extends `EventEmitter` and emits the following events:
+
+#### Task Lifecycle Events
+| Event | Argument | Description |
+| :--- | :--- | :--- |
+| `ExecTask` | `id` (string) | Emitted when a task begins its execution. |
+| `TaskEnded` | `id` (string) | Emitted when a task completes (whether it succeeded or failed). |
+| `WaitingTask` | `id` (string) | Emitted when a task is placed into the queue because the limit was reached. |
+
+#### Configuration Events
+| Event | Argument | Description |
+| :--- | :--- | :--- |
+| `SetConcurrencyLimit` | `value` (number) | Emitted when the `concurrencyLimit` is updated. |
+| `SetTimeoutValue` | `value` (number) | Emitted when the `timeoutValue` is updated. |
+| `SetTimeoutLimit` | `value` (number) | Emitted when the `timeoutLimit` is updated. |
 
 ---
 
