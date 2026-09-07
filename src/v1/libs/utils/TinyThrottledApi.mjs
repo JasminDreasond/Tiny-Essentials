@@ -153,22 +153,42 @@ class TinyThrottledApi {
     this.#concurrencyLimit = value;
   }
 
+  /**
+   * Gets the current TinyTimeout instance used for rate limiting.
+   * @returns {TinyTimeout|null}
+   */
   get timeoutInstance() {
     return this.#timeoutInstance;
   }
 
+  /**
+   * Gets the current base delay multiplier in milliseconds.
+   * @returns {number}
+   */
   get timeoutValue() {
     return this.#timeoutValue;
   }
 
+  /**
+   * Sets a new base delay multiplier in milliseconds.
+   * @param {number} value - The new base delay multiplier.
+   */
   set timeoutValue(value) {
     this.#timeoutValue = value;
   }
 
+  /**
+   * Gets the current maximum delay cap.
+   * @returns {number|null}
+   */
   get timeoutLimit() {
     return this.#timeoutLimit;
   }
 
+  /**
+   * Sets a new maximum delay cap.
+   * @param {number} value - The new maximum delay cap.
+   */
   set timeoutLimit(value) {
     this.#timeoutLimit = value;
   }
