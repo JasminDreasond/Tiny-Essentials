@@ -67,7 +67,7 @@ If the task is canceled before execution, it will be rejected with the message:
 
 #### Parameters:
 - `task` (`Function`): A function that returns a `Promise` to be executed sequentially.
-- `delay` (`number|null`): Optional delay (in ms) before the task is executed.
+- `delay` (`number`): Optional delay (in ms) before the task is executed.
 - `id` (`string`): Optional ID to identify the task in the queue.
 
 #### Returns:
