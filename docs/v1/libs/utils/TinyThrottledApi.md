@@ -99,6 +99,7 @@ The `TinyThrottledApi` extends `EventEmitter` and emits the following events:
 | `ExecTask` | `id` (string) | Emitted when a task begins its execution. |
 | `TaskEnded` | `id` (string) | Emitted when a task completes (whether it succeeded or failed). |
 | `WaitingTask` | `id` (string) | Emitted when a task is placed into the queue because the limit was reached. |
+| `Destroyed` | | Emitted when the instance has been destroyed and can no longer be used. |
 
 #### Configuration Events
 | Event | Argument | Description |

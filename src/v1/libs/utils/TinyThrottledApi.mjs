@@ -2,6 +2,9 @@ import { EventEmitter } from 'events';
 import TinyPromiseQueue from './TinyPromiseQueue.mjs';
 import { waitForTrue } from '../../basics/promiseUtils.mjs';
 import TinyTimeout from '../math/TinyTimeout.mjs';
+import { createCheckDestroyed } from './tools.mjs';
+
+const checkDestroy = createCheckDestroyed('TinyThrottledApi');
 
 /**
  * @template T
@@ -30,6 +33,8 @@ class TinyThrottledApi extends EventEmitter {
   #timeoutValue = 100;
   /** @type {number|null} - Optional maximum delay cap. */
   #timeoutLimit = 5000;
+  /** @type {boolean} Indicates whether the instance has been destroyed. */
+  #isDestroyed = false;
 
   /**
    * Initializes a new instance of the TinyThrottledApi class.
@@ -65,6 +70,7 @@ class TinyThrottledApi extends EventEmitter {
    * @throws {TypeError} If the internal state is corrupted.
    */
   async exec(...args) {
+    checkDestroy(this.#isDestroyed);
     const id = crypto.randomUUID(); // Using UUID for better collision resistance
 
     // If we are under the limit, reserve the slot SYNCHRONOUSLY to prevent race conditions.
@@ -112,6 +118,17 @@ class TinyThrottledApi extends EventEmitter {
   }
 
   /**
+   * Cleans up the instance, removing all listeners and stopping pending tasks.
+   * @returns {void}
+   */
+  destroy() {
+    if (this.#isDestroyed) return;
+    this.removeAllListeners();
+    this.#isDestroyed = true;
+    this.emit('Destroyed');
+  }
+
+  /**
    * Internal method to handle the actual execution and counter management.
    *
    * @param {Parameters<API>} args
@@ -127,10 +144,19 @@ class TinyThrottledApi extends EventEmitter {
   }
 
   /**
+   * Returns whether the instance has been destroyed.
+   * @returns {boolean}
+   */
+  get isDestroyed() {
+    return this.#isDestroyed;
+  }
+
+  /**
    * Gets the internal task queue.
    * @returns {TinyPromiseQueue} The internal task queue.
    */
   get queue() {
+    checkDestroy(this.#isDestroyed);
     return this.#queue;
   }
 
@@ -139,6 +165,7 @@ class TinyThrottledApi extends EventEmitter {
    * @returns {API} The original API function.
    */
   get api() {
+    checkDestroy(this.#isDestroyed);
     return this.#api;
   }
 
@@ -147,6 +174,7 @@ class TinyThrottledApi extends EventEmitter {
    * @returns {number} The current concurrency limit.
    */
   get concurrencyLimit() {
+    checkDestroy(this.#isDestroyed);
     return this.#concurrencyLimit;
   }
 
@@ -156,6 +184,7 @@ class TinyThrottledApi extends EventEmitter {
    * @throws {TypeError} If value is not a positive number.
    */
   set concurrencyLimit(value) {
+    checkDestroy(this.#isDestroyed);
     if (typeof value !== 'number' || value <= 0) {
       throw new TypeError('Concurrency limit must be a positive number.');
     }
@@ -168,6 +197,7 @@ class TinyThrottledApi extends EventEmitter {
    * @returns {TinyTimeout|null}
    */
   get timeoutInstance() {
+    checkDestroy(this.#isDestroyed);
     return this.#timeoutInstance;
   }
 
@@ -176,6 +206,7 @@ class TinyThrottledApi extends EventEmitter {
    * @returns {number}
    */
   get timeoutValue() {
+    checkDestroy(this.#isDestroyed);
     return this.#timeoutValue;
   }
 
@@ -186,6 +217,7 @@ class TinyThrottledApi extends EventEmitter {
    * @throws {RangeError} If the value is a negative number.
    */
   set timeoutValue(value) {
+    checkDestroy(this.#isDestroyed);
     if (typeof value !== 'number') {
       throw new TypeError('Timeout value must be a number.');
     }
@@ -201,6 +233,7 @@ class TinyThrottledApi extends EventEmitter {
    * @returns {number|null}
    */
   get timeoutLimit() {
+    checkDestroy(this.#isDestroyed);
     return this.#timeoutLimit;
   }
 
@@ -211,6 +244,7 @@ class TinyThrottledApi extends EventEmitter {
    * @throws {RangeError} If the value is a negative number.
    */
   set timeoutLimit(value) {
+    checkDestroy(this.#isDestroyed);
     if (typeof value !== 'number') {
       throw new TypeError('Timeout limit must be a number.');
     }
@@ -227,6 +261,7 @@ class TinyThrottledApi extends EventEmitter {
    * @returns {number}
    */
   get activeCount() {
+    checkDestroy(this.#isDestroyed);
     return this.#activeCount;
   }
 
@@ -236,6 +271,7 @@ class TinyThrottledApi extends EventEmitter {
    * @returns {number}
    */
   get queuedCount() {
+    checkDestroy(this.#isDestroyed);
     return this.#queue.getQueuedIds().length;
   }
 }
