@@ -82,54 +82,89 @@ The primary method to execute your API calls.
 
 ## 💡 Practical Examples
 
-### Example 1: Simple Concurrency (The "Batch" Pattern)
-Use this when you have a large array of IDs and want to process them without crashing your system.
+### Example 1: Simple Concurrency (The "Batch" Pattern) 🚀
+Use this when you have a large array of IDs and want to fetch data from a real API without overwhelming the client or the server. We use `JSONPlaceholder` (a free fake API) for this example.
 
 ```javascript
-const ids = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-const throttledApi = new TinyThrottledApi(2, mockApi); // Only 2 at a time
+import TinyThrottledApi from 'tiny-essentials/libs/utils/TinyThrottledApi';
+
+/**
+ * A real-world fetch wrapper.
+ * @param {number} id 
+ * @returns {Promise<Object>}
+ */
+const fetchData = async (id) => {
+  const response = await fetch(`https://jsonplaceholder.typicode.com/posts/${id}`);
+  
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+  
+  return await response.json();
+};
+
+// Limit to 3 simultaneous network requests
+const throttledApi = new TinyThrottledApi(3, fetchData);
 
 async function runBatch() {
+  const ids = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+  console.log("Starting batch fetch...");
+
+  // Map IDs to promises managed by the throttled API
   const tasks = ids.map(id => 
-    throttledApi.exec(id).then(res => console.log(`✅ Received: ${res}`))
+    throttledApi.exec(id)
+      .then(data => console.log(`✅ Success [ID ${id}]:`, data.title))
+      .catch(err => console.error(`❌ Error [ID ${id}]:`, err.message))
   );
 
   await Promise.all(tasks);
-  console.log("🏁 All tasks completed!");
+  console.log("🏁 All batch tasks completed!");
 }
 
 runBatch();
 ```
 
-### Example 2: Advanced Throttling (The "Polite" Pattern)
-Use this when the server has a strict "Requests Per Second" (RPS) limit.
+### Example 2: Advanced Throttling (The "Polite" Pattern) ⏱️
+Use this when the API you are calling has strict rate limits (e.g., "no more than 5 requests per second"). By using `TinyTimeout`, we ensure our requests are spaced out gracefully.
 
 ```javascript
-import TinyTimeout from '../math/TinyTimeout.mjs';
+import TinyThrottledApi from 'tiny-essentials/libs/utils/TinyThrottledApi';
+import TinyTimeout from 'tiny-essentials/libs/math/TinyTimeout';
 
+const fetchData = async (id) => {
+  const response = await fetch(`https://jsonplaceholder.typicode.com/posts/${id}`);
+  return await response.json();
+};
+
+// 1. Initialize the timing controller
 const timeout = new TinyTimeout();
-const throttledApi = new TinyThrottledApi(5, mockApi, timeout);
 
-// Set the base delay to 500ms and max cap to 2 seconds
-throttledApi.timeoutValue = 500;
-throttledApi.timeoutLimit = 2000;
+// 2. Create the throttled API
+// We allow 2 concurrent requests, but we want to space them out
+const throttledApi = new TinyThrottledApi(2, fetchData, timeout);
 
-// When you call .exec(), the TinyTimeout will ensure 
-// requests are spaced out according to the internal logic.
-```
+// 3. Configure the "politeness" delay
+// Base delay of 1000ms (1 second) between requests
+throttledApi.timeoutValue = 1000; 
+// Maximum delay cap of 5000ms
+throttledApi.timeoutLimit = 5000;
 
----
+async function runPoliteBatch() {
+  const ids = [1, 2, 3, 4, 5];
 
-## 🔍 Monitoring & Debugging
+  console.log("Starting polite batch fetch...");
 
-When debugging your application, use the getters to log the state of your queue. This is vital for identifying "bottlenecks" (where the queue is growing faster than the API can process).
-
-```javascript
-const monitorInterval = setInterval(() => {
-  console.log(
-    `📊 Status -> Active: ${throttledApi.activeCount} | Queued: ${throttledApi.queuedCount}`
+  const tasks = ids.map(id => 
+    throttledApi.exec(id).then(data => {
+      console.log(`📦 Received ID ${id} at ${new Date().toLocaleTimeString()}`);
+      return data;
+    })
   );
-}, 1000);
 
-// Remember to clear the interval when your work is done!
+  await Promise.all(tasks);
+  console.log("🏁 Polite batch completed!");
+}
+
+runPoliteBatch();
 ```
