@@ -83,7 +83,12 @@ class TinyThrottledApi {
           await new Promise((resolve) => {
             // We use a constant ID so the frequency is tracked across all calls to this instance.
             if (this.#timeoutInstance)
-              this.#timeoutInstance.set('api_throttle', resolve, this.#timeoutValue, this.#timeoutLimit);
+              this.#timeoutInstance.set(
+                'api_throttle',
+                resolve,
+                this.#timeoutValue,
+                this.#timeoutLimit,
+              );
             else resolve(undefined);
           });
         }

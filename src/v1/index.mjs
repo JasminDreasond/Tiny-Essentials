@@ -213,11 +213,13 @@ import {
   extractUsernames,
 } from './regexp/Username/index.mjs';
 import TinyHtmlTagRegexBuilder from './libs/tools/TinyHtmlTagRegexBuilder.mjs';
-import { TinyUriParser } from './build/TinyUriParser.mjs';
+import TinyUriParser from './libs/tools/TinyUriParser.mjs';
 import TinyBrowserMonitor from './libs/tools/TinyBrowserMonitor.mjs';
+import TinyThrottledApi from './libs/utils/TinyThrottledApi.mjs';
 // import TinyHtmlElems from './libs/TinyHtml/index.mjs';
 
 export {
+  TinyThrottledApi,
   TinyBrowserMonitor,
   TinyUriParser,
   TinyHtmlTagRegexBuilder,

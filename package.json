@@ -268,6 +268,10 @@
       "require": "./dist/v1/libs/utils/UltraRandomMsgGen.cjs",
       "import": "./dist/v1/libs/utils/UltraRandomMsgGen.mjs"
     },
+    "./libs/utils/TinyThrottledApi": {
+      "require": "./dist/v1/libs/utils/TinyThrottledApi.cjs",
+      "import": "./dist/v1/libs/utils/TinyThrottledApi.mjs"
+    },
     "./libs/html/upload/TinyUploadClicker": {
       "require": "./dist/v1/libs/html/upload/TinyUploadClicker.cjs",
       "import": "./dist/v1/libs/html/upload/TinyUploadClicker.mjs"
