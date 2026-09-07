@@ -16,7 +16,13 @@
  */
 export const compileGlob = (globData, strict = true) => {
   if (typeof globData !== 'string' && !Array.isArray(globData)) {
-    throw new TypeError('GLOB pattern must be a string.');
+    throw new TypeError('GLOB pattern must be a string or an array of strings.');
+  }
+  if (Array.isArray(globData)) {
+    const allStrings = globData.every((item) => typeof item === 'string');
+    if (!allStrings) {
+      throw new TypeError('All elements in the GLOB array must be strings.');
+    }
   }
   if (typeof strict !== 'boolean') {
     throw new TypeError('Strict mode must be a boolean.');
@@ -173,7 +179,7 @@ export const decompileGlob = (regexp) => {
     typeof regexp !== 'string' &&
     (!Array.isArray(regexp) || !regexp.every((v) => typeof v === 'string'))
   ) {
-    throw new TypeError('Argument must be a RegExp instance or string.');
+    throw new TypeError('Argument must be a RegExp instance or string stuff.');
   }
 
   let source =
@@ -256,14 +262,25 @@ export const decompileGlob = (regexp) => {
 };
 
 /**
- * Validates the integrity of a GLOB pattern by compiling it into a regular expression
- * and then decompiling it back to its original form to ensure a perfect match.
+ * Validates if a given pattern is a syntactically correct GLOB string.
  *
- * @param {string|string[]} globPattern
- * @returns {boolean}
+ * @param {string|string[]} globPattern - The pattern to validate.
+ * @returns {boolean} True if the pattern is syntactically valid, false otherwise.
+ * @throws {TypeError} If the input is not a string or an array of strings.
  */
 export const isValidGlob = (globPattern) => {
-  const compiled = compileGlob(globPattern);
-  const decompiled = decompileGlob(compiled);
-  return (Array.isArray(globPattern) ? globPattern.join('') : globPattern) === decompiled.join('');
+  try {
+    // 1. Attempt to compile the pattern using the existing strict logic.
+    // If the syntax is broken, compileGlob will throw a SyntaxError.
+    compileGlob(globPattern, true);
+    return true;
+  } catch (error) {
+    // 2. If the error is a SyntaxError, the pattern is mathematically/syntactically invalid.
+    if (error instanceof SyntaxError) {
+      return false;
+    }
+
+    // 3. If it's any other error, re-throw it to avoid masking potential bugs.
+    throw error;
+  }
 };
