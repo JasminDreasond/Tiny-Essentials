@@ -28,13 +28,14 @@ class TinyThrottledApi {
    * @param {number} concurrencyLimit - The maximum number of simultaneous requests.
    * @param {API} api - The API implementation.
    * @throws {TypeError} If concurrencyLimit is not a positive number.
+   * @throws {TypeError} If API is not a function.
    */
   constructor(concurrencyLimit, api) {
     if (typeof concurrencyLimit !== 'number' || concurrencyLimit <= 0) {
       throw new TypeError('Concurrency limit must be a positive number.');
     }
     if (typeof api !== 'function') {
-      throw new TypeError('Fetcher must be a function.');
+      throw new TypeError('API must be a function.');
     }
 
     this.#concurrencyLimit = concurrencyLimit;
@@ -42,16 +43,18 @@ class TinyThrottledApi {
   }
 
   /**
-   * Executes a API request, respecting the concurrency limit.
+   * Executes an API request, respecting the concurrency limit.
    *
    * @param {Parameters<API>} args
    * @returns {QueueResult<ReturnType<API>>} A promise that resolves with the API result.
-   * @throws {TypeError} If url is not a string.
+   * @throws {TypeError} If the internal state is corrupted.
    */
   async exec(...args) {
-    const id = 'yay';
-    // If we are under the limit, execute immediately.
+    const id = crypto.randomUUID(); // Using UUID for better collision resistance
+
+    // If we are under the limit, reserve the slot SYNCHRONOUSLY to prevent race conditions.
     if (this.#activeCount < this.#concurrencyLimit) {
+      this.#activeCount++;
       return this.#performRequest(...args);
     }
 
@@ -60,6 +63,9 @@ class TinyThrottledApi {
       async () => {
         // The task in the queue waits until a slot is available via polling.
         await waitForTrue(() => this.#activeCount < this.#concurrencyLimit);
+        // Once available, we must reserve the slot before proceeding to #performRequest
+        // to prevent other tasks from jumping in during the microtask gap.
+        this.#activeCount++;
         return this.#performRequest(...args);
       },
       null,
@@ -74,12 +80,10 @@ class TinyThrottledApi {
    * @returns {QueueResult<ReturnType<API>>}
    */
   async #performRequest(...args) {
-    this.#activeCount++;
     try {
       return await this.#api(...args);
     } finally {
-      // We use finally to ensure the counter is always decremented,
-      // even if the request fails or is rejected.
+      // The decrement happens here, ensuring the slot is released even on failure.
       this.#activeCount--;
     }
   }
@@ -111,8 +115,12 @@ class TinyThrottledApi {
   /**
    * Sets a new concurrency limit.
    * @param {number} value - The new maximum number of simultaneous requests.
+   * @throws {TypeError} If value is not a positive number.
    */
   set concurrencyLimit(value) {
+    if (typeof value !== 'number' || value <= 0) {
+      throw new TypeError('Concurrency limit must be a positive number.');
+    }
     this.#concurrencyLimit = value;
   }
 
