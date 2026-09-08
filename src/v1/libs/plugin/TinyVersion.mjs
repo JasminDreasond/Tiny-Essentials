@@ -8,25 +8,25 @@ class TinyVersion {
    * The major version number.
    * @type {number}
    */
-  #major;
+  #major = 0;
 
   /**
    * The minor version number.
    * @type {number}
    */
-  #minor;
+  #minor = 0;
 
   /**
    * The patch version number.
    * @type {number}
    */
-  #patch;
+  #patch = 0;
 
   /**
    * The optional pre-release tag or build metadata.
    * @type {string | null}
    */
-  #tag;
+  #tag = null;
 
   /**
    * Creates a new TinyVersion instance.
@@ -43,19 +43,30 @@ class TinyVersion {
     }
 
     // Regex captures: 1: major, 2: minor, 3: patch, 4: optional tag (without the hyphen)
-    const versionRegex = /^(\d+)\.(\d+)\.(\d+)(?:-(.+))?$/;
-    const match = versionString.match(versionRegex);
+    const match = versionString.match(/^(\d+)\.(\d+)\.(\d+)(?:-(.+))?$/);
+
+    /** @param {RegExpMatchArray} match */
+    const startInstance = (match) => {
+      if (typeof match[1] === 'string') this.#major = parseInt(match[1], 10);
+      if (typeof match[2] === 'string') this.#minor = parseInt(match[2], 10);
+      if (typeof match[3] === 'string') this.#patch = parseInt(match[3], 10);
+      if (typeof match[4] === 'string') this.#tag = match[4];
+    };
 
     if (!match) {
-      throw new Error(
-        `[TinyVersion] Invalid version format: "${versionString}". Expected format: "X.Y.Z" or "X.Y.Z-tag".`,
-      );
-    }
-
-    this.#major = parseInt(match[1], 10);
-    this.#minor = parseInt(match[2], 10);
-    this.#patch = parseInt(match[3], 10);
-    this.#tag = match[4] || null;
+      const match2 = versionString.match(/^(\d+)\.(\d+)\.(\d+)(?:-(.+))?$/);
+      if (!match2) {
+        const match3 = versionString.match(/^(\d+)\.(\d+)$/);
+        if (!match3) {
+          const match4 = versionString.match(/^(\d+)$/);
+          if (!match4) {
+            throw new Error(
+              `[TinyVersion] Invalid version format: "${versionString}". Expected format: "X.Y.Z" or "X.Y.Z-tag".`,
+            );
+          } else startInstance(match4);
+        } else startInstance(match3);
+      } else startInstance(match2);
+    } else startInstance(match);
   }
 
   /**
