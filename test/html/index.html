@@ -8,6 +8,7 @@
       import { TinyCloner } from '/src/v1/libs/utils/TinyCloner.mjs';
       import { TinyHttpResponseRegistry } from '/src/v1/libs/tools/TinyHttpResponseRegistry.mjs';
       import { TinyURLSecurityVerifier } from '/src/v1/libs/tools/TinyURLSecurityVerifier.mjs';
+      import { TinyVersion } from '/src/v1/libs/plugin/TinyVersion.mjs';
       import * as tinyEssentialsb from '/src/v1/basics/index.mjs';
       Object.assign(window, tinyEssentialsb);
       import * as tinyEssentialrg from '/src/v1/regexp/index.mjs';
@@ -17,6 +18,7 @@
       window.TinyCloner = TinyCloner;
       window.TinyURLSecurityVerifier = TinyURLSecurityVerifier;
       window.TinyHttpResponseRegistry = TinyHttpResponseRegistry;
+      window.TinyVersion = TinyVersion;
       window.reqCodes = new TinyHttpResponseRegistry();
     </script>
     <style>
