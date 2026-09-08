@@ -61,7 +61,7 @@ export function isValidObj(value) {
  * Determines whether the provided value is a class constructor.
  *
  * @reference https://stackoverflow.com/a/30760236
- * 
+ *
  * @param {unknown} target - The value to be inspected.
  * @returns {boolean} True if the value is a class constructor, false otherwise.
  * @throws {TypeError} If the provided target is not a function.
@@ -90,28 +90,54 @@ export const isClass = (target) => {
  * @returns {boolean} True if the value is an instance of an ES6 class, false otherwise.
  */
 export function isClassInstance(value) {
-    // 1. Primitives and null are never class instances.
-    if (value === null || typeof value !== 'object') {
-        return false;
-    }
+  // 1. Primitives and null are never class instances.
+  if (value === null || typeof value !== 'object') {
+    return false;
+  }
 
-    const proto = Object.getPrototypeOf(value);
+  const proto = Object.getPrototypeOf(value);
 
-    // 2. Objects without prototypes (e.g., Object.create(null)) 
-    // or plain objects ({}) are not custom class instances.
-    if (proto === null || proto === Object.prototype) {
-        return false;
-    }
+  // 2. Objects without prototypes (e.g., Object.create(null))
+  // or plain objects ({}) are not custom class instances.
+  if (proto === null || proto === Object.prototype) {
+    return false;
+  }
 
-    // 3. Ensure the constructor property exists and is a callable function.
-    if (typeof value.constructor !== 'function') {
-        return false;
-    }
+  // 3. Ensure the constructor property exists and is a callable function.
+  if (typeof value.constructor !== 'function') {
+    return false;
+  }
 
-    const constructorString = value.constructor.toString();
+  const constructorString = value.constructor.toString();
 
-    // 4. Check if the constructor string starts with the 'class' keyword.
-    // The regex /^\s*class\b/ is used to safely handle potential whitespace 
-    // alterations caused by bundlers or minifiers.
-    return /^\s*class\b/.test(constructorString);
+  // 4. Check if the constructor string starts with the 'class' keyword.
+  // The regex /^\s*class\b/ is used to safely handle potential whitespace
+  // alterations caused by bundlers or minifiers.
+  return /^\s*class\b/.test(constructorString);
+}
+
+/**
+ * Determines whether a given value is an instance of any class (custom or native).
+ * Returns true for instances like Map, Set, URL, Date, Array, and custom ES6 classes.
+ * Returns false for primitives, plain objects ({}), and null-prototype objects.
+ *
+ * @param {unknown} value - The value to inspect.
+ * @returns {boolean} True if the value is a class instance, false otherwise.
+ */
+export function isAnyClassInstance(value) {
+  // 1. Primitives and null are never class instances.
+  if (value === null || typeof value !== 'object') {
+    return false;
+  }
+
+  const proto = Object.getPrototypeOf(value);
+
+  // 2. Objects without prototypes (e.g., Object.create(null))
+  // or plain objects ({}) are not considered class instances.
+  if (proto === null || proto === Object.prototype) {
+    return false;
+  }
+
+  // 3. Ensure the object retains a valid callable constructor.
+  return typeof value.constructor === 'function';
 }
