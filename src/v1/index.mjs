@@ -24,7 +24,7 @@ import {
   getObjTypeOrder,
   getObjTypeRegistry,
 } from './basics/objFilter.mjs';
-import { countObj, isClass, isJsonObject, isValidObj } from './basics/objChecker.mjs';
+import { countObj, isClassInstance, isClass, isJsonObject, isValidObj } from './basics/objChecker.mjs';
 import {
   documentIsFullScreen,
   isScreenFilled,
@@ -279,6 +279,7 @@ export {
   TinyPromiseQueue,
   TinyLevelUp,
   isClass,
+  isClassInstance,
   isValidGlob,
   compileGlob,
   compileGlobRegExp,
