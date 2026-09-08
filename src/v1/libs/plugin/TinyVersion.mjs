@@ -38,7 +38,7 @@ class TinyVersion {
   constructor(versionString) {
     if (typeof versionString !== 'string') {
       throw new TypeError(
-        `[VersionManager] Expected version to be a string, received type: ${typeof versionString}`,
+        `[TinyVersion] Expected version to be a string, received type: ${typeof versionString}`,
       );
     }
 
@@ -48,7 +48,7 @@ class TinyVersion {
 
     if (!match) {
       throw new Error(
-        `[VersionManager] Invalid version format: "${versionString}". Expected format: "X.Y.Z" or "X.Y.Z-tag".`,
+        `[TinyVersion] Invalid version format: "${versionString}". Expected format: "X.Y.Z" or "X.Y.Z-tag".`,
       );
     }
 
@@ -88,6 +88,93 @@ class TinyVersion {
    */
   get tag() {
     return this.#tag;
+  }
+
+  /**
+   * Compares this version with another version to see if it is greater.
+   *
+   * @template {TinyVersion<string>} VersionInstance
+   * @param {VersionInstance} version - The version to compare against.
+   * @returns {boolean} True if this version is greater than the provided version.
+   * @throws {TypeError} If the provided version is not an instance of TinyVersion.
+   */
+  isGreaterThan(version) {
+    if (!(version instanceof TinyVersion)) {
+      throw new TypeError(
+        `[TinyVersion] Comparison target must be an instance of TinyVersion. Received: ${typeof version}`,
+      );
+    }
+
+    // 1. Compare Major
+    if (this.#major !== version.major) {
+      return this.#major > version.major;
+    }
+
+    // 2. Compare Minor
+    if (this.#minor !== version.minor) {
+      return this.#minor > version.minor;
+    }
+
+    // 3. Compare Patch
+    if (this.#patch !== version.patch) {
+      return this.#patch > version.patch;
+    }
+
+    // 4. Compare Tags (SemVer rule: version without tag > version with tag)
+    if (this.#tag === null && version.tag !== null) {
+      return true;
+    }
+    if (this.#tag !== null && version.tag === null) {
+      return false;
+    }
+    if (this.#tag === null && version.tag === null) {
+      return false; // They are equal
+    }
+
+    // Both have tags, compare them lexicographically
+    return (this.#tag ?? '') > (version.tag ?? '');
+  }
+
+  /**
+   * Compares this version with another version to see if they are equal.
+   *
+   * @template {TinyVersion<string>} VersionInstance
+   * @param {VersionInstance} version - The version to compare against.
+   * @returns {boolean} True if both versions are identical.
+   * @throws {TypeError} If the provided version is not an instance of TinyVersion.
+   */
+  isEqualTo(version) {
+    if (!(version instanceof TinyVersion)) {
+      throw new TypeError(
+        `[TinyVersion] Comparison target must be an instance of TinyVersion. Received: ${typeof version}`,
+      );
+    }
+
+    return (
+      this.#major === version.major &&
+      this.#minor === version.minor &&
+      this.#patch === version.patch &&
+      this.#tag === version.tag
+    );
+  }
+
+  /**
+   * Compares this version with another version to see if it is less.
+   *
+   * @template {TinyVersion<string>} VersionInstance
+   * @param {VersionInstance} version - The version to compare against.
+   * @returns {boolean} True if this version is less than the provided version.
+   * @throws {TypeError} If the provided version is not an instance of TinyVersion.
+   */
+  isLessThan(version) {
+    if (!(version instanceof TinyVersion)) {
+      throw new TypeError(
+        `[TinyVersion] Comparison target must be an instance of TinyVersion. Received: ${typeof version}`,
+      );
+    }
+
+    // A version is less than another if it is neither greater than nor equal to it.
+    return !this.isGreaterThan(version) && !this.isEqualTo(version);
   }
 
   /**
