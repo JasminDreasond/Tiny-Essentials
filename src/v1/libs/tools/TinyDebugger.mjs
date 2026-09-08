@@ -3,6 +3,15 @@ import { isValidObj } from '../../basics/objChecker.mjs';
 import { browserIs } from '../../basics/browserDetector.mjs';
 
 /**
+ * @typedef {Object} DebuggerConstructor
+ * @property {Partial<Console>} logger - A custom logger (must implement Console methods).
+ * @property {string} id - The unique identifier for this debugger instance.
+ * @property {boolean} debugMode - Whether to enable internal debug logging.
+ * @property {boolean} [canEmitLogs=false] - Whether to emit debug events to listeners.
+ * @property {boolean} [useLogColors=false] - Whether to enable log color support.
+ */
+
+/**
  * A lightweight debugging utility that wraps console methods and provides event emission.
  * @extends EventEmitter
  */
@@ -61,12 +70,7 @@ class TinyDebugger extends EventEmitter {
 
   /**
    * Creates an instance of TinyDebugger.
-   * @param {Object} config - The configuration object.
-   * @param {Partial<Console>} config.logger - A custom logger (must implement Console methods).
-   * @param {string} config.id - The unique identifier for this debugger instance.
-   * @param {boolean} config.debugMode - Whether to enable internal debug logging.
-   * @param {boolean} [config.canEmitLogs=false] - Whether to emit debug events to listeners.
-   * @param {boolean} [config.useLogColors=false] - Whether to enable log color support.
+   * @param {DebuggerConstructor} config - The configuration object.
    * @throws {TypeError} If parameters do not match the required types.
    */
   constructor({ logger, id, debugMode, canEmitLogs = false, useLogColors = false }) {
