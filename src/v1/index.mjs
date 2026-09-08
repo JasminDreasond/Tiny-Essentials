@@ -225,9 +225,12 @@ import TinyBrowserMonitor from './libs/tools/TinyBrowserMonitor.mjs';
 import TinyThrottledApi from './libs/utils/TinyThrottledApi.mjs';
 import { compileGlob, compileGlobRegExp, decompileGlob, isValidGlob } from './regexp/Glob.mjs';
 import TinyVersion from './libs/plugin/TinyVersion.mjs';
+import { TinyPlugin, TinyPluginCore } from './libs/plugin/TinyPlugin.mjs';
 // import TinyHtmlElems from './libs/TinyHtml/index.mjs';
 
 export {
+  TinyPlugin,
+  TinyPluginCore,
   TinyVersion,
   TinyThrottledApi,
   TinyBrowserMonitor,

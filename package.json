@@ -256,6 +256,10 @@
       "require": "./dist/v1/libs/plugin/TinyVersion.cjs",
       "import": "./dist/v1/libs/plugin/TinyVersion.mjs"
     },
+    "./libs/plugin/TinyPlugin": {
+      "require": "./dist/v1/libs/plugin/TinyPlugin.cjs",
+      "import": "./dist/v1/libs/plugin/TinyPlugin.mjs"
+    },
     "./libs/tools/TinyDebugger": {
       "require": "./dist/v1/libs/tools/TinyDebugger.cjs",
       "import": "./dist/v1/libs/tools/TinyDebugger.mjs"
