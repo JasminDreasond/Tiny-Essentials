@@ -14,8 +14,8 @@ The Tiny Plugin System is a highly structured, type-safe framework designed for 
 ## 🛡️ THE GOLDEN RULES (CRITICAL CONSTRAINTS)
 
 ### 🚫 RULE 01: NO MUTATION (Architectural Integrity)
-**NEVER** attempt to manually inject, add, or modify properties or methods directly onto the `instance` (`TinyPlugin`) or the `engine` (`TinyPluginCore`) inside an installer function. 
-- **Incorrect:** `instance.myNewMethod = () => {};`
+**NEVER** attempt to manually inject, add, or modify properties or methods directly onto the `pluginInstance` (`TinyPlugin`) or the `engine` (`TinyPluginCore`) inside an installer function. 
+- **Incorrect:** `pluginInstance.myNewMethod = () => {};`
 - **Correct:** Use the **Extension Pattern** (see Section 3).
 
 ### 🛡️ RULE 02: THE EXTENSION PATTERN (@extended)
@@ -92,12 +92,12 @@ Plugins must be isolated files exporting an installer function.
 **⚠️ TECHNICAL NUANCE: The Identity Contract**
 The plugin file exports an **Installer Function**. This function is a **setup routine** that is executed by the engine to "awaken" the plugin.
 
-**The plugin is NOT considered "Ready" until the installer assigns the following identity properties to the `instance`:**
-1.  `instance.id` (String, non-empty)
-2.  `instance.description` (String, non-empty)
-3.  `instance.authors` (Array of non-empty strings)
-4.  `instance.contributors` (Array of non-empty strings)
-5.  `instance.version` (String, valid version)
+**The plugin is NOT considered "Ready" until the installer assigns the following identity properties to the `pluginInstance`:**
+1.  `pluginInstance.id` (String, non-empty)
+2.  `pluginInstance.description` (String, non-empty)
+3.  `pluginInstance.authors` (Array of non-empty strings)
+4.  `pluginInstance.contributors` (Array of non-empty strings)
+5.  `pluginInstance.version` (String, valid version)
 
 **If any of these are missing, the `installPlugin` process will throw an error and the plugin will fail to initialize.**
 
@@ -114,26 +114,26 @@ import MyEngine from '../MyEngine.mjs';
 /**
  * @type {import('../MyEngine.mjs').MyEngineInstaller<'MyPluginId', '1.0.0', [MyPluginOptions]>}
  */
-const MyPluginInstaller = (instance, options) => {
+const MyPluginInstaller = (pluginInstance, options) => {
   // 1. MANDATORY IDENTITY SETUP (Crucial!)
-  instance.id = 'MyPluginId';
-  instance.version = '1.0.0';
-  instance.description = 'A plugin that performs amazing things.';
-  instance.authors = ['DeveloperName'];
-  instance.contributors = ['ContributorName'];
+  pluginInstance.id = 'MyPluginId';
+  pluginInstance.version = '1.0.0';
+  pluginInstance.description = 'A plugin that performs amazing things.';
+  pluginInstance.authors = ['DeveloperName'];
+  pluginInstance.contributors = ['ContributorName'];
 
   // 2. Runtime Validation of Options (CRITICAL)
   if (typeof options.apiKey !== 'string') throw new TypeError('apiKey must be a string');
   if (typeof options.debug !== 'boolean') throw new TypeError('debug must be a boolean');
 
   // 3. Implementation Logic
-  const engine = instance.engine;
+  const engine = pluginInstance.engine;
   if (!(engine instanceof MyEngine)) {
     throw new TypeError('Plugin requires a MyEngine instance to function.');
   }
 
   if (options.debug) {
-    console.log(`Plugin ${instance.id} is active.`);
+    console.log(`Plugin ${pluginInstance.id} is active.`);
   }
   // Note: This function returns nothing (void).
 };
