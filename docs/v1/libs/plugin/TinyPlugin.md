@@ -89,10 +89,17 @@ Plugins must be isolated files exporting an installer function.
 2.  **Annotate Installer:** Use the generic `Installer` type from the specific Engine to annotate the function. This allows the IDE to validate the `options` object when you call `installPlugin`.
 3.  **Implement Validation:** Throw `TypeError` for all options.
 
-**⚠️ TECHNICAL NUANCE:** The plugin file exports an **Installer Function**. 
-- The installer function is a **setup routine** that returns `void`.
-- Its purpose is to receive the `instance` and configure it.
-- It **MUST NOT** return the plugin instance itself.
+**⚠️ TECHNICAL NUANCE: The Identity Contract**
+The plugin file exports an **Installer Function**. This function is a **setup routine** that is executed by the engine to "awaken" the plugin.
+
+**The plugin is NOT considered "Ready" until the installer assigns the following identity properties to the `instance`:**
+1.  `instance.id` (String, non-empty)
+2.  `instance.description` (String, non-empty)
+3.  `instance.authors` (Array of non-empty strings)
+4.  `instance.contributors` (Array of non-empty strings)
+5.  `instance.version` (String, valid version)
+
+**If any of these are missing, the `installPlugin` process will throw an error and the plugin will fail to initialize.**
 
 ```javascript
 // Example: `./plugins/MyPlugin.mjs`
@@ -106,13 +113,20 @@ Plugins must be isolated files exporting an installer function.
  * @type {import('../MyEngine.mjs').MyEngineInstaller<'MyPluginId', '1.0.0', [MyPluginOptions]>}
  */
 const MyPluginInstaller = (instance, options) => {
-  // 1. Runtime Validation (CRITICAL)
+  // 1. MANDATORY IDENTITY SETUP (Crucial!)
+  instance.id = 'MyPluginId';
+  instance.version = '1.0.0';
+  instance.description = 'A plugin that performs amazing things.';
+  instance.authors = ['DeveloperName'];
+  instance.contributors = ['ContributorName'];
+
+  // 2. Runtime Validation of Options (CRITICAL)
   if (typeof options.apiKey !== 'string') throw new TypeError('apiKey must be a string');
   if (typeof options.debug !== 'boolean') throw new TypeError('debug must be a boolean');
 
-  // 2. Implementation (Configuring the 'instance')
+  // 3. Implementation Logic
   if (options.debug) {
-    console.log(`Plugin ${instance.id} initialized with key: ${options.apiKey}`);
+    console.log(`Plugin ${instance.id} is active.`);
   }
   // Note: This function returns nothing (void).
 };
@@ -130,10 +144,8 @@ import MyPluginInstaller from './plugins/MyPlugin.mjs';
 // Instantiate the Engine
 const engine = new MyEngine();
 
-// THE ENGINE'S ROLE:
-// 1. It takes the installer (void function).
-// 2. It creates the TinyPlugin instance.
-// 3. It returns the instance to the developer.
+// The engine handles the lifecycle: 
+// 1. Creates the TinyPlugin instance -> 2. Calls installer -> 3. Validates Identity -> 4. Returns instance.
 const pluginInstance = engine.installPlugin(MyPluginInstaller, { 
   apiKey: 'abc-123', 
   debug: true 
@@ -147,7 +159,8 @@ console.log('Plugin Status:', pluginInstance.isReady); // pluginInstance is the 
 ## 🤖 AI AGENT INSTRUCTIONS (PROMPT)
 When assisting with this codebase:
 1.  **Distinguish between Installer and Instance:** Always clarify that the `Installer` function is a `void` setup routine, while `engine.installPlugin()` is the method that returns the `TinyPlugin` instance.
-2.  **Always check the `@typedef`** of the options before suggesting implementation.
-3.  **Enforce the use of Generics** in any new plugin or engine extension to maintain IDE type-safety.
-4.  **If the user attempts to modify an object property directly** (e.g., `engine.newProp = ...`), immediately flag it as a violation of **RULE 01** and suggest the **Extension Pattern**.
-5.  **Ensure all `throw` statements** in installers are specific (e.g., `TypeError`, `RangeError`) and provide descriptive error messages.
+2.  **Enforce the Identity Contract:** When writing or reviewing a plugin installer, **ALWAYS** ensure the developer is assigning `id`, `version`, `description`, `authors`, and `contributors` to the `instance`. If they are missing, flag it as a critical error that will prevent `isReady` from becoming `true`.
+3.  **Always check the `@typedef`** of the options before suggesting implementation.
+4.  **Enforce the use of Generics** in any new plugin or engine extension to maintain IDE type-safety.
+5.  **If the user attempts to modify an object property directly** (e.g., `engine.newProp = ...`), immediately flag it as a violation of **RULE 01** and suggest the **Extension Pattern**.
+6.  **Ensure all `throw` statements** in installers are specific (e.g., `TypeError`, `RangeError`) and provide descriptive error messages.
