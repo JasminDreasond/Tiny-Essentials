@@ -39,7 +39,7 @@ The host application must extend `TinyPluginCore` to gain registry capabilities.
 
 ```javascript
 // Example: `./MyEngine.mjs`
-import { TinyPluginCore } from 'tiny-essentials/libs/plugin/TinyPlugin';
+import { TinyPluginCore, TinyPlugin } from 'tiny-essentials/libs/plugin/TinyPlugin';
 
 /**
  * A function used to install a plugin into the engine.
@@ -89,6 +89,11 @@ Plugins must be isolated files exporting an installer function.
 2.  **Annotate Installer:** Use the generic `Installer` type from the specific Engine to annotate the function. This allows the IDE to validate the `options` object when you call `installPlugin`.
 3.  **Implement Validation:** Throw `TypeError` for all options.
 
+**⚠️ TECHNICAL NUANCE:** The plugin file exports an **Installer Function**. 
+- The installer function is a **setup routine** that returns `void`.
+- Its purpose is to receive the `instance` and configure it.
+- It **MUST NOT** return the plugin instance itself.
+
 ```javascript
 // Example: `./plugins/MyPlugin.mjs`
 /**
@@ -105,39 +110,44 @@ const MyPluginInstaller = (instance, options) => {
   if (typeof options.apiKey !== 'string') throw new TypeError('apiKey must be a string');
   if (typeof options.debug !== 'boolean') throw new TypeError('debug must be a boolean');
 
-  // 2. Implementation
+  // 2. Implementation (Configuring the 'instance')
   if (options.debug) {
     console.log(`Plugin ${instance.id} initialized with key: ${options.apiKey}`);
   }
+  // Note: This function returns nothing (void).
 };
 
 export default MyPluginInstaller;
 ```
 
 ### 3. INTEGRATION & INITIALIZATION
-The final step is connecting the two in the main application.
+The engine performs the actual instantiation.
 
 ```javascript
 import MyEngine from './MyEngine.mjs';
 import MyPluginInstaller from './plugins/MyPlugin.mjs';
 
-// 1. Instantiate the Engine
+// Instantiate the Engine
 const engine = new MyEngine();
 
-// The engine handles the entire lifecycle: validation -> registration -> initialization.
+// THE ENGINE'S ROLE:
+// 1. It takes the installer (void function).
+// 2. It creates the TinyPlugin instance.
+// 3. It returns the instance to the developer.
 const pluginInstance = engine.installPlugin(MyPluginInstaller, { 
   apiKey: 'abc-123', 
   debug: true 
 });
 
-console.log('Plugin Status:', pluginInstance.isReady);
+console.log('Plugin Status:', pluginInstance.isReady); // pluginInstance is the TinyPlugin object.
 ```
 
 ---
 
 ## 🤖 AI AGENT INSTRUCTIONS (PROMPT)
 When assisting with this codebase:
-1.  **Always check the `@typedef`** of the options before suggesting implementation.
-2.  **Enforce the use of Generics** in any new plugin or engine extension.
-3.  **If the user attempts to modify an object property directly** (e.g., `engine.newProp = ...`), immediately flag it as a violation of **RULE 01** and suggest the **Extension Pattern**.
-4.  **Ensure all `throw` statements** in installers are specific (e.g., `TypeError`, `RangeError`) and provide descriptive error messages.
+1.  **Distinguish between Installer and Instance:** Always clarify that the `Installer` function is a `void` setup routine, while `engine.installPlugin()` is the method that returns the `TinyPlugin` instance.
+2.  **Always check the `@typedef`** of the options before suggesting implementation.
+3.  **Enforce the use of Generics** in any new plugin or engine extension to maintain IDE type-safety.
+4.  **If the user attempts to modify an object property directly** (e.g., `engine.newProp = ...`), immediately flag it as a violation of **RULE 01** and suggest the **Extension Pattern**.
+5.  **Ensure all `throw` statements** in installers are specific (e.g., `TypeError`, `RangeError`) and provide descriptive error messages.
