@@ -67,7 +67,7 @@ class MyEngine extends TinyPluginCore {
    */
   constructor(config = {}, lgConfig = {}) {
     super({
-      id: '[_blue_My-Engine_reset_]',
+      id: '[My-Engine]',
       logger: lgConfig.logger ?? console,
       debugMode: lgConfig.debugMode ?? false,
       useLogColors: lgConfig.useLogColors ?? false,
@@ -103,6 +103,8 @@ The plugin file exports an **Installer Function**. This function is a **setup ro
 
 ```javascript
 // Example: `./plugins/MyPlugin.mjs`
+import MyEngine from '../MyEngine.mjs';
+
 /**
  * @typedef {Object} MyPluginOptions
  * @property {string} apiKey - The API key for the service.
@@ -125,6 +127,11 @@ const MyPluginInstaller = (instance, options) => {
   if (typeof options.debug !== 'boolean') throw new TypeError('debug must be a boolean');
 
   // 3. Implementation Logic
+  const engine = instance.engine;
+  if (!(engine instanceof MyEngine)) {
+    throw new TypeError('Plugin requires a MyEngine instance to function.');
+  }
+
   if (options.debug) {
     console.log(`Plugin ${instance.id} is active.`);
   }
