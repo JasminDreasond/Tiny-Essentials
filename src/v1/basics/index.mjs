@@ -26,7 +26,7 @@ import {
   getObjTypeOrder,
   getObjTypeRegistry,
 } from './objFilter.mjs';
-import { countObj, isJsonObject, isValidObj } from './objChecker.mjs';
+import { countObj, isClass, isJsonObject, isValidObj } from './objChecker.mjs';
 import {
   documentIsFullScreen,
   isScreenFilled,
@@ -91,7 +91,9 @@ import {
   isBrowserAgent,
 } from './browserDetector.mjs';
 import { jsonFilter, jsonFilterRecursive, jsonFilterByKeys } from './jsonFilter.mjs';
+
 export {
+  isClass,
   isBrowser,
   getObjTypeRegistry,
   getObjTypeOrder,

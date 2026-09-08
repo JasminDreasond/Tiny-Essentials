@@ -1,11 +1,11 @@
-// https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
-
 /**
  * Randomly shuffles the elements of an array in place using the Fisher–Yates algorithm.
  *
  * This implementation ensures a uniform distribution of permutations.
  * Original algorithm source: StackOverflow (link above).
  *
+ * @reference https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
+ * 
  * @template {any[]} T
  * @param {T} items - The array to shuffle.
  * @returns {T} The same array instance, now shuffled in place.

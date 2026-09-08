@@ -56,3 +56,29 @@ export function isJsonObject(value) {
 export function isValidObj(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
+
+/**
+ * Determines whether the provided value is a class constructor.
+ *
+ * @reference https://stackoverflow.com/a/30760236
+ * 
+ * @param {Function} target - The value to be inspected.
+ * @returns {boolean} True if the value is a class constructor, false otherwise.
+ * @throws {TypeError} If the provided target is not a function.
+ */
+export const isClass = (target) => {
+  // 1. Strict runtime validation to prevent silent failures
+  if (typeof target !== 'function')
+    throw new TypeError(`The 'target' argument must be a function. Received: ${typeof target}`);
+
+  try {
+    // 2. Attempt to invoke the target as a regular function.
+    // If 'target' is a class, it will throw a TypeError:
+    // "Class constructor cannot be invoked without 'new'".
+    target();
+    return false;
+  } catch (error) {
+    // 3. Verify if the error is a TypeError and matches the class invocation error pattern.
+    return error instanceof TypeError && error.message.includes('Class constructor');
+  }
+};
