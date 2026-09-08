@@ -252,6 +252,10 @@
       "require": "./dist/v1/libs/media/TinyRadioFm.cjs",
       "import": "./dist/v1/libs/media/TinyRadioFm.mjs"
     },
+    "./libs/plugin/TinyVersion": {
+      "require": "./dist/v1/libs/plugin/TinyVersion.cjs",
+      "import": "./dist/v1/libs/plugin/TinyVersion.mjs"
+    },
     "./libs/tools/TinyDebugger": {
       "require": "./dist/v1/libs/tools/TinyDebugger.cjs",
       "import": "./dist/v1/libs/tools/TinyDebugger.mjs"
