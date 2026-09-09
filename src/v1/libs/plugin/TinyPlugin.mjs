@@ -1,5 +1,8 @@
 import TinyDebugger from '../tools/TinyDebugger.mjs';
 import TinyVersion from './TinyVersion.mjs';
+import { createCheckDestroyed } from '../utils/tools.mjs';
+
+const checkDestroy = createCheckDestroyed('TinyPlugin');
 
 /**
  * # TINY PLUGIN SYSTEM - ADVANCED DEVELOPER GUIDE
@@ -61,13 +64,19 @@ import TinyVersion from './TinyVersion.mjs';
  * @typedef {import('tiny-essentials/libs/tools/TinyDebugger').DebuggerConstructor} DebuggerConstructor
  */
 
+/**
+ * Represents the isolated runtime environment or state container for a plugin.
+ * It manages the 'ready' state to ensure the plugin's initialization logic
+ * is only executed once.
+ */
 class TinyPluginLayer {
   #isReady = false;
   /**
-   * @template {any[]} Args
-   * @param {(...args: Args) => void} [callback]
-   * @param {Args} args
-   * @returns {this}
+   * Internal method to initialize the layer state.
+   * @template {any[]} Args - The type of arguments passed to the callback.
+   * @param {(...args: Args) => void} [callback] - An optional callback function to execute during initialization.
+   * @param {Args} args - The arguments to be passed to the callback.
+   * @returns {this} - The current instance of TinyPluginLayer.
    */
   _startLayer(callback, ...args) {
     if (this.#isReady) throw new Error('');
@@ -82,6 +91,26 @@ class TinyPluginLayer {
  * It extends TinyDebugger to provide debugging capabilities alongside plugin management.
  */
 class TinyPluginCore extends TinyDebugger {
+  static #pluginsDestroyEventName = 'pluginsDestroyed';
+
+  /**
+   * Gets the event name used when all plugins are destroyed.
+   * @returns {string} The event name.
+   */
+  static get pluginsDestroyEventName() {
+    return TinyPluginCore.pluginsDestroyEventName;
+  }
+
+  /**
+   * Sets the event name used when all plugins are destroyed.
+   * @param {string} value - The new event name.
+   * @throws {TypeError} If the value is not a string.
+   */
+  static set pluginsDestroyEventName(value) {
+    if (typeof value !== 'string') throw new TypeError('pluginsDestroyEventName must be a string.');
+    TinyPluginCore.pluginsDestroyEventName = value;
+  }
+
   /** @type {Map<string, TinyPlugin<this, TinyPluginLayer, string, string, any[]>>} A map of registered plugins. */
   #plugins = new Map();
 
@@ -122,10 +151,10 @@ class TinyPluginCore extends TinyDebugger {
 
   /**
    * Installs a new plugin into the engine and starts its lifecycle.
-   * @template {TinyPluginLayer} Layer
-   * @template {string} Id
-   * @template {string} Version
-   * @template {any[]} Options
+   * @template {TinyPluginLayer} Layer - The type of the plugin layer.
+   * @template {string} Id - The type of the plugin ID.
+   * @template {string} Version - The type of the plugin version.
+   * @template {any[]} Options - The type of the configuration options.
    * @param {TinyPluginInstaller<this, Layer, Id, Version, Options>} plugin - The plugin instance to be registered.
    * @param {Options} options - Configuration options for the plugin.
    * @returns {TinyPlugin<this, Layer, Id, Version, Options>} The newly installed plugin instance.
@@ -136,8 +165,7 @@ class TinyPluginCore extends TinyDebugger {
 
   /**
    * Checks if a specific plugin is already registered in the engine's internal registry.
-   *
-   * @param {TinyPlugin<this, TinyPluginLayer, string, string, any[]>|string} plugin - The plugin instance to check.
+   * @param {TinyPlugin<this, TinyPluginLayer, string, string, any[]>|string} plugin - The plugin instance or ID to check.
    * @returns {boolean} True if the plugin is registered, false otherwise.
    */
   hasPlugin(plugin) {
@@ -152,16 +180,37 @@ class TinyPluginCore extends TinyDebugger {
   getPlugin(key) {
     return this.#plugins.get(key);
   }
+
+  /**
+   * Retrieves a plugin instance by its unique identifier (SANDBOX MODE).
+   * @param {string} key - The unique identifier of the plugin to retrieve.
+   * @returns {TinyPlugin<this, TinyPluginLayer, string, string, any[]>|undefined} The plugin instance if found, otherwise undefined.
+   */
+  _getPlugin(key) {
+    return this.#plugins.get(key);
+  }
+
+  /**
+   * Destroys all registered plugins and emits the destruction event.
+   */
+  destroyPlugins() {
+    this.#plugins.forEach((plugin) => plugin.destroy());
+    this.emit(TinyPluginCore.#pluginsDestroyEventName);
+  }
 }
 
 /**
  * A function used to install a plugin into the engine.
- * @template {TinyPluginCore} Engine
- * @template {TinyPluginLayer} Layer
- * @template {string} IdString
- * @template {string} VersionString
- * @template {any[]} Options
- * @typedef { (plugin: TinyPlugin<Engine, Layer, IdString, VersionString, Options>, ...options: Options) => Layer } TinyPluginInstaller
+ * This function is responsible for the actual initialization logic of the plugin,
+ * setting up its layer and validating its configuration.
+ *
+ * @template {TinyPluginCore} Engine - The type of the engine instance.
+ * @template {TinyPluginLayer} Layer - The type of the layer returned by the installer.
+ * @template {string} IdString - The type of the plugin's unique identifier.
+ * @template {string} VersionString - The type of the plugin's version.
+ * @template {any[]} Options - The type of the configuration options.
+ *
+ * @typedef { (plugin: TinyPlugin<Engine, Layer, IdString, VersionString, Options>, ...options: Options) => Layer } TinyPluginInstaller - The plugin instance being initialized.
  */
 
 /**
@@ -175,23 +224,53 @@ class TinyPluginCore extends TinyDebugger {
  * @template {string} VersionString
  * @template {any[]} Options
  */
-class TinyPlugin {
+class TinyPlugin extends TinyDebugger {
+  /** @type {DebuggerConstructor} */
+  static #logCfg = {
+    id: '[_blue_TinyPlugin_reset_]',
+    logger: console,
+    debugMode: false,
+    canEmitLogs: false,
+    useLogColors: true,
+  };
+
+  /**
+   * Gets the logging configuration for the TinyPlugin class.
+   * @returns {DebuggerConstructor} The current logging configuration.
+   */
+  static get logCfg() {
+    return { ...TinyPlugin.#logCfg };
+  }
+
+  /**
+   * Sets the logging configuration for the TinyPlugin class.
+   * @param {DebuggerConstructor} value - The new logging configuration.
+   */
+  static set logCfg(value) {
+    this.#logCfg = value;
+  }
+
   /**
    * Installs a new plugin into a engine and starts its lifecycle.
-   * @template {TinyPluginCore} ExternalEngine
-   * @template {TinyPluginLayer} ExternalLayer
-   * @template {string} ExternalIdString
-   * @template {string} ExternalVersionString
-   * @template {any[]} ExternalOptions
+   * @template {TinyPluginCore} ExternalEngine - The type of the engine.
+   * @template {TinyPluginLayer} ExternalLayer - The type of the plugin layer.
+   * @template {string} ExternalIdString - The type of the plugin ID.
+   * @template {string} ExternalVersionString - The type of the plugin version.
+   * @template {any[]} ExternalOptions - The type of the configuration options.
    * @param {ExternalEngine} engine - The main instance connected to plugin.
    * @param {TinyPluginInstaller<ExternalEngine, ExternalLayer, ExternalIdString, ExternalVersionString, ExternalOptions>} plugin - The plugin instance to be registered.
    * @param {ExternalOptions} options - Configuration options for the plugin.
    * @returns {TinyPlugin<ExternalEngine, ExternalLayer, ExternalIdString, ExternalVersionString, ExternalOptions>} - The plugin instance.
+   * @throws {TypeError} If the provided engine is not an instance of TinyPluginCore.
    */
   static addModuleToCore(engine, plugin, ...options) {
-    if (!(engine instanceof TinyPluginCore)) throw new Error('');
+    if (!(engine instanceof TinyPluginCore))
+      throw new TypeError('The provided engine must be an instance of TinyPluginCore.');
     /** @type {TinyPlugin<ExternalEngine, ExternalLayer, ExternalIdString, ExternalVersionString, ExternalOptions>} */
-    const instance = new TinyPlugin({ engine: engine, installer: plugin }, ...options);
+    const instance = new TinyPlugin(
+      { engine: engine, installer: plugin, logCfg: { ...TinyPlugin.#logCfg } },
+      ...options,
+    );
     instance.start();
     // @ts-ignore
     if (engine.hasPlugin(instance))
@@ -222,19 +301,34 @@ class TinyPlugin {
   #isReady = false;
   /** @type {Layer|null} */
   #layer = null;
+  /** @type {boolean} */
+  #isDestroyed = false;
 
-  /** @returns {Layer} */
+  /**
+   * Gets whether the plugin has been destroyed.
+   * @returns {boolean} True if destroyed, false otherwise.
+   */
+  get isDestroyed() {
+    return this.#isDestroyed;
+  }
+
+  /**
+   * Gets the plugin's layer instance.
+   * @returns {Layer} The plugin layer.
+   */
   get layer() {
+    checkDestroy(this.#isDestroyed);
     if (this.#layer === null) throw new Error('Plugin layer is not set.');
     return this.#layer;
   }
 
   /**
    * Gets the plugins object from the engine.
-   * @returns {Record<string, TinyPlugin<Engine, TinyPluginLayer, string, string, any[]>>} The plugins object from the engine.
+   * @returns {string[]} The plugins object from the engine.
    */
   get plugins() {
-    return this.#engine.plugins;
+    checkDestroy(this.#isDestroyed);
+    return Object.keys(this.#engine.plugins);
   }
 
   /**
@@ -242,6 +336,7 @@ class TinyPlugin {
    * @returns {number} The number of plugins.
    */
   get pluginsSize() {
+    checkDestroy(this.#isDestroyed);
     return this.#engine.pluginsSize;
   }
 
@@ -251,7 +346,8 @@ class TinyPlugin {
    * @returns {TinyPlugin<Engine, TinyPluginLayer, string, string, any[]>|undefined} The plugin instance if found, otherwise undefined.
    */
   getPlugin(id) {
-    return this.#engine.getPlugin(id);
+    checkDestroy(this.#isDestroyed);
+    return this.#engine._getPlugin(id);
   }
 
   /**
@@ -260,6 +356,7 @@ class TinyPlugin {
    * @returns {boolean} True if the plugin is registered, false otherwise.
    */
   hasPlugin(plugin) {
+    checkDestroy(this.#isDestroyed);
     return this.#engine.hasPlugin(plugin);
   }
 
@@ -268,6 +365,7 @@ class TinyPlugin {
    * @returns {boolean} True if the plugin is ready, false otherwise.
    */
   get isReady() {
+    checkDestroy(this.#isDestroyed);
     return this.#isReady;
   }
 
@@ -276,6 +374,7 @@ class TinyPlugin {
    * @returns {IdString} The plugin id.
    */
   get id() {
+    checkDestroy(this.#isDestroyed);
     if (this.#id.length === 0) throw new Error('Plugin id is not set.');
     return this.#id;
   }
@@ -287,6 +386,7 @@ class TinyPlugin {
    * @throws {TypeError} If the value is not a string or is empty.
    */
   set id(value) {
+    checkDestroy(this.#isDestroyed);
     if (this.#id.length !== 0) throw new Error('Id is already set.');
     if (typeof value !== 'string') throw new TypeError('Id must be a string.');
     if (value.length === 0) throw new TypeError('Id cannot be empty.');
@@ -298,6 +398,7 @@ class TinyPlugin {
    * @returns {string} The plugin description.
    */
   get description() {
+    checkDestroy(this.#isDestroyed);
     if (this.#description.length === 0) throw new Error('Plugin description is not set.');
     return this.#description;
   }
@@ -309,6 +410,7 @@ class TinyPlugin {
    * @throws {TypeError} If the value is not a string or is empty.
    */
   set description(value) {
+    checkDestroy(this.#isDestroyed);
     if (this.#description.length !== 0) throw new Error('Description is already set.');
     if (typeof value !== 'string') throw new TypeError('Description must be a string.');
     if (value.length === 0) throw new TypeError('Description cannot be empty.');
@@ -320,6 +422,7 @@ class TinyPlugin {
    * @returns {readonly string[]} The plugin authors.
    */
   get authors() {
+    checkDestroy(this.#isDestroyed);
     if (this.#authors.length === 0) throw new Error('Plugin authors is not set.');
     return Object.freeze([...this.#authors]);
   }
@@ -331,6 +434,7 @@ class TinyPlugin {
    * @throws {TypeError} If the value is not a array of strings or is empty.
    */
   set authors(value) {
+    checkDestroy(this.#isDestroyed);
     if (this.#authors.length !== 0) throw new Error('Authors is already set.');
     if (
       !Array.isArray(value) ||
@@ -346,6 +450,7 @@ class TinyPlugin {
    * @returns {readonly string[]} The plugin contributors.
    */
   get contributors() {
+    checkDestroy(this.#isDestroyed);
     if (this.#contributors.length === 0) throw new Error('Plugin contributors is not set.');
     return Object.freeze([...this.#contributors]);
   }
@@ -357,6 +462,7 @@ class TinyPlugin {
    * @throws {TypeError} If the value is not a array of strings or is empty.
    */
   set contributors(value) {
+    checkDestroy(this.#isDestroyed);
     if (this.#contributors.length !== 0) throw new Error('Authors is already set.');
     if (
       !Array.isArray(value) ||
@@ -372,6 +478,7 @@ class TinyPlugin {
    * @returns {VersionString} The plugin version.
    */
   get version() {
+    checkDestroy(this.#isDestroyed);
     if (!this.#version) throw new Error('Plugin version is not set.');
     return this.#version.toString();
   }
@@ -383,6 +490,7 @@ class TinyPlugin {
    * @throws {TypeError} If the value is not a string or is empty.
    */
   set version(value) {
+    checkDestroy(this.#isDestroyed);
     if (this.#version) throw new Error('Version is already set.');
     if (typeof value !== 'string') throw new TypeError('Version must be a string.');
     if (value.length === 0) throw new TypeError('Version cannot be empty.');
@@ -394,6 +502,7 @@ class TinyPlugin {
    * @returns {TinyVersion<VersionString>} The TinyVersion instance representing the plugin's version.
    */
   get tinyVersion() {
+    checkDestroy(this.#isDestroyed);
     if (!this.#version) throw new Error('Plugin version is not set.');
     return this.#version;
   }
@@ -403,7 +512,46 @@ class TinyPlugin {
    * @returns {Engine} The engine instance.
    */
   get engine() {
-    return this.#engine;
+    checkDestroy(this.#isDestroyed);
+    /** @type {(string|symbol)[]} */
+    const blockedGetKeys = [
+      'getPlugin',
+      'plugins',
+      'installPlugin',
+      '_addPlugin',
+      'destroyPlugins',
+    ];
+
+    /** @type {(string|symbol)[]} */
+    const blockedEditKeys = [...blockedGetKeys];
+
+    return new Proxy(this.#engine, {
+      get(target, prop) {
+        if (blockedGetKeys.includes(prop)) {
+          // Prevent access to blocked private/internal methods
+          throw new Error(
+            `Security Error: Access to property "${String(prop)}" is denied by the sandbox.`,
+          );
+        }
+        // @ts-ignore
+        return target[prop];
+      },
+      set(target, prop, newValue) {
+        if (blockedEditKeys.includes(prop)) {
+          // Prevent the plugin from modifying blocked properties on the sandbox
+          throw new Error(
+            'Security Error: Cannot modify read-only properties on the plugin sandbox.',
+          );
+        }
+        // @ts-ignore
+        target[prop] = newValue;
+        return true;
+      },
+      // Ensure the prototype is protected
+      setPrototypeOf() {
+        throw new Error('Security Error: Prototype manipulation is forbidden.');
+      },
+    });
   }
 
   /**
@@ -411,6 +559,7 @@ class TinyPlugin {
    * @returns {Options} A read-only array of options.
    */
   get options() {
+    checkDestroy(this.#isDestroyed);
     return this.#options;
   }
 
@@ -418,28 +567,119 @@ class TinyPlugin {
    * Initializes a new instance of TinyPlugin.
    * @param {Object} config - The configuration object.
    * @param {Engine} config.engine - The engine instance.
+   * @param {DebuggerConstructor} config.logCfg - The logging configuration.
    * @param {TinyPluginInstaller<Engine, Layer, IdString, VersionString, Options>} config.installer - The installer function.
    * @param {Options} ops - Additional configuration options.
    */
-  constructor({ engine, installer }, ...ops) {
+  constructor({ engine, logCfg, installer }, ...ops) {
+    super(logCfg);
     this.#engine = engine;
     this.#installer = installer;
     this.#options = ops;
   }
 
   /**
+   * Creates a secure proxy to restrict plugin access to the host.
+   * This prevents the plugin from accessing the 'engine' or mutating the plugin instance.
+   */
+  #createSandbox() {
+    /** @type {(string|symbol)[]} */
+    const allowedEditKeys = ['id', 'version', 'description', 'authors', 'contributors'];
+
+    /** @type {(string|symbol)[]} */
+    const allowedGetKeys = [
+      ...allowedEditKeys,
+      'tinyVersion',
+      'isReady',
+      'layer',
+      'options',
+      'engine',
+      'isDestroyed',
+      'pluginsSize',
+      'plugins',
+      'hasPlugin',
+      'getPlugin',
+      'isDestroyed',
+    ];
+
+    return new Proxy(this, {
+      get(target, prop) {
+        if (allowedGetKeys.includes(prop)) {
+          // @ts-ignore
+          return target[prop];
+        }
+        // Prevent access to blocked private/internal methods
+        throw new Error(
+          `Security Error: Access to property "${String(prop)}" is denied by the sandbox.`,
+        );
+      },
+      set(target, prop, newValue) {
+        if (allowedEditKeys.includes(prop)) {
+          // @ts-ignore
+          target[prop] = newValue;
+          return true;
+        }
+        // Prevent the plugin from modifying blocked properties on the sandbox
+        throw new Error(
+          'Security Error: Cannot modify read-only properties on the plugin sandbox.',
+        );
+      },
+      // Ensure the prototype is protected
+      setPrototypeOf() {
+        throw new Error('Security Error: Prototype manipulation is forbidden.');
+      },
+    });
+  }
+
+  /**
    * Starts the plugin lifecycle by calling the installer.
-   * @throws {Error} If id or version are not set.
+   * @throws {Error} If id, version, description, authors, contributors, or layer is not set.
    */
   start() {
+    checkDestroy(this.#isDestroyed);
     if (this.#isReady) throw new Error('Plugin is already ready.');
-    this.#layer = this.#installer(this, ...this.#options);
-    if (!(this.#layer instanceof TinyPluginLayer)) throw new Error('Plugin layer is not set.');
-    if (this.#id.length === 0) throw new Error('Plugin id is not set.');
-    if (this.#description.length === 0) throw new Error('Plugin description is not set.');
-    if (this.#authors.length === 0) throw new Error('Plugin authors is not set.');
-    if (this.#contributors.length === 0) throw new Error('Plugin contributors is not set.');
-    if (!this.#version) throw new Error('Plugin version is not set.');
+
+    // 1. Freeze options to prevent mutation of the configuration object
+    if (this.#options) {
+      Object.freeze(this.#options);
+    }
+
+    // 2. Create a sandboxed version of 'this' to pass to the installer
+    const sandbox = this.#createSandbox();
+
+    try {
+      // 3. Execute installer with the sandbox and frozen options
+      this.#layer = this.#installer(sandbox, ...this.#options);
+
+      if (!(this.#layer instanceof TinyPluginLayer)) {
+        throw new TypeError('Plugin layer is not a valid TinyPluginLayer instance.');
+      }
+
+      // 4. Final validation of core identity
+      if (this.#id.length === 0) throw new Error('Plugin id is not set.');
+      if (this.#description.length === 0) throw new Error('Plugin description is not set.');
+      if (this.#authors.length === 0) throw new Error('Plugin authors is not set.');
+      if (this.#contributors.length === 0) throw new Error('Plugin contributors is not set.');
+      if (!this.#version) throw new Error('Plugin version is not set.');
+
+      this.#isReady = true;
+    } catch (error) {
+      // 5. Catch initialization errors to prevent host crash
+      this.emit('error', error);
+      this.destroy();
+      throw new Error(
+        `Plugin initialization failed: ${error instanceof Error ? error.message : 'Unknown Error'}`,
+      );
+    }
+  }
+
+  /**
+   * Destroys the plugin instance.
+   */
+  destroy() {
+    if (this.#isDestroyed) return;
+    this.emit('destroyed');
+    this.#isDestroyed = true;
   }
 }
 
