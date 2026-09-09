@@ -1,5 +1,5 @@
-import TinyDebugger from 'tiny-essentials/libs/tools/TinyDebugger';
-import TinyVersion from 'tiny-essentials/libs/plugin/TinyVersion';
+import TinyDebugger from '../tools/TinyDebugger.mjs';
+import TinyVersion from './TinyVersion.mjs';
 
 /**
  * # TINY PLUGIN SYSTEM - ADVANCED DEVELOPER GUIDE
