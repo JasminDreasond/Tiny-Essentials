@@ -214,6 +214,15 @@ class TinyDebugger extends EventEmitter {
   }
 
   /**
+   * Internal method to apply prefix and color replacements.
+   * @param {string} text - The text to format.
+   * @returns {string} The formatted text.
+   */
+  _applyLogFormatting(text) {
+    return this.#applyFormatting(text);
+  }
+
+  /**
    * Clears the console.
    * @returns {void|undefined}
    */
