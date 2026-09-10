@@ -1,4 +1,4 @@
-import { verify } from 'crypto';
+// import { verify } from 'crypto';
 import { isJsonObject } from '../../basics/objChecker.mjs';
 import TinyDebugger from '../tools/TinyDebugger.mjs';
 import TinyVersion from './TinyVersion.mjs';
@@ -358,7 +358,8 @@ class TinyPluginCore extends TinyDebugger {
       });
 
       try {
-        return verify(cryptoAlgorithm, Buffer.from(identity), publicKey, Buffer.from(signature));
+        // return verify(cryptoAlgorithm, Buffer.from(identity), publicKey, Buffer.from(signature));
+        return false;
       } catch (err) {
         console.error(err);
         return false;
