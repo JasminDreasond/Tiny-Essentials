@@ -91,38 +91,38 @@ class TinyPluginLayer {
 
 /**
  * @typedef {Object} BlackListCore
- * @property {Set<BlackListValue>} get
- * @property {Set<BlackListValue>} set
+ * @property {Set<BlackListValue>} get - The set of restricted keys for getting.
+ * @property {Set<BlackListValue>} set - The set of restricted keys for setting.
  */
 
 /**
  * @typedef {Object} BlackListCorePartial
- * @property {BlackListValue[]} [get]
- * @property {BlackListValue[]} [set]
+ * @property {BlackListValue[]} [get] - A list of restricted keys for getting.
+ * @property {BlackListValue[]} [set] - A list of restricted keys for setting.
  */
 
 /**
  * @typedef {Object} BlackListCoreProtected
- * @property {Readonly<BlackListValue[]>} get
- * @property {Readonly<BlackListValue[]>} set
+ * @property {Readonly<BlackListValue[]>} get - A read-only array of restricted keys for getting.
+ * @property {Readonly<BlackListValue[]>} set - A read-only array of restricted keys for setting.
  */
 
 /**
  * @typedef {Object} BwList
- * @property {Set<BlackListValue>} ids
- * @property {Set<BlackListValue>} authors
+ * @property {Set<BlackListValue>} ids - A set of restricted plugin IDs.
+ * @property {Set<BlackListValue>} authors - A set of restricted author names.
  */
 
 /**
  * @typedef {Object} BwListArray
- * @property {BlackListValue[]} ids
- * @property {BlackListValue[]} authors
+ * @property {BlackListValue[]} ids - An array of restricted plugin IDs.
+ * @property {BlackListValue[]} authors - An array of restricted author names.
  */
 
 /**
  * @typedef {Object} BwListProtected
- * @property {readonly BlackListValue[]} ids
- * @property {readonly BlackListValue[]} authors
+ * @property {readonly BlackListValue[]} ids - A read-only array of restricted plugin IDs.
+ * @property {readonly BlackListValue[]} authors - A read-only array of restricted author names.
  */
 
 /**
@@ -132,20 +132,20 @@ class TinyPluginLayer {
 
 /**
  * @typedef {Object} PluginAccessControlPartial
- * @property {PluginAccessControlMode} mode
- * @property {BwListArray} [whitelist]
- * @property {BwListArray} [blacklist]
+ * @property {PluginAccessControlMode} mode - The operational mode for engine access control.
+ * @property {BwListArray} [whitelist] - The whitelist configuration.
+ * @property {BwListArray} [blacklist] - The blacklist configuration.
  * @property {string} [publicKey] - The public key used for cryptographic verification.
- * @property {string} [cryptoAlgorithm='sha256']
+ * @property {string} [cryptoAlgorithm='sha256'] - The cryptographic algorithm to use.
  */
 
 /**
  * @typedef {Object} PluginAccessControl
- * @property {PluginAccessControlMode} mode
- * @property {BwList} whitelist
- * @property {BwList} blacklist
+ * @property {PluginAccessControlMode} mode - The operational mode for engine access control.
+ * @property {BwList} whitelist - The whitelist configuration.
+ * @property {BwList} blacklist - The blacklist configuration.
  * @property {string|null} publicKey - The public key used for cryptographic verification.
- * @property {string} cryptoAlgorithm
+ * @property {string} cryptoAlgorithm - The cryptographic algorithm to use.
  */
 
 /**
@@ -221,7 +221,7 @@ class TinyPluginCore extends TinyDebugger {
 
   /**
    * Gets the current engine access control whitelist.
-   * @returns {BwListProtected}
+   * @returns {BwListProtected} The current engine access control whitelist.
    */
   get accessControlWhitelist() {
     return Object.freeze({
@@ -232,7 +232,7 @@ class TinyPluginCore extends TinyDebugger {
 
   /**
    * Gets the current engine access control blacklist.
-   * @returns {BwListProtected}
+   * @returns {BwListProtected} The current engine access control blacklist.
    */
   get accessControlBlacklist() {
     return Object.freeze({
@@ -243,7 +243,7 @@ class TinyPluginCore extends TinyDebugger {
 
   /**
    * Gets the current engine access control mode.
-   * @returns {PluginAccessControlMode}
+   * @returns {PluginAccessControlMode} The current engine access control mode.
    */
   get accessControlMode() {
     return this.#accessControl.mode;
@@ -343,7 +343,7 @@ class TinyPluginCore extends TinyDebugger {
    * Create a deterministic identity string.
    * @param {string} pluginId - The unique identifier of the plugin.
    * @param {string[]} authors - The list of authors of the plugin.
-   * @returns {string}
+   * @returns {string} The deterministic identity string used for verification.
    */
   #createIdChecker(pluginId, authors) {
     if (typeof pluginId !== 'string') {
@@ -397,7 +397,7 @@ class TinyPluginCore extends TinyDebugger {
    * @param {string} pluginId - The unique identifier of the plugin.
    * @param {string[]} authors - The list of authors of the plugin.
    * @param {string} signature - The cryptographic signature provided by the plugin.
-   * @returns {Promise<boolean>}
+   * @returns {Promise<boolean>} A promise that resolves to true if the signature is valid, false otherwise.
    */
   async verifyPluginSignature(pluginId, authors, signature) {
     const { publicKey, cryptoAlgorithm } = this.#accessControl;
@@ -481,16 +481,53 @@ class TinyPluginCore extends TinyDebugger {
    * @returns {TinyPlugin<this, TinyPluginLayer, string, string, any[]>|undefined} The plugin instance if found, otherwise undefined.
    */
   getPlugin(key) {
-    return this.#plugins.get(key);
+    const plugin = this.#plugins.get(key);
+    return plugin && !plugin.isDestroyed ? plugin : undefined;
   }
 
   /**
-   * Retrieves a plugin instance by its unique identifier (SANDBOX MODE).
-   * @param {string} key - The unique identifier of the plugin to retrieve.
-   * @returns {TinyPlugin<this, TinyPluginLayer, string, string, any[]>|undefined} The plugin instance if found, otherwise undefined.
+   * Retrieves a plugin instance by its unique identifier with security enforcement.
+   * This method checks the target plugin's identity against the engine's
+   * access control rules (whitelist/blacklist/cryptographic).
+   *
+   * @param {string} targetId - The unique identifier of the target plugin.
+   * @returns {TinyPlugin<this, TinyPluginLayer, string, string, any[]>|undefined} The plugin instance if access is granted, otherwise undefined.
    */
-  _getPlugin(key) {
-    return this.#plugins.get(key);
+  _getPlugin(targetId) {
+    const plugin = this.#plugins.get(targetId);
+
+    // If the plugin doesn't exist or has been destroyed, it is not available.
+    if (!plugin || plugin.isDestroyed) {
+      return undefined;
+    }
+
+    const { mode, whitelist, blacklist } = this.#accessControl;
+
+    // If mode is 'none', access is granted to all registered plugins by default.
+    if (mode === 'none') {
+      return plugin;
+    }
+
+    // Whitelist mode: Only plugins whose ID or authors match the whitelist are returned.
+    if (mode === 'whitelist') {
+      const isIdAllowed = whitelist.ids.has(targetId);
+      const isAuthorAllowed = plugin.authors.some((author) => whitelist.authors.has(author));
+      return isIdAllowed || isAuthorAllowed ? plugin : undefined;
+    }
+
+    // Blacklist mode: Plugins matching the blacklist (ID or Author) are blocked.
+    if (mode === 'blacklist') {
+      const isIdBlocked = blacklist.ids.has(targetId);
+      const isAuthorBlocked = plugin.authors.some((author) => blacklist.authors.has(author));
+      return isIdBlocked || isAuthorBlocked ? undefined : plugin;
+    }
+
+    // Cryptographic mode: Only plugins that have been successfully verified are returned.
+    if (mode === 'cryptographic') {
+      return this.#verifiedPlugins.has(targetId) ? plugin : undefined;
+    }
+
+    return plugin;
   }
 
   /**
@@ -613,7 +650,7 @@ class TinyPlugin extends TinyDebugger {
 
   /**
    * Gets whether the plugin has been destroyed.
-   * @returns {boolean} True if destroyed, false otherwise.
+   * @returns {boolean} True if the plugin has been destroyed, false otherwise.
    */
   get isDestroyed() {
     return this.#isDestroyed;
@@ -971,6 +1008,7 @@ class TinyPlugin extends TinyDebugger {
 
   /**
    * Starts the plugin lifecycle by calling the installer.
+   * @throws {Error} If the plugin is already ready.
    * @throws {Error} If id, version, description, authors, contributors, or layer is not set.
    */
   start() {
